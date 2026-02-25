@@ -1,1 +1,385 @@
 @import "tailwindcss";
+
+:root{
+
+  /* 冰山色系 */
+  --ice-50: #f0f9ff;
+  --ice-100: #dff1ff;
+  --ice-200: #b8e4ff;
+  --ice-300: #7ad0ff;
+  --ice-400: #36b9ff;
+  --ice-500: #0c9ee8;
+  --ice-600: #007dc6;
+  --ice-700: #0063a1;
+  --ice-800: #045385;
+  --ice-900: #09456e;
+
+  /* 星轨色系 */
+  --star-50: #f5f3ff;
+  --star-100: #ede8ff;
+  --star-200: #ddd5ff;
+  --star-300: #c4b5fd;
+  --star-400: #a78bfa;
+  --star-500: #8b5cf6;
+  --star-600: #7c3aed;
+  --star-700: #6d28d9;
+  --star-800: #5b21b6;
+  --star-900: #4c1d95;
+
+  /* 流光金 */
+  --glow-300: #fde68a;
+  --glow-400: #fbbf24;
+  --glow-500: #f59e0b;
+
+  /* 深海 / 夜空 */
+  --abyss-800: #0c1929;
+  --abyss-900: #060e1a;
+  --abyss-950: #030811;
+
+  /* 主题色映射 */
+  --first-color: var(--star-500);
+  --first-color-second: var(--star-500);
+  --first-color-alt: var(--star-600);
+  --first-color-lighter: var(--star-200);
+  --title-color: var(--abyss-800);
+  --text-color: var(--ice-800);
+  --text-color-light: var(--ice-600);
+  --input-color: var(--ice-100);
+  --body-color: #ffffff;
+  --container-color: #ffffff;
+  --scroll-bar-color: var(--star-200);
+  --scroll-thumb-color: var(--star-300)
+
+  /* 字体 */
+  --body-font: "Poppins", system-ui, sans-serif;
+  --big-font-size: 2rem;
+  --h1-font-size: 1.5rem;
+  --h2-font-size: 1.25rem;
+  --h3-font-size: 1.125rem;
+  --normal-font-size: 0.938rem;
+  --small-font-size: 0.813rem;
+  --smaller-font-size: 0.75rem;
+  --font-medium: 500;
+  --font-semi-bold: 600;
+
+  /* 间距 */
+  --mb-0-25: 0.25rem;
+  --mb-0-5: 0.5rem;
+  --mb-0-75: 0.75rem;
+  --mb-1: 1rem;
+  --mb-1-5: 1.5rem;
+  --mb-2: 2rem;
+  --mb-2-5: 2.5rem;
+  --mb-3: 3rem;
+
+  /* z-index */
+  --z-tooltip:10;
+  --z-fixed:100;
+  --z-model:1000;
+
+  /* 语义色 */
+  --background: #fff;
+  --foreground:var(var(--abyss-800));
+  --muted:var(--ice-100);
+  --muted-foreground:var(--ice-700);
+  --accent:var(--star-500);
+  --accent-foreground:#fff;
+  --card-foreground: var(--abyss-800);
+  --border: rgba(9,69,110,0.08);
+  --ring:var(--ice-500);
+}
+
+.dark-theme{
+  --first-color-second: var(--abyss-800);
+    --title-color: var(--ice-100);
+    --text-color: var(--ice-300);
+    --text-color-light: var(--ice-400);
+    --input-color: var(--abyss-800);
+    --body-color: var(--abyss-900);
+    --container-color: var(--abyss-800);
+    --scroll-bar-color: var(--ice-800);
+    --scroll-thumb-color: var(--ice-700);
+    --background: var(--abyss-900);
+    --foreground: var(--ice-100);
+    --muted: var(--ice-800);
+    --muted-foreground: var(--ice-300);
+    --card: var(--abyss-800);
+    --card-foreground: var(--ice-100);
+    --border: rgba(120, 180, 255, 0.12);
+    --ring: var(--star-400);
+}
+
+@media screen and (min-width: 968px)
+{
+  :root{
+    --big-font-size: 3rem;
+      --h1-font-size: 2.25rem;
+      --h2-font-size: 1.5rem;
+      --h3-font-size: 1.25rem;
+      --normal-font-size: 1rem;
+      --small-font-size: 0.875rem;
+      --smaller-font-size: 0.8125rem;
+  }
+}
+
+/* 注册Tailwind */
+theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-ice-50: var(--ice-50);
+  --color-ice-100: var(--ice-100);
+  --color-ice-200: var(--ice-200);
+  --color-ice-300: var(--ice-300);
+  --color-ice-400: var(--ice-400);
+  --color-ice-500: var(--ice-500);
+  --color-ice-600: var(--ice-600);
+  --color-ice-700: var(--ice-700);
+  --color-ice-800: var(--ice-800);
+  --color-ice-900: var(--ice-900);
+  --color-star-50: var(--star-50);
+  --color-star-100: var(--star-100);
+  --color-star-200: var(--star-200);
+  --color-star-300: var(--star-300);
+  --color-star-400: var(--star-400);
+  --color-star-500: var(--star-500);
+  --color-star-600: var(--star-600);
+  --color-star-700: var(--star-700);
+  --color-star-800: var(--star-800);
+  --color-star-900: var(--star-900);
+  --color-glow-300: var(--glow-300);
+  --color-glow-400: var(--glow-400);
+  --color-glow-500: var(--glow-500);
+  --color-abyss-800: var(--abyss-800);
+  --color-abyss-900: var(--abyss-900);
+  --color-abyss-950: var(--abyss-950);
+
+  /* 语义主题色 */
+  --color-first: var(--first-color);
+  --color-first-alt: var(--first-color-alt);
+  --color-first-lighter: var(--first-color-lighter);
+  --color-first-second: var(--first-color-second);
+  --color-title: var(--title-color);
+  --color-text: var(--text-color);
+  --color-text-light: var(--text-color-light);
+  --color-body: var(--body-color);
+  --color-input: var(--input-color);
+  --color-container: var(--container-color);
+
+  /* z-index */
+  --z-index-tooltip: 10;
+  --z-index-fixed: 100;
+  --z-index-modal: 1000;
+}
+
+/* 基础样式 */
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  margin: 0;
+  font-family: var(--body-font),system-ui,sans-serif;
+  font-size: var(--normal-font-size);
+  background-color: var(--body-color);
+  color:var(--text-color);
+  line-height: 1.5;
+  transition: all 0.2s;
+  /* TODO
+    全局过渡效果存在性能问题,待优化
+   */
+  /* 文字渲染优化：跨浏览器兼容 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--title-color);
+  font-weight: var(--font-semi-bold);
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 可复用类 */
+.section{
+  padding: 2rem 0 4rem;
+}
+
+.section__title{
+  font-size:var(--h1-font-size);
+  color:var(--title-color);
+}
+
+.section__subtitle {
+  display: block;
+  font-size: var(--small-font-size);
+  margin-bottom: var(--mb-3);
+}
+
+.section__title,
+.section__subtitle {
+  text-align: center;
+}
+
+
+/* TODO
+  当前container左右边距为定值
+  最大宽度在2k，4k等大屏幕上可能不够用
+  需要响应式优化
+*/
+.container {
+  max-width: 1200px;
+  margin-left: var(--mb-1-5);
+  margin-right: var(--mb-1-5);
+  padding: 0 2rem;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+/* Button */
+.button {
+  display: inline-block;
+  background-color: var(--first-color);
+  color: #fff;
+  padding: 1rem;
+  border-radius: .5rem;
+  font-weight: var(--font-medium);
+}
+
+.button:hover {
+  background-color: var(--first-color-alt);
+}
+
+.button__icon {
+  font-size: 1.2rem;
+  margin-left: var(--mb-0-5);
+  transition: .3s;
+}
+
+.button--flex {
+  display: inline-flex;
+  align-items: center;
+  transition: .3s;
+}
+
+.button--small {
+  padding: .75rem 1rem;
+}
+
+.button--link {
+  padding: 0;
+  background-color: transparent;
+  color: var(--first-color);
+}
+
+.button--link:hover {
+  background-color: transparent;
+  color: var(--first-color-alt);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: .60rem;
+  background-color: var(--scroll-bar-color);
+  border-radius: .5rem;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scroll-thumb-color);
+  border-radius: .5rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-color-light);
+}
+
+/* 响应式 */
+@media screen and (max-width: 350px) {
+  .container {
+    margin-left: var(--mb-1);
+    margin-right: var(--mb-1);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .section {
+    padding: 6rem 0 2rem;
+  }
+
+  .section__subtitle {
+    margin-bottom: 4rem;
+  }
+}
+
+/* ---------- 渐变工具类 ---------- */
+.gradient-iceberg {
+  background: linear-gradient(180deg, var(--ice-100) 0%, var(--ice-300) 40%, var(--ice-600) 70%, var(--abyss-800) 100%);
+}
+
+.gradient-startrail {
+  background: linear-gradient(135deg, var(--abyss-950) 0%, var(--star-900) 30%, var(--star-600) 60%, var(--glow-400) 100%);
+}
+
+.gradient-ice-star {
+  background: linear-gradient(160deg, var(--abyss-950) 0%, var(--ice-800) 25%, var(--star-700) 50%, var(--ice-400) 75%, var(--glow-300) 100%);
+}
+
+/* 动画 & 特效 */
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+.glass-ice {
+  background: rgba(120, 180, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(120, 180, 255, 0.15);
+}
+
+.glow-star {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3), 0 0 45px rgba(139, 92, 246, 0.1);
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), 0 0 45px rgba(251, 191, 36, 0.1);
+}

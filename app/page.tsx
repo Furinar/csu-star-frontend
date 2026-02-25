@@ -1,4 +1,21 @@
 import "./globals.css";
 export default function Welcome() {
-  return <h1>hello world</h1>;
+  return (
+    <>
+      {/* 导航栏 */}
+      <header>
+        
+      </header>
+
+      {/* 主要内容 */}
+      <main>
+
+      </main>
+
+      {/* 页脚 */}
+      <footer>
+
+      </footer>
+    </>
+  );
 }
