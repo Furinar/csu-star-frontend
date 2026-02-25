@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import ShootingStars from "@/components/ShootingStars";
 import "./globals.css";
+import HomeSection from "@/components/welcome/HomeSection";
 
 export default function Welcome() {
   return (
@@ -20,7 +21,9 @@ export default function Welcome() {
       />
 
       {/* 主要内容 */}
-      <main></main>
+      <main className="main">
+        <HomeSection />
+      </main>
 
       {/* 页脚 */}
       <footer></footer>

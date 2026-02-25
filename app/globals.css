@@ -91,6 +91,7 @@
   --card-foreground: var(--abyss-800);
   --border: rgba(9, 69, 110, 0.08);
   --ring: var(--ice-500);
+  --nav--spiltter: rgba(0, 0, 0, 0.15);
 }
 
 .dark-theme {
@@ -115,6 +116,7 @@
   --card-foreground: var(--ice-100);
   --border: rgba(120, 180, 255, 0.12);
   --ring: var(--star-400);
+  --nav--spiltter: rgba(255, 255, 255, 0.85);
 }
 
 /* 注册Tailwind */
