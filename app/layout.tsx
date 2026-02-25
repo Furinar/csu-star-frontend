@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import ClientOnly from "@/components/ClientOnly";
+import ClientOnly from "@/app/ClientOnly";
 import "./globals.css";
 
 export const viewport: Viewport = {
