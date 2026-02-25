@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import ClientOnly from "@/components/ClientOnly";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -36,7 +37,9 @@ export default function RootLayout({
           href="https://fonts.proxy.ustclug.org/css2?family=Poppins:wght@400;500;600&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ClientOnly>{children}</ClientOnly>
+      </body>
     </html>
   );
 }

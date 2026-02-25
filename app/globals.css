@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-:root{
+:root {
 
   /* 冰山色系 */
   --ice-50: #f0f9ff;
@@ -48,17 +48,17 @@
   --body-color: #ffffff;
   --container-color: #ffffff;
   --scroll-bar-color: var(--star-200);
-  --scroll-thumb-color: var(--star-300)
+  --scroll-thumb-color: var(--star-300);
 
   /* 字体 */
   --body-font: "Poppins", system-ui, sans-serif;
-  --big-font-size: 2rem;
-  --h1-font-size: 1.5rem;
-  --h2-font-size: 1.25rem;
-  --h3-font-size: 1.125rem;
-  --normal-font-size: 0.938rem;
-  --small-font-size: 0.813rem;
-  --smaller-font-size: 0.75rem;
+  --big-font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+  --h1-font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
+  --h2-font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+  --h3-font-size: clamp(1.125rem, 1rem + 0.4vw, 1.25rem);
+  --normal-font-size: clamp(0.938rem, 0.9rem + 0.2vw, 1rem);
+  --small-font-size: clamp(0.813rem, 0.78rem + 0.15vw, 0.875rem);
+  --smaller-font-size: clamp(0.75rem, 0.72rem + 0.1vw, 0.8125rem);
   --font-medium: 500;
   --font-semi-bold: 600;
 
@@ -73,57 +73,45 @@
   --mb-3: 3rem;
 
   /* z-index */
-  --z-tooltip:10;
-  --z-fixed:100;
-  --z-model:1000;
+  --z-tooltip: 10;
+  --z-fixed: 100;
+  --z-modal: 1000;
 
   /* 语义色 */
   --background: #fff;
-  --foreground:var(var(--abyss-800));
-  --muted:var(--ice-100);
-  --muted-foreground:var(--ice-700);
-  --accent:var(--star-500);
-  --accent-foreground:#fff;
+  --foreground: var(--abyss-800);
+  --muted: var(--ice-100);
+  --muted-foreground: var(--ice-700);
+  --accent: var(--star-500);
+  --accent-foreground: #fff;
+  --card: #ffffff;
   --card-foreground: var(--abyss-800);
-  --border: rgba(9,69,110,0.08);
-  --ring:var(--ice-500);
+  --border: rgba(9, 69, 110, 0.08);
+  --ring: var(--ice-500);
 }
 
-.dark-theme{
+.dark-theme {
   --first-color-second: var(--abyss-800);
-    --title-color: var(--ice-100);
-    --text-color: var(--ice-300);
-    --text-color-light: var(--ice-400);
-    --input-color: var(--abyss-800);
-    --body-color: var(--abyss-900);
-    --container-color: var(--abyss-800);
-    --scroll-bar-color: var(--ice-800);
-    --scroll-thumb-color: var(--ice-700);
-    --background: var(--abyss-900);
-    --foreground: var(--ice-100);
-    --muted: var(--ice-800);
-    --muted-foreground: var(--ice-300);
-    --card: var(--abyss-800);
-    --card-foreground: var(--ice-100);
-    --border: rgba(120, 180, 255, 0.12);
-    --ring: var(--star-400);
-}
-
-@media screen and (min-width: 968px)
-{
-  :root{
-    --big-font-size: 3rem;
-      --h1-font-size: 2.25rem;
-      --h2-font-size: 1.5rem;
-      --h3-font-size: 1.25rem;
-      --normal-font-size: 1rem;
-      --small-font-size: 0.875rem;
-      --smaller-font-size: 0.8125rem;
-  }
+  --title-color: var(--ice-100);
+  --text-color: var(--ice-300);
+  --text-color-light: var(--ice-400);
+  --input-color: var(--abyss-800);
+  --body-color: var(--abyss-900);
+  --container-color: var(--abyss-800);
+  --scroll-bar-color: var(--ice-800);
+  --scroll-thumb-color: var(--ice-700);
+  --background: var(--abyss-900);
+  --foreground: var(--ice-100);
+  --muted: var(--ice-800);
+  --muted-foreground: var(--ice-300);
+  --card: var(--abyss-800);
+  --card-foreground: var(--ice-100);
+  --border: rgba(120, 180, 255, 0.12);
+  --ring: var(--star-400);
 }
 
 /* 注册Tailwind */
-theme inline {
+@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -177,24 +165,23 @@ theme inline {
   --z-index-tooltip: 10;
   --z-index-fixed: 100;
   --z-index-modal: 1000;
+
+  /* 布局变量 */
+  --header-height: 3rem;
 }
 
 /* 基础样式 */
-html{
-  scroll-behavior:smooth;
+html {
+  scroll-behavior: smooth;
 }
 
-body{
+body {
   margin: 0;
-  font-family: var(--body-font),system-ui,sans-serif;
+  font-family: var(--body-font);
   font-size: var(--normal-font-size);
   background-color: var(--body-color);
-  color:var(--text-color);
-  line-height: 1.5;
-  transition: all 0.2s;
-  /* TODO
-    全局过渡效果存在性能问题,待优化
-   */
+  color: var(--text-color);
+  transition: background-color 0.2s, color 0.2s;
   /* 文字渲染优化：跨浏览器兼容 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -222,13 +209,13 @@ img {
 }
 
 /* 可复用类 */
-.section{
+.section {
   padding: 2rem 0 4rem;
 }
 
-.section__title{
-  font-size:var(--h1-font-size);
-  color:var(--title-color);
+.section__title {
+  font-size: var(--h1-font-size);
+  color: var(--title-color);
 }
 
 .section__subtitle {
@@ -243,16 +230,11 @@ img {
 }
 
 
-/* TODO
-  当前container左右边距为定值
-  最大宽度在2k，4k等大屏幕上可能不够用
-  需要响应式优化
-*/
 .container {
-  max-width: 1200px;
-  margin-left: var(--mb-1-5);
-  margin-right: var(--mb-1-5);
-  padding: 0 2rem;
+  width: 100%;
+  max-width: min(1200px, 90%);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
 }
 
 .grid {
@@ -320,23 +302,41 @@ img {
 /* 响应式 */
 @media screen and (max-width: 350px) {
   .container {
-    margin-left: var(--mb-1);
-    margin-right: var(--mb-1);
+    padding-inline: 1rem;
   }
 }
 
 @media screen and (min-width: 768px) {
-  .container {
-    margin-left: auto;
-    margin-right: auto;
-  }
-
   .section {
     padding: 6rem 0 2rem;
   }
 
   .section__subtitle {
     margin-bottom: 4rem;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+}
+
+@media screen and (min-width: 1900px) {
+  .container {
+    max-width: 1600px;
+  }
+}
+
+@media screen and (min-width: 2500px) {
+  .container {
+    max-width: 2100px;
+  }
+}
+
+@media screen and (min-width: 3800px) {
+  .container {
+    max-width: 3200px;
   }
 }
 
