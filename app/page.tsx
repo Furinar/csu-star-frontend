@@ -1,9 +1,13 @@
 import Header from "@/components/Header";
+import ShootingStars from "@/components/ShootingStars";
 import "./globals.css";
 
 export default function Welcome() {
   return (
     <>
+      {/* 流星背景 */}
+      <ShootingStars />
+
       {/* 导航栏 */}
       <Header
         navItems={[

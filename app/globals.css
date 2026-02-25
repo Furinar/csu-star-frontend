@@ -36,6 +36,9 @@
   --abyss-900: #060e1a;
   --abyss-950: #030811;
 
+  /* 流星色 */
+  --meteor-color: var(--star-500);
+
   /* 主题色映射 */
   --first-color: var(--star-500);
   --first-color-second: var(--star-500);
@@ -91,7 +94,11 @@
 }
 
 .dark-theme {
+  --meteor-color: var(--ice-400);
+  --first-color: var(--ice-500);
   --first-color-second: var(--abyss-800);
+  --first-color-alt: var(--ice-600);
+  --first-color-lighter: var(--ice-200);
   --title-color: var(--ice-100);
   --text-color: var(--ice-300);
   --text-color-light: var(--ice-400);
@@ -181,7 +188,7 @@ body {
   font-size: var(--normal-font-size);
   background-color: var(--body-color);
   color: var(--text-color);
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 2s, color 2s;
   /* 文字渲染优化：跨浏览器兼容 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -382,4 +389,57 @@ img {
 
 .glow-gold {
   box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), 0 0 45px rgba(251, 191, 36, 0.1);
+}
+
+/* ---------- 流星动画 ---------- */
+.stars-space {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.star {
+  display: block;
+  width: 1px;
+  background: transparent;
+  position: relative;
+  opacity: 0;
+  animation: star-ani 2s linear infinite;
+}
+
+.star::after {
+  content: "";
+  display: block;
+  border-style: solid;
+  border-width: 0 90px 5px 90px;
+  border-color: transparent transparent transparent var(--meteor-color);
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  transform-origin: 0 100%;
+}
+
+.star-a { top: -30px; left: 20%; }
+.star-b { top: 60px; left: 24%; animation-delay: 4s; }
+.star-c { top: 40px; left: 60%; animation-duration: 3s; animation-delay: 1s; }
+.star-d { top: -30px; left: 108%; animation-delay: 2s; }
+.star-e { top: 40px; left: 86%; animation-duration: 4s; animation-delay: 1s; }
+.star-f { top: -200px; left: 60%; animation-duration: 4s; }
+.star-g { top: -150px; left: 110%; animation-duration: 3s; }
+.star-h { top: -150px; left: 15%; animation-duration: 2.5s; }
+
+@keyframes star-ani {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(-200px, 200px, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2) translate3d(-300px, 300px, 0);
+  }
 }

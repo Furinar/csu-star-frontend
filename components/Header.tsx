@@ -44,9 +44,9 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
   return (
     <>
-      {/* 移动端顶部栏：Logo + 主题切换 */}
+      {/* 移动端顶部栏 */}
       <div
-        className={`fixed top-0 left-0 w-full z-fixed bg-body md:hidden ${scrolled ? "shadow-[0_1px_4px_rgba(0,0,0,0.15)]" : ""}`}
+        className={`fixed top-0 left-0 w-full z-fixed bg-body transition-colors duration-[2s] md:hidden ${scrolled ? "shadow-[0_1px_4px_rgba(0,0,0,0.15)]" : ""}`}
       >
         <div className="container flex justify-between items-center h-(--header-height)">
           <Link
@@ -64,7 +64,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
       {/* 移动端底部导航栏 */}
       <nav
-        className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-1px_4px_rgba(0,0,0,0.15)] md:hidden`}
+        className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-1px_4px_rgba(0,0,0,0.15)] transition-colors duration-[2s] md:hidden`}
       >
         <ul className="flex justify-around items-center h-(--header-height)">
           {navItems.map((item) => (
@@ -81,9 +81,9 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
         </ul>
       </nav>
 
-      {/* PC端顶部导航栏（不变） */}
+      {/* PC端顶部导航栏 */}
       <header
-        className={`hidden md:block fixed top-0 left-0 w-full z-fixed px-4 lg:px-4 bg-body ${scrolled ? "shadow-[0_-1px_4px_rgba(0,0,0,0.15)]" : ""}`}
+        className={`hidden md:block fixed top-0 left-0 w-full z-fixed px-4 lg:px-4 bg-body transition-colors duration-[2s] ${scrolled ? "shadow-[0_-1px_4px_rgba(0,0,0,0.15)]" : ""}`}
         id="header"
       >
         <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">
@@ -94,7 +94,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
             csu star
           </Link>
 
-          <ul className="flex gap-x-8 ml-auto">
+          <ul className="flex gap-x-8 ml-auto mr-4">
             {navItems.map((item) => (
               <li key={item.label} className="flex flex-wrap content-center">
                 <a
