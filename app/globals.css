@@ -45,8 +45,8 @@
   --first-color-alt: var(--star-600);
   --first-color-lighter: var(--star-200);
   --title-color: var(--abyss-800);
-  --text-color: var(--ice-800);
-  --text-color-light: var(--ice-600);
+  --text-color: var(--star-900);
+  --text-color-light: var(--star-800);
   --input-color: var(--ice-100);
   --body-color: #ffffff;
   --container-color: #ffffff;
@@ -55,13 +55,13 @@
 
   /* 字体 */
   --body-font: "Poppins", system-ui, sans-serif;
-  --big-font-size: clamp(2rem, 1.5rem + 1.5vw, 3rem);
-  --h1-font-size: clamp(1.5rem, 1.2rem + 1vw, 2.25rem);
-  --h2-font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
-  --h3-font-size: clamp(1.125rem, 1rem + 0.4vw, 1.25rem);
-  --normal-font-size: clamp(0.938rem, 0.9rem + 0.2vw, 1rem);
-  --small-font-size: clamp(0.813rem, 0.78rem + 0.15vw, 0.875rem);
-  --smaller-font-size: clamp(0.75rem, 0.72rem + 0.1vw, 0.8125rem);
+  --big-font-size: 2rem;
+  --h1-font-size: 1.5rem;
+  --h2-font-size: 1.25rem;
+  --h3-font-size: 1.125rem;
+  --normal-font-size: 0.9375rem;
+  --small-font-size: 0.8125rem;
+  --smaller-font-size: 0.75rem;
   --font-medium: 500;
   --font-semi-bold: 600;
 
@@ -97,7 +97,7 @@
 .dark-theme {
   --meteor-color: var(--ice-400);
   --first-color: var(--ice-500);
-  --first-color-second: var(--abyss-800);
+  --first-color-second: var(--ice-600);
   --first-color-alt: var(--ice-600);
   --first-color-lighter: var(--ice-200);
   --title-color: var(--ice-100);
@@ -240,10 +240,10 @@ img {
 
 
 .container {
-  width: 100%;
-  max-width: min(1200px, 90%);
-  margin-inline: auto;
-  padding-inline: 1.5rem;
+  max-width: 1200px;
+  margin-left: var(--mb-1-5);
+  margin-right: var(--mb-1-5);
+  padding: 0 2rem;
 }
 
 .grid {
@@ -311,17 +311,35 @@ img {
 /* 响应式 */
 @media screen and (max-width: 350px) {
   .container {
-    padding-inline: 1rem;
+    margin-left: var(--mb-1);
+    margin-right: var(--mb-1);
   }
 }
 
 @media screen and (min-width: 768px) {
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .section {
     padding: 6rem 0 2rem;
   }
 
   .section__subtitle {
     margin-bottom: 4rem;
+  }
+}
+
+@media screen and (min-width: 968px) {
+  :root {
+    --big-font-size: 3rem;
+    --h1-font-size: 2.25rem;
+    --h2-font-size: 1.5rem;
+    --h3-font-size: 1.25rem;
+    --normal-font-size: 1rem;
+    --small-font-size: 0.875rem;
+    --smaller-font-size: 0.8125rem;
   }
 }
 
