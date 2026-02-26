@@ -2,10 +2,11 @@ import Header from "@/components/Header";
 import ShootingStars from "@/components/ShootingStars";
 import "./globals.css";
 import HomeSection from "@/components/welcome/HomeSection";
+import CollegeLoop from "@/components/welcome/CollegeLoop";
 
 export default function Welcome() {
   return (
-    <>
+    <div className="overflow-x-hidden">
       {/* 流星背景 */}
       <ShootingStars />
 
@@ -22,11 +23,20 @@ export default function Welcome() {
 
       {/* 主要内容 */}
       <main className="main">
+        {/* 首页 */}
         <HomeSection />
+
+        {/* 跑马灯 */}
+        <div
+          className="container"
+          style={{ overflow: "hidden", position: "relative" }}
+        >
+          <CollegeLoop />
+        </div>
       </main>
 
       {/* 页脚 */}
       <footer></footer>
-    </>
+    </div>
   );
 }
