@@ -1,6 +1,6 @@
 "use client";
 
-import LogoLoop from "../ui/logoloop";
+import LogoLoop from "../ui/LogoLoop";
 
 const colleges = [
   { name: "机电工程学院", icon: "fa-cogs" },

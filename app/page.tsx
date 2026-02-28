@@ -1,8 +1,8 @@
-import Header from "@/components/Header";
-import ShootingStars from "@/components/ShootingStars";
+import Header from "@/components/welcome/Header";
+import ShootingStars from "@/components/welcome/ShootingStars";
 import "./globals.css";
 import HomeSection from "@/components/welcome/HomeSection";
-import CollegeLoop from "@/components/welcome/CollegeLoop";
+import AboutSection from "@/components/welcome/AboutSection";
 
 export default function Welcome() {
   return (
@@ -22,17 +22,18 @@ export default function Welcome() {
       />
 
       {/* 主要内容 */}
-      <main className="main">
+      <main className="main pb-14 md:pb-0">
         {/* 首页 */}
-        <HomeSection />
-
-        {/* 跑马灯 */}
-        <div
-          className="container"
-          style={{ overflow: "hidden", position: "relative" }}
-        >
-          <CollegeLoop />
+        <div className="home">
+          <HomeSection />
         </div>
+
+        {/* 关于 */}
+        <div className="about">
+          <AboutSection />
+        </div>
+
+        
       </main>
 
       {/* 页脚 */}
