@@ -190,7 +190,7 @@ body {
   font-size: var(--normal-font-size);
   background-color: var(--body-color);
   color: var(--text-color);
-  transition: background-color 2s, color 2s;
+  transition: background-color 1s, color 1s;
   /* 文字渲染优化：跨浏览器兼容 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -309,10 +309,23 @@ img {
 }
 
 /* 响应式 */
+@media screen and (max-width: 767px) {
+  body {
+    padding-bottom: var(--header-height);
+  }
+
+  .container {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0 1.25rem;
+  }
+}
+
 @media screen and (max-width: 350px) {
   .container {
     margin-left: var(--mb-1);
     margin-right: var(--mb-1);
+    padding: 0 0.75rem;
   }
 }
 
@@ -461,5 +474,32 @@ img {
   100% {
     opacity: 0;
     transform: scale(1.2) translate3d(-300px, 300px, 0);
+  }
+}
+
+/* ---------- Hero 移动端渐变标题 ---------- */
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--glow-400) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark-theme .hero-gradient-text {
+  background: linear-gradient(135deg, var(--ice-400) 0%, var(--glow-300) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 流星移动端适配 */
+@media screen and (max-width: 767px) {
+  .star-d { left: 95%; }
+  .star-g { left: 98%; }
+
+  @keyframes star-ani {
+    0% { opacity: 0; transform: scale(0.5) translate3d(0, 0, 0); }
+    50% { opacity: 1; transform: translate3d(-100px, 100px, 0); }
+    100% { opacity: 0; transform: scale(1.2) translate3d(-150px, 150px, 0); }
   }
 }

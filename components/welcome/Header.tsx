@@ -46,7 +46,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
     <>
       {/* 移动端顶部栏 */}
       <div
-        className={`fixed top-0 left-0 w-full z-fixed bg-transparent md:hidden ${scrolled ? "shadow-[0_1px_4px_(--nav-splitter)]" : ""} transition-shadow duration-2000`}
+        className={`fixed top-0 left-0 w-full z-fixed bg-body md:hidden ${scrolled ? "shadow-[0_3px_4px_(--nav-splitter)]" : ""} transition-shadow duration-1000`}
       >
         <div className="container flex justify-between items-center h-(--header-height)">
           <Link
@@ -64,7 +64,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
       {/* 移动端底部导航栏 */}
       <nav
-        className={`fixed bottom-0 left-0 w-full z-fixed bg-transparent shadow-[0_-1px_4px_(--nav-splitter)] md:hidden transition-shadow duration-2000`}
+        className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_(--nav-splitter)] md:hidden transition-shadow duration-1000`}
       >
         <ul className="flex justify-around items-center h-(--header-height)">
           {navItems.map((item) => (
@@ -83,7 +83,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
       {/* PC端顶部导航栏 */}
       <header
-        className={`hidden md:block fixed top-0 left-0 w-full z-fixed px-4 lg:px-4 bg-transparent ${scrolled ? "shadow-[0_-1px_4px_(--nav-splitter)]" : ""} transition-shadow duration-2000`}
+        className={`hidden md:block fixed top-0 left-0 w-full z-fixed px-4 lg:px-4 bg-transparent ${scrolled ? "shadow-[0_-3px_4px_(--nav-splitter)]" : ""} transition-shadow duration-1000`}
         id="header"
       >
         <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">

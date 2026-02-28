@@ -29,7 +29,7 @@ export default function RootLayout({
         />
         <link
           rel="stylesheet"
-          href="https://unicons.iconscout.com/release/v3.0.6/css/line.css"
+          href="https://cdn.jsdmirror.com/npm/@iconscout/unicons@3.0.6/css/line.css"
         />
         <link rel="preconnect" href="https://fonts.proxy.ustclug.org" />
         <link

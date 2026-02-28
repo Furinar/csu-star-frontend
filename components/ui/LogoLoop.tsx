@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, {
   useCallback,
   useEffect,
@@ -382,7 +383,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
             {(item as any).node}
           </span>
         ) : (
-          <img
+          <Image
             className={cx(
               "h-[var(--logoloop-logoHeight)] w-auto block object-contain",
               "[-webkit-user-drag:none] pointer-events-none",
