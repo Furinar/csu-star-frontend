@@ -1,12 +1,12 @@
 import Header from "@/components/welcome/Header";
 import ShootingStars from "@/components/welcome/ShootingStars";
 import "./globals.css";
-import HomeSection from "@/components/welcome/HomeSection";
-import AboutSection from "@/components/welcome/AboutSection";
+import HomeSection from "@/components/welcome/section/HomeSection";
+import AboutSection from "@/components/welcome/section/AboutSection";
 
 export default function Welcome() {
   return (
-    <div className="overflow-x-hidden">
+    <div className="overflow-x-clip">
       {/* 流星背景 */}
       <ShootingStars />
 
@@ -32,8 +32,6 @@ export default function Welcome() {
         <div className="about">
           <AboutSection />
         </div>
-
-        
       </main>
 
       {/* 页脚 */}

@@ -7,12 +7,34 @@ export default function AboutSection() {
       <span className="section__subtitle">平台简介</span>
       <div className="container grid min-[568px]:grid-cols-2 md:gap-x-20">
         <Image
-          src="/csustar.jpg"
+          src="/csustar.svg"
           alt="CSU Star"
           width={350}
           height={350}
           className="w-50 rounded-lg justify-self-center self-center md:w-87.5"
         />
+        {/* 数据条 */}
+        <div className="flex items-center gap-4 mt-6 pt-5 border-t border-border md:hidden">
+          <div className="flex-1 text-center">
+            <div className="text-lg font-bold text-first">30+</div>
+            <div className="text-xs text-text-light">覆盖学院</div>
+          </div>
+          <div className="w-px h-8 bg-border" />
+          <div className="flex-1 text-center">
+            <div className="text-lg font-bold text-first">
+              <i className="fa-solid fa-shield-halved text-sm" />
+            </div>
+            <div className="text-xs text-text-light">免费使用</div>
+          </div>
+          <div className="w-px h-8 bg-border" />
+          <div className="flex-1 text-center">
+            <div className="text-lg font-bold text-first">
+              <i className="fa-solid fa-bolt text-sm" />
+            </div>
+            <div className="text-xs text-text-light">全校覆盖</div>
+          </div>
+        </div>
+
         <div>
           <p className="text-center mb-10 md:text-left">
             南极星是面向中南大学全体师生的一站式综合服务平台，致力于打造高效、便捷的数字化校园生态。

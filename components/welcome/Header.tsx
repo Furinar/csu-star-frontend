@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function Header({ navItems }: { navItems: navItem[] }) {
-  const [activeSection, setActiveSection] = useState("home");
   const [scrolled, setScrolled] = useState(false);
   const [darkTheme, setDarkTheme] = useState(
     () =>
@@ -16,18 +15,6 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
   useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY >= 80);
-      const sections = document.querySelectorAll("section[id]");
-      sections.forEach((sec) => {
-        const top = sec.getBoundingClientRect().top;
-        const h = sec.clientHeight;
-        const id = sec.getAttribute("id") || "";
-        if (
-          top <= window.innerHeight / 2 &&
-          top + h >= window.innerHeight / 2
-        ) {
-          setActiveSection(id);
-        }
-      });
     };
     window.addEventListener("scroll", onScroll);
     return () => {
@@ -46,7 +33,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
     <>
       {/* 移动端顶部栏 */}
       <div
-        className={`fixed top-0 left-0 w-full z-fixed bg-body md:hidden ${scrolled ? "shadow-[0_3px_4px_(--nav-splitter)]" : ""} transition-shadow duration-1000`}
+        className={`sticky top-0 w-full z-fixed bg-body md:hidden ${scrolled ? "shadow-[0_3px_4px_var(--nav-splitter)]" : ""} transition-shadow duration-1000`}
       >
         <div className="container flex justify-between items-center h-(--header-height)">
           <Link
@@ -64,14 +51,14 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
       {/* 移动端底部导航栏 */}
       <nav
-        className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_(--nav-splitter)] md:hidden transition-shadow duration-1000`}
+        className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden transition-shadow duration-1000`}
       >
         <ul className="flex justify-around items-center h-(--header-height)">
           {navItems.map((item) => (
             <li key={item.label}>
               <a
                 href={item.href}
-                className={`flex flex-col items-center text-(length:--smaller-font-size) text-title font-medium cursor-pointer hover:text-first${activeSection === item.href.slice(1) ? " text-first" : ""}`}
+                className={`flex flex-col items-center text-(length:--smaller-font-size) text-title font-medium cursor-pointer hover:text-first`}
               >
                 <i className={`uil ${item.icon} text-lg`} />
                 <span>{item.label}</span>
@@ -83,7 +70,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
 
       {/* PC端顶部导航栏 */}
       <header
-        className={`hidden md:block fixed top-0 left-0 w-full z-fixed px-4 lg:px-4 bg-transparent ${scrolled ? "shadow-[0_-3px_4px_(--nav-splitter)]" : ""} transition-shadow duration-1000`}
+        className={`hidden md:block sticky top-0 w-full z-fixed px-4 lg:px-4 bg-body ${scrolled ? "shadow-[0_3px_4px_var(--nav-splitter)]" : ""} transition-shadow duration-1000`}
         id="header"
       >
         <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">
@@ -99,7 +86,7 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
               <li key={item.label} className="flex flex-wrap content-center">
                 <a
                   href={item.href}
-                  className={`text-(length:--small-font-size) text-title font-medium cursor-pointer hover:text-first${activeSection === item.href.slice(1) ? " text-first" : ""}`}
+                  className={`text-(length:--small-font-size) text-title font-medium cursor-pointer hover:text-first`}
                 >
                   <span>{item.label}</span>
                 </a>
