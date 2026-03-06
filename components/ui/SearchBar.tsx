@@ -19,7 +19,7 @@ export default function HomeSearchBar() {
             borderRadius: 24,
             colorBgContainer: "var(--container-color)",
             colorBorder: "var(--border)",
-            colorTextPlaceholder: "var(--text-color-light)",
+            colorTextPlaceholder: "var(--card-foreground)",
             colorText: "var(--text-color)",
             colorIcon: "var(--text-color-light)",
             colorIconHover: "var(--first-color)",
@@ -50,7 +50,8 @@ export default function HomeSearchBar() {
           enterButton="Search"
           size="large"
           onSearch={onSearch}
-          className="w-full sm:w-full max-w-[calc(100vw-2rem)] sm:max-w-md md:max-w-xl lg:max-w-2xl shadow-sm hover:shadow-md transition-shadow duration-300 mx-auto"
+          style={{ borderRadius: 24 }}
+          className="w-full sm:w-full max-w-[calc(100vw-2rem)] sm:max-w-md md:max-w-xl lg:max-w-2xl shadow-sm hover:shadow-md transition-shadow duration-300 mx-auto overflow-hidden"
         />
       </ConfigProvider>
     </div>

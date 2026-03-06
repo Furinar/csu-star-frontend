@@ -1,0 +1,120 @@
+/* ===== CSS 自定义属性 ===== */
+
+:root {
+
+  /* 冰山色系 */
+  --ice-50: #f0f9ff;
+  --ice-100: #dff1ff;
+  --ice-200: #b8e4ff;
+  --ice-300: #7ad0ff;
+  --ice-400: #36b9ff;
+  --ice-500: #0c9ee8;
+  --ice-600: #007dc6;
+  --ice-700: #0063a1;
+  --ice-800: #045385;
+  --ice-900: #09456e;
+
+  /* 星轨色系 */
+  --star-50: #f5f3ff;
+  --star-100: #ede8ff;
+  --star-200: #ddd5ff;
+  --star-300: #c4b5fd;
+  --star-400: #a78bfa;
+  --star-500: #8b5cf6;
+  --star-600: #7c3aed;
+  --star-700: #6d28d9;
+  --star-800: #5b21b6;
+  --star-900: #4c1d95;
+
+  /* 流光金 */
+  --glow-300: #fde68a;
+  --glow-400: #fbbf24;
+  --glow-500: #f59e0b;
+
+  /* 深海 / 夜空 */
+  --abyss-800: #0c1929;
+  --abyss-900: #060e1a;
+  --abyss-950: #030811;
+
+  /* 流星色 */
+  --meteor-color: var(--star-500);
+
+  /* 主题色映射 */
+  --first-color: var(--star-500);
+  --first-color-second: var(--star-500);
+  --first-color-alt: var(--star-600);
+  --first-color-lighter: var(--star-200);
+  --title-color: var(--abyss-800);
+  --text-color: var(--star-900);
+  --text-color-light: var(--star-800);
+  --input-color: var(--ice-100);
+  --body-color: #ffffff;
+  --container-color: #ffffff;
+  --scroll-bar-color: var(--star-200);
+  --scroll-thumb-color: var(--star-300);
+
+  /* 字体 */
+  --body-font: "Poppins", system-ui, sans-serif;
+  --big-font-size: 2rem;
+  --h1-font-size: 1.5rem;
+  --h2-font-size: 1.25rem;
+  --h3-font-size: 1.125rem;
+  --normal-font-size: 0.9375rem;
+  --small-font-size: 0.8125rem;
+  --smaller-font-size: 0.75rem;
+  --font-medium: 500;
+  --font-semi-bold: 600;
+
+  /* 间距 */
+  --mb-0-25: 0.25rem;
+  --mb-0-5: 0.5rem;
+  --mb-0-75: 0.75rem;
+  --mb-1: 1rem;
+  --mb-1-5: 1.5rem;
+  --mb-2: 2rem;
+  --mb-2-5: 2.5rem;
+  --mb-3: 3rem;
+
+  /* z-index */
+  --z-tooltip: 10;
+  --z-fixed: 100;
+  --z-modal: 1000;
+
+  /* 语义色 */
+  --background: #fff;
+  --foreground: var(--abyss-800);
+  --muted: var(--ice-100);
+  --muted-foreground: var(--ice-700);
+  --accent: var(--star-500);
+  --accent-foreground: #fff;
+  --card: #ffffff;
+  --card-foreground: var(--abyss-800);
+  --border: rgba(9, 69, 110, 0.08);
+  --ring: var(--ice-500);
+  --nav-splitter: rgba(0, 0, 0, 0.15);
+}
+
+.dark-theme {
+  --meteor-color: var(--ice-400);
+  --first-color: var(--ice-500);
+  --first-color-second: var(--ice-600);
+  --first-color-alt: var(--ice-600);
+  --first-color-lighter: var(--ice-200);
+  --title-color: var(--ice-100);
+  --text-color: var(--ice-300);
+  --text-color-light: var(--ice-400);
+  --input-color: var(--abyss-800);
+  --body-color: var(--abyss-900);
+  --container-color: var(--abyss-800);
+  --scroll-bar-color: var(--ice-800);
+  --scroll-thumb-color: var(--ice-700);
+  --background: var(--abyss-900);
+  --foreground: var(--ice-100);
+  --muted: var(--ice-800);
+  --muted-foreground: var(--ice-300);
+  --card: var(--abyss-800);
+  --card-foreground: var(--ice-100);
+  --border: rgba(120, 180, 255, 0.12);
+  --ring: var(--star-400);
+  --nav-splitter: rgba(255, 255, 255, 0.85);
+}
