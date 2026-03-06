@@ -1,7 +1,7 @@
 "use client";
 
 import CollegeLoop from "@/components/welcome/CollegeLoop";
-import HomeSearchBar from "@/components/welcome/HomeSearchBar";
+import HomeSearchBar from "@/components/welcome/SearchBar";
 
 export default function HomeSection() {
   return (
@@ -13,7 +13,7 @@ export default function HomeSection() {
         </div>
 
         {/* 介绍区 */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8 md:pt-8">
           <div className="text-left grid gap-y-5 md:gap-y-6">
             {/* 移动端：Logo + 品牌名同行 */}
             <div className="flex items-center gap-4 md:hidden">
@@ -43,11 +43,9 @@ export default function HomeSection() {
             </div>
 
             {/* 标题 */}
-            <div className="grid gap-y-1">
-              <h2 className="hidden md:block text-(length:--big-font-size)">
-                南极星
-              </h2>
-              <h1 className="text-[2.25rem] font-bold leading-[1.1] tracking-tight md:text-(length:--big-font-size) md:font-semibold md:leading-normal md:tracking-normal">
+            <div className="">
+              <h2 className="hidden md:block md:text-6xl">南极星</h2>
+              <h1 className="text-[2.25rem] font-bold leading-[1.1] tracking-tight md:text-6xl md:font-semibold md:leading-normal md:tracking-normal">
                 <span className="text-title">EXPLORE</span>
                 <br className="md:hidden" />{" "}
                 <span className="hero-gradient-text">CSU STAR</span>
@@ -61,20 +59,20 @@ export default function HomeSection() {
               </h3>
             </div>
 
-            <p className="text-text leading-relaxed text-sm md:text-(length:--normal-font-size)">
-              打破信息孤岛，连接校园资源，免费为中南大学师生提供便捷的数字化校园体验
-            </p>
-
             {/* 按钮组 */}
-            <div className="flex items-center gap-3 md:pt-4">
-              <a href="/home" className="button button--flex">
-                开始探索 <i className="uil uil-message button__icon" />
+            <div className="flex items-center gap-6 md:pt-4">
+              <a
+                href="/home"
+                className="flex justify-center button button--flex shadow-lg w-36 group"
+              >
+                开始探索
+                <i className="uil uil-message button__icon ml-1 transition-transform duration-300 group-hover:translate-x-3" />
               </a>
               <a
                 href="#about"
                 className="button--link button--flex text-first text-sm font-medium md:hidden"
               >
-                了解更多 <i className="uil uil-arrow-right ml-1" />
+                Learn more <i className="uil uil-arrow-right ml-1" />
               </a>
             </div>
           </div>
