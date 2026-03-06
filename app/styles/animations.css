@@ -1,0 +1,125 @@
+/* ===== 动画、特效与渐变工具类 ===== */
+
+/* ---------- 渐变工具类 ---------- */
+.gradient-iceberg {
+  background: linear-gradient(180deg, var(--ice-100) 0%, var(--ice-300) 40%, var(--ice-600) 70%, var(--abyss-800) 100%);
+}
+
+.gradient-startrail {
+  background: linear-gradient(135deg, var(--abyss-950) 0%, var(--star-900) 30%, var(--star-600) 60%, var(--glow-400) 100%);
+}
+
+.gradient-ice-star {
+  background: linear-gradient(160deg, var(--abyss-950) 0%, var(--ice-800) 25%, var(--star-700) 50%, var(--ice-400) 75%, var(--glow-300) 100%);
+}
+
+/* ---------- 星星闪烁 ---------- */
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+.animate-twinkle {
+  animation: twinkle 3s ease-in-out infinite;
+}
+
+/* ---------- 玻璃 & 发光特效 ---------- */
+.glass-ice {
+  background: rgba(120, 180, 255, 0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(120, 180, 255, 0.15);
+}
+
+.glow-star {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3), 0 0 45px rgba(139, 92, 246, 0.1);
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), 0 0 45px rgba(251, 191, 36, 0.1);
+}
+
+/* ---------- 流星动画 ---------- */
+.stars-space {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.star {
+  display: block;
+  width: 1px;
+  background: transparent;
+  position: relative;
+  opacity: 0;
+  animation: star-ani 2s linear infinite;
+}
+
+.star::after {
+  content: "";
+  display: block;
+  border-style: solid;
+  border-width: 0 90px 5px 90px;
+  border-color: transparent transparent transparent var(--meteor-color);
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  transform-origin: 0 100%;
+}
+
+.star-a { top: -30px; left: 20%; }
+.star-b { top: 60px; left: 24%; animation-delay: 4s; }
+.star-c { top: 40px; left: 60%; animation-duration: 3s; animation-delay: 1s; }
+.star-d { top: -30px; left: 108%; animation-delay: 2s; }
+.star-e { top: 40px; left: 86%; animation-duration: 4s; animation-delay: 1s; }
+.star-f { top: -200px; left: 60%; animation-duration: 4s; }
+.star-g { top: -150px; left: 110%; animation-duration: 3s; }
+.star-h { top: -150px; left: 15%; animation-duration: 2.5s; }
+
+@keyframes star-ani {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(-200px, 200px, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.2) translate3d(-300px, 300px, 0);
+  }
+}
+
+/* ---------- Hero 移动端渐变标题 ---------- */
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--glow-400) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark-theme .hero-gradient-text {
+  background: linear-gradient(135deg, var(--ice-400) 0%, var(--glow-300) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 流星移动端适配 */
+@media screen and (max-width: 767px) {
+  .star-d { left: 95%; }
+  .star-g { left: 98%; }
+
+  @keyframes star-ani {
+    0% { opacity: 0; transform: scale(0.5) translate3d(0, 0, 0); }
+    50% { opacity: 1; transform: translate3d(-100px, 100px, 0); }
+    100% { opacity: 0; transform: scale(1.2) translate3d(-150px, 150px, 0); }
+  }
+}

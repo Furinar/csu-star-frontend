@@ -1,0 +1,51 @@
+/* ===== 基础重置样式 ===== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scroll-snap 全屏吸附容器 */
+.snap-scroll-container {
+  height: 100dvh;
+  overflow-y: auto;
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.snap-section {
+  min-height: 100dvh;
+  scroll-snap-align: start;
+}
+
+body {
+  margin: 0;
+  font-family: var(--body-font);
+  font-size: var(--normal-font-size);
+  background-color: var(--body-color);
+  color: var(--text-color);
+  transition: background-color 1s, color 1s;
+  /* 文字渲染优化：跨浏览器兼容 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--title-color);
+  font-weight: var(--font-semi-bold);
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}

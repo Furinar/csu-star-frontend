@@ -2,9 +2,19 @@
 
 import { navItem } from "@/types/component";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type RefObject } from "react";
 
-export default function Header({ navItems }: { navItems: navItem[] }) {
+export default function Header({
+  navItems,
+  activeSection = "",
+  onNavClick,
+  scrollRef,
+}: {
+  navItems: navItem[];
+  activeSection?: string;
+  onNavClick?: (href: string) => void;
+  scrollRef?: RefObject<HTMLElement | null>;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [darkTheme, setDarkTheme] = useState(
     () =>
@@ -13,14 +23,16 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
   );
 
   useEffect(() => {
+    const container = scrollRef?.current;
+    if (!container) return;
     const onScroll = () => {
-      setScrolled(window.scrollY >= 80);
+      setScrolled(container.scrollTop >= 80);
     };
-    window.addEventListener("scroll", onScroll);
+    container.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      container.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [scrollRef]);
 
   const toggleTheme = () => {
     const next = !darkTheme;
@@ -54,17 +66,26 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
         className={`fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden transition-shadow duration-1000`}
       >
         <ul className="flex justify-around items-center h-(--header-height)">
-          {navItems.map((item) => (
-            <li key={item.label}>
-              <a
-                href={item.href}
-                className={`flex flex-col items-center text-(length:--smaller-font-size) text-title font-medium cursor-pointer hover:text-first`}
-              >
-                <i className={`uil ${item.icon} text-lg`} />
-                <span>{item.label}</span>
-              </a>
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isActive = `#${activeSection}` === item.href;
+            return (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavClick?.(item.href);
+                  }}
+                  className={`flex flex-col items-center text-(length:--smaller-font-size) font-medium cursor-pointer transition-colors duration-300 ${
+                    isActive ? "text-first" : "text-title hover:text-first"
+                  }`}
+                >
+                  <i className={`uil ${item.icon} text-lg`} />
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </nav>
 
@@ -82,16 +103,28 @@ export default function Header({ navItems }: { navItems: navItem[] }) {
           </Link>
 
           <ul className="flex gap-x-8 ml-auto mr-4">
-            {navItems.map((item) => (
-              <li key={item.label} className="flex flex-wrap content-center">
-                <a
-                  href={item.href}
-                  className={`text-(length:--small-font-size) text-title font-medium cursor-pointer hover:text-first`}
-                >
-                  <span>{item.label}</span>
-                </a>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const isActive = `#${activeSection}` === item.href;
+              return (
+                <li key={item.label} className="flex flex-wrap content-center">
+                  <a
+                    href={item.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavClick?.(item.href);
+                    }}
+                    className={`relative text-(length:--small-font-size) font-medium cursor-pointer transition-colors duration-300 ${
+                      isActive ? "text-first" : "text-title hover:text-first"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    {isActive && (
+                      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-first" />
+                    )}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
 
           <i
