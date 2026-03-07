@@ -7,20 +7,17 @@ import Reveal from "@/components/effects/Reveal";
 export default function HomeSection() {
   return (
     <section className="snap-section flex flex-col" id="home">
-      <div className="container flex-1 flex flex-col justify-center gap-y-3 md:gap-y-8 overflow-hidden md:overflow-visible mx-auto px-4 md:px-6 py-4">
-        {/* 搜索框 */}
+      <div className="container flex-1 flex flex-col justify-start gap-y-6 md:gap-y-10 overflow-visible mx-auto px-4 md:px-6 py-4">
         <Reveal
-          direction="down"
+          direction="up"
           delay={0}
           className="w-full flex justify-center z-10 relative"
         >
           <HomeSearchBar />
         </Reveal>
 
-        {/* 介绍区 */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8">
+        <div className="md:pt-20 grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8">
           <div className="text-left grid gap-y-5 md:gap-y-6">
-            {/* 移动端：Logo + 品牌名同行 */}
             <Reveal
               direction="left"
               delay={100}
@@ -51,7 +48,6 @@ export default function HomeSection() {
               </div>
             </Reveal>
 
-            {/* 标题 */}
             <Reveal direction="up" delay={150}>
               <div className="">
                 <h2 className="hidden md:block md:text-6xl">南极星</h2>
@@ -72,7 +68,6 @@ export default function HomeSection() {
               </div>
             </Reveal>
 
-            {/* 按钮组 */}
             <Reveal direction="up" delay={350}>
               <div className="flex items-center gap-6 md:pt-4">
                 <a
@@ -92,7 +87,6 @@ export default function HomeSection() {
             </Reveal>
           </div>
 
-          {/* 右侧图像区：仅桌面端 */}
           <Reveal
             direction="right"
             delay={200}
@@ -116,7 +110,6 @@ export default function HomeSection() {
           </Reveal>
         </div>
 
-        {/* 学院跑马灯 */}
         <Reveal direction="up" delay={400} className="overflow-hidden relative">
           <CollegeLoop />
         </Reveal>
