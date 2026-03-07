@@ -1,19 +1,44 @@
 "use client";
 
 import { useCallback } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
 import ShootingStars from "@/components/effects/ShootingStars";
 import "./globals.css";
 import HomeSection from "@/components/home/HomeSection";
-import AboutSection from "@/components/home/AboutSection";
-import PortfolioGrid from "@/components/home/PortfolioGrid";
-import SkillsAccordion from "@/components/home/SkillsAccordion";
-import ContactSection from "@/components/home/ContactSection";
 import {
   ScrollContainerProvider,
   useScrollContainer,
 } from "@/hooks/useScrollContainer";
 import { useActiveSection } from "@/hooks/useActiveSection";
+
+// 懒加载非首屏 Section
+const AboutSection = dynamic(() => import("@/components/home/AboutSection"), {
+  loading: () => <SectionSkeleton />,
+});
+const PortfolioGrid = dynamic(() => import("@/components/home/PortfolioGrid"), {
+  loading: () => <SectionSkeleton />,
+});
+const SkillsAccordion = dynamic(
+  () => import("@/components/home/SkillsAccordion"),
+  { loading: () => <SectionSkeleton /> },
+);
+const ContactSection = dynamic(
+  () => import("@/components/home/ContactSection"),
+  { loading: () => <SectionSkeleton /> },
+);
+
+function SectionSkeleton() {
+  return (
+    <section className="snap-section flex items-center justify-center">
+      <div className="animate-pulse flex flex-col items-center gap-4">
+        <div className="h-6 w-32 rounded bg-first/10" />
+        <div className="h-4 w-48 rounded bg-first/5" />
+        <div className="h-40 w-72 rounded-xl bg-first/5 mt-4" />
+      </div>
+    </section>
+  );
+}
 
 const NAV_ITEMS = [
   { label: "首页", href: "#home", icon: "uil-estate" },
@@ -34,7 +59,7 @@ function WelcomeInner() {
   }, []);
 
   return (
-    <div className="overflow-x-clip h-dvh flex flex-col">
+    <div className="overflow-x-clip relative h-dvh flex flex-col">
       {/* 流星背景 */}
       <ShootingStars />
 

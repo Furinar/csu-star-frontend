@@ -33,7 +33,6 @@ export default function Reveal({
     const container = scrollRef.current;
     if (!el || !container) return;
 
-    // Set initial hidden state
     el.style.opacity = "0";
     el.style.transform = OFFSET_MAP[direction];
     el.style.transition = `opacity ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`;

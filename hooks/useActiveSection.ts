@@ -22,12 +22,32 @@ export function useActiveSection(scrollRef: RefObject<HTMLElement | null>) {
       { root: container, threshold: 0.5 },
     );
 
-    for (const id of SECTION_IDS) {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    }
+    // 观察已有的 section
+    const observedIds = new Set<string>();
+    const observeSections = () => {
+      for (const id of SECTION_IDS) {
+        if (observedIds.has(id)) continue;
+        const el = document.getElementById(id);
+        if (el) {
+          observer.observe(el);
+          observedIds.add(id);
+        }
+      }
+    };
+    observeSections();
 
-    return () => observer.disconnect();
+    // 监听 DOM 变化以捕获懒加载的 section
+    const mutationObserver = new MutationObserver(() => {
+      if (observedIds.size < SECTION_IDS.length) {
+        observeSections();
+      }
+    });
+    mutationObserver.observe(container, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      mutationObserver.disconnect();
+    };
   }, [scrollRef]);
 
   return activeSection;

@@ -44,9 +44,9 @@
   --first-color-second: var(--star-500);
   --first-color-alt: var(--star-600);
   --first-color-lighter: var(--star-200);
-  --title-color: var(--abyss-800);
-  --text-color: var(--star-900);
-  --text-color-light: var(--star-800);
+  --title-color: #0a0a0a;
+  --text-color: #1a1a1a;
+  --text-color-light: #4a4a4a;
   --input-color: var(--ice-100);
   --body-color: #ffffff;
   --container-color: #ffffff;
@@ -100,9 +100,9 @@
   --first-color-second: var(--ice-600);
   --first-color-alt: var(--ice-600);
   --first-color-lighter: var(--ice-200);
-  --title-color: var(--ice-100);
-  --text-color: var(--ice-300);
-  --text-color-light: var(--ice-400);
+  --title-color: #f5f5f5;
+  --text-color: #e0e0e0;
+  --text-color-light: #a0a0a0;
   --input-color: var(--abyss-800);
   --body-color: var(--abyss-900);
   --container-color: var(--abyss-800);
