@@ -50,8 +50,8 @@
   --input-color: var(--ice-100);
   --body-color: #ffffff;
   --container-color: #ffffff;
-  --scroll-bar-color: var(--star-200);
-  --scroll-thumb-color: var(--star-300);
+  --scroll-bar-color: var(--star-50);
+  --scroll-thumb-color: var(--star-100);
 
   /* 字体 */
   --body-font: "Poppins", system-ui, sans-serif;
@@ -106,8 +106,8 @@
   --input-color: var(--abyss-800);
   --body-color: var(--abyss-900);
   --container-color: var(--abyss-800);
-  --scroll-bar-color: var(--ice-800);
-  --scroll-thumb-color: var(--ice-700);
+  --scroll-bar-color: var(--abyss-800);
+  --scroll-thumb-color: var(--ice-900);
   --background: var(--abyss-900);
   --foreground: var(--ice-100);
   --muted: var(--ice-800);

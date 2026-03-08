@@ -33,10 +33,10 @@ const portfolioItems = [
 export default function PortfolioGrid() {
   return (
     <section
-      className="snap-section flex flex-col justify-center"
+      className="snap-section flex flex-col justify-start md:justify-center"
       id="portfolio"
     >
-      <div className="container mx-auto px-5 md:px-8 py-6 md:py-0">
+      <div className="container mx-auto px-5 md:px-8 py-10 md:py-0">
         {/* 标题区：左对齐 */}
         <Reveal direction="left" delay={0}>
           <div className="max-w-5xl mx-auto mb-6 md:mb-10">

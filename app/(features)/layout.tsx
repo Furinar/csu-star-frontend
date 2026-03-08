@@ -1,3 +1,5 @@
+import NavBar from "@/components/layout/NavBar";
+
 export default function FeaturesLayout({
   children,
 }: {
@@ -5,7 +7,7 @@ export default function FeaturesLayout({
 }) {
   return (
     <>
-      Welcome to the Features Layout!
+      <NavBar />
       {children}
     </>
   );
