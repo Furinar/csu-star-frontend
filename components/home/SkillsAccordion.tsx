@@ -25,10 +25,12 @@ const skillGroups = [
 
 export default function SkillsAccordion() {
   return (
-    <section className="snap-section flex flex-col justify-center" id="skills">
-      <div className="container mx-auto px-5 md:px-8 py-6 md:py-0">
+    <section
+      className="snap-section flex flex-col justify-start md:justify-center"
+      id="skills"
+    >
+      <div className="container mx-auto px-5 md:px-8 py-10 md:py-0">
         <div className="max-w-5xl mx-auto">
-
           <Reveal direction="left" delay={0}>
             <div className="mb-6 md:mb-10">
               <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">

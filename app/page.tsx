@@ -79,6 +79,7 @@ function WelcomeInner() {
         <HomeSection />
         <AboutSection />
         <PortfolioGrid />
+        <div className="h-48 md:hidden" />
         <SkillsAccordion />
         <ContactSection />
       </main>
