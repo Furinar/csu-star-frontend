@@ -1,10 +1,10 @@
 "use client";
 
-import type { navItem } from "@/types/component";
+import type { NavItem } from "@/types/component";
 import Link from "next/link";
 
 type BaseNavProps = {
-  navItems: navItem[];
+  navItems: readonly NavItem[];
   darkTheme: boolean;
   toggleTheme: () => void;
   isActive: (href: string) => boolean;
@@ -20,7 +20,7 @@ function MobileNavLink({
   useNextLink,
   onItemClick,
 }: {
-  item: navItem;
+  item: NavItem;
   isActive: boolean;
   useNextLink: boolean;
   onItemClick?: (href: string) => void;
@@ -63,7 +63,7 @@ function DesktopNavLink({
   useNextLink,
   onItemClick,
 }: {
-  item: navItem;
+  item: NavItem;
   isActive: boolean;
   useNextLink: boolean;
   onItemClick?: (href: string) => void;
