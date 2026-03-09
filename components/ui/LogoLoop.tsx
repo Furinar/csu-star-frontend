@@ -26,6 +26,11 @@ export type LogoItem =
       height?: number;
     };
 
+type NodeLogoItem = Extract<LogoItem, { node: React.ReactNode }>;
+type ImageLogoItem = Extract<LogoItem, { src: string }>;
+
+const isNodeLogoItem = (item: LogoItem): item is NodeLogoItem => "node" in item;
+
 export interface LogoLoopProps {
   logos: LogoItem[];
   speed?: number;
@@ -368,7 +373,9 @@ export const LogoLoop = React.memo<LogoLoopProps>(
           );
         }
 
-        const isNodeItem = "node" in item;
+        const isNodeItem = isNodeLogoItem(item);
+        const nodeItem: NodeLogoItem | null = isNodeItem ? item : null;
+        const imageItem: ImageLogoItem | null = isNodeItem ? null : item;
 
         const content = isNodeItem ? (
           <span
@@ -378,9 +385,9 @@ export const LogoLoop = React.memo<LogoLoopProps>(
               scaleOnHover &&
                 "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-120",
             )}
-            aria-hidden={!!(item as any).href && !(item as any).ariaLabel}
+            aria-hidden={!!nodeItem?.href && !nodeItem?.ariaLabel}
           >
-            {(item as any).node}
+            {nodeItem?.node}
           </span>
         ) : (
           <Image
@@ -392,11 +399,11 @@ export const LogoLoop = React.memo<LogoLoopProps>(
               scaleOnHover &&
                 "transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group-hover/item:scale-120",
             )}
-            src={(item as any).src}
-            width={(item as any).width}
-            height={(item as any).height}
-            alt={(item as any).alt ?? ""}
-            title={(item as any).title}
+            src={imageItem?.src ?? ""}
+            width={imageItem?.width}
+            height={imageItem?.height}
+            alt={imageItem?.alt ?? ""}
+            title={imageItem?.title}
             loading="lazy"
             decoding="async"
             draggable={false}
@@ -404,10 +411,12 @@ export const LogoLoop = React.memo<LogoLoopProps>(
         );
 
         const itemAriaLabel = isNodeItem
-          ? ((item as any).ariaLabel ?? (item as any).title)
-          : ((item as any).alt ?? (item as any).title);
+          ? (nodeItem?.ariaLabel ?? nodeItem?.title)
+          : (imageItem?.alt ?? imageItem?.title);
 
-        const inner = (item as any).href ? (
+        const linkHref = isNodeItem ? nodeItem?.href : imageItem?.href;
+
+        const inner = linkHref ? (
           <a
             className={cx(
               "inline-flex items-center no-underline rounded",
@@ -415,7 +424,7 @@ export const LogoLoop = React.memo<LogoLoopProps>(
               "hover:opacity-80",
               "focus-visible:outline focus-visible:outline-current focus-visible:outline-offset-2",
             )}
-            href={(item as any).href}
+            href={linkHref}
             aria-label={itemAriaLabel || "logo link"}
             target="_blank"
             rel="noreferrer noopener"

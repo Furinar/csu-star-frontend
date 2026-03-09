@@ -1,6 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import ClientOnly from "@/app/ClientOnly";
+import { Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+export const dynamic = "error";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -21,8 +30,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`(function(){try{var v=localStorage.getItem('dark-theme');if(v==='true'){document.documentElement.classList.add('dark-theme');}}catch(e){}})();`}
+        </Script>
         <link
           rel="stylesheet"
           href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -31,15 +43,8 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://cdn.jsdmirror.com/npm/@iconscout/unicons@3.0.6/css/line.css"
         />
-        <link rel="preconnect" href="https://fonts.proxy.ustclug.org" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.proxy.ustclug.org/css2?family=Poppins:wght@400;500;600&display=swap"
-        />
       </head>
-      <body>
-        <ClientOnly>{children}</ClientOnly>
-      </body>
+      <body className={poppins.className}>{children}</body>
     </html>
   );
 }

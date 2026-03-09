@@ -4,8 +4,8 @@ import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import Header from "@/components/layout/Header";
 import ShootingStars from "@/components/effects/ShootingStars";
-import "./globals.css";
 import HomeSection from "@/components/home/HomeSection";
+import { HOME_SECTION_NAV_ITEMS } from "@/data/navigation";
 import {
   ScrollContainerProvider,
   useScrollContainer,
@@ -40,14 +40,6 @@ function SectionSkeleton() {
   );
 }
 
-const NAV_ITEMS = [
-  { label: "首页", href: "#home", icon: "uil-estate" },
-  { label: "关于", href: "#about", icon: "uil-user" },
-  { label: "展示", href: "#portfolio", icon: "uil-scenery" },
-  { label: "技术栈", href: "#skills", icon: "uil-file-alt" },
-  { label: "联系", href: "#contact", icon: "uil-message" },
-] as const;
-
 function WelcomeInner() {
   const scrollRef = useScrollContainer();
   const activeSection = useActiveSection(scrollRef);
@@ -65,7 +57,7 @@ function WelcomeInner() {
 
       {/* 导航栏 */}
       <Header
-        navItems={[...NAV_ITEMS]}
+        navItems={HOME_SECTION_NAV_ITEMS}
         activeSection={activeSection}
         onNavClick={handleNavClick}
         scrollRef={scrollRef}

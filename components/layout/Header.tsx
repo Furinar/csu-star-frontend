@@ -2,7 +2,7 @@
 
 import BaseNav from "@/components/layout/BaseNav";
 import { useDarkTheme } from "@/hooks/useDarkTheme";
-import type { navItem } from "@/types/component";
+import type { NavItem } from "@/types/component";
 import { useEffect, useState, type RefObject } from "react";
 
 export default function Header({
@@ -11,7 +11,7 @@ export default function Header({
   onNavClick,
   scrollRef,
 }: {
-  navItems: navItem[];
+  navItems: readonly NavItem[];
   activeSection?: string;
   onNavClick?: (href: string) => void;
   scrollRef?: RefObject<HTMLElement | null>;
