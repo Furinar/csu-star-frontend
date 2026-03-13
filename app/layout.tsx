@@ -9,7 +9,7 @@ const poppins = Poppins({
   display: "swap",
 });
 
-export const dynamic = "error";
+export const dynamic = "force-static";
 
 export const viewport: Viewport = {
   width: "device-width",

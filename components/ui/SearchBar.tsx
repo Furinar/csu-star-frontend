@@ -1,59 +1,147 @@
 "use client";
 
-import { Input, ConfigProvider } from "antd";
-import type { GetProps } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
-const { Search } = Input;
-type SearchProps = GetProps<typeof Input.Search>;
+interface SearchBarProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange"
+> {
+  value?: string;
+  defaultValue?: string;
+  placeholder?: string;
+  delay?: number;
+  onSearch?: (value: string) => void;
+  onChange?: (value: string) => void;
+  debounceOnChange?: boolean;
+  className?: string;
+  wrapperClassName?: string;
+  allowClear?: boolean;
+}
 
-const onSearch: SearchProps["onSearch"] = (value, _e, info) =>
-  console.log(info?.source, value);
+export default function SearchBar({
+  value: propValue,
+  defaultValue = "",
+  placeholder = "搜索",
+  delay = 500,
+  onSearch,
+  onChange,
+  debounceOnChange = true,
+  className = "",
+  wrapperClassName = "",
+  allowClear = true,
+  ...props
+}: SearchBarProps) {
+  const isControlled = propValue !== undefined;
+  const [internalValue, setInternalValue] = useState(defaultValue);
 
-export default function HomeSearchBar() {
+  const value = isControlled ? propValue : internalValue;
+  const debouncedValue = useDebounce(value, delay);
+
+  const isInitialMount = useRef(true);
+
+  // 防抖后的变更处理
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (debounceOnChange && onChange) {
+      onChange(debouncedValue);
+    }
+  }, [debouncedValue, debounceOnChange, onChange]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    if (!isControlled) {
+      setInternalValue(newValue);
+    }
+
+    // 如果不使用防抖，则直接触发onChange
+    if (!debounceOnChange && onChange) {
+      onChange(newValue);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      onSearch?.(value);
+    }
+  };
+
+  const handleClear = () => {
+    if (!isControlled) {
+      setInternalValue("");
+    }
+    onChange?.("");
+    onSearch?.("");
+  };
+
   return (
-    <div className="flex justify-center w-full z-10 transition-all duration-300 pt-2 md:pt-4 pointer-events-auto">
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: "var(--first-color)",
-            borderRadius: 24,
-            colorBgContainer: "var(--container-color)",
-            colorBorder: "var(--border)",
-            colorTextPlaceholder: "var(--card-foreground)",
-            colorText: "var(--text-color)",
-            colorIcon: "var(--text-color-light)",
-            colorIconHover: "var(--first-color)",
-          },
-          components: {
-            Input: {
-              activeShadow: "0 0 0 2px var(--first-color-lighter)",
-              paddingBlockLG: 8,
-              paddingInlineLG: 20,
-              inputFontSizeLG: 15,
-              controlHeightLG: 42,
-              hoverBorderColor: "var(--first-color)",
-              activeBorderColor: "var(--first-color)",
-            },
-            Button: {
-              controlHeightLG: 42,
-              paddingInlineLG: 24,
-              colorPrimary: "var(--first-color)",
-              colorPrimaryHover: "var(--first-color-alt)",
-              colorPrimaryActive: "var(--first-color-alt)",
-            },
-          },
-        }}
+    <div
+      className={`flex justify-center w-full z-10 transition-all duration-300 pointer-events-auto px-4 sm:px-0 ${wrapperClassName}`}
+    >
+      <div
+        className={`relative flex items-center w-full max-w-full sm:max-w-md md:max-w-xl lg:max-w-2xl bg-[var(--container-color)] border border-[var(--border)] rounded-[24px] shadow-sm hover:shadow-md hover:border-[var(--first-color)] transition-all duration-300 mx-auto overflow-hidden group focus-within:ring-2 focus-within:ring-[var(--first-color-lighter)] focus-within:border-[var(--first-color)] ${className}`}
       >
-        <Search
-          placeholder="搜索课程资源 / 老师"
-          allowClear
-          enterButton="Search"
-          size="large"
-          onSearch={onSearch}
-          style={{ borderRadius: 24 }}
-          className="w-full sm:w-full max-w-[calc(100vw-2rem)] sm:max-w-md md:max-w-xl lg:max-w-2xl shadow-sm hover:shadow-md transition-shadow duration-300 mx-auto overflow-hidden"
+        <div className="pl-4 pr-2 text-[var(--text-color-light)]">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="transition-colors group-focus-within:text-[var(--first-color)]"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+
+        <input
+          type="text"
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="flex-1 h-[42px] bg-transparent border-none outline-none text-[15px] text-[var(--text-color)] placeholder:text-[var(--card-foreground)]"
+          {...props}
         />
-      </ConfigProvider>
+
+        {allowClear && value && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="flex items-center justify-center w-8 h-8 rounded-full text-[var(--text-color-light)] hover:text-[var(--first-color)] hover:bg-[var(--first-color-lighter)] transition-colors mr-1 cursor-pointer outline-none"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => onSearch?.(value)}
+          className="h-[42px] px-5 sm:px-6 bg-[var(--first-color)] hover:bg-[var(--first-color-alt)] text-white text-sm sm:text-base font-medium transition-colors cursor-pointer outline-none flex items-center justify-center shrink-0"
+        >
+          <span>搜索</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,20 +1,21 @@
 "use client";
 
 import CollegeLoop from "@/components/ui/CollegeLoop";
-import HomeSearchBar from "@/components/ui/SearchBar";
+import SearchBar from "@/components/ui/SearchBar";
 import Reveal from "@/components/effects/Reveal";
 
 export default function HomeSection() {
   return (
     <section className="snap-section flex flex-col" id="home">
       <div className="container flex-1 flex flex-col justify-start gap-y-6 md:gap-y-10 overflow-visible mx-auto px-4 md:px-6 py-4">
-        <Reveal
+        {/* <Reveal
           direction="up"
           delay={0}
           className="w-full flex justify-center z-10 relative"
         >
-          <HomeSearchBar />
-        </Reveal>
+          <SearchBar wrapperClassName="pt-2 md:pt-4" onSearch={(val) => console.log('Searching:', val)} />
+        </Reveal> */}
+        <div className="pt-10"></div>
 
         <div className="md:pt-20 grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8">
           <div className="text-left grid gap-y-5 md:gap-y-6">
