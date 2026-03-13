@@ -1,9 +1,7 @@
 export default function Course() {
   return (
     <>
-      <div>
-        course
-      </div>
+      <div>course</div>
     </>
-  )
+  );
 }

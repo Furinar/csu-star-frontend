@@ -9,7 +9,6 @@ const skillGroups = [
     skills: [
       { name: "React / Next.js", icon: "fa-brands fa-react" },
       { name: "TypeScript", icon: "fa-brands fa-js" },
-      { name: "HTML / CSS", icon: "fa-brands fa-html5" },
       { name: "Tailwind CSS", icon: "fa-brands fa-css3-alt" },
     ],
   },
@@ -18,6 +17,7 @@ const skillGroups = [
     subtitle: "Backend",
     skills: [
       { name: "Go / Gin", icon: "fa-brands fa-golang" },
+      { name: "Python / Qdrant", icon: "fa-brands fa-python" },
       { name: "PostgreSQL / Redis", icon: "fa-solid fa-database" },
     ],
   },

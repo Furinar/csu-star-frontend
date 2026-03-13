@@ -1,9 +1,9 @@
 "use client";
 
 import BaseNav from "@/components/layout/BaseNav";
-import { useDarkTheme } from "@/hooks/useDarkTheme";
+import { useScrollState } from "@/hooks/useScrollState";
 import type { NavItem } from "@/types/component";
-import { useEffect, useState, type RefObject } from "react";
+import type { RefObject } from "react";
 
 export default function Header({
   navItems,
@@ -16,26 +16,11 @@ export default function Header({
   onNavClick?: (href: string) => void;
   scrollRef?: RefObject<HTMLElement | null>;
 }) {
-  const [scrolled, setScrolled] = useState(false);
-  const { darkTheme, toggleTheme } = useDarkTheme();
-
-  useEffect(() => {
-    const container = scrollRef?.current;
-    if (!container) return;
-    const onScroll = () => {
-      setScrolled(container.scrollTop >= 80);
-    };
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      container.removeEventListener("scroll", onScroll);
-    };
-  }, [scrollRef]);
+  const scrolled = useScrollState(scrollRef, 80);
 
   return (
     <BaseNav
       navItems={navItems}
-      darkTheme={darkTheme}
-      toggleTheme={toggleTheme}
       scrolled={scrolled}
       isActive={(href) => `#${activeSection}` === href}
       onItemClick={onNavClick}

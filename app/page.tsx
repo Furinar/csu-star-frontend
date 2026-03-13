@@ -63,7 +63,6 @@ function WelcomeInner() {
         scrollRef={scrollRef}
       />
 
-      {/* 主要内容 - scroll-snap 容器 */}
       <main
         ref={scrollRef as React.RefObject<HTMLElement>}
         className="snap-scroll-container flex-1 pb-14 md:pb-0"

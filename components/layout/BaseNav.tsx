@@ -2,11 +2,10 @@
 
 import type { NavItem } from "@/types/component";
 import Link from "next/link";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 type BaseNavProps = {
   navItems: readonly NavItem[];
-  darkTheme: boolean;
-  toggleTheme: () => void;
   isActive: (href: string) => boolean;
   scrolled: boolean;
   useNextLink?: boolean;
@@ -14,30 +13,26 @@ type BaseNavProps = {
   mobileVariant?: "section" | "route";
 };
 
-function MobileNavLink({
-  item,
-  isActive,
-  useNextLink,
-  onItemClick,
-}: {
+type NavLinkWrapperProps = {
   item: NavItem;
   isActive: boolean;
   useNextLink: boolean;
   onItemClick?: (href: string) => void;
-}) {
-  const className = `flex flex-col items-center text-(length:--smaller-font-size) font-medium cursor-pointer transition-colors duration-300 ${
-    isActive ? "text-first" : "text-title hover:text-first"
-  }`;
+  className: string;
+  children: React.ReactNode;
+};
 
+function NavLinkWrapper({
+  item,
+  useNextLink,
+  onItemClick,
+  className,
+  children,
+}: NavLinkWrapperProps) {
   if (useNextLink) {
     return (
       <Link href={item.href} className={className}>
-        <i
-          className={`uil ${item.icon} text-lg transition-transform duration-300 ${
-            isActive ? "-translate-y-1" : ""
-          }`}
-        />
-        <span>{item.label}</span>
+        {children}
       </Link>
     );
   }
@@ -51,69 +46,61 @@ function MobileNavLink({
       }}
       className={className}
     >
-      <i className={`uil ${item.icon} text-lg`} />
-      <span>{item.label}</span>
+      {children}
     </a>
   );
 }
 
-function DesktopNavLink({
-  item,
-  isActive,
-  useNextLink,
-  onItemClick,
-}: {
-  item: NavItem;
-  isActive: boolean;
-  useNextLink: boolean;
-  onItemClick?: (href: string) => void;
-}) {
+function MobileNavLink(
+  props: Omit<NavLinkWrapperProps, "className" | "children">,
+) {
+  const { item, isActive } = props;
+  const className = `flex flex-col items-center text-(length:--smaller-font-size) font-medium cursor-pointer transition-colors duration-300 ${
+    isActive ? "text-first" : "text-title hover:text-first"
+  }`;
+
+  return (
+    <NavLinkWrapper {...props} className={className}>
+      <i
+        className={`uil ${item.icon} text-lg transition-transform duration-300 ${
+          isActive && props.useNextLink ? "-translate-y-1" : ""
+        }`}
+      />
+      <span>{item.label}</span>
+    </NavLinkWrapper>
+  );
+}
+
+function DesktopNavLink(
+  props: Omit<NavLinkWrapperProps, "className" | "children">,
+) {
+  const { item, isActive, useNextLink } = props;
   const className = `relative text-(length:--small-font-size) font-medium cursor-pointer transition-colors duration-300 ${
     isActive ? "text-first" : "text-title hover:text-first"
   }`;
 
-  if (useNextLink) {
-    return (
-      <Link href={item.href} className={className}>
-        <span>{item.label}</span>
-        {isActive && (
-          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-first" />
-        )}
-      </Link>
-    );
-  }
-
   return (
-    <a
-      href={item.href}
-      onClick={(e) => {
-        e.preventDefault();
-        onItemClick?.(item.href);
-      }}
-      className={className}
-    >
+    <NavLinkWrapper {...props} className={className}>
+      {useNextLink && <i className={`uil ${item.icon} text-md pr-1`} />}
       <span>{item.label}</span>
       {isActive && (
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-first" />
       )}
-    </a>
+    </NavLinkWrapper>
   );
 }
 
 export default function BaseNav({
   navItems,
-  darkTheme,
-  toggleTheme,
   isActive,
   scrolled,
   useNextLink = false,
   onItemClick,
   mobileVariant = "section",
 }: BaseNavProps) {
-  const mobileNavClassName =
-    mobileVariant === "route"
-      ? "fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden"
-      : "fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden transition-shadow duration-1000";
+  const mobileNavClassName = `fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden ${
+    mobileVariant === "section" ? "transition-shadow duration-1000" : ""
+  }`;
 
   return (
     <>
@@ -129,10 +116,7 @@ export default function BaseNav({
           >
             csu star
           </Link>
-          <i
-            className={`uil ${darkTheme ? "uil-sun" : "uil-moon"} text-xl text-title cursor-pointer hover:text-first`}
-            onClick={toggleTheme}
-          />
+          <ThemeToggle />
         </div>
       </div>
 
@@ -184,10 +168,7 @@ export default function BaseNav({
             })}
           </ul>
 
-          <i
-            className={`uil ${darkTheme ? "uil-sun" : "uil-moon"} text-xl text-title cursor-pointer hover:text-first`}
-            onClick={toggleTheme}
-          />
+          <ThemeToggle />
         </nav>
       </header>
     </>
