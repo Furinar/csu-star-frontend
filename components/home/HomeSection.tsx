@@ -15,7 +15,7 @@ export default function HomeSection() {
         >
           <SearchBar wrapperClassName="pt-2 md:pt-4" onSearch={(val) => console.log('Searching:', val)} />
         </Reveal> */}
-        <div className="pt-10"></div>
+        <div className="pt-10 pb-10 md:pb-0"></div>
 
         <div className="md:pt-20 grid grid-cols-1 md:grid-cols-[1fr_1fr] items-center gap-y-6 md:gap-x-8">
           <div className="text-left grid gap-y-5 md:gap-y-6">
