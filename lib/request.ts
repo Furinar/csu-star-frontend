@@ -105,7 +105,7 @@ service.interceptors.response.use(
       isRefreshing = false;
       useAuthStore.getState().logout();
       processQueue(error, null);
-      redirectToLogin();
+      window.location.href = '/login';
       return Promise.reject(error);
     }
 
@@ -124,7 +124,7 @@ service.interceptors.response.use(
     } catch (err) {
       processQueue(err, null);
       useAuthStore.getState().logout();
-      redirectToLogin();
+      window.location.href = '/login';
       return Promise.reject(err);
     } finally {
       isRefreshing = false;
