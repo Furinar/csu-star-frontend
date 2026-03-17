@@ -3,6 +3,8 @@
 import type { NavItem } from "@/types/component";
 import Link from "next/link";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { useAuthStore } from "@/store/useAuthStore";
+import Image from "next/image";
 
 type BaseNavProps = {
   navItems: readonly NavItem[];
@@ -81,7 +83,7 @@ function DesktopNavLink(
 
   return (
     <NavLinkWrapper {...props} className={className}>
-      {useNextLink && <i className={`uil ${item.icon} text-md pr-1`} />}
+      {useNextLink && <i className={`uil ${item.icon}  pr-1`} />}
       <span>{item.label}</span>
       {isActive && (
         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-first" />
@@ -98,15 +100,17 @@ export default function BaseNav({
   onItemClick,
   mobileVariant = "section",
 }: BaseNavProps) {
-  const mobileNavClassName = `fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-3px_4px_var(--nav-splitter)] md:hidden ${
+  const mobileNavClassName = `fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-1px_2px_var(--nav-splitter)] md:hidden ${
     mobileVariant === "section" ? "transition-shadow duration-1000" : ""
   }`;
+
+  const avatar = useAuthStore((state) => state.user?.avatar_url);
 
   return (
     <>
       <div
         className={`sticky top-0 w-full z-fixed bg-body md:hidden ${
-          scrolled ? "shadow-[0_3px_4px_var(--nav-splitter)]" : ""
+          scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
         } transition-shadow duration-1000`}
       >
         <div className="container flex justify-between items-center h-(--header-height)">
@@ -116,7 +120,27 @@ export default function BaseNav({
           >
             csu star
           </Link>
-          <ThemeToggle />
+          <div className="flex gap-x-2">
+            <ThemeToggle />
+
+            <div className="border-l pl-2 border-gray-300">
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt="Avatar"
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-title hover:text-first flex gap-x-2 mt-1 text-sm"
+                >
+                  <span>登录</span>
+                  <span>注册</span>
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -140,7 +164,7 @@ export default function BaseNav({
 
       <header
         className={`hidden md:block sticky top-0 w-full z-fixed px-4 lg:px-4 bg-body ${
-          scrolled ? "shadow-[0_3px_4px_var(--nav-splitter)]" : ""
+          scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
         } transition-shadow duration-1000`}
         id="header"
       >
@@ -167,8 +191,27 @@ export default function BaseNav({
               );
             })}
           </ul>
+          <div className="border-l pl-5 border-gray-300">
+            <ThemeToggle />
+          </div>
 
-          <ThemeToggle />
+          <div className="border-l pl-5 border-gray-300">
+            {avatar ? (
+              <Image
+                src={avatar}
+                alt="Avatar"
+                className="w-8 h-8 rounded-full"
+              />
+            ) : (
+              <Link
+                href="/login"
+                className="text-title hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium"
+              >
+                <span>登录</span>
+                <span>注册</span>
+              </Link>
+            )}
+          </div>
         </nav>
       </header>
     </>

@@ -51,7 +51,7 @@ function WelcomeInner() {
   }, []);
 
   return (
-    <div className="overflow-x-clip relative h-dvh flex flex-col">
+    <div className="overflow-x-clip relative h-[100vh] flex flex-col">
       {/* 流星背景 */}
       <ShootingStars />
 

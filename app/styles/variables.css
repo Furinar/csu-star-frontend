@@ -39,19 +39,7 @@
   /* 流星色 */
   --meteor-color: var(--star-500);
 
-  /* 主题色映射 */
-  --first-color: var(--star-500);
-  --first-color-second: var(--star-500);
-  --first-color-alt: var(--star-600);
-  --first-color-lighter: var(--star-200);
-  --title-color: #0a0a0a;
-  --text-color: #1a1a1a;
-  --text-color-light: #4a4a4a;
-  --input-color: var(--ice-100);
-  --body-color: #ffffff;
-  --container-color: #ffffff;
-  --scroll-bar-color: var(--star-50);
-  --scroll-thumb-color: var(--star-100);
+
 
   /* 字体 */
   --body-font: "Poppins", system-ui, sans-serif;
@@ -92,6 +80,20 @@
   --border: rgba(9, 69, 110, 0.08);
   --ring: var(--ice-500);
   --nav-splitter: rgba(0, 0, 0, 0.15);
+
+    /* 主题色映射 */
+      --first-color: var(--star-500);
+      --first-color-second: var(--star-500);
+      --first-color-alt: var(--star-600);
+      --first-color-lighter: var(--star-200);
+      --title-color: #0a0a0a;
+      --text-color: #1a1a1a;
+      --text-color-light: #4a4a4a;
+      --input-color: var(--ice-100);
+      --body-color: #ffffff;
+      --container-color: #ffffff;
+      --scroll-bar-color: var(--star-50);
+      --scroll-thumb-color: var(--star-100);
 }
 
 .dark-theme {

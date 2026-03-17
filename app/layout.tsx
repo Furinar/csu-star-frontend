@@ -17,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "南极星 | CSU STAR",
+  title: "南极星(中南指北)",
   description: "中南大学一站式综合平台",
   icons: {
     icon: "/csustar.svg",

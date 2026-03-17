@@ -7,22 +7,24 @@ body {
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 /* 滚动容器 */
 .snap-scroll-container {
-  height: 100dvh;
+  height: 100vh;
   overflow-y: auto;
   scroll-behavior: smooth;
 }
 
 .snap-section {
-  min-height: 100dvh;
+  min-height: 100vh;
 }
 
 @media screen and (max-width: 767px) {
   .snap-section {
-    max-height: 100dvh;
+    min-height: calc(100vh - 6rem);
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
     overflow-x: hidden;
   }
@@ -58,4 +60,27 @@ a {
 img {
   max-width: 100%;
   height: auto;
+}
+
+.theme-toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon-sun,
+.theme-icon-moon {
+  display: inline-block;
+}
+
+.theme-icon-sun {
+  display: none;
+}
+
+.dark-theme .theme-icon-sun {
+  display: inline-block;
+}
+
+.dark-theme .theme-icon-moon {
+  display: none;
 }
