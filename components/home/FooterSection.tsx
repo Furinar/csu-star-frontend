@@ -9,6 +9,7 @@ export default function FooterSection() {
         </div>
 
         <p className="text-[0.6rem] font-black pb-10 md:pb-0">
+          备案号 : 赣ICP备2026004177号-1 <br />
           &copy; 2026 CSU Star. All rights reserved.
         </p>
       </div>

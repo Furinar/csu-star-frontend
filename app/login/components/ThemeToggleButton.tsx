@@ -1,24 +1,21 @@
 "use client";
 
 import { useDarkTheme } from "@/hooks/useDarkTheme";
+import styles from "./ThemeToggleButton.module.css";
 
-export default function ThemeToggle({
-  className = "",
-}: {
-  className?: string;
-}) {
+export default function ThemeToggleButton() {
   const { toggleTheme } = useDarkTheme();
 
   return (
-    <span
-      className={`theme-toggle-icon text-xl text-title cursor-pointer hover:text-first ${className}`}
-      role="button"
+    <button
+      type="button"
+      className={styles.themeToggle}
+      onClick={toggleTheme}
       aria-label="切换主题"
       title="切换主题"
-      onClick={toggleTheme}
     >
       <i className="uil uil-sun theme-icon-sun" />
       <i className="uil uil-moon theme-icon-moon" />
-    </span>
+    </button>
   );
 }

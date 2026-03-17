@@ -1,29 +1,40 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
+
+const THEME_KEY = "dark-theme";
 
 function getStoredDarkTheme() {
-  if (typeof window === "undefined") return false;
-  const stored = localStorage.getItem("dark-theme");
-  if (stored !== null) return stored === "true";
+  try {
+    const stored = localStorage.getItem(THEME_KEY);
+    if (stored !== null) return stored === "true";
+  } catch {
+  }
   return document.documentElement.classList.contains("dark-theme");
 }
 
-export function useDarkTheme() {
-  const [darkTheme, setDarkTheme] = useState(getStoredDarkTheme);
+function applyTheme(darkTheme: boolean) {
+  document.documentElement.classList.toggle("dark-theme", darkTheme);
+  document.body?.classList.toggle("dark-theme", darkTheme);
+}
 
+export function useDarkTheme() {
   useEffect(() => {
-    document.documentElement.classList.toggle("dark-theme", darkTheme);
-    document.body.classList.toggle("dark-theme", darkTheme);
-  }, [darkTheme]);
+    applyTheme(getStoredDarkTheme());
+  }, []);
 
   const toggleTheme = useCallback(() => {
-    setDarkTheme((prev) => {
-      const next = !prev;
-      localStorage.setItem("dark-theme", String(next));
-      return next;
-    });
+    const next = !document.documentElement.classList.contains("dark-theme");
+    try {
+      localStorage.setItem(THEME_KEY, String(next));
+    } catch {
+    }
+    applyTheme(next);
   }, []);
+
+  const darkTheme =
+    typeof document !== "undefined" &&
+    document.documentElement.classList.contains("dark-theme");
 
   return { darkTheme, toggleTheme };
 }

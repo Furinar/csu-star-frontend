@@ -22,7 +22,7 @@ interface SearchBarProps extends Omit<
 export default function SearchBar({
   value: propValue,
   defaultValue = "",
-  placeholder = "搜索",
+  placeholder = "Search",
   delay = 500,
   onSearch,
   onChange,
@@ -40,7 +40,6 @@ export default function SearchBar({
 
   const isInitialMount = useRef(true);
 
-  // 防抖后的变更处理
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
@@ -58,7 +57,6 @@ export default function SearchBar({
       setInternalValue(newValue);
     }
 
-    // 如果不使用防抖，则直接触发onChange
     if (!debounceOnChange && onChange) {
       onChange(newValue);
     }
@@ -83,12 +81,15 @@ export default function SearchBar({
       className={`flex justify-center w-full z-10 transition-all duration-300 pointer-events-auto px-4 sm:px-0 ${wrapperClassName}`}
     >
       <div
-        className={`relative flex items-center w-full max-w-full sm:max-w-md md:max-w-xl lg:max-w-2xl bg-[var(--container-color)] border border-[var(--border)] rounded-[24px] shadow-sm hover:shadow-md hover:border-[var(--first-color)] transition-all duration-300 mx-auto overflow-hidden group focus-within:ring-2 focus-within:ring-[var(--first-color-lighter)] focus-within:border-[var(--first-color)] ${className}`}
+        className={`relative flex items-center w-full max-w-full sm:max-w-md md:max-w-xl lg:max-w-2xl bg-[var(--container-color)] rounded-[24px] transition-all duration-300 mx-auto overflow-hidden group focus-within:border-[var(--first-color)] ${className}`}
+        style={{
+          boxShadow: '6px 6px 12px rgba(0, 0, 0, 0.2), -6px -6px 12px rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(255, 255, 255, 0.3)',
+        }}
       >
-        <div className="pl-4 pr-2 text-[var(--text-color-light)]">
+        <div className="pl-3 sm:pl-4 pr-2 text-[var(--text-color-light)] shrink-0">
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -108,7 +109,7 @@ export default function SearchBar({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 h-[42px] bg-transparent border-none outline-none text-[15px] text-[var(--text-color)] placeholder:text-[var(--card-foreground)]"
+          className="flex-1 min-w-0 h-[42px] bg-transparent border-none outline-none text-[14px] sm:text-[15px] text-[var(--text-color)] placeholder:text-[var(--card-foreground)]"
           {...props}
         />
 
@@ -116,7 +117,7 @@ export default function SearchBar({
           <button
             type="button"
             onClick={handleClear}
-            className="flex items-center justify-center w-8 h-8 rounded-full text-[var(--text-color-light)] hover:text-[var(--first-color)] hover:bg-[var(--first-color-lighter)] transition-colors mr-1 cursor-pointer outline-none"
+            className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full text-[var(--text-color-light)] hover:text-[var(--first-color)] hover:bg-[var(--first-color-lighter)] transition-colors mr-1 cursor-pointer outline-none"
           >
             <svg
               width="16"
@@ -137,9 +138,26 @@ export default function SearchBar({
         <button
           type="button"
           onClick={() => onSearch?.(value)}
-          className="h-[42px] px-5 sm:px-6 bg-[var(--first-color)] hover:bg-[var(--first-color-alt)] text-white text-sm sm:text-base font-medium transition-colors cursor-pointer outline-none flex items-center justify-center shrink-0"
+          className="h-[42px] w-[56px] sm:w-auto sm:px-6 bg-[var(--first-color)] hover:bg-[var(--first-color-alt)] text-white font-medium transition-colors cursor-pointer outline-none flex items-center justify-center shrink-0"
+          style={{
+            boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2), -2px -2px 6px rgba(255, 255, 255, 0.5)',
+          }}
         >
-          <span>搜索</span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="sm:hidden"
+          >
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          <span className="hidden sm:inline">Search</span>
         </button>
       </div>
     </div>

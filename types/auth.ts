@@ -16,7 +16,7 @@ export interface UserProfile {
   /**
    * 用户昵称
    */
-  display_name: string;
+  nickname: string;
   /**
    * 累计下载次数
    */

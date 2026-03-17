@@ -5,12 +5,12 @@ set -euo pipefail
 # SERVER="root@1.2.3.4" APP_DIR="/var/www/csu-star-frontend" ./deploy.sh
 # 默认值可按需修改。
 
-SERVER="${SERVER:-root@43.136.124.121}"
+SERVER="${SERVER:-root@122.51.10.212}"
 APP_DIR="${APP_DIR:-/var/www/html/csustar.wiki}"
 APP_NAME="${APP_NAME:-csu-star-frontend}"
 NPM_REGISTRY="${NPM_REGISTRY:-https://mirrors.cloud.tencent.com/npm/}"
 NODE_MIRROR="${NODE_MIRROR:-https://mirrors.cloud.tencent.com/nodejs-release/}"
-NGINX_SERVER_NAMES="${NGINX_SERVER_NAMES:-csustar.wiki 43.136.124.121 _}"
+NGINX_SERVER_NAMES="${NGINX_SERVER_NAMES:-csustar.wiki www.csustar.wiki 122.51.10.212 _}"
 CONFIGURE_NGINX="${CONFIGURE_NGINX:-true}"
 
 echo "==> 同步代码到 $SERVER:$APP_DIR ..."
