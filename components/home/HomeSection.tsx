@@ -3,6 +3,7 @@
 import CollegeLoop from "@/components/ui/CollegeLoop";
 import SearchBar from "@/components/ui/SearchBar";
 import Reveal from "@/components/effects/Reveal";
+import Link from "next/link";
 
 export default function HomeSection() {
   return (
@@ -71,19 +72,19 @@ export default function HomeSection() {
 
             <Reveal direction="up" delay={350}>
               <div className="flex items-center gap-6 md:pt-4">
-                <a
+                <Link
                   href="/home"
                   className="flex justify-center button button--flex shadow-lg w-36 group"
                 >
                   开始探索
                   <i className="uil uil-message button__icon ml-1 transition-transform duration-300 group-hover:translate-x-3" />
-                </a>
-                <a
+                </Link>
+                <Link
                   href="#about"
                   className="button--link button--flex text-first text-sm font-medium md:hidden"
                 >
                   Learn more <i className="uil uil-arrow-right ml-1" />
-                </a>
+                </Link>
               </div>
             </Reveal>
           </div>

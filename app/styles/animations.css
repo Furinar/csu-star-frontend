@@ -123,3 +123,24 @@
     100% { opacity: 0; transform: scale(1.2) translate3d(-150px, 150px, 0); }
   }
 }
+
+/* ---------- 导航栏发光效果 ---------- */
+.nav-glow-active {
+  position: relative;
+}
+
+.nav-glow-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--first-color), transparent);
+  box-shadow:
+    0 0 8px var(--first-color),
+    0 -4px 12px var(--first-color),
+    0 -8px 20px var(--first-color);
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}

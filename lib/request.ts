@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { TokenResponse } from '@/types/auth';
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-type ApiResponse<T> = {
+export type ApiResponse<T> = {
   code: number;
   data: T;
   message?: string;
@@ -21,18 +21,6 @@ let isRefreshing = false;
 let failedQueue: { resolve: (token: string) => void; reject: (error: unknown) => void }[] = [];
 
 
-const normalizeTokenResponse = (payload: TokenResponse | ApiResponse<TokenResponse>): TokenResponse => {
-  if ('code' in payload) {
-    if (payload.code !== 200 || !payload.data?.access_token) {
-      throw new Error(payload.message || 'Refresh token failed');
-    }
-    return payload.data;
-  }
-  if (!payload.access_token) {
-    throw new Error('Refresh token failed');
-  }
-  return payload;
-};
 
 const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(({ resolve, reject }) => {
@@ -62,12 +50,7 @@ service.interceptors.request.use(
 // 401: token过期，尝试刷新token
 service.interceptors.response.use(
   (response) => {
-    const res = response.data;
-    if (res.code == 200) {
-      return res.data;
-    } else {
-      return Promise.reject(new Error(res.message || 'Error'));
-    }
+    return response.data; // 返回完整的 ApiResponse<T>
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
@@ -110,13 +93,18 @@ service.interceptors.response.use(
     }
 
     try {
-      const { data } = await axios.post<TokenResponse | ApiResponse<TokenResponse>>(
+      const { data } = await axios.post<ApiResponse<TokenResponse>>(
         `${BASE_URL}/auth/refresh`,
         {
           refresh_token: refresh_token
         }
       );
-      const tokenData = normalizeTokenResponse(data);
+
+      if (data.code !== 200 || !data.data?.access_token) {
+        throw new Error(data.message || 'Refresh token failed');
+      }
+
+      const tokenData = data.data;
       useAuthStore.getState().setTokens(tokenData.access_token);
       processQueue(null, tokenData.access_token);
       originalRequest.headers!.Authorization = `Bearer ${tokenData.access_token}`;

@@ -109,7 +109,7 @@ export default function SearchBar({
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 min-w-0 h-[42px] bg-transparent border-none outline-none text-[14px] sm:text-[15px] text-[var(--text-color)] placeholder:text-[var(--card-foreground)]"
+          className="flex-1 min-w-0 h-[42px] bg-transparent border-none outline-none text-[14px] sm:text-[15px] text-[var(--text-color)] placeholder:text-[var(--text-color-light)] placeholder:opacity-50"
           {...props}
         />
 

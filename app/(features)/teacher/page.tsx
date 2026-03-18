@@ -1,5 +1,5 @@
-import { AnimatedTestimonial } from "@/components/ui/AnimatedTestimonial";
 import SearchBar from "@/components/ui/SearchBar";
+import TeacherSlider from "./components/TeacherSlider";
 
 // SSG：纯静态页面，构建时生成
 export const dynamic = "force-static";
@@ -9,12 +9,10 @@ export default function Teacher() {
     <>
       <div className="container flex flex-col gap-10 mt-10">
         <div>
-          <SearchBar placeholder="搜索教师" />
+          <SearchBar placeholder="Search Teacher" />
         </div>
 
-        <div>
-          <AnimatedTestimonial />
-        </div>
+        <TeacherSlider />
 
         <div className="rankBox border-red-500 border bg-amber-100 flex flex-col justify-between gap-10">
           <div className="flex justify-center border border-blue-500">

@@ -85,15 +85,15 @@ export default function Stepper({
 
   return (
     <div
-      className="flex min-h-full flex-1 flex-col items-center justify-center p-4 sm:aspect-[4/3] md:aspect-[2/1]"
+      className="flex min-h-full flex-1 flex-col items-center justify-center p-3 sm:p-6 md:p-8"
       {...rest}
     >
       <div
-        className={`mx-auto w-full max-w-md rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
+        className={`mx-auto w-full max-w-sm sm:max-w-md rounded-2xl sm:rounded-3xl md:rounded-4xl shadow-xl ${stepCircleContainerClassName}`}
         style={{ border: "1px solid #222" }}
       >
         <div
-          className={`${stepContainerClassName} flex w-full items-center p-8`}
+          className={`${stepContainerClassName} flex w-full items-center p-4 sm:p-6 md:p-8 lg:p-10`}
         >
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
@@ -132,20 +132,20 @@ export default function Stepper({
           isCompleted={isCompleted}
           currentStep={currentStep}
           direction={direction}
-          className={`space-y-2 px-8 ${contentClassName}`}
+          className={`space-y-2 px-4 sm:px-6 md:px-8 lg:px-10 ${contentClassName}`}
         >
           {stepsArray[currentStep - 1]}
         </StepContentWrapper>
 
         {!isCompleted && (
-          <div className={`px-8 pb-8 ${footerClassName}`}>
+          <div className={`px-4 sm:px-6 md:px-8 lg:px-10 pb-4 sm:pb-6 md:pb-8 lg:pb-10 ${footerClassName}`}>
             <div
-              className={`mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}
+              className={`mt-6 sm:mt-8 md:mt-10 flex ${currentStep !== 1 ? "justify-between" : "justify-end"}`}
             >
               {currentStep !== 1 && (
                 <button
                   onClick={handleBack}
-                  className={`duration-350 rounded px-2 py-1 transition ${
+                  className={`duration-350 rounded px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base transition ${
                     currentStep === 1
                       ? "pointer-events-none opacity-50 text-neutral-400"
                       : "text-neutral-400 hover:text-neutral-700"
@@ -157,7 +157,7 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-1.5 px-3.5 font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+                className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-2 px-5 sm:py-2.5 sm:px-6 md:py-3 md:px-7 text-sm sm:text-base font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
                 {...nextButtonProps}
               >
                 {isLastStep ? "Complete" : nextButtonText}
@@ -264,7 +264,7 @@ interface StepProps {
 }
 
 export function Step({ children }: StepProps) {
-  return <div className="px-8">{children}</div>;
+  return <div className="px-4 sm:px-6 md:px-8">{children}</div>;
 }
 
 interface StepIndicatorProps {
@@ -319,14 +319,14 @@ function StepIndicator({
           },
         }}
         transition={{ duration: 0.3 }}
-        className="flex h-8 w-8 items-center justify-center rounded-full font-semibold"
+        className="flex h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full font-semibold"
       >
         {status === "complete" ? (
-          <CheckIcon className="h-4 w-4 text-[var(--color-body)]" />
+          <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-[var(--color-body)]" />
         ) : status === "active" ? (
-          <div className="h-3 w-3 rounded-full bg-[var(--color-body)]" />
+          <div className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 rounded-full bg-[var(--color-body)]" />
         ) : (
-          <span className="text-sm">{step}</span>
+          <span className="text-xs sm:text-sm md:text-base">{step}</span>
         )}
       </motion.div>
     </motion.div>

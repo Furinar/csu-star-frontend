@@ -24,7 +24,6 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       _hasHydrated: false,
 
-      //set函数更新状态
       setTokens: (access_token) => set({ access_token }),
       setUser: (user) => set({ user }),
       login: (access_token, refresh_token, user) => set({ access_token, refresh_token, user }),

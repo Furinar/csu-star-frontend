@@ -70,3 +70,35 @@ export interface LoginResponse {
   tokens: TokenResponse;
   user: UserProfile;
 }
+
+export interface RegisterByEmailRequest {
+  avatar_url: string;
+  /**
+   * 校园邮箱地址
+   */
+  email: string;
+  invite_code: string;
+  nickname: string;
+  /**
+   * 密码（至少 8 位）
+   */
+  password: string;
+}
+
+export interface LoginByEmailResponse {
+  access_token: string;
+  refresh_token: string;
+  expires_in?: number;
+  user: UserProfile;
+}
+
+export interface VerifyRegisterCodePayload {
+  email: string;
+  code: string;
+}
+
+export interface VerifyRegisterCodeResponse {
+  valid: boolean;
+  message?: string;
+}
+
