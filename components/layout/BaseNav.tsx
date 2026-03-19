@@ -5,6 +5,7 @@ import Link from "next/link";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import { useAuthStore } from "@/store/useAuthStore";
 import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 
 type BaseNavProps = {
   navItems: readonly NavItem[];
@@ -12,7 +13,6 @@ type BaseNavProps = {
   scrolled: boolean;
   useNextLink?: boolean;
   onItemClick?: (href: string) => void;
-  mobileVariant?: "section" | "route";
 };
 
 type NavLinkWrapperProps = {
@@ -43,7 +43,9 @@ function NavLinkWrapper({
     <a
       href={item.href}
       onClick={(e) => {
-        e.preventDefault();
+        if (!useNextLink) {
+          e.preventDefault();
+        }
         onItemClick?.(item.href);
       }}
       className={className}
@@ -53,21 +55,17 @@ function NavLinkWrapper({
   );
 }
 
-function MobileNavLink(
+function MobileDropdownLink(
   props: Omit<NavLinkWrapperProps, "className" | "children">,
 ) {
   const { item, isActive } = props;
-  const className = `flex flex-col items-center text-(length:--smaller-font-size) font-medium cursor-pointer transition-colors duration-300 ${
-    isActive ? "text-first" : "text-title hover:text-first"
+  const className = `flex items-center gap-x-3 px-4 py-3 text-sm cursor-pointer transition-colors duration-300 ${
+    isActive ? "text-first bg-first/10 font-semibold" : "text-[var(--text-color)] font-medium hover:text-first"
   }`;
 
   return (
     <NavLinkWrapper {...props} className={className}>
-      <i
-        className={`uil ${item.icon} text-lg transition-transform duration-300 ${
-          isActive && props.useNextLink ? "-translate-y-1" : ""
-        }`}
-      />
+      <i className={`uil ${item.icon} text-lg`} />
       <span>{item.label}</span>
     </NavLinkWrapper>
   );
@@ -77,17 +75,19 @@ function DesktopNavLink(
   props: Omit<NavLinkWrapperProps, "className" | "children">,
 ) {
   const { item, isActive, useNextLink } = props;
-  const className = `relative text-(length:--small-font-size) font-medium cursor-pointer transition-colors duration-300 ${
-    isActive ? "text-first" : "text-title hover:text-first"
+  const className = `relative flex items-center px-4 py-2 text-(length:--small-font-size) cursor-pointer transition-colors duration-300 rounded-md overflow-hidden ${
+    isActive ? "text-first font-bold" : "text-[var(--text-color)] font-medium hover:text-first"
   }`;
 
   return (
     <NavLinkWrapper {...props} className={className}>
-      {useNextLink && <i className={`uil ${item.icon}  pr-1`} />}
-      <span>{item.label}</span>
-      {isActive && (
-        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-first" />
-      )}
+      <span 
+        className={`absolute inset-0 bg-gradient-to-t from-[var(--first-color)]/20 to-transparent transition-opacity duration-300 ${
+          isActive ? "opacity-100" : "opacity-0"
+        }`}
+      />
+      {useNextLink && <i className={`uil ${item.icon} pr-1 relative z-10`} />}
+      <span className="relative z-10 tracking-wide">{item.label}</span>
     </NavLinkWrapper>
   );
 }
@@ -98,13 +98,46 @@ export default function BaseNav({
   scrolled,
   useNextLink = false,
   onItemClick,
-  mobileVariant = "section",
 }: BaseNavProps) {
-  const mobileNavClassName = `fixed bottom-0 left-0 w-full z-fixed bg-body shadow-[0_-1px_2px_var(--nav-splitter)] md:hidden ${
-    mobileVariant === "section" ? "transition-shadow duration-1000" : ""
-  }`;
-
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navListRef = useRef<HTMLUListElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0, opacity: 0 });
   const avatar = useAuthStore((state) => state.user?.avatar_url);
+
+  const handleMenuClose = () => {
+    setMenuOpen(false);
+  };
+
+  const handleNavClick = (href: string) => {
+    onItemClick?.(href);
+    handleMenuClose();
+  };
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      setTimeout(() => {
+        if (!navListRef.current) return;
+        const activeIndex = navItems.findIndex(item => isActive(item.href));
+        
+        const targetIndex = activeIndex + 1;
+        
+        if (activeIndex !== -1 && navListRef.current.children[targetIndex]) {
+          const activeLi = navListRef.current.children[targetIndex] as HTMLElement;
+          setIndicatorStyle({
+            left: activeLi.offsetLeft,
+            width: activeLi.offsetWidth,
+            opacity: 1,
+          });
+        } else {
+          setIndicatorStyle(prev => ({ ...prev, opacity: 0 }));
+        }
+      }, 50);
+    };
+
+    updateIndicator();
+    window.addEventListener('resize', updateIndicator);
+    return () => window.removeEventListener('resize', updateIndicator);
+  }, [isActive, navItems]);
 
   return (
     <>
@@ -113,55 +146,77 @@ export default function BaseNav({
           scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
         } transition-shadow duration-1000`}
       >
-        <div className="container flex justify-between items-center h-(--header-height)">
+        <div className="container relative flex justify-between items-center h-[calc(var(--header-height)+1.5rem)]">
           <Link
             href="/"
-            className="uppercase text-title font-medium hover:text-first"
+            className="uppercase hero-gradient-text font-medium hover:scale-115 transition-transform "
           >
             csu star
           </Link>
-          <div className="flex gap-x-2">
+
+          <div className="flex gap-x-3 items-center">
             <ThemeToggle />
 
-            <div className="border-l pl-2 border-gray-300">
+            <div className="w-[1px] h-5 bg-[var(--nav-splitter)] opacity-60" />
+
+            <div className="flex items-center">
               {avatar ? (
                 <Image
                   src={avatar}
                   alt="Avatar"
-                  className="w-8 h-8 rounded-full"
+                  width={28}
+                  height={28}
+                  className="w-7 h-7 rounded-full"
                 />
               ) : (
                 <Link
                   href="/login"
-                  className="text-title hover:text-first flex gap-x-2 mt-1 text-sm"
+                  className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
                 >
-                  <span>登录</span>
-                  <span>注册</span>
+                  登录
                 </Link>
               )}
             </div>
+
+            <div className="w-[1px] h-5 bg-[var(--nav-splitter)] opacity-60" />
+
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-1 text-[var(--text-color)] hover:text-first transition-colors"
+              aria-label="打开菜单"
+            >
+              <i
+                className={`uil ${menuOpen ? "uil-times" : "uil-bars"} text-xl`}
+              />
+            </button>
           </div>
+
+          {/* Mobile Right-Corner Dropdown Menu (No Backdrop) */}
+          {menuOpen && (
+            <div className="absolute top-[calc(var(--header-height)+1rem)] right-4 w-48 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.08)] rounded-xl border border-[var(--nav-splitter)] z-fixed overflow-hidden origin-top-right">
+              <nav>
+                <ul className="flex flex-col py-2">
+                  {navItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <li key={item.label}>
+                        <MobileDropdownLink
+                          item={item}
+                          isActive={active}
+                          useNextLink={useNextLink}
+                          onItemClick={handleNavClick}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            </div>
+          )}
         </div>
       </div>
 
-      <nav className={mobileNavClassName}>
-        <ul className="flex justify-around items-center h-(--header-height)">
-          {navItems.map((item) => {
-            const active = isActive(item.href);
-            return (
-              <li key={item.label}>
-                <MobileNavLink
-                  item={item}
-                  isActive={active}
-                  useNextLink={useNextLink}
-                  onItemClick={onItemClick}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
+      {/* Desktop Header */}
       <header
         className={`hidden md:block sticky top-0 w-full z-fixed px-4 lg:px-4 bg-body ${
           scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
@@ -171,46 +226,62 @@ export default function BaseNav({
         <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">
           <Link
             href="/"
-            className="uppercase text-title font-medium hover:text-first"
+            className="uppercase hero-gradient-text font-bold hover:scale-115 transition-transform "
           >
             csu star
           </Link>
 
-          <ul className="flex gap-x-8 ml-auto mr-4">
-            {navItems.map((item) => {
-              const active = isActive(item.href);
-              return (
-                <li key={item.label} className="flex flex-wrap content-center">
-                  <DesktopNavLink
-                    item={item}
-                    isActive={active}
-                    useNextLink={useNextLink}
-                    onItemClick={onItemClick}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-          <div className="border-l pl-5 border-gray-300">
-            <ThemeToggle />
-          </div>
-
-          <div className="border-l pl-5 border-gray-300">
-            {avatar ? (
-              <Image
-                src={avatar}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full"
+          <div className="flex items-center ml-auto">
+            <ul className="flex items-center gap-x-2 relative" ref={navListRef}>
+              {/* Sliding Indicator */}
+              <li
+                className="absolute bottom-0 h-[3px] bg-first shadow-[0_-2px_10px_var(--first-color)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-t-md pointer-events-none"
+                style={{
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`,
+                  opacity: indicatorStyle.opacity,
+                }}
               />
-            ) : (
-              <Link
-                href="/login"
-                className="text-title hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium"
-              >
-                <span>登录</span>
-                <span>注册</span>
-              </Link>
-            )}
+              {navItems.map((item) => {
+                const active = isActive(item.href);
+                return (
+                  <li key={item.label} className="relative py-1">
+                    <DesktopNavLink
+                      item={item}
+                      isActive={active}
+                      useNextLink={useNextLink}
+                      onItemClick={onItemClick}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60" />
+
+            <ThemeToggle />
+
+            <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60" />
+
+            <div className="flex items-center">
+              {avatar ? (
+                <Image
+                  src={avatar}
+                  alt="Avatar"
+                  width={32}
+                  height={32}
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
+                >
+                  <span>登录</span>
+                  <span>注册</span>
+                </Link>
+              )}
+            </div>
           </div>
         </nav>
       </header>

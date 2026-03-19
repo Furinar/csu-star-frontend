@@ -24,7 +24,6 @@ export default function Header({
       scrolled={scrolled}
       isActive={(href) => `#${activeSection}` === href}
       onItemClick={onNavClick}
-      mobileVariant="section"
     />
   );
 }

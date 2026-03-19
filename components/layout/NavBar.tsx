@@ -22,7 +22,6 @@ export default function NavBar() {
       scrolled
       isActive={isRouteActive}
       useNextLink
-      mobileVariant="route"
     />
   );
 }

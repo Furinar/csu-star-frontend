@@ -45,7 +45,7 @@
   display: inline-block;
   background-color: var(--first-color);
   color: #fff;
-  padding: 1rem;
+  padding: 0.7rem;
   border-radius: .5rem;
   font-weight: var(--font-medium);
 }

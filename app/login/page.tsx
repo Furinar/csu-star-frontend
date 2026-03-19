@@ -86,12 +86,12 @@ export default function Login() {
         code: registerCode.trim(),
       });
 
-      const params = new URLSearchParams({ email });
-      if (result?.registration_token) {
-        params.set("registrationToken", result.registration_token);
-      }
+      // const params = new URLSearchParams({ email });
+      // if (result?.registration_token) {
+      //   params.set("registrationToken", result.registration_token);
+      // }
 
-      router.push(`/login/register?${params.toString()}`);
+      // router.push(`/login/register?${params.toString()}`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "验证码校验失败，请重试";
