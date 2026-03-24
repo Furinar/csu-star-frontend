@@ -1,11 +1,5 @@
 import {ApiResponse, service} from "@/lib/request";
-import {
-  LoginByEmailResponse,
-  RegisterByEmailRequest,
-  TokenResponse,
-  VerifyRegisterCodePayload,
-  VerifyRegisterCodeResponse
-} from "@/types/auth";
+import {LoginByEmailResponse, RegisterByEmailRequest, TokenResponse} from "@/types/auth";
 
 
 //校园邮箱注册
@@ -14,12 +8,13 @@ const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<n
 }
 
 // WIP
-// 发送注册验证码
+// 发送验证码
 const sendCaptcha = (email: string): Promise<ApiResponse<null>> => {
   return service.post('/auth/email/captcha', {
     email,
   });
 }
+
 // WIP
 //验证邮箱
 const verifyEmail = (email: string, captcha: string): Promise<ApiResponse<null>> => {
@@ -46,17 +41,18 @@ const logout = (): Promise<ApiResponse<null>> => {
   return service.post('/auth/logout');
 }
 
-
-// 校验注册验证码
-const verifyRegisterCode = (payload: VerifyRegisterCodePayload): Promise<ApiResponse<VerifyRegisterCodeResponse>> => {
-  return service.post('/auth/register/verify-code', payload);
+// WIP
+// 找回密码
+const recoverPwd = (payload: { email: string, password: string, captcha: string }): Promise<ApiResponse<null>> => {
+  return service.post('/auth/forget', payload);
 }
-
 
 export {
   refreshToken,
   logout,
   sendCaptcha,
-  verifyRegisterCode,
-  registerByEmail
+  registerByEmail,
+  recoverPwd,
+  verifyEmail,
+  loginByEmail,
 }
