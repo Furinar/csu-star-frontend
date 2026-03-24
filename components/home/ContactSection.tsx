@@ -7,8 +7,8 @@ const contactItems = [
   {
     icon: "uil uil-envelope",
     title: "邮箱",
-    value: "2184689894@qq.com",
-    href: "mailto:2184689894@qq.com",
+    value: "csustar@foxmail.com",
+    href: "mailto:csustar@foxmail.com",
   },
   {
     icon: "uil uil-map-marker",
@@ -45,12 +45,12 @@ export default function ContactSection() {
                 有任何建议或合作意向？欢迎随时联系我们
               </p>
               <a
-                href="mailto:csustar@csu.edu.cn"
+                href="mailto:csustar@foxmail.com"
                 className="button button--flex shadow-lg group inline-flex"
               >
                 <i className="uil uil-envelope mr-2" />
                 发送邮件
-                <i className="uil uil-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                <i className="uil uil-arrow-right   ml-2 transition-transform duration-300 group-hover:translate-x-1" />
               </a>
             </Reveal>
           </div>

@@ -2,20 +2,27 @@ import "./style.css";
 import StarRating from "@/components/ui/StarRating";
 import RatingBar from "@/components/ui/RatingBar";
 import Link from "next/link";
+import CollectButton from "@/components/ui/CollectButton";
 
 export default function RandomBook() {
   return (
     <>
-      <div className="random-book h-90 grid grid-cols-[3fr_2fr] p-5">
+      <div className="random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative">
+        <div className="absolute top-0 left-7 py-1 px-1.5 bg-first flex flex-col rounded-b-sm text-white font-bold shadow-lg user-invalid:">
+          <span>公</span>
+          <span>选</span>
+        </div>
         <div className="left flex flex-col gap-4">
-          <div className="course-info flex gap-2 items-center">
-            <div className="course-name text-5xl font-bold hero-gradient-text">
+          <div className="course-info flex flex-wrap gap-4 items-center justify-between">
+            <div className="course-name text-4xl font-extrabold hero-gradient-text tracking-tight pb-1 drop-shadow-sm pl-15">
               提瓦特大陆元素理论
             </div>
             {/*公选/非公选*/}
-            <div className="course-type bg-gray-300 p-1 rounded-xl text-gray-600 text-sm">
-              公选
-            </div>
+            {/* <div className="course-type flex items-center gap-1.5 bg-white border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)] px-4 py-1.5 rounded-full text-gray-700 text-sm font-medium transition-all hover:shadow-md hover:border-[var(--first-color)] hover:text-[var(--first-color)] hover:-translate-y-0.5 cursor-default mt-1">
+              <span>公选</span>
+            </div> */}
+
+            <CollectButton  size="sm"/>
           </div>
 
           <div className="course-relate flex-1 grid grid-cols-3 gap-6 pt-4">

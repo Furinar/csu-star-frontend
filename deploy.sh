@@ -122,7 +122,29 @@ NGINX_CONF
 	nginx -t
 	systemctl reload nginx
 	echo "[Nginx] 已重载，server_name: $NGINX_SERVER_NAMES"
+
+	echo "[SSL] 尝试使用 Certbot 配置 HTTPS..."
+	if command -v apt-get >/dev/null 2>&1; then
+		apt-get update -yqq
+		apt-get install -yq certbot python3-certbot-nginx
+		DOMAINS=""
+		for domain in $NGINX_SERVER_NAMES; do
+			# 过滤掉IP和下划线
+			if [[ "$domain" != "_" && ! "$domain" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+				DOMAINS="$DOMAINS -d $domain"
+			fi
+		done
+		if [ -n "$DOMAINS" ]; then
+			certbot --nginx $DOMAINS --non-interactive --agree-tos --register-unsafely-without-email --redirect || echo "[SSLWARN] Certbot 配置失败或已存在"
+		else
+			echo "[SSLWARN] 没有找到合法的域名来配置 SSL"
+		fi
+	else
+		echo "[SSLWARN] 非 apt 系统，跳过自动安装 certbot"
+	fi
 fi
 REMOTE_SCRIPT
 
 echo "==> 部署完成。Nginx 直接托管 $APP_DIR/out 静态文件。"
+ssh "$SERVER" "chown -R www-data:www-data '$APP_DIR/out' && chmod -R 755 '$APP_DIR'"
+

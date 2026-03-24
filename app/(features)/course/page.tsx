@@ -16,7 +16,7 @@ export default function Course() {
       <>
           <div className="container flex flex-col gap-10 mt-10 mb-20">
               <div>
-                  <SearchBar placeholder="Search Teacher" />
+                  <SearchBar placeholder="搜索课程..." />
               </div>
 
               <RandomBook />
