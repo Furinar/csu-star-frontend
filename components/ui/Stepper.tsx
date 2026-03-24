@@ -24,6 +24,7 @@ interface StepperProps extends HTMLAttributes<HTMLDivElement> {
   backButtonText?: string;
   nextButtonText?: string;
   disableStepIndicators?: boolean;
+  onBeforeStepChange?: (currentStep: number) => Promise<boolean> | boolean;
   renderStepIndicator?: (props: {
     step: number;
     currentStep: number;
@@ -45,11 +46,13 @@ export default function Stepper({
   backButtonText = "Back",
   nextButtonText = "Continue",
   disableStepIndicators = false,
+  onBeforeStepChange,
   renderStepIndicator,
   ...rest
 }: StepperProps) {
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [direction, setDirection] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const stepsArray = Children.toArray(children);
   const totalSteps = stepsArray.length;
   const isCompleted = currentStep > totalSteps;
@@ -71,14 +74,42 @@ export default function Stepper({
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isLastStep) {
+      if (onBeforeStepChange) {
+        setIsLoading(true);
+        try {
+          const canProceed = await onBeforeStepChange(currentStep);
+          if (!canProceed) {
+            setIsLoading(false);
+            return;
+          }
+        } catch (error) {
+          setIsLoading(false);
+          return;
+        }
+        setIsLoading(false);
+      }
       setDirection(1);
       updateStep(currentStep + 1);
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
+    if (onBeforeStepChange) {
+      setIsLoading(true);
+      try {
+        const canProceed = await onBeforeStepChange(currentStep);
+        if (!canProceed) {
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(false);
+    }
     setDirection(1);
     updateStep(totalSteps + 1);
   };
@@ -157,10 +188,11 @@ export default function Stepper({
               )}
               <button
                 onClick={isLastStep ? handleComplete : handleNext}
-                className="duration-350 flex items-center justify-center rounded-full bg-green-500 py-2 px-5 sm:py-2.5 sm:px-6 md:py-3 md:px-7 text-sm sm:text-base font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700"
+                className={`duration-350 flex items-center justify-center rounded-full bg-green-500 py-2 px-5 sm:py-2.5 sm:px-6 md:py-3 md:px-7 text-sm sm:text-base font-medium tracking-tight text-white transition hover:bg-green-600 active:bg-green-700 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                disabled={isLoading}
                 {...nextButtonProps}
               >
-                {isLastStep ? "Complete" : nextButtonText}
+                {isLoading ? "处理中..." : isLastStep ? "Complete" : nextButtonText}
               </button>
             </div>
           </div>

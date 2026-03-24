@@ -73,15 +73,10 @@ export interface LoginResponse {
 
 export interface RegisterByEmailRequest {
   avatar_url: string;
-  /**
-   * 校园邮箱地址
-   */
   email: string;
   invite_code: string;
   nickname: string;
-  /**
-   * 密码（至少 8 位）
-   */
+  // 密码（至少 8 位）
   password: string;
 }
 

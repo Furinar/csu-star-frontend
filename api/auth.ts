@@ -1,6 +1,38 @@
-import { service, ApiResponse } from "@/lib/request";
-import { LoginByEmailResponse, RegisterByEmailRequest, TokenResponse, VerifyRegisterCodePayload, VerifyRegisterCodeResponse } from "@/types/auth";
+import {ApiResponse, service} from "@/lib/request";
+import {
+  LoginByEmailResponse,
+  RegisterByEmailRequest,
+  TokenResponse,
+  VerifyRegisterCodePayload,
+  VerifyRegisterCodeResponse
+} from "@/types/auth";
 
+
+//校园邮箱注册
+const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<null>> => {
+  return service.post('/auth/email/email', payload);
+}
+
+// WIP
+// 发送注册验证码
+const sendCaptcha = (email: string): Promise<ApiResponse<null>> => {
+  return service.post('/auth/email/captcha', {
+    email,
+  });
+}
+// WIP
+//验证邮箱
+const verifyEmail = (email: string, captcha: string): Promise<ApiResponse<null>> => {
+  return service.post('/auth/email/verify', {
+    email,
+    captcha,
+  })
+}
+
+// 校园邮箱登录
+const loginByEmail = (payload: { email: string, password: string }): Promise<ApiResponse<LoginByEmailResponse>> => {
+  return service.post('/auth/email/login', payload);
+}
 
 // 刷新 Access Token
 const refreshToken = (refresh_token: string): Promise<ApiResponse<TokenResponse>> => {
@@ -14,32 +46,17 @@ const logout = (): Promise<ApiResponse<null>> => {
   return service.post('/auth/logout');
 }
 
-// 发送注册验证码
-const sendRegisterCode = (email: string): Promise<ApiResponse<null>> => {
-  return service.post('/auth/register/code', {
-    email,
-  });
-}
 
 // 校验注册验证码
 const verifyRegisterCode = (payload: VerifyRegisterCodePayload): Promise<ApiResponse<VerifyRegisterCodeResponse>> => {
   return service.post('/auth/register/verify-code', payload);
 }
 
-//校园邮箱注册
-const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<null>> => {
-  return service.post('/auth/register/email', payload);
-}
-
-// 校园邮箱登录
-const loginByEmail = (payload: { email: string, password: string }): Promise<ApiResponse<LoginByEmailResponse>> => {
-  return service.post('/auth/login/email', payload);
-}
 
 export {
   refreshToken,
   logout,
-  sendRegisterCode,
+  sendCaptcha,
   verifyRegisterCode,
   registerByEmail
 }
