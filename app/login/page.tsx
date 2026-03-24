@@ -1,8 +1,8 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import styles from "./style.module.css";
-import {useRouter} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {sendCaptcha, verifyEmail,} from "@/api/auth";
 import Link from "next/link";
 import CryptoJS from "crypto-js";
@@ -11,6 +11,7 @@ import {useTimer} from "@/hooks/useTimer";
 export default function Login() {
   const router = useRouter();
   const [isActive, setIsActive] = useState(false);
+  const searchParams = useSearchParams()
   // Login部分
   const [showLoginPwd, setShowLoginPwd] = useState(false);
   // Register部分
@@ -22,6 +23,15 @@ export default function Login() {
   const [registerError, setRegisterError] = useState("");
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
+
+  useEffect(() => {
+    const type = searchParams.get("type");
+    if (type === "true") {
+      setIsActive(true);
+    } else {
+      setIsActive(false);
+    }
+  }, [searchParams]);
 
   const toCsuEmail = (value: string) => {
     if (value.endsWith("@csu.edu.cn")) return value;

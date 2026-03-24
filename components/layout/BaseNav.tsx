@@ -170,12 +170,20 @@ export default function BaseNav({
                         className="w-7 h-7 rounded-full"
                     />
                 ) : (
-                    <Link
-                        href="/login"
-                        className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
-                    >
-                      登录 注册
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link
+                          href="/login"
+                          className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
+                      >
+                        登录
+                      </Link>
+                      <Link
+                          href="/login?type=true"
+                          className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
+                      >
+                        注册
+                      </Link>
+                    </div>
                 )}
               </div>
 
@@ -273,13 +281,21 @@ export default function BaseNav({
                         className="w-8 h-8 rounded-full"
                     />
                 ) : (
-                    <Link
-                        href="/login"
-                        className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
-                    >
-                      <span>登录</span>
-                      <span>注册</span>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link
+                          href="/login"
+                          className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
+                      >
+                        <span>登录 </span>
+                      </Link>
+
+                      <Link
+                          href="/login?type=true"
+                          className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
+                      >
+                        <span>注册</span>
+                      </Link>
+                    </div>
                 )}
               </div>
             </div>

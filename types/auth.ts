@@ -83,6 +83,7 @@ export interface RegisterByEmailRequest {
 export interface LoginByEmailResponse {
   access_token: string;
   refresh_token: string;
+  // 默认7200s即2h
   expires_in?: number;
   user: UserProfile;
 }
