@@ -138,6 +138,86 @@ const normalizePaginated = <T>(raw: unknown, normalizeItems: (input: unknown[]) 
   };
 };
 
+const fallbackSortMap: Record<ResourceRankingQuery["rank_type"], "hot_score" | "created_at" | "downloads" | "semester"> = {
+  comprehensive: "hot_score",
+  downloads: "downloads",
+  semester: "semester",
+  created_at: "created_at",
+  hot_score: "hot_score",
+  likes: "hot_score",
+};
+
+const toTimestamp = (value?: string) => {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const buildComprehensiveScore = (item: ResourceRankingItem, maxes: { downloads: number; hot: number; likes: number }) => {
+  if (typeof item.score === "number" && Number.isFinite(item.score) && item.score > 0) {
+    return item.score;
+  }
+
+  const downloadWeight = 0.4;
+  const hotWeight = 0.4;
+  const likesWeight = 0.2;
+
+  const downloadPart = (item.downloads || 0) / maxes.downloads;
+  const hotPart = (item.hot_score || 0) / maxes.hot;
+  const likePart = (item.likes || 0) / maxes.likes;
+
+  return downloadPart * downloadWeight + hotPart * hotWeight + likePart * likesWeight;
+};
+
+const sortResourceItems = (
+  items: ResourceRankingItem[],
+  rankType: ResourceRankingQuery["rank_type"],
+  isIncreased = false
+) => {
+  if (items.length <= 1) return items;
+
+  const factor = isIncreased ? 1 : -1;
+  const maxes = {
+    downloads: Math.max(...items.map((item) => item.downloads || 0), 1),
+    hot: Math.max(...items.map((item) => item.hot_score || 0), 1),
+    likes: Math.max(...items.map((item) => item.likes || 0), 1),
+  };
+
+  const sorted = [...items].sort((a, b) => {
+    let diff = 0;
+
+    if (rankType === "comprehensive") {
+      diff = buildComprehensiveScore(a, maxes) - buildComprehensiveScore(b, maxes);
+    } else if (rankType === "downloads") {
+      diff = (a.downloads || 0) - (b.downloads || 0);
+    } else if (rankType === "semester") {
+      const semesterA = `${a.semester_start || ""}-${a.semester_end || ""}`;
+      const semesterB = `${b.semester_start || ""}-${b.semester_end || ""}`;
+      diff = semesterA.localeCompare(semesterB);
+      if (diff === 0) {
+        diff = (a.downloads || 0) - (b.downloads || 0);
+      }
+    } else if (rankType === "created_at") {
+      diff = toTimestamp(a.created_at) - toTimestamp(b.created_at);
+    } else if (rankType === "hot_score") {
+      diff = (a.hot_score || 0) - (b.hot_score || 0);
+    } else if (rankType === "likes") {
+      diff = (a.likes || 0) - (b.likes || 0);
+    }
+
+    if (diff === 0) {
+      diff = (a.id || 0) - (b.id || 0);
+    }
+
+    return diff * factor;
+  });
+
+  return sorted.map((item, index) => ({
+    ...item,
+    rank: index + 1,
+  }));
+};
+
 export async function getCourseRankings(params: CourseRankingQuery) {
   const response = await service.get<ApiEnvelope<unknown>>("/rankings/courses", {
     params,
@@ -172,12 +252,16 @@ export async function getResourceRankings(params: ResourceRankingQuery) {
     const hasDetailedFields = normalized.items.some(
       (item) =>
         typeof item.downloads !== "undefined" ||
+        typeof item.likes !== "undefined" ||
         typeof item.hot_score !== "undefined" ||
         typeof item.created_at === "string"
     );
 
     if (hasDetailedFields || normalized.items.length === 0) {
-      return normalized;
+      return {
+        ...normalized,
+        items: sortResourceItems(normalized.items, params.rank_type, params.is_increased),
+      };
     }
   } catch {
     // 使用资源列表接口做兜底，避免排行榜接口返回结构异常导致页面不可用。
@@ -185,21 +269,17 @@ export async function getResourceRankings(params: ResourceRankingQuery) {
 
   const fallback = await service.get<ApiEnvelope<unknown>>("/resources", {
     params: {
-      sort: params.rank_type,
+      sort: fallbackSortMap[params.rank_type],
       page: params.page,
       size: params.size,
     },
   });
 
   const normalized = normalizePaginated(unwrapResponseData(fallback), normalizeResourceItems);
-  const sorted = params.is_increased ? [...normalized.items].reverse() : normalized.items;
 
   return {
     ...normalized,
-    items: sorted.map((item, index) => ({
-      ...item,
-      rank: index + 1,
-    })),
+    items: sortResourceItems(normalized.items, params.rank_type, params.is_increased),
   };
 }
 

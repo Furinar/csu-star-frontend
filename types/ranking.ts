@@ -1,6 +1,12 @@
 export type RankPeriod = "all" | "month" | "week";
 
-export type ResourceRankType = "downloads" | "semester" | "created_at" | "hot_score";
+export type ResourceRankType =
+  | "comprehensive"
+  | "downloads"
+  | "semester"
+  | "created_at"
+  | "hot_score"
+  | "likes";
 
 export type CourseRankType =
   | "avg_score"
@@ -15,8 +21,7 @@ export type TeacherRankType =
   | "avg_quality"
   | "avg_grading"
   | "avg_attendance"
-  | "good_rate"
-  | "resource_count"
+  | "hot_score"
   | "eval_count";
 
 export interface RankQueryBase {

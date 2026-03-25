@@ -29,10 +29,12 @@ const rankConfig = [
     label: "资源",
     icon: "file-alt",
     filters: [
+      {type: "comprehensive", label: "综合", icon: "award"},
       {type: "downloads", label: "下载量", icon: "import"},
       {type: "semester", label: "学期", icon: "schedule"},
       {type: "created_at", label: "上传", icon: "upload"},
       {type: "hot_score", label: "热度", icon: "fire"},
+      {type: "likes", label: "点赞", icon: "thumbs-up"},
     ],
   },
   {
@@ -57,8 +59,7 @@ const rankConfig = [
       {type: "avg_quality", label: "教学", icon: "book-open"},
       {type: "avg_grading", label: "给分", icon: "chart-bar"},
       {type: "avg_attendance", label: "考勤", icon: "bell-school"},
-      {type: "good_rate", label: "好评率", icon: "thumbs-up"},
-      {type: "resource_count", label: "资源数", icon: "file-alt"},
+      {type: "hot_score", label: "热度", icon: "fire"},
       {type: "eval_count", label: "评价数", icon: "comment-alt-lines"},
     ],
   },
@@ -97,6 +98,19 @@ export default function Rank() {
       likes: Math.max(...resourceItems.map((item) => item.likes || 0), 1),
     };
   }, [resourceItems]);
+
+  const getResourceComprehensive = useCallback((item: ResourceRankingItem) => {
+    if (typeof item.score === "number" && Number.isFinite(item.score) && item.score > 0) {
+      return item.score;
+    }
+
+    const weighted =
+      ((item.downloads || 0) / resourceMaximum.downloads) * 0.4 +
+      ((item.hot_score || 0) / resourceMaximum.hotScore) * 0.4 +
+      ((item.likes || 0) / resourceMaximum.likes) * 0.2;
+
+    return weighted * 5;
+  }, [resourceMaximum]);
 
   const formatNumber = useCallback((value?: number, digits = 2) => {
     if (typeof value !== "number" || Number.isNaN(value)) {
@@ -435,6 +449,7 @@ export default function Rank() {
                         </div>
                       </div>
                       <div className="text-sm text-gray-500 md:text-right">
+                        <div>综合：{formatNumber(getResourceComprehensive(item))}</div>
                         <div>下载：{formatInteger(item.downloads)}</div>
                         <div>浏览：{formatInteger(item.views)}</div>
                         <div>点赞：{formatInteger(item.likes)}</div>
@@ -442,24 +457,30 @@ export default function Rank() {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <RatingBar
+                        label="综合指数"
+                        score={getResourceComprehensive(item)}
+                        maxScore={5}
+                        color={0}
+                      />
                       <RatingBar
                         label="下载强度"
                         score={((item.downloads || 0) / resourceMaximum.downloads) * 5}
                         maxScore={5}
-                        color={0}
+                        color={1}
                       />
                       <RatingBar
                         label="热度强度"
                         score={((item.hot_score || 0) / resourceMaximum.hotScore) * 5}
                         maxScore={5}
-                        color={1}
+                        color={2}
                       />
                       <RatingBar
-                        label="互动热度"
+                        label="点赞强度"
                         score={((item.likes || 0) / resourceMaximum.likes) * 5}
                         maxScore={5}
-                        color={2}
+                        color={3}
                       />
                     </div>
                   </div>
@@ -528,13 +549,12 @@ export default function Rank() {
                             <span>教师 ID：{item.id}</span>
                             <span>所属学院：{item.department_name || "--"}</span>
                             <span>职称：{detail?.title || "--"}</span>
-                            <span>好评率：{typeof detail?.good_rate === "number" ? `${(detail.good_rate * 100).toFixed(2)}%` : "--"}</span>
+                            <span>热度：{formatNumber(detail?.hot_score)}</span>
                           </div>
                         </div>
                         <div className="text-sm text-gray-500 md:text-right">
                           <div>榜单分值：{formatNumber(item.score)}</div>
                           <div>评价数：{formatInteger(detail?.eval_count)}</div>
-                          <div>资源数：{formatInteger(detail?.resource_count)}</div>
                           <div>热度：{formatNumber(detail?.hot_score)}</div>
                         </div>
                       </div>
