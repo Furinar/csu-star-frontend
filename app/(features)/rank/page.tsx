@@ -91,27 +91,6 @@ export default function Rank() {
     setFilterType(currentCategory.filters[0].type as FilterType);
   }, [currentCategory]);
 
-  const resourceMaximum = useMemo(() => {
-    return {
-      downloads: Math.max(...resourceItems.map((item) => item.downloads || 0), 1),
-      hotScore: Math.max(...resourceItems.map((item) => item.hot_score || 0), 1),
-      likes: Math.max(...resourceItems.map((item) => item.likes || 0), 1),
-    };
-  }, [resourceItems]);
-
-  const getResourceComprehensive = useCallback((item: ResourceRankingItem) => {
-    if (typeof item.score === "number" && Number.isFinite(item.score) && item.score > 0) {
-      return item.score;
-    }
-
-    const weighted =
-      ((item.downloads || 0) / resourceMaximum.downloads) * 0.4 +
-      ((item.hot_score || 0) / resourceMaximum.hotScore) * 0.4 +
-      ((item.likes || 0) / resourceMaximum.likes) * 0.2;
-
-    return weighted * 5;
-  }, [resourceMaximum]);
-
   const formatNumber = useCallback((value?: number, digits = 2) => {
     if (typeof value !== "number" || Number.isNaN(value)) {
       return "--";
@@ -449,7 +428,7 @@ export default function Rank() {
                         </div>
                       </div>
                       <div className="text-sm text-gray-500 md:text-right">
-                        <div>综合：{formatNumber(getResourceComprehensive(item))}</div>
+                        <div>综合：{formatNumber(item.score)}</div>
                         <div>下载：{formatInteger(item.downloads)}</div>
                         <div>浏览：{formatInteger(item.views)}</div>
                         <div>点赞：{formatInteger(item.likes)}</div>
@@ -457,30 +436,12 @@ export default function Rank() {
                       </div>
                     </div>
 
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="mt-4 grid grid-cols-1 gap-3">
                       <RatingBar
                         label="综合指数"
-                        score={getResourceComprehensive(item)}
+                        score={typeof item.score === "number" ? item.score : 0}
                         maxScore={5}
                         color={0}
-                      />
-                      <RatingBar
-                        label="下载强度"
-                        score={((item.downloads || 0) / resourceMaximum.downloads) * 5}
-                        maxScore={5}
-                        color={1}
-                      />
-                      <RatingBar
-                        label="热度强度"
-                        score={((item.hot_score || 0) / resourceMaximum.hotScore) * 5}
-                        maxScore={5}
-                        color={2}
-                      />
-                      <RatingBar
-                        label="点赞强度"
-                        score={((item.likes || 0) / resourceMaximum.likes) * 5}
-                        maxScore={5}
-                        color={3}
                       />
                     </div>
                   </div>
