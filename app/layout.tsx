@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -32,9 +31,6 @@ export default function RootLayout({
   return (
     <html lang="zh-CN" suppressHydrationWarning>
       <head>
-        <Script id="theme-init" strategy="beforeInteractive">
-          {`(function(){try{var v=localStorage.getItem('dark-theme');if(v==='true'){document.documentElement.classList.add('dark-theme');}}catch(e){}})();`}
-        </Script>
         <link
           rel="stylesheet"
           href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"

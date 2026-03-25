@@ -11,14 +11,14 @@ export default function Me() {
 
   return (
       <div
-          className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
+          className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 transition-colors duration-300">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
           <aside className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
             <div className="sticky top-24 space-y-6">
               <GlassCard className="p-6 flex flex-col items-center md:items-start text-center md:text-left">
                 <div className="relative group cursor-pointer mb-4">
                   <img
-                      className="w-48 h-48 rounded-full border-4 border-white/50 dark:border-white/10 shadow-lg object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      className="w-48 h-48 rounded-full border-4 border-white/50 shadow-lg object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                       src="/furina.jpg"
                       alt="User Avatar"
                   />
@@ -29,24 +29,24 @@ export default function Me() {
                 </div>
 
                 <div className="mb-4">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold text-gray-900">
                     Furina
                   </h1>
-                  <h2 className="text-lg font-light text-gray-500 dark:text-gray-400">
+                  <h2 className="text-lg font-light text-gray-500">
                     已认证
                   </h2>
                 </div>
 
-                {/* <p className="text-sm text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                {/* <p className="text-sm text-gray-700 mb-6 leading-relaxed">
                 个人简介
               </p> */}
 
                 <button
-                    className="w-full py-1.5 px-4 rounded-xl bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 border border-gray-200/50 dark:border-gray-700/50 text-gray-800 dark:text-gray-200 font-medium transition-all shadow-sm mb-6 backdrop-blur-sm">
+                    className="w-full py-1.5 px-4 rounded-xl bg-white/50 hover:bg-white/80 border border-gray-200/50 text-gray-800 font-medium transition-all shadow-sm mb-6 backdrop-blur-sm">
                   编辑个人资料
                 </button>
 
-                {/* <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-6">
+                {/* <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
                 <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
                   <svg
                     className="w-4 h-4"
@@ -61,21 +61,21 @@ export default function Me() {
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                     />
                   </svg>
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="font-semibold text-gray-900">
                     128
                   </span>{" "}
                   粉丝
                 </div>
                 <span>·</span>
                 <div className="flex items-center gap-1 hover:text-blue-500 cursor-pointer transition-colors">
-                  <span className="font-semibold text-gray-900 dark:text-white">
+                  <span className="font-semibold text-gray-900">
                     42
                   </span>{" "}
                   关注
                 </div>
               </div> */}
 
-                <div className="space-y-3 w-full text-sm text-gray-700 dark:text-gray-300">
+                <div className="space-y-3 w-full text-sm text-gray-700">
                   <div className="flex items-center gap-2">
                     <svg
                         className="w-4 h-4 text-gray-400"
@@ -129,7 +129,7 @@ export default function Me() {
 
               {/* 积分 */}
               <GlassCard className="p-5">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-4">
                   STAR 积分
                 </h3>
                 <div className="flex items-center justify-between">
@@ -151,7 +151,7 @@ export default function Me() {
           <main className="flex-1 w-full">
             {/* GitHub 式导航标签页 */}
             <div
-                className="flex overflow-x-auto hide-scrollbar gap-2 mb-6 border-b border-gray-200/50 dark:border-gray-700/50 pb-px">
+                className="flex overflow-x-auto hide-scrollbar gap-2 mb-6 border-b border-gray-200/50 pb-px">
               {[
                 "overview",
                 "resources",
@@ -173,18 +173,18 @@ export default function Me() {
                         onClick={() => setActiveTab(tab)}
                         className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-all border-b-2 flex items-center gap-2 ${
                             isActive
-                                ? "border-first text-gray-900 dark:text-white"
-                                : "border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:text-gray-800 dark:hover:text-gray-200 rounded-t-lg"
+                                ? "border-first text-gray-900"
+                                : "border-transparent text-gray-600 hover:bg-gray-100/50 hover:text-gray-800 rounded-t-lg"
                         }`}
                     >
                       {tabNames[tab]}
                       {tab === "resources" && (
-                          <span className="px-2 py-0.5 rounded-full bg-gray-200/50 dark:bg-gray-700/50 text-xs">
+                          <span className="px-2 py-0.5 rounded-full bg-gray-200/50 text-xs">
                       12
                     </span>
                       )}
                       {tab === "evaluations" && (
-                          <span className="px-2 py-0.5 rounded-full bg-gray-200/50 dark:bg-gray-700/50 text-xs">
+                          <span className="px-2 py-0.5 rounded-full bg-gray-200/50 text-xs">
                       8
                     </span>
                       )}
@@ -197,29 +197,29 @@ export default function Me() {
             <div className="space-y-6">
               {activeTab === "overview" && (
                   <>
-                    <h3 className="text-sm font-normal text-gray-800 dark:text-gray-200 mb-3"></h3>
+                    <h3 className="text-sm font-normal text-gray-800 mb-3"></h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                       {[1, 2, 3, 4].map((i) => (
                           <GlassCard
                               key={i}
-                              className="p-5 hover:border-gray-300 dark:hover:border-gray-500 transition-colors cursor-pointer group"
+                              className="p-5 hover:border-gray-300 transition-colors cursor-pointer group"
                           >
                             <div className="flex justify-between items-start mb-2">
                               <Link
                                   href="#"
-                                  className="font-semibold text-first dark:text-blue-400 group-hover:underline"
+                                  className="font-semibold text-first group-hover:underline"
                               >
                                 数据结构历年期末试卷整理
                               </Link>
                               <span
-                                  className="text-xs px-2 py-1 rounded-full border border-gray-200 dark:border-gray-700 text-gray-500">
+                                  className="text-xs px-2 py-1 rounded-full border border-gray-200 text-gray-500">
                           Public
                         </span>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                               包含了近5年的数据结构试卷及详细解析，适合期末复习使用。祝大家都能拿满绩！
                             </p>
-                            <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                           <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
                           Resource
@@ -246,7 +246,7 @@ export default function Me() {
                       ))}
                     </div>
 
-                    <h3 className="text-md font-normal text-gray-800 dark:text-gray-200 mb-3 ml-5">
+                    <h3 className="text-md font-normal text-gray-800 mb-3 ml-5">
                       CSU Star贡献图
                     </h3>
                     <GlassCard className="p-6">
@@ -257,13 +257,13 @@ export default function Me() {
                               <div key={colIndex} className="flex flex-col gap-1">
                                 {[...Array(7)].map((_, rowIndex) => {
                                   const intensity = Math.random();
-                                  let colorClass = "bg-gray-100 dark:bg-gray-800";
+                                  let colorClass = "bg-gray-100";
                                   if (intensity > 0.8)
-                                    colorClass = "bg-green-600 dark:bg-green-500";
+                                    colorClass = "bg-green-600";
                                   else if (intensity > 0.5)
-                                    colorClass = "bg-green-400 dark:bg-green-600";
+                                    colorClass = "bg-green-400";
                                   else if (intensity > 0.2)
-                                    colorClass = "bg-green-200 dark:bg-green-800";
+                                    colorClass = "bg-green-200";
 
                                   return (
                                       <div
@@ -282,10 +282,10 @@ export default function Me() {
                           </a>
                           <div className="flex items-center gap-1">
                             <span>Less</span>
-                            <div className="w-3 h-3 rounded-[2px] bg-gray-100 dark:bg-gray-800"></div>
-                            <div className="w-3 h-3 rounded-[2px] bg-green-200 dark:bg-green-800"></div>
-                            <div className="w-3 h-3 rounded-[2px] bg-green-400 dark:bg-green-600"></div>
-                            <div className="w-3 h-3 rounded-[2px] bg-green-600 dark:bg-green-500"></div>
+                            <div className="w-3 h-3 rounded-[2px] bg-gray-100"></div>
+                            <div className="w-3 h-3 rounded-[2px] bg-green-200"></div>
+                            <div className="w-3 h-3 rounded-[2px] bg-green-400"></div>
+                            <div className="w-3 h-3 rounded-[2px] bg-green-600"></div>
                             <span>More</span>
                           </div>
                         </div>
@@ -335,17 +335,17 @@ export default function Me() {
                     ].map((item, index) => (
                         <GlassCard
                             key={index}
-                            className="p-4 flex items-center gap-4 hover:bg-white/60 dark:hover:bg-black/40 cursor-pointer transition-colors group"
+                            className="p-4 flex items-center gap-4 hover:bg-white/60 cursor-pointer transition-colors group"
                         >
                           <div
-                              className="w-10 h-10 rounded-full bg-white/50 dark:bg-white/10 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
+                              className="w-10 h-10 rounded-full bg-white/50 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform">
                             <i className={`uil uil-${item.icon}`}></i>
                           </div>
                           <div>
-                            <h4 className="text-gray-900 dark:text-white font-medium">
+                            <h4 className="text-gray-900 font-medium">
                               {item.title}
                             </h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            <p className="text-xs text-gray-500 mt-0.5">
                               {item.desc}
                             </p>
                           </div>
@@ -359,10 +359,10 @@ export default function Me() {
                   activeTab === "evaluations") && (
                   <GlassCard className="p-12 text-center flex flex-col items-center justify-center border-dashed">
                     <div className="text-5xl mb-4 opacity-50">🚧</div>
-                    <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200 mb-2">
+                    <h3 className="text-xl font-medium text-gray-800 mb-2">
                       正在建设中
                     </h3>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    <p className="text-gray-500 max-w-md mx-auto">
                       该板块内容的数据接口还在调试中，你可以先浏览概览页或设置相关信息。
                     </p>
                   </GlassCard>

@@ -145,10 +145,10 @@ export default function SearchBar({
       className={`flex flex-col items-center w-full z-10 transition-all duration-300 pointer-events-auto px-4 sm:px-0 relative ${wrapperClassName}`}
     >
       <div
-        className={`relative flex items-center w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/80 backdrop-blur-xl rounded-[32px] transition-all duration-500 mx-auto overflow-hidden group border border-white/20 dark:border-white/5 ${
+        className={`relative flex items-center w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/80 backdrop-blur-xl rounded-[32px] transition-all duration-500 mx-auto overflow-hidden group border border-white/20 ${
           isFocused
-            ? "scale-[1.02] shadow-[6px_6px_20px_rgba(0,0,0,0.1),-6px_-6px_20px_rgba(255,255,255,0.8),inset_0_0_0_1px_var(--first-color)] dark:shadow-[6px_6px_20px_rgba(0,0,0,0.5),-6px_-6px_20px_rgba(255,255,255,0.05),inset_0_0_0_1px_var(--first-color)]"
-            : "scale-100 shadow-[4px_4px_12px_rgba(0,0,0,0.25),-4px_-4px_12px_rgba(255,255,255,0.5)] dark:shadow-[4px_4px_12px_rgba(0,0,0,0.25),-4px_-4px_12px_rgba(255,255,255,0.02)]"
+            ? "scale-[1.02] shadow-[6px_6px_20px_rgba(0,0,0,0.1),-6px_-6px_20px_rgba(255,255,255,0.8),inset_0_0_0_1px_var(--first-color)]"
+            : "scale-100 shadow-[4px_4px_12px_rgba(0,0,0,0.25),-4px_-4px_12px_rgba(255,255,255,0.5)]"
         } ${className}`}
       >
         <div className="pl-4 sm:pl-5 pr-2 text-[var(--text-color-light)] shrink-0 transition-transform duration-500 group-focus-within:scale-110 group-focus-within:rotate-3">
@@ -234,15 +234,15 @@ export default function SearchBar({
 
       {/* Search History Dropdown */}
       <div
-        className={`absolute top-[70px] sm:top-[80px] w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/90 backdrop-blur-2xl rounded-[20px] overflow-hidden transition-all duration-400 origin-top border border-white/20 dark:border-[var(--border-color)] z-20 ${
+        className={`absolute top-[70px] sm:top-[80px] w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/90 backdrop-blur-2xl rounded-[20px] overflow-hidden transition-all duration-400 origin-top border border-white/20 z-20 ${
           isFocused
-            ? "opacity-100 scale-100 translate-y-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] pointer-events-auto"
+            ? "opacity-100 scale-100 translate-y-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-2 shadow-none pointer-events-none"
         }`}
       >
         {history.length > 0 ? (
           <>
-            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-b from-transparent to-black/5 dark:to-white/5">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200/50 bg-gradient-to-b from-transparent to-black/5">
               <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--first-color)] to-[var(--first-color-alt)]">
                 最新搜索
               </span>

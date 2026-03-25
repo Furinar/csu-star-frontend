@@ -17,15 +17,6 @@
   transition: background 1.8s ease;
 }
 
-:global(.dark-theme) .login-form{
-  --login-bg-start: #0a1424;
-  --login-bg-end: #1a2842;
-  --panel-shadow: rgba(0,0,0,0.45);
-  --surface-border: rgba(120, 180, 255, 0.16);
-  --social-border: rgba(180, 215, 255, 0.25);
-}
-
-
 .container{
   position: relative;
   width: 850px;

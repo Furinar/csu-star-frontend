@@ -2,7 +2,6 @@
 
 import type {NavItem} from "@/types/component";
 import Link from "next/link";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 import {useAuthStore} from "@/store/useAuthStore";
 import Image from "next/image";
 import {useEffect, useRef, useState} from "react";
@@ -156,10 +155,6 @@ export default function BaseNav({
             </Link>
 
             <div className="flex gap-x-3 items-center">
-              <ThemeToggle/>
-
-              <div className="w-[1px] h-5 bg-[var(--nav-splitter)] opacity-60"/>
-
               <div className="flex items-center">
                 {avatar ? (
                     <Image
@@ -202,7 +197,7 @@ export default function BaseNav({
 
             {menuOpen && (
                 <div
-                    className="absolute top-[calc(var(--header-height)+1rem)] right-4 w-48 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] dark:shadow-[0_4px_24px_rgba(255,255,255,0.08)] rounded-xl border border-[var(--nav-splitter)] z-fixed overflow-hidden origin-top-right">
+                    className="absolute top-[calc(var(--header-height)+1rem)] right-4 w-48 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] z-fixed overflow-hidden origin-top-right">
                   <nav>
                     <ul className="flex flex-col py-2">
                       {navItems.map((item) => {
@@ -264,10 +259,6 @@ export default function BaseNav({
                   );
                 })}
               </ul>
-
-              <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60"/>
-
-              <ThemeToggle/>
 
               <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60"/>
 

@@ -23,14 +23,14 @@ export default function RatingBar({ label, score, maxScore = 5, color }: RatingB
 
     return (
         <div className="flex w-full items-center gap-3 py-1">
-            <span className="w-20 truncate text-sm font-medium text-gray-600 dark:text-gray-300">{displayLabel}</span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200/90 dark:bg-zinc-700/80">
+            <span className="w-20 truncate text-sm font-medium text-gray-600">{displayLabel}</span>
+            <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200/90">
                 <div
                     className="h-full rounded-full transition-[width] duration-300 ease-out"
                     style={{ width, background: COLOR_PRESETS[colorIndex] }}
                 />
             </div>
-            <span className="w-11 text-right text-sm font-semibold tabular-nums text-gray-500 dark:text-gray-100">
+            <span className="w-11 text-right text-sm font-semibold tabular-nums text-gray-500">
                 {safeScore.toFixed(2)}
             </span>
         </div>

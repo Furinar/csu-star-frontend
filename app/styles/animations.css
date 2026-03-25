@@ -105,13 +105,6 @@
   background-clip: text;
 }
 
-.dark-theme .hero-gradient-text {
-  background: linear-gradient(135deg, var(--ice-400) 0%, var(--glow-300) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* 流星移动端适配 */
 @media screen and (max-width: 767px) {
   .star-d { left: 95%; }

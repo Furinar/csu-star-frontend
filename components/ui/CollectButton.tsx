@@ -40,10 +40,10 @@ export default function CollectButton({
   return (
     <button
       onClick={onClick}
-      className={`group relative flex items-center justify-center rounded-full border border-gray-200 dark:border-white/20 bg-white dark:bg-[#0c0c0c] cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 ${s.button}`}
+      className={`group relative flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 ${s.button}`}
     >
       <span
-        className={`absolute left-[4px] z-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-300 ${s.iconCont} ${s.iconContHover} ${isCollected ? "bg-gradient-to-b from-[#ff88ff] to-[#ac46ff] dark:from-blue-400 dark:to-blue-600" : "bg-gray-300 dark:bg-gray-600"}`}
+        className={`absolute left-[4px] z-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-300 ${s.iconCont} ${s.iconContHover} ${isCollected ? "bg-gradient-to-b from-[#ff88ff] to-[#ac46ff]" : "bg-gray-300"}`}
       >
         <svg
           viewBox="0 0 384 512"
@@ -54,7 +54,7 @@ export default function CollectButton({
         </svg>
       </span>
       <p
-        className={`z-0 flex h-full items-center justify-center text-gray-800 dark:text-white transition-all duration-300 ml-auto mr-[4px] ${s.text} group-hover:w-0 group-hover:text-[0px] ${s.textHover}`}
+        className={`z-0 flex h-full items-center justify-center text-gray-800 transition-all duration-300 ml-auto mr-[4px] ${s.text} group-hover:w-0 group-hover:text-[0px] ${s.textHover}`}
       >
         {isCollected ? "Saved" : "Save"}
       </p>

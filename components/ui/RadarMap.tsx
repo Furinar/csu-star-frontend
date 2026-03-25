@@ -151,19 +151,11 @@ export default function RadarMap({
         renderChart();
 
         const resizeHandler = () => myChart.resize();
-        const themeObserver = new MutationObserver(() => {
-            renderChart();
-        });
 
         window.addEventListener('resize', resizeHandler);
-        themeObserver.observe(document.documentElement, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
 
         return () => {
             window.removeEventListener('resize', resizeHandler);
-            themeObserver.disconnect();
             myChart.dispose();
         };
     }, [values, indicator]);

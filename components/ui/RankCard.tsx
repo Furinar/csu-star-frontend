@@ -16,9 +16,9 @@ interface RankCardProps {
 
 export default function RankCard({ title, data }: RankCardProps) {
   return (
-    <div className="flex flex-col flex-1 p-6 rounded-3xl bg-white/30 dark:bg-black/30 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] dark:shadow-black/50 transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] min-w-[280px]">
+    <div className="flex flex-col flex-1 p-6 rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] min-w-[280px]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+        <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           {title}
         </h3>
         <button className="text-sm text-gray-500 hover:text-blue-500 transition-colors">
@@ -51,7 +51,7 @@ export default function RankCard({ title, data }: RankCardProps) {
             );
           else
             medalIcon = (
-              <span className="text-base text-gray-400 dark:text-gray-500 font-medium w-5 text-center">
+              <span className="text-base text-gray-400 font-medium w-5 text-center">
                 {index + 1}
               </span>
             );
@@ -65,19 +65,19 @@ export default function RankCard({ title, data }: RankCardProps) {
               whileHover={{ scale: 1.02, x: 5 }}
               className={`flex items-center gap-4 p-3 rounded-2xl transition-colors cursor-pointer ${
                 isTop3
-                  ? "bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10"
-                  : "hover:bg-white/40 dark:hover:bg-white/5"
+                  ? "bg-white/50 hover:bg-white/80"
+                  : "hover:bg-white/40"
               }`}
             >
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full shadow-lg border ${
                   index === 0
-                    ? "bg-gradient-to-br from-yellow-100 to-amber-50 dark:from-yellow-900/40 dark:to-amber-900/20 border-yellow-300/50 dark:border-yellow-500/30"
+                    ? "bg-gradient-to-br from-yellow-100 to-amber-50 border-yellow-300/50"
                     : index === 1
-                      ? "bg-gradient-to-br from-slate-100 to-gray-50 dark:from-slate-800/40 dark:to-gray-800/20 border-slate-300/50 dark:border-slate-500/30"
+                      ? "bg-gradient-to-br from-slate-100 to-gray-50 border-slate-300/50"
                       : index === 2
-                        ? "bg-gradient-to-br from-orange-100 to-red-50 dark:from-orange-900/40 dark:to-red-900/20 border-orange-300/50 dark:border-orange-500/30"
-                        : "bg-white/50 dark:bg-black/50 border-white/20 dark:border-white/5"
+                        ? "bg-gradient-to-br from-orange-100 to-red-50 border-orange-300/50"
+                        : "bg-white/50 border-white/20"
                 }`}
               >
                 {medalIcon}
@@ -89,8 +89,8 @@ export default function RankCard({ title, data }: RankCardProps) {
                     index === 0
                       ? "hero-gradient-text font-bold text-lg"
                       : isTop3
-                        ? "font-bold text-gray-900 dark:text-gray-100"
-                        : "font-medium text-gray-800 dark:text-gray-200"
+                        ? "font-bold text-gray-900"
+                        : "font-medium text-gray-800"
                   }`}
                 >
                   {item.name}
@@ -98,10 +98,10 @@ export default function RankCard({ title, data }: RankCardProps) {
               </div>
 
               <div className="flex items-center gap-1">
-                <span className="font-bold text-indigo-600 dark:text-indigo-400 text-center w-10">
+                <span className="font-bold text-indigo-600 text-center w-10">
                   {item.score.toFixed(2)}
                 </span>
-                {/*<span className="text-xs text-gray-500 dark:text-gray-400">*/}
+                {/*<span className="text-xs text-gray-500">*/}
                 {/*  分*/}
                 {/*</span>*/}
               </div>

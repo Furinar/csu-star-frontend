@@ -2,7 +2,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Stepper, { Step } from "@/components/ui/Stepper";
-import ThemeToggleButton from "../components/ThemeToggleButton";
 import { avatarOptions } from "@/data/avatar";
 import { useRouter } from "next/navigation";
 import { registerByEmail } from "@/api/auth";
@@ -94,7 +93,6 @@ export default function Register() {
 
   return (
     <>
-      <ThemeToggleButton />
       <div className="flex min-h-svh flex-col items-center justify-center relative">
         <Stepper
           initialStep={1}
