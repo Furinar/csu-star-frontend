@@ -66,11 +66,6 @@ export interface TokenResponse {
 }
 
 
-export interface LoginResponse {
-  tokens: TokenResponse;
-  user: UserProfile;
-}
-
 export interface RegisterByEmailRequest {
   avatar_url: string;
   email: string;
@@ -80,7 +75,7 @@ export interface RegisterByEmailRequest {
   password: string;
 }
 
-export interface LoginByEmailResponse {
+export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   // 默认7200s即2h

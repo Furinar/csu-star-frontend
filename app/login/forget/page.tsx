@@ -3,6 +3,7 @@ import Stepper, {Step} from "@/components/ui/Stepper";
 import {useState} from "react";
 import {recoverPwd, sendCaptcha} from "@/api/auth";
 import {useRouter} from "next/navigation";
+import CryptoJS from "crypto-js";
 
 export default function Forget() {
 
@@ -47,9 +48,12 @@ export default function Forget() {
         return false;
       }
       setErrorInfo("");
+      const hashPwd = CryptoJS.SHA256(pwd1).toString(
+          CryptoJS.enc.Hex
+      );
       try {
         const result = await recoverPwd({
-          email, password: pwd1, captcha
+          email, password: hashPwd, captcha
         });
         return true;
       } catch (err) {

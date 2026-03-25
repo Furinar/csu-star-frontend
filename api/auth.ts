@@ -1,7 +1,7 @@
 import {ApiResponse, service} from "@/lib/request";
-import {LoginByEmailResponse, RegisterByEmailRequest, TokenResponse} from "@/types/auth";
+import {LoginResponse, RegisterByEmailRequest, TokenResponse} from "@/types/auth";
 
-
+// WIP
 //校园邮箱注册
 const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<null>> => {
   return service.post('/auth/email/email', payload);
@@ -24,16 +24,28 @@ const verifyEmail = (email: string, captcha: string): Promise<ApiResponse<null>>
   })
 }
 
+
+// WIP
 // 校园邮箱登录
-const loginByEmail = (payload: { email: string, password: string }): Promise<ApiResponse<LoginByEmailResponse>> => {
+const loginByEmail = (payload: { email: string, password: string }): Promise<ApiResponse<LoginResponse>> => {
   return service.post('/auth/email/login', payload);
 }
 
+// NOTE 目前使用axios实现
 // 刷新 Access Token
 const refreshToken = (refresh_token: string): Promise<ApiResponse<TokenResponse>> => {
   return service.post('/auth/refresh', {
     refresh_token
   });
+}
+
+// WIP
+// 第三方OAuth登录
+const loginByOAuth = (provider: string, code: string): Promise<ApiResponse<LoginResponse>> => {
+  return service.post('/auth/oauth/login', {
+    provider,
+    code,
+  })
 }
 
 //登出
@@ -55,4 +67,5 @@ export {
   recoverPwd,
   verifyEmail,
   loginByEmail,
+  loginByOAuth,
 }

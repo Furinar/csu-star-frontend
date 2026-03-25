@@ -3,10 +3,63 @@
 import {useEffect, useState} from "react";
 import styles from "./style.module.css";
 import {useRouter, useSearchParams} from "next/navigation";
-import {sendCaptcha, verifyEmail,} from "@/api/auth";
+import {loginByEmail, sendCaptcha, verifyEmail,} from "@/api/auth";
 import Link from "next/link";
 import CryptoJS from "crypto-js";
 import {useTimer} from "@/hooks/useTimer";
+import {useAuthStore} from "@/store/useAuthStore";
+
+const AUTH_CONFIG = {
+  qq: {
+    url: "https://graph.qq.com/oauth2.0/authorize",
+    client_id: process.env.NEXT_PUBLIC_QQ_CLIENT_ID!,
+    redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
+    scope: "get_user_info",
+  },
+  github: {
+    url: "https://github.com/login/oauth/authorize",
+    client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID!,
+    redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
+    scope: "user:email", // 权限范围
+  },
+  google: {
+    url: "https://accounts.google.com/o/oauth2/v2/auth",
+    client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+    redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
+    scope: "openid email profile", // 权限范围
+  },
+};
+
+const isMobile = () => {
+  if (typeof window !== "undefined") {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+    );
+  } else {
+    return false;
+  }
+};
+
+const getAuthUrl = (platform: keyof typeof AUTH_CONFIG) => {
+  const config = AUTH_CONFIG[platform];
+  const state = `${platform}:${Math.random().toString(36).substring(2, 15)}`
+
+  if (typeof window !== 'undefined')
+    localStorage!.setItem("state", state);
+  const params = new URLSearchParams({
+    client_id: config.client_id,
+    redirect_uri: config.redirect_uri,
+    scope: config.scope,
+    response_type: "code",
+    state: state,
+  })
+
+  if (platform === "qq" && isMobile()) {
+    params.append("display", "mobile");
+  }
+
+  return `${config.url}?${params.toString()}`;
+}
 
 export default function Login() {
   const router = useRouter();
@@ -14,6 +67,10 @@ export default function Login() {
   const searchParams = useSearchParams()
   // Login部分
   const [showLoginPwd, setShowLoginPwd] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [Loading, setLoading] = useState(false);
   // Register部分
   const [showRegisterPwd, setShowRegisterPwd] = useState(false);
   const {countdown, startTimer} = useTimer(0);
@@ -23,7 +80,7 @@ export default function Login() {
   const [registerError, setRegisterError] = useState("");
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
-
+  const login = useAuthStore((state) => state.login);
   useEffect(() => {
     const type = searchParams.get("type");
     if (type === "true") {
@@ -34,12 +91,8 @@ export default function Login() {
   }, [searchParams]);
 
   const toCsuEmail = (value: string) => {
-    if (value.endsWith("@csu.edu.cn")) return value;
-    else return `${value.trim().toLowerCase()}@csu.edu.cn`;
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    const prefix = value.split('@')[0].trim().toLowerCase();
+    return `${prefix}@csu.edu.cn`;
   };
 
   const handleSendCode = async () => {
@@ -95,7 +148,7 @@ export default function Login() {
       );
 
       const hashPwd = CryptoJS.SHA256(registerPassword).toString(
-          CryptoJS.enc.Hex,
+          CryptoJS.enc.Hex
       );
 
       sessionStorage.setItem(
@@ -113,6 +166,46 @@ export default function Login() {
     }
   };
 
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (Loading)
+      return;
+
+    if (loginEmail.trim() === "" || loginPassword.trim() === "") {
+      setLoginError("账号或密码不能为空");
+      return;
+    }
+
+    if (loginPassword.trim().length < 8) {
+      setLoginError("密码不能少于8位");
+      return;
+    }
+
+    setLoginError("");
+    const email = toCsuEmail(loginEmail.trim());
+    const hashPwd = CryptoJS.SHA256(loginPassword).toString(
+        CryptoJS.enc.Hex
+    );
+
+    setLoading(true);
+    try {
+      const result = await loginByEmail({
+        email,
+        password: hashPwd
+      })
+      const data = result.data;
+      login(data.access_token, data.refresh_token, data.user);
+      setLoading(false);
+      router.replace("/home");
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "登录失败，请稍后再试";
+      setLoginError(errorMsg);
+      setLoading(false);
+      return;
+    }
+  };
+
   return (
       <div className={styles["login-form"]}>
         <div className={`${styles.container} ${isActive ? styles.active : ""}`}>
@@ -122,7 +215,8 @@ export default function Login() {
               <h1>Login</h1>
 
               <div className={styles["input-box"]}>
-                <input type="text" placeholder="email" required/>
+                <input type="text" placeholder="email" required onChange={e => setLoginEmail(e.target.value)}
+                       value={loginEmail}/>
                 <span
                     className="absolute right-3 top-[50%] -translate-y-1/2 border-l border-gray-400 pl-3 text-md text-gray-600">
                 @csu.edu.cn
@@ -134,6 +228,8 @@ export default function Login() {
                     type={showLoginPwd ? "text" : "password"}
                     placeholder="password"
                     required
+                    onChange={e => setLoginPassword(e.target.value)}
+                    value={loginPassword}
                 />
                 <button
                     type="button"
@@ -153,23 +249,34 @@ export default function Login() {
                 </Link>
               </div>
 
-              <button className={styles.btn} type="submit">
-                Login
+              {
+                loginError === "" ? null : (
+                    <div className="text-red-500">
+                      {loginError}
+                    </div>
+                )
+              }
+
+              <button className={styles.btn} type="submit"
+                      style={Loading ? {pointerEvents: 'none', opacity: 0.6} : undefined} disabled={Loading}>
+                {
+                  !Loading ? (<span>Login</span>) : (<span>Loading</span>)
+                }
               </button>
 
               <p>or login with social platforms</p>
 
               <div className={styles["social-icons"]}>
-                <a href="#">
-                  <i className="fa-brands fa-weixin"></i>
-                </a>
-                <a href="#">
+                {/*<a href="#">*/}
+                {/*  <i className="fa-brands fa-weixin"></i>*/}
+                {/*</a>*/}
+                <a href={getAuthUrl("qq")}>
                   <i className="fa-brands fa-qq"></i>
                 </a>
-                <a href="#">
+                <a href={getAuthUrl("github")}>
                   <i className="fa-brands fa-github"></i>
                 </a>
-                <a href="#">
+                <a href={getAuthUrl("google")}>
                   <i className="fa-brands fa-google"></i>
                 </a>
               </div>
@@ -263,23 +370,23 @@ export default function Login() {
                 </a>
               </p>
               <div className={styles["social-icons"]}>
-                <a href="#">
-                  <i className="fa-brands fa-weixin"></i>
-                </a>
-
-                <a href="#">
+                {/*<a href="#">*/}
+                {/*  <i className="fa-brands fa-weixin"></i>*/}
+                {/*</a>*/}
+                <a href={getAuthUrl('qq')}>
                   <i className="fa-brands fa-qq"></i>
                 </a>
-                <a href="#">
+                <a href={getAuthUrl('github')}>
                   <i className="fa-brands fa-github"></i>
                 </a>
-                <a href="#">
+                <a href={getAuthUrl('google')}>
                   <i className="fa-brands fa-google"></i>
                 </a>
               </div>
             </form>
           </div>
 
+          {/* toggle-box */}
           <div className={styles["toggle-box"]}>
             <div className={`${styles["toggle-panel"]} ${styles["toggle-left"]}`}>
               <h1>CSU Star</h1>
