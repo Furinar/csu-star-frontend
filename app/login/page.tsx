@@ -212,7 +212,7 @@ export default function Login() {
         password: hashPwd
       })
       const data = result.data;
-      login(data.access_token, data.refresh_token, data.user);
+      login(data.access_token, data.refresh_token ?? null, data.user ?? null);
       feedback.success({
         title: "登录成功",
         description: "正在进入首页。",

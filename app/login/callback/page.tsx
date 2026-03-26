@@ -33,7 +33,7 @@ export default function CallBack() {
         const [platform] = state.split(":");
         const result = await loginByOAuth(platform, code);
         const data = result.data;
-        login(data.access_token, data.refresh_token, data.user);
+        login(data.access_token, data.refresh_token ?? null, data.user ?? null);
         setLoginType("success");
       } catch {
         setLoginType("error");

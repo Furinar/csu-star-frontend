@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import AuthBootstrap from "@/components/auth/AuthBootstrap";
 import FeedbackToaster from "@/components/ui/FeedbackToaster";
 import "./globals.css";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
         />
       </head>
       <body className={poppins.className}>
+        <AuthBootstrap />
         {children}
         <FeedbackToaster />
       </body>

@@ -10,8 +10,12 @@ interface AuthState {
   _hasHydrated: boolean; // Zustand 内部使用，表示状态是否已从存储中恢复
 
   setToken: (access_token: string) => void;
-  setUser: (user: UserProfile) => void;
-  login: (access_token: string, refresh_token: string, user: UserProfile) => void;
+  setUser: (user: UserProfile | null) => void;
+  login: (
+    access_token: string,
+    refresh_token: string | null,
+    user?: UserProfile | null,
+  ) => void;
   logout: () => void;
   setHasHydrated: (v: boolean) => void;
 }
@@ -26,7 +30,8 @@ export const useAuthStore = create<AuthState>()(
 
           setToken: (access_token) => set({access_token}),
           setUser: (user) => set({user}),
-          login: (access_token, refresh_token, user) => set({access_token, refresh_token, user}),
+          login: (access_token, refresh_token, user = null) =>
+            set({access_token, refresh_token, user}),
           logout: () => set({access_token: null, refresh_token: null, user: null}),
           setHasHydrated: (v) => set({_hasHydrated: v})
         }),

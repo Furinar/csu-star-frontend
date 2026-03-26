@@ -687,7 +687,6 @@ export default function Me() {
   const storedUser = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const setUser = useAuthStore((state) => state.setUser);
-  const storedUserId = storedUser?.id;
 
   const profile = dashboard?.profile ?? storedUser;
   const emailStatus =
@@ -723,7 +722,7 @@ export default function Me() {
 
   const loadDashboard = useCallback(
     async (showToast = false) => {
-      if (!accessToken || !storedUserId) {
+      if (!accessToken) {
         setDashboard(null);
         setLoadError("");
         return;
@@ -749,7 +748,7 @@ export default function Me() {
         setIsLoadingDashboard(false);
       }
     },
-    [accessToken, setUser, storedUserId],
+    [accessToken, setUser],
   );
 
   useEffect(() => {
@@ -757,7 +756,7 @@ export default function Me() {
       return;
     }
 
-    if (!accessToken || !storedUserId) {
+    if (!accessToken) {
       setDashboard(null);
       setDownloads(createEmptyPaginated());
       setNotifications(createEmptyPaginated());
@@ -767,7 +766,7 @@ export default function Me() {
     }
 
     void loadDashboard();
-  }, [accessToken, hasHydrated, loadDashboard, storedUserId]);
+  }, [accessToken, hasHydrated, loadDashboard]);
 
   const loadDownloadsData = async () => {
     if (!accessToken) {
