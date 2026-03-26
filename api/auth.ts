@@ -1,10 +1,10 @@
-import {ApiResponse, service} from "@/lib/request";
-import {LoginResponse, RegisterByEmailRequest, TokenResponse} from "@/types/auth";
+import { ApiResponse, service } from "@/lib/request";
+import { LoginResponse, RegisterByEmailRequest, TokenResponse } from "@/types/auth";
 
 // WIP
 //校园邮箱注册
 const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<null>> => {
-  return service.post('/auth/email/email', payload);
+  return service.post('/auth/email/register', payload);
 }
 
 // WIP

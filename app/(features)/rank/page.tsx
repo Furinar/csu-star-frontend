@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import RankItemCard from "@/components/ui/RankItemCard";
 import RatingBar from "@/components/ui/RatingBar";
 import {
   getCourseDetail,
@@ -426,204 +427,23 @@ export default function Rank() {
             resourceItems.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {resourceItems.map((item, index) => (
-                  <div
+                  <RankItemCard
                     key={`${item.id}-${index}`}
-                    className="rounded-2xl border border-gray-200 bg-white px-4 py-4 md:px-5 md:py-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
-                  >
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
-                            {item.rank || index + 1}
-                          </span>
-                          <div className="text-lg font-semibold text-gray-800">
-                            {item.title}
-                          </div>
-                        </div>
-                        <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
-                          <span>资源 ID：{item.id}</span>
-                          <span>课程 ID：{item.course_id || "--"}</span>
-                          <span>资源类型：{item.resource_type || "--"}</span>
-                          <span>
-                            适用学期：
-                            {formatSemester(
-                              item.semester_start,
-                              item.semester_end,
-                            )}
-                          </span>
-                          <span>
-                            上传时间：{formatDateTime(item.created_at)}
-                          </span>
-                          <span>
-                            积分：
-                            {typeof item.points_cost === "number"
-                              ? item.points_cost
-                              : "--"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500 md:text-right">
-                        <div>综合：{formatNumber(item.score)}</div>
-                        <div>下载：{formatInteger(item.downloads)}</div>
-                        <div>浏览：{formatInteger(item.views)}</div>
-                        <div>点赞：{formatInteger(item.likes)}</div>
-                        <div>热度：{formatNumber(item.hot_score)}</div>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-1 gap-3">
-                      <RatingBar
-                        label="综合指数"
-                        score={typeof item.score === "number" ? item.score : 0}
-                        maxScore={5}
-                        color={0}
-                      />
-                    </div>
-                  </div>
+                    type="resource"
+                    item={{ ...item, rank: item.rank || index + 1 }}
+                    filterLabel={
+                      currentCategory.filters.find((f) => f.type === filterType)
+                        ?.label || ""
+                    }
+                    filterValue={
+                      (item[filterType as keyof typeof item] as
+                        | string
+                        | number
+                        | null
+                        | undefined) ?? item.score
+                    }
+                  />
                 ))}
-              </div>
-            ) : null}
-
-            {!errorMessage &&
-            !loading &&
-            rankCategory !== "resource" &&
-            rankingItems.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {rankingItems.map((item, index) => {
-                  if (rankCategory === "course") {
-                    const detail = courseDetails[item.id];
-                    return (
-                      <div
-                        key={`${item.id}-${index}`}
-                        className="rounded-2xl border border-gray-200 bg-white px-4 py-4 md:px-5 md:py-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
-                      >
-                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-3">
-                              <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
-                                {item.rank || index + 1}
-                              </span>
-                              <div className="text-lg font-semibold text-gray-800">
-                                {item.name}
-                              </div>
-                            </div>
-                            <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
-                              <span>课程 ID：{item.id}</span>
-                              <span>课程代码：{detail?.code || "--"}</span>
-                              <span>
-                                课程类型：{detail?.course_type || "--"}
-                              </span>
-                              <span>
-                                学分：
-                                {typeof detail?.credits === "number"
-                                  ? detail.credits
-                                  : "--"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-sm text-gray-500 md:text-right">
-                            <div>榜单分值：{formatNumber(item.score)}</div>
-                            <div>
-                              评价数：{formatInteger(detail?.eval_count)}
-                            </div>
-                            <div>
-                              资源数：{formatInteger(detail?.resource_count)}
-                            </div>
-                            <div>热度：{formatNumber(detail?.hot_score)}</div>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <RatingBar
-                            label="综合评分"
-                            score={detail?.avg_score || item.score}
-                            maxScore={5}
-                            color={0}
-                          />
-                          <RatingBar
-                            label="作业量"
-                            score={detail?.avg_homework || 0}
-                            maxScore={5}
-                            color={1}
-                          />
-                          <RatingBar
-                            label="收获感"
-                            score={detail?.avg_gain || 0}
-                            maxScore={5}
-                            color={2}
-                          />
-                          <RatingBar
-                            label="考试难度"
-                            score={detail?.avg_exam_diff || 0}
-                            maxScore={5}
-                            color={3}
-                          />
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  const detail = teacherDetails[item.id];
-                  return (
-                    <div
-                      key={`${item.id}-${index}`}
-                      className="rounded-2xl border border-gray-200 bg-white px-4 py-4 md:px-5 md:py-5 shadow-[0_8px_22px_rgba(0,0,0,0.04)]"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
-                              {item.rank || index + 1}
-                            </span>
-                            <div className="text-lg font-semibold text-gray-800">
-                              {item.name}
-                            </div>
-                          </div>
-                          <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
-                            <span>教师 ID：{item.id}</span>
-                            <span>
-                              所属学院：{item.department_name || "--"}
-                            </span>
-                            <span>职称：{detail?.title || "--"}</span>
-                            <span>热度：{formatNumber(detail?.hot_score)}</span>
-                          </div>
-                        </div>
-                        <div className="text-sm text-gray-500 md:text-right">
-                          <div>榜单分值：{formatNumber(item.score)}</div>
-                          <div>评价数：{formatInteger(detail?.eval_count)}</div>
-                          <div>热度：{formatNumber(detail?.hot_score)}</div>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <RatingBar
-                          label="综合评分"
-                          score={detail?.avg_score || item.score}
-                          maxScore={5}
-                          color={0}
-                        />
-                        <RatingBar
-                          label="教学质量"
-                          score={detail?.avg_quality || 0}
-                          maxScore={5}
-                          color={1}
-                        />
-                        <RatingBar
-                          label="给分宽松"
-                          score={detail?.avg_grading || 0}
-                          maxScore={5}
-                          color={2}
-                        />
-                        <RatingBar
-                          label="考勤要求"
-                          score={detail?.avg_attendance || 0}
-                          maxScore={5}
-                          color={3}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             ) : null}
 
