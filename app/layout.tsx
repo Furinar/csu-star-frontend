@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import FeedbackToaster from "@/components/ui/FeedbackToaster";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -40,7 +41,10 @@ export default function RootLayout({
           href="https://cdn.jsdmirror.com/npm/@iconscout/unicons@3.0.6/css/line.css"
         />
       </head>
-      <body className={poppins.className}>{children}</body>
+      <body className={poppins.className}>
+        {children}
+        <FeedbackToaster />
+      </body>
     </html>
   );
 }

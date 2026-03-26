@@ -5,6 +5,7 @@ import Stepper, { Step } from "@/components/ui/Stepper";
 import { avatarOptions } from "@/data/avatar";
 import { useRouter } from "next/navigation";
 import { registerByEmail } from "@/api/auth";
+import { feedback } from "@/store/useFeedbackStore";
 
 export default function Register() {
   const router = useRouter();
@@ -75,7 +76,11 @@ export default function Register() {
       });
 
       sessionStorage.removeItem("registerPayload");
-      router.push("/login?success=1");
+      feedback.success({
+        title: "注册完成",
+        description: "账号已创建，返回登录页。",
+      });
+      router.push("/login");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "注册失败，请稍后重试";

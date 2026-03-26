@@ -8,6 +8,9 @@ import Link from "next/link";
 import CryptoJS from "crypto-js";
 import {useTimer} from "@/hooks/useTimer";
 import {useAuthStore} from "@/store/useAuthStore";
+import {feedback} from "@/store/useFeedbackStore";
+
+type AuthPlatform = keyof typeof AUTH_CONFIG;
 
 const AUTH_CONFIG = {
   qq: {
@@ -30,36 +33,36 @@ const AUTH_CONFIG = {
   },
 };
 
-const isMobile = () => {
-  if (typeof window !== "undefined") {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-    );
-  } else {
-    return false;
-  }
+const isMobileDevice = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+  );
 };
 
-const getAuthUrl = (platform: keyof typeof AUTH_CONFIG) => {
-  const config = AUTH_CONFIG[platform];
-  const state = `${platform}:${Math.random().toString(36).substring(2, 15)}`
+const createOAuthState = (platform: AuthPlatform) => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return `${platform}:${crypto.randomUUID()}`;
+  }
 
-  if (typeof window !== 'undefined')
-    localStorage!.setItem("state", state);
+  return `${platform}:${Math.random().toString(36).substring(2, 15)}`;
+};
+
+const buildAuthUrl = (platform: AuthPlatform, state: string, isMobile: boolean) => {
+  const config = AUTH_CONFIG[platform];
   const params = new URLSearchParams({
     client_id: config.client_id,
     redirect_uri: config.redirect_uri,
     scope: config.scope,
     response_type: "code",
     state: state,
-  })
+  });
 
-  if (platform === "qq" && isMobile()) {
+  if (platform === "qq" && isMobile) {
     params.append("display", "mobile");
   }
 
   return `${config.url}?${params.toString()}`;
-}
+};
 
 export default function Login() {
   const router = useRouter();
@@ -95,6 +98,12 @@ export default function Login() {
     return `${prefix}@csu.edu.cn`;
   };
 
+  const handleOAuthLogin = (platform: AuthPlatform) => {
+    const state = createOAuthState(platform);
+    localStorage.setItem("state", state);
+    window.location.assign(buildAuthUrl(platform, state, isMobileDevice()));
+  };
+
   const handleSendCode = async () => {
     if (countdown > 0) return;
 
@@ -109,6 +118,10 @@ export default function Login() {
 
     try {
       await sendCaptcha(toCsuEmail(emailPrefix));
+      feedback.success({
+        title: "验证码已发送",
+        description: `请查收 ${toCsuEmail(emailPrefix)} 的邮件。`,
+      });
     } catch (error) {
       const message =
           error instanceof Error ? error.message : "验证码发送失败，请稍后重试";
@@ -143,7 +156,7 @@ export default function Login() {
 
     try {
       const email = toCsuEmail(registerEmail);
-      const result = await verifyEmail(
+      await verifyEmail(
           email, registerCode.trim()
       );
 
@@ -156,6 +169,10 @@ export default function Login() {
           JSON.stringify({email: email, password: hashPwd}),
       );
 
+      feedback.info({
+        title: "邮箱验证通过",
+        description: "继续补充资料后即可完成注册。",
+      });
       router.push(`/login/register`);
     } catch (error) {
       const message =
@@ -196,6 +213,10 @@ export default function Login() {
       })
       const data = result.data;
       login(data.access_token, data.refresh_token, data.user);
+      feedback.success({
+        title: "登录成功",
+        description: "正在进入首页。",
+      });
       setLoading(false);
       router.replace("/home");
     } catch (error) {
@@ -267,18 +288,15 @@ export default function Login() {
               <p>or login with social platforms</p>
 
               <div className={styles["social-icons"]}>
-                {/*<a href="#">*/}
-                {/*  <i className="fa-brands fa-weixin"></i>*/}
-                {/*</a>*/}
-                <a href={getAuthUrl("qq")}>
+                <button type="button" onClick={() => handleOAuthLogin("qq")} aria-label="使用 QQ 登录">
                   <i className="fa-brands fa-qq"></i>
-                </a>
-                <a href={getAuthUrl("github")}>
+                </button>
+                <button type="button" onClick={() => handleOAuthLogin("github")} aria-label="使用 GitHub 登录">
                   <i className="fa-brands fa-github"></i>
-                </a>
-                <a href={getAuthUrl("google")}>
+                </button>
+                <button type="button" onClick={() => handleOAuthLogin("google")} aria-label="使用 Google 登录">
                   <i className="fa-brands fa-google"></i>
-                </a>
+                </button>
               </div>
             </form>
           </div>
@@ -370,18 +388,15 @@ export default function Login() {
                 </a>
               </p>
               <div className={styles["social-icons"]}>
-                {/*<a href="#">*/}
-                {/*  <i className="fa-brands fa-weixin"></i>*/}
-                {/*</a>*/}
-                <a href={getAuthUrl('qq')}>
+                <button type="button" onClick={() => handleOAuthLogin("qq")} aria-label="使用 QQ 登录">
                   <i className="fa-brands fa-qq"></i>
-                </a>
-                <a href={getAuthUrl('github')}>
+                </button>
+                <button type="button" onClick={() => handleOAuthLogin("github")} aria-label="使用 GitHub 登录">
                   <i className="fa-brands fa-github"></i>
-                </a>
-                <a href={getAuthUrl('google')}>
+                </button>
+                <button type="button" onClick={() => handleOAuthLogin("google")} aria-label="使用 Google 登录">
                   <i className="fa-brands fa-google"></i>
-                </a>
+                </button>
               </div>
             </form>
           </div>

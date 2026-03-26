@@ -1,10 +1,5 @@
 "use client";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import RatingBar from "@/components/ui/RatingBar";
 import {
   getCourseDetail,
@@ -29,12 +24,12 @@ const rankConfig = [
     label: "资源",
     icon: "file-alt",
     filters: [
-      {type: "comprehensive", label: "综合", icon: "award"},
-      {type: "downloads", label: "下载量", icon: "import"},
-      {type: "semester", label: "学期", icon: "schedule"},
-      {type: "created_at", label: "上传", icon: "upload"},
-      {type: "hot_score", label: "热度", icon: "fire"},
-      {type: "likes", label: "点赞", icon: "thumbs-up"},
+      { type: "comprehensive", label: "综合", icon: "award" },
+      { type: "downloads", label: "下载量", icon: "import" },
+      { type: "semester", label: "学期", icon: "schedule" },
+      { type: "created_at", label: "上传", icon: "upload" },
+      { type: "hot_score", label: "热度", icon: "fire" },
+      { type: "likes", label: "点赞", icon: "thumbs-up" },
     ],
   },
   {
@@ -42,12 +37,12 @@ const rankConfig = [
     label: "课程",
     icon: "graduation-cap",
     filters: [
-      {type: "avg_score", label: "综合", icon: "award"},
-      {type: "avg_homework", label: "作业", icon: "book-open"},
-      {type: "avg_gain", label: "收获", icon: "brain"},
-      {type: "avg_exam_diff", label: "考试", icon: "brackets-curly"},
-      {type: "resource_count", label: "资源数", icon: "file-alt"},
-      {type: "hot", label: "热度", icon: "fire"},
+      { type: "avg_score", label: "综合", icon: "award" },
+      { type: "avg_homework", label: "作业", icon: "book-open" },
+      { type: "avg_gain", label: "收获", icon: "brain" },
+      { type: "avg_exam_diff", label: "考试", icon: "brackets-curly" },
+      { type: "resource_count", label: "资源数", icon: "file-alt" },
+      { type: "hot", label: "热度", icon: "fire" },
     ],
   },
   {
@@ -55,12 +50,12 @@ const rankConfig = [
     label: "教师",
     icon: "users-alt",
     filters: [
-      {type: "avg_score", label: "综合", icon: "award"},
-      {type: "avg_quality", label: "教学", icon: "book-open"},
-      {type: "avg_grading", label: "给分", icon: "chart-bar"},
-      {type: "avg_attendance", label: "考勤", icon: "bell-school"},
-      {type: "hot_score", label: "热度", icon: "fire"},
-      {type: "eval_count", label: "评价数", icon: "comment-alt-lines"},
+      { type: "avg_score", label: "综合", icon: "award" },
+      { type: "avg_quality", label: "教学", icon: "book-open" },
+      { type: "avg_grading", label: "给分", icon: "chart-bar" },
+      { type: "avg_attendance", label: "考勤", icon: "bell-school" },
+      { type: "hot_score", label: "热度", icon: "fire" },
+      { type: "eval_count", label: "评价数", icon: "comment-alt-lines" },
     ],
   },
 ] as const;
@@ -72,7 +67,7 @@ const PAGE_SIZE = 20;
 
 export default function Rank() {
   const [rankCategory, setRankCategory] = useState<RankCategory>("resource");
-  const [filterType, setFilterType] = useState<FilterType>("downloads");
+  const [filterType, setFilterType] = useState<FilterType>("comprehensive");
   const [sortType, setSortType] = useState<"desc" | "asc">("desc");
   const [loading, setLoading] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
@@ -80,11 +75,17 @@ export default function Rank() {
   const [total, setTotal] = useState(0);
   const [rankingItems, setRankingItems] = useState<RankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
-  const [courseDetails, setCourseDetails] = useState<Record<number, CourseDetail>>({});
-  const [teacherDetails, setTeacherDetails] = useState<Record<number, TeacherDetail>>({});
+  const [courseDetails, setCourseDetails] = useState<
+    Record<number, CourseDetail>
+  >({});
+  const [teacherDetails, setTeacherDetails] = useState<
+    Record<number, TeacherDetail>
+  >({});
 
   const currentCategory = useMemo(() => {
-    return rankConfig.find((item) => item.category === rankCategory) || rankConfig[0];
+    return (
+      rankConfig.find((item) => item.category === rankCategory) || rankConfig[0]
+    );
   }, [rankCategory]);
 
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function Rank() {
       if (!end || end === start) return start;
       return `${start} ~ ${end}`;
     },
-    []
+    [],
   );
 
   const formatDateTime = useCallback((value?: string) => {
@@ -131,7 +132,7 @@ export default function Rank() {
         } catch {
           return null;
         }
-      })
+      }),
     );
     const mapped: Record<number, CourseDetail> = {};
     pairs.forEach((entry) => {
@@ -151,7 +152,7 @@ export default function Rank() {
         } catch {
           return null;
         }
-      })
+      }),
     );
     const mapped: Record<number, TeacherDetail> = {};
     pairs.forEach((entry) => {
@@ -253,7 +254,9 @@ export default function Rank() {
                 className="absolute bg-white top-1.5 bottom-1.5 w-28 rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.44)]"
                 style={{
                   transform: `translateX(${
-                    rankConfig.findIndex((item) => item.category === rankCategory) * 100
+                    rankConfig.findIndex(
+                      (item) => item.category === rankCategory,
+                    ) * 100
                   }%)`,
                 }}
               />
@@ -263,7 +266,9 @@ export default function Rank() {
                   key={item.category}
                   onClick={() => setRankCategory(item.category)}
                   className={`relative z-10 w-28 flex justify-center items-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
-                    rankCategory === item.category ? "text-first-alt font-medium" : "text-gray-500 hover:text-gray-700"
+                    rankCategory === item.category
+                      ? "text-first-alt font-medium"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   <i className={`uil uil-${item.icon}`}></i>
@@ -281,7 +286,9 @@ export default function Rank() {
             <span
               onClick={() => setSortType("desc")}
               className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
-                sortType === "desc" ? "text-first-alt" : "text-gray-500 hover:text-gray-700 cursor-pointer"
+                sortType === "desc"
+                  ? "text-first-alt"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
               }`}
             >
               <i className="uil uil-sort-amount-down text-xl"></i>
@@ -316,7 +323,9 @@ export default function Rank() {
             <span
               onClick={() => setSortType("asc")}
               className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
-                sortType === "asc" ? "text-first-alt" : "text-gray-500 hover:text-gray-700 cursor-pointer"
+                sortType === "asc"
+                  ? "text-first-alt"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
               }`}
             >
               <i className="uil uil-sort-amount-up text-xl"></i>
@@ -324,13 +333,14 @@ export default function Rank() {
           </div>
 
           <div className="flex items-center gap-5 -mt-[99px]">
-            <div
-              className="relative flex py-1.5 bg-white shadow-gray-300 border-t-2 border-gray-200">
+            <div className="relative flex py-1.5 bg-white shadow-gray-300 border-t-2 border-gray-200">
               <div
                 className="absolute top-0 bottom-0 w-28 shadow-gray-400 z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)] border-t-2 border-first bg-gradient-to-b from-[var(--first-color)]/20 to-transparent"
                 style={{
                   transform: `translateX(${
-                    currentCategory.filters.findIndex((item) => item.type === filterType) * 100
+                    currentCategory.filters.findIndex(
+                      (item) => item.type === filterType,
+                    ) * 100
                   }%)`,
                 }}
               />
@@ -359,8 +369,7 @@ export default function Rank() {
               className="group bg-first text-white font-inherit py-[0.35em] pl-[1.2em] pr-[3.3em] text-[17px] font-medium rounded-[0.9em] border-0 tracking-[0.05em] flex items-center shadow-[inset_0_0_1.6em_-0.6em_#714da6] overflow-hidden relative h-[2.8em] cursor-pointer disabled:opacity-70"
             >
               {loading ? "更新中..." : "Get Rank"}
-              <span
-                className="icon bg-white ml-[1em] absolute flex items-center justify-center h-[2.2em] w-[2.2em] rounded-[0.7em] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] right-[0.3em] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
+              <span className="icon bg-white ml-[1em] absolute flex items-center justify-center h-[2.2em] w-[2.2em] rounded-[0.7em] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] right-[0.3em] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
                 <i
                   className="uil uil-arrow-right
                 text-[1.1em] text-[#7b52b9]
@@ -388,22 +397,33 @@ export default function Rank() {
                 共 {formatInteger(total)} 条记录
               </div>
               <div className="text-sm text-gray-500">
-                当前排序：{currentCategory.filters.find((item) => item.type === filterType)?.label || "--"}（{sortType === "desc" ? "降序" : "升序"}）
+                当前排序：
+                {currentCategory.filters.find(
+                  (item) => item.type === filterType,
+                )?.label || "--"}
+                （{sortType === "desc" ? "降序" : "升序"}）
               </div>
             </div>
 
             {errorMessage ? (
               <div className="py-12 text-center">
                 <div className="text-red-500 text-base">{errorMessage}</div>
-                <div className="mt-3 text-gray-500 text-sm">你可以点击右上角按钮重试请求。</div>
+                <div className="mt-3 text-gray-500 text-sm">
+                  你可以点击右上角按钮重试请求。
+                </div>
               </div>
             ) : null}
 
             {!errorMessage && loading ? (
-              <div className="py-12 text-center text-gray-500">排行榜加载中...</div>
+              <div className="py-12 text-center text-gray-500">
+                排行榜加载中...
+              </div>
             ) : null}
 
-            {!errorMessage && !loading && rankCategory === "resource" && resourceItems.length > 0 ? (
+            {!errorMessage &&
+            !loading &&
+            rankCategory === "resource" &&
+            resourceItems.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {resourceItems.map((item, index) => (
                   <div
@@ -416,15 +436,30 @@ export default function Rank() {
                           <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
                             {item.rank || index + 1}
                           </span>
-                          <div className="text-lg font-semibold text-gray-800">{item.title}</div>
+                          <div className="text-lg font-semibold text-gray-800">
+                            {item.title}
+                          </div>
                         </div>
                         <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
                           <span>资源 ID：{item.id}</span>
                           <span>课程 ID：{item.course_id || "--"}</span>
                           <span>资源类型：{item.resource_type || "--"}</span>
-                          <span>适用学期：{formatSemester(item.semester_start, item.semester_end)}</span>
-                          <span>上传时间：{formatDateTime(item.created_at)}</span>
-                          <span>积分：{typeof item.points_cost === "number" ? item.points_cost : "--"}</span>
+                          <span>
+                            适用学期：
+                            {formatSemester(
+                              item.semester_start,
+                              item.semester_end,
+                            )}
+                          </span>
+                          <span>
+                            上传时间：{formatDateTime(item.created_at)}
+                          </span>
+                          <span>
+                            积分：
+                            {typeof item.points_cost === "number"
+                              ? item.points_cost
+                              : "--"}
+                          </span>
                         </div>
                       </div>
                       <div className="text-sm text-gray-500 md:text-right">
@@ -449,7 +484,10 @@ export default function Rank() {
               </div>
             ) : null}
 
-            {!errorMessage && !loading && rankCategory !== "resource" && rankingItems.length > 0 ? (
+            {!errorMessage &&
+            !loading &&
+            rankCategory !== "resource" &&
+            rankingItems.length > 0 ? (
               <div className="grid grid-cols-1 gap-4">
                 {rankingItems.map((item, index) => {
                   if (rankCategory === "course") {
@@ -465,28 +503,61 @@ export default function Rank() {
                               <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
                                 {item.rank || index + 1}
                               </span>
-                              <div className="text-lg font-semibold text-gray-800">{item.name}</div>
+                              <div className="text-lg font-semibold text-gray-800">
+                                {item.name}
+                              </div>
                             </div>
                             <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
                               <span>课程 ID：{item.id}</span>
                               <span>课程代码：{detail?.code || "--"}</span>
-                              <span>课程类型：{detail?.course_type || "--"}</span>
-                              <span>学分：{typeof detail?.credits === "number" ? detail.credits : "--"}</span>
+                              <span>
+                                课程类型：{detail?.course_type || "--"}
+                              </span>
+                              <span>
+                                学分：
+                                {typeof detail?.credits === "number"
+                                  ? detail.credits
+                                  : "--"}
+                              </span>
                             </div>
                           </div>
                           <div className="text-sm text-gray-500 md:text-right">
                             <div>榜单分值：{formatNumber(item.score)}</div>
-                            <div>评价数：{formatInteger(detail?.eval_count)}</div>
-                            <div>资源数：{formatInteger(detail?.resource_count)}</div>
+                            <div>
+                              评价数：{formatInteger(detail?.eval_count)}
+                            </div>
+                            <div>
+                              资源数：{formatInteger(detail?.resource_count)}
+                            </div>
                             <div>热度：{formatNumber(detail?.hot_score)}</div>
                           </div>
                         </div>
 
                         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <RatingBar label="综合评分" score={detail?.avg_score || item.score} maxScore={5} color={0} />
-                          <RatingBar label="作业量" score={detail?.avg_homework || 0} maxScore={5} color={1} />
-                          <RatingBar label="收获感" score={detail?.avg_gain || 0} maxScore={5} color={2} />
-                          <RatingBar label="考试难度" score={detail?.avg_exam_diff || 0} maxScore={5} color={3} />
+                          <RatingBar
+                            label="综合评分"
+                            score={detail?.avg_score || item.score}
+                            maxScore={5}
+                            color={0}
+                          />
+                          <RatingBar
+                            label="作业量"
+                            score={detail?.avg_homework || 0}
+                            maxScore={5}
+                            color={1}
+                          />
+                          <RatingBar
+                            label="收获感"
+                            score={detail?.avg_gain || 0}
+                            maxScore={5}
+                            color={2}
+                          />
+                          <RatingBar
+                            label="考试难度"
+                            score={detail?.avg_exam_diff || 0}
+                            maxScore={5}
+                            color={3}
+                          />
                         </div>
                       </div>
                     );
@@ -504,11 +575,15 @@ export default function Rank() {
                             <span className="w-7 h-7 rounded-full bg-[var(--first-color)]/10 text-first-alt font-semibold text-sm flex items-center justify-center">
                               {item.rank || index + 1}
                             </span>
-                            <div className="text-lg font-semibold text-gray-800">{item.name}</div>
+                            <div className="text-lg font-semibold text-gray-800">
+                              {item.name}
+                            </div>
                           </div>
                           <div className="mt-2 text-sm text-gray-500 flex flex-wrap items-center gap-x-4 gap-y-1">
                             <span>教师 ID：{item.id}</span>
-                            <span>所属学院：{item.department_name || "--"}</span>
+                            <span>
+                              所属学院：{item.department_name || "--"}
+                            </span>
                             <span>职称：{detail?.title || "--"}</span>
                             <span>热度：{formatNumber(detail?.hot_score)}</span>
                           </div>
@@ -521,10 +596,30 @@ export default function Rank() {
                       </div>
 
                       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <RatingBar label="综合评分" score={detail?.avg_score || item.score} maxScore={5} color={0} />
-                        <RatingBar label="教学质量" score={detail?.avg_quality || 0} maxScore={5} color={1} />
-                        <RatingBar label="给分宽松" score={detail?.avg_grading || 0} maxScore={5} color={2} />
-                        <RatingBar label="考勤要求" score={detail?.avg_attendance || 0} maxScore={5} color={3} />
+                        <RatingBar
+                          label="综合评分"
+                          score={detail?.avg_score || item.score}
+                          maxScore={5}
+                          color={0}
+                        />
+                        <RatingBar
+                          label="教学质量"
+                          score={detail?.avg_quality || 0}
+                          maxScore={5}
+                          color={1}
+                        />
+                        <RatingBar
+                          label="给分宽松"
+                          score={detail?.avg_grading || 0}
+                          maxScore={5}
+                          color={2}
+                        />
+                        <RatingBar
+                          label="考勤要求"
+                          score={detail?.avg_attendance || 0}
+                          maxScore={5}
+                          color={3}
+                        />
                       </div>
                     </div>
                   );
@@ -541,7 +636,9 @@ export default function Rank() {
                   <i className="uil uil-filter"></i>
                 </div>
                 <div className="text-xl text-gray-800">当前条件下暂无数据</div>
-                <div className="text-base text-gray-500">请切换筛选维度或排序方式后重试。</div>
+                <div className="text-base text-gray-500">
+                  请切换筛选维度或排序方式后重试。
+                </div>
               </div>
             ) : null}
           </div>

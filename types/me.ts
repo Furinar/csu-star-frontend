@@ -1,0 +1,232 @@
+import type { UserProfile, Role } from "@/types/auth";
+
+export type AuditStatus = "draft" | "pending" | "approved" | "rejected";
+export type FavoriteTargetType = "resource" | "course" | "teacher";
+export type NotificationType =
+  | "audit_pass"
+  | "audit_reject"
+  | "liked"
+  | "commented"
+  | "system";
+export type PointsReason =
+  | "daily_checkin"
+  | "upload_reward"
+  | "download_cost"
+  | "invite_reward"
+  | "admin_adjust";
+export type FeedbackType = "bug" | "suggestion" | "complaint" | "other";
+export type ReportReason = "copyright" | "spam" | "inappropriate" | "other";
+export type ReportTargetType = "resource" | "evaluation" | "comment" | "user";
+export type CorrectionTargetType = "resource" | "course" | "teacher";
+export type OAuthBindProvider = "qq" | "wechat";
+export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other";
+
+export interface PaginatedData<T> {
+  items: T[];
+  total: number;
+}
+
+export interface UserBrief {
+  id: string;
+  nickname: string;
+  avatar_url?: string | null;
+  role: Role;
+}
+
+export interface Department {
+  id: number;
+  name: string;
+  code?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ResourceBrief {
+  id: number;
+  title: string;
+  resource_type: ResourceType;
+}
+
+export interface ResourceItem {
+  id: number;
+  title: string;
+  uploader_id?: string;
+  course_id: number;
+  resource_type: ResourceType;
+  semester_start?: string | null;
+  semester_end?: string | null;
+  size_bytes?: number;
+  points_cost?: number;
+  status: AuditStatus;
+  downloads?: number;
+  views?: number;
+  likes?: number;
+  hot_score?: number;
+  created_at?: string;
+  is_liked?: boolean | null;
+  is_favorited?: boolean | null;
+}
+
+export interface DownloadRecord {
+  id: number;
+  resource: ResourceBrief;
+  points_cost: number;
+  created_at: string;
+}
+
+export interface TeacherEvaluation {
+  id: number;
+  user?: UserBrief | null;
+  teacher_id: number;
+  course_id?: number | null;
+  rating_quality?: number;
+  rating_grading?: number;
+  rating_attendance?: number;
+  avg_rating: number;
+  comment?: string | null;
+  is_anonymous?: boolean;
+  likes?: number;
+  is_liked?: boolean | null;
+  status: "approved" | "rejected";
+  created_at?: string;
+}
+
+export interface CourseEvaluation {
+  id: number;
+  user?: UserBrief | null;
+  course_id: number;
+  rating_homework?: number;
+  rating_gain?: number;
+  rating_exam_difficulty?: number;
+  avg_rating: number;
+  comment?: string | null;
+  is_anonymous?: boolean;
+  likes?: number;
+  is_liked?: boolean | null;
+  status: "approved" | "rejected";
+  created_at?: string;
+}
+
+export interface FavoriteItem {
+  id: number;
+  title?: string;
+  name?: string;
+  resource_type?: string;
+  course_type?: string;
+  title_label?: string;
+  avg_score?: number;
+  hot_score?: number;
+  created_at?: string;
+}
+
+export interface PointsRecord {
+  id: number;
+  change_amount: number;
+  balance_after: number;
+  reason: PointsReason;
+  reference_type?: string | null;
+  reference_id?: string | null;
+  created_at: string;
+}
+
+export interface EmailStatus {
+  email: string | null;
+  email_verified: boolean;
+  free_download_count: number | null;
+}
+
+export interface InviteCodeInfo {
+  invite_code: string;
+  used_count: number;
+  expires_at?: string | null;
+}
+
+export interface CheckinResult {
+  points_gained: number;
+  balance_after: number;
+  already_checked_in: boolean;
+}
+
+export interface NotificationItem {
+  id: number;
+  type: NotificationType;
+  title: string;
+  content?: string;
+  source_type?:
+    | "resource"
+    | "teacher_evaluation"
+    | "course_evaluation"
+    | "comment"
+    | "announcement"
+    | null;
+  source_id?: number | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface NotificationUnreadCount {
+  count: number;
+}
+
+export interface MyProfileUpdateInput {
+  nickname?: string;
+  avatar_url?: string;
+  department_id?: number;
+  grade?: number;
+}
+
+export interface EmailBindInput {
+  email: string;
+}
+
+export interface OAuthBindInput {
+  provider: OAuthBindProvider;
+  code: string;
+}
+
+export interface OAuthBindResult {
+  provider: OAuthBindProvider;
+  bound_at?: string;
+}
+
+export interface FeedbackInput {
+  type: FeedbackType;
+  title: string;
+  content: string;
+  contact?: string | null;
+  screenshots?: string[] | null;
+}
+
+export interface ReportInput {
+  target_type: ReportTargetType;
+  target_id: string;
+  reason: ReportReason;
+  description?: string | null;
+}
+
+export interface CorrectionInput {
+  target_type: CorrectionTargetType;
+  target_id: number;
+  field_name?: string | null;
+  original_value?: string | null;
+  correct_value?: string | null;
+  description?: string | null;
+}
+
+export interface MeDashboardData {
+  profile: UserProfile;
+  emailStatus: EmailStatus;
+  departments: Department[];
+  unreadCount: number;
+  resources: PaginatedData<ResourceItem>;
+  favorites: PaginatedData<FavoriteItem>;
+  teacherEvaluations: PaginatedData<TeacherEvaluation>;
+  courseEvaluations: PaginatedData<CourseEvaluation>;
+  points: PaginatedData<PointsRecord>;
+}
+
+export interface MeActivityData {
+  invite: InviteCodeInfo;
+  downloads: PaginatedData<DownloadRecord>;
+  notifications: PaginatedData<NotificationItem>;
+}

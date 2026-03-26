@@ -3,7 +3,6 @@
 import type {NavItem} from "@/types/component";
 import Link from "next/link";
 import {useAuthStore} from "@/store/useAuthStore";
-import Image from "next/image";
 import {useEffect, useRef, useState} from "react";
 
 type BaseNavProps = {
@@ -102,6 +101,7 @@ export default function BaseNav({
   const navListRef = useRef<HTMLUListElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({left: 0, width: 0, opacity: 0});
   const avatar = useAuthStore((state) => state.user?.avatar_url);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   const handleMenuClose = () => {
     setMenuOpen(false);
@@ -156,8 +156,13 @@ export default function BaseNav({
 
             <div className="flex gap-x-3 items-center">
               <div className="flex items-center">
-                {avatar ? (
-                    <Image
+                {!hasHydrated ? (
+                    <div
+                        className="h-7 w-20 rounded-full bg-[var(--ice-100)]/80 animate-pulse"
+                        aria-hidden="true"
+                    />
+                ) : avatar ? (
+                    <img
                         src={avatar}
                         alt="Avatar"
                         width={28}
@@ -263,8 +268,13 @@ export default function BaseNav({
               <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60"/>
 
               <div className="flex items-center">
-                {avatar ? (
-                    <Image
+                {!hasHydrated ? (
+                    <div
+                        className="h-8 w-24 rounded-full bg-[var(--ice-100)]/80 animate-pulse"
+                        aria-hidden="true"
+                    />
+                ) : avatar ? (
+                    <img
                         src={avatar}
                         alt="Avatar"
                         width={32}

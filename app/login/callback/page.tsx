@@ -20,11 +20,13 @@ export default function CallBack() {
 
   useEffect(() => {
     if (hasTriedLogin) return;
-    if (!code || !state || state !== localStorage.getItem("state")) {
+    const storedState = localStorage.getItem("state");
+    if (!code || !state || state !== storedState) {
       router.push("/login/illegal");
       return;
     }
 
+    localStorage.removeItem("state");
     setHasTriedLogin(true);
     const executeLogin = async () => {
       try {
@@ -33,7 +35,7 @@ export default function CallBack() {
         const data = result.data;
         login(data.access_token, data.refresh_token, data.user);
         setLoginType("success");
-      } catch (e) {
+      } catch {
         setLoginType("error");
       } finally {
         startTimer(3);
