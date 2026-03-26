@@ -41,10 +41,15 @@ const refreshToken = (refresh_token: string): Promise<ApiResponse<TokenResponse>
 
 // WIP
 // 第三方OAuth登录
-const loginByOAuth = (provider: string, code: string): Promise<ApiResponse<LoginResponse>> => {
+const loginByOAuth = (
+  provider: string,
+  code: string,
+  meta?: { code_challenge?: string },
+): Promise<ApiResponse<LoginResponse>> => {
   return service.post('/auth/oauth/login', {
     provider,
     code,
+    meta,
   })
 }
 

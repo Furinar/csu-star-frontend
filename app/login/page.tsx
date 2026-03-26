@@ -11,6 +11,7 @@ import {useAuthStore} from "@/store/useAuthStore";
 import {feedback} from "@/store/useFeedbackStore";
 
 type AuthPlatform = keyof typeof AUTH_CONFIG;
+const OAUTH_CONTEXT_STORAGE_KEY = "oauth-context";
 
 const AUTH_CONFIG = {
   qq: {
@@ -18,19 +19,34 @@ const AUTH_CONFIG = {
     client_id: process.env.NEXT_PUBLIC_QQ_CLIENT_ID!,
     redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
     scope: "get_user_info",
+    extraParams: {},
   },
   github: {
     url: "https://github.com/login/oauth/authorize",
     client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID!,
     redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
-    scope: "user:email", // 权限范围
+    scope: "read:user user:email",
+    extraParams: {
+      allow_signup: "true",
+    },
   },
   google: {
     url: "https://accounts.google.com/o/oauth2/v2/auth",
     client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
     redirect_uri: process.env.NEXT_PUBLIC_REDIRECT_URI!,
-    scope: "openid email profile", // 权限范围
+    scope: "openid email profile",
+    extraParams: {
+      access_type: "offline",
+      include_granted_scopes: "true",
+      prompt: "consent",
+    },
   },
+};
+
+type OAuthContext = {
+  state: string;
+  platform: AuthPlatform;
+  codeChallenge: string;
 };
 
 const isMobileDevice = () => {
@@ -47,7 +63,33 @@ const createOAuthState = (platform: AuthPlatform) => {
   return `${platform}:${Math.random().toString(36).substring(2, 15)}`;
 };
 
-const buildAuthUrl = (platform: AuthPlatform, state: string, isMobile: boolean) => {
+const encodeBase64Url = (buffer: ArrayBuffer) => {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+};
+
+const createCodeChallenge = async () => {
+  const verifier = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+  const digest = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(verifier),
+  );
+
+  return encodeBase64Url(digest);
+};
+
+const buildAuthUrl = (
+    platform: AuthPlatform,
+    state: string,
+    codeChallenge: string,
+    isMobile: boolean,
+) => {
   const config = AUTH_CONFIG[platform];
   const params = new URLSearchParams({
     client_id: config.client_id,
@@ -56,6 +98,15 @@ const buildAuthUrl = (platform: AuthPlatform, state: string, isMobile: boolean) 
     response_type: "code",
     state: state,
   });
+
+  Object.entries(config.extraParams).forEach(([key, value]) => {
+    params.append(key, value);
+  });
+
+  if (platform !== "qq") {
+    params.append("code_challenge", codeChallenge);
+    params.append("code_challenge_method", "S256");
+  }
 
   if (platform === "qq" && isMobile) {
     params.append("display", "mobile");
@@ -98,10 +149,14 @@ export default function Login() {
     return `${prefix}@csu.edu.cn`;
   };
 
-  const handleOAuthLogin = (platform: AuthPlatform) => {
+  const handleOAuthLogin = async (platform: AuthPlatform) => {
     const state = createOAuthState(platform);
-    localStorage.setItem("state", state);
-    window.location.assign(buildAuthUrl(platform, state, isMobileDevice()));
+    const codeChallenge = await createCodeChallenge();
+    const context: OAuthContext = {state, platform, codeChallenge};
+    localStorage.setItem(OAUTH_CONTEXT_STORAGE_KEY, JSON.stringify(context));
+    window.location.assign(
+        buildAuthUrl(platform, state, codeChallenge, isMobileDevice()),
+    );
   };
 
   const handleSendCode = async () => {

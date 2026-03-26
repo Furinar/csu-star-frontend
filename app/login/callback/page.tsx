@@ -6,6 +6,14 @@ import {useTimer} from "@/hooks/useTimer";
 import {loginByOAuth} from "@/api/auth";
 import {useAuthStore} from "@/store/useAuthStore";
 
+const OAUTH_CONTEXT_STORAGE_KEY = "oauth-context";
+
+type OAuthContext = {
+  state: string;
+  platform: string;
+  codeChallenge: string;
+};
+
 export default function CallBack() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -14,28 +22,48 @@ export default function CallBack() {
 
   const code = searchParams.get("code");
   const state = searchParams.get("state");
+  const error = searchParams.get("error");
+  const errorDescription = searchParams.get("error_description");
 
   const [loginType, setLoginType] = useState<"idle" | "success" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("麻烦返回登录页重新尝试一下哦");
   const [hasTriedLogin, setHasTriedLogin] = useState(false);
 
   useEffect(() => {
     if (hasTriedLogin) return;
-    const storedState = localStorage.getItem("state");
-    if (!code || !state || state !== storedState) {
+    const rawContext = localStorage.getItem(OAUTH_CONTEXT_STORAGE_KEY);
+    const context = rawContext ? JSON.parse(rawContext) as OAuthContext : null;
+
+    if (error) {
+      localStorage.removeItem(OAUTH_CONTEXT_STORAGE_KEY);
+      setErrorMessage(errorDescription || "授权已取消或提供方返回错误");
+      setLoginType("error");
+      setHasTriedLogin(true);
+      startTimer(3);
+      return;
+    }
+
+    if (!code || !state || !context || state !== context.state) {
       router.push("/login/illegal");
       return;
     }
 
-    localStorage.removeItem("state");
+    localStorage.removeItem(OAUTH_CONTEXT_STORAGE_KEY);
     setHasTriedLogin(true);
     const executeLogin = async () => {
       try {
-        const [platform] = state.split(":");
-        const result = await loginByOAuth(platform, code);
+        const result = await loginByOAuth(context.platform, code, {
+          code_challenge: context.codeChallenge,
+        });
         const data = result.data;
         login(data.access_token, data.refresh_token ?? null, data.user ?? null);
         setLoginType("success");
-      } catch {
+      } catch (authError) {
+        setErrorMessage(
+            authError instanceof Error && authError.message.trim()
+                ? authError.message
+                : "授权登录失败，请稍后再试",
+        );
         setLoginType("error");
       } finally {
         startTimer(3);
@@ -43,7 +71,7 @@ export default function CallBack() {
     };
 
     executeLogin();
-  }, [code, state, router, login, startTimer, hasTriedLogin]);
+  }, [code, error, errorDescription, state, router, login, startTimer, hasTriedLogin]);
 
   useEffect(() => {
     if (countdown === 0) {
@@ -66,7 +94,7 @@ export default function CallBack() {
       case "error":
         return {
           title: "哎呀，授权出了点小问题",
-          desc: "麻烦返回登录页重新尝试一下哦",
+          desc: errorMessage,
         };
       default:
         return {
