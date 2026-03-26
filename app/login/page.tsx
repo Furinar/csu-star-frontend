@@ -180,6 +180,10 @@ export default function Login() {
     } catch (error) {
       const message =
           error instanceof Error ? error.message : "验证码发送失败，请稍后重试";
+      feedback.error({
+        title: "验证码发送失败",
+        description: message,
+      })
       setRegisterError(message);
       setIsSendingCode(false);
       return;
