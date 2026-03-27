@@ -1,12 +1,10 @@
-export type RankPeriod = "all" | "month" | "week";
-
 export type ResourceRankType =
   | "comprehensive"
   | "downloads"
-  | "semester"
-  | "created_at"
+  | "likes"
   | "hot_score"
-  | "likes";
+  | "updated_at"
+  | "resource_count";
 
 export type CourseRankType =
   | "avg_score"
@@ -14,7 +12,7 @@ export type CourseRankType =
   | "avg_gain"
   | "avg_exam_diff"
   | "resource_count"
-  | "hot";
+  | "hot_score";
 
 export type TeacherRankType =
   | "avg_score"
@@ -24,8 +22,7 @@ export type TeacherRankType =
   | "hot_score"
   | "eval_count";
 
-export interface RankQueryBase {
-  period?: RankPeriod;
+interface RankQueryBase {
   page?: number;
   size?: number;
   is_increased?: boolean;
@@ -59,52 +56,50 @@ export interface RankingItem {
   score: number;
 }
 
-export interface CourseDetail {
-  id: number;
-  code?: string;
-  name: string;
-  course_type?: string;
-  credits?: number;
-  avg_score?: number;
-  avg_homework?: number;
-  avg_gain?: number;
-  avg_exam_diff?: number;
-  eval_count?: number;
-  resource_count?: number;
-  hot_score?: number;
-  download_total?: number;
+export interface CourseRankingItem extends RankingItem {
+  code?: string | null;
+  course_type?: string | null;
+  credits?: number | null;
+  avg_score?: number | null;
+  avg_homework?: number | null;
+  avg_gain?: number | null;
+  avg_exam_diff?: number | null;
+  eval_count?: number | null;
+  resource_count?: number | null;
+  hot_score?: number | null;
 }
 
-export interface TeacherDetail {
-  id: number;
-  name: string;
+export interface TeacherRankingItem extends RankingItem {
   title?: string | null;
-  department_id?: number;
-  avg_score?: number;
-  avg_quality?: number;
-  avg_grading?: number;
-  avg_attendance?: number;
-  good_rate?: number;
-  eval_count?: number;
-  resource_count?: number;
-  hot_score?: number;
+  department_id?: number | null;
+  avg_score?: number | null;
+  avg_quality?: number | null;
+  avg_grading?: number | null;
+  avg_attendance?: number | null;
+  eval_count?: number | null;
+  resource_count?: number | null;
+  hot_score?: number | null;
+}
+
+export interface ResourcePreviewItem {
+  id: number;
+  title: string;
+  resource_type?: string | null;
+  downloads?: number | null;
+  likes?: number | null;
+  created_at?: string | null;
 }
 
 export interface ResourceRankingItem {
   rank: number;
-  id: number;
-  title: string;
-  name?: string;
-  score?: number;
-  course_id?: number;
-  course_name?: string;
-  resource_type?: string;
-  semester_start?: string | null;
-  semester_end?: string | null;
-  points_cost?: number;
-  downloads?: number;
-  views?: number;
-  likes?: number;
-  hot_score?: number;
-  created_at?: string;
+  course_id: number;
+  course_name: string;
+  course_code?: string | null;
+  resource_count?: number | null;
+  download_total?: number | null;
+  like_total?: number | null;
+  hot_score?: number | null;
+  updated_at?: string | null;
+  score?: number | null;
+  resources_preview?: ResourcePreviewItem[];
 }

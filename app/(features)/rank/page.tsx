@@ -1,22 +1,19 @@
 "use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import RankItemCard from "@/components/ui/RankItemCard";
-import RatingBar from "@/components/ui/RatingBar";
 import {
-  getCourseDetail,
   getCourseRankings,
   getResourceRankings,
-  getTeacherDetail,
   getTeacherRankings,
 } from "@/api/ranking";
-import {
-  CourseDetail,
+import type {
   CourseRankType,
-  RankingItem,
-  ResourceRankingItem,
+  CourseRankingItem,
   ResourceRankType,
-  TeacherDetail,
+  ResourceRankingItem,
   TeacherRankType,
+  TeacherRankingItem,
 } from "@/types/ranking";
 
 const rankConfig = [
@@ -27,8 +24,8 @@ const rankConfig = [
     filters: [
       { type: "comprehensive", label: "综合", icon: "award" },
       { type: "downloads", label: "下载量", icon: "import" },
-      { type: "semester", label: "学期", icon: "schedule" },
-      { type: "created_at", label: "上传", icon: "upload" },
+      { type: "resource_count", label: "资源数", icon: "files-landscapes" },
+      { type: "updated_at", label: "更新", icon: "history" },
       { type: "hot_score", label: "热度", icon: "fire" },
       { type: "likes", label: "点赞", icon: "thumbs-up" },
     ],
@@ -43,7 +40,7 @@ const rankConfig = [
       { type: "avg_gain", label: "收获", icon: "brain" },
       { type: "avg_exam_diff", label: "考试", icon: "brackets-curly" },
       { type: "resource_count", label: "资源数", icon: "file-alt" },
-      { type: "hot", label: "热度", icon: "fire" },
+      { type: "hot_score", label: "热度", icon: "fire" },
     ],
   },
   {
@@ -74,102 +71,31 @@ export default function Rank() {
   const [hasRequested, setHasRequested] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [total, setTotal] = useState(0);
-  const [rankingItems, setRankingItems] = useState<RankingItem[]>([]);
+  const [courseItems, setCourseItems] = useState<CourseRankingItem[]>([]);
+  const [teacherItems, setTeacherItems] = useState<TeacherRankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
-  const [courseDetails, setCourseDetails] = useState<
-    Record<number, CourseDetail>
-  >({});
-  const [teacherDetails, setTeacherDetails] = useState<
-    Record<number, TeacherDetail>
-  >({});
 
-  const currentCategory = useMemo(() => {
-    return (
-      rankConfig.find((item) => item.category === rankCategory) || rankConfig[0]
-    );
-  }, [rankCategory]);
+  const currentCategory = useMemo(
+    () => rankConfig.find((item) => item.category === rankCategory) ?? rankConfig[0],
+    [rankCategory],
+  );
 
   useEffect(() => {
     setFilterType(currentCategory.filters[0].type as FilterType);
   }, [currentCategory]);
 
-  const formatNumber = useCallback((value?: number, digits = 2) => {
-    if (typeof value !== "number" || Number.isNaN(value)) {
-      return "--";
-    }
-    return value.toFixed(digits);
-  }, []);
-
   const formatInteger = useCallback((value?: number) => {
-    if (typeof value !== "number" || Number.isNaN(value)) {
-      return "--";
-    }
+    if (typeof value !== "number" || Number.isNaN(value)) return "--";
     return value.toLocaleString("zh-CN");
-  }, []);
-
-  const formatSemester = useCallback(
-    (start?: string | null, end?: string | null) => {
-      if (!start && !end) return "--";
-      if (!start) return end || "--";
-      if (!end || end === start) return start;
-      return `${start} ~ ${end}`;
-    },
-    [],
-  );
-
-  const formatDateTime = useCallback((value?: string) => {
-    if (!value) return "--";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleString("zh-CN", { hour12: false });
-  }, []);
-
-  const loadCourseDetails = useCallback(async (items: RankingItem[]) => {
-    const pairs = await Promise.all(
-      items.map(async (item) => {
-        try {
-          const detail = await getCourseDetail(item.id);
-          return [item.id, detail] as const;
-        } catch {
-          return null;
-        }
-      }),
-    );
-    const mapped: Record<number, CourseDetail> = {};
-    pairs.forEach((entry) => {
-      if (entry) {
-        mapped[entry[0]] = entry[1];
-      }
-    });
-    return mapped;
-  }, []);
-
-  const loadTeacherDetails = useCallback(async (items: RankingItem[]) => {
-    const pairs = await Promise.all(
-      items.map(async (item) => {
-        try {
-          const detail = await getTeacherDetail(item.id);
-          return [item.id, detail] as const;
-        } catch {
-          return null;
-        }
-      }),
-    );
-    const mapped: Record<number, TeacherDetail> = {};
-    pairs.forEach((entry) => {
-      if (entry) {
-        mapped[entry[0]] = entry[1];
-      }
-    });
-    return mapped;
   }, []);
 
   const fetchRankings = useCallback(async () => {
     setHasRequested(true);
     setLoading(true);
     setErrorMessage("");
-    setCourseDetails({});
-    setTeacherDetails({});
+    setCourseItems([]);
+    setTeacherItems([]);
+    setResourceItems([]);
 
     try {
       if (rankCategory === "resource") {
@@ -177,11 +103,10 @@ export default function Rank() {
           rank_type: filterType as ResourceRankType,
           page: 1,
           size: PAGE_SIZE,
-          period: "all",
           is_increased: sortType === "asc",
         });
+
         setResourceItems(result.items);
-        setRankingItems([]);
         setTotal(result.total);
         return;
       }
@@ -191,14 +116,11 @@ export default function Rank() {
           rank_type: filterType as CourseRankType,
           page: 1,
           size: PAGE_SIZE,
-          period: "all",
           is_increased: sortType === "asc",
         });
-        setRankingItems(result.items);
-        setResourceItems([]);
+
+        setCourseItems(result.items);
         setTotal(result.total);
-        const detailMap = await loadCourseDetails(result.items);
-        setCourseDetails(detailMap);
         return;
       }
 
@@ -206,264 +128,264 @@ export default function Rank() {
         rank_type: filterType as TeacherRankType,
         page: 1,
         size: PAGE_SIZE,
-        period: "all",
         is_increased: sortType === "asc",
       });
-      setRankingItems(result.items);
-      setResourceItems([]);
+
+      setTeacherItems(result.items);
       setTotal(result.total);
-      const detailMap = await loadTeacherDetails(result.items);
-      setTeacherDetails(detailMap);
     } catch (error) {
       console.error(error);
       setErrorMessage("排行榜接口异常，请稍后重试。");
-      setRankingItems([]);
-      setResourceItems([]);
       setTotal(0);
     } finally {
       setLoading(false);
     }
-  }, [
-    filterType,
-    loadCourseDetails,
-    loadTeacherDetails,
-    rankCategory,
-    sortType,
-  ]);
+  }, [filterType, rankCategory, sortType]);
 
   useEffect(() => {
     setHasRequested(false);
     setErrorMessage("");
   }, [rankCategory, filterType, sortType]);
 
+  const currentItemsEmpty =
+    rankCategory === "resource"
+      ? resourceItems.length === 0
+      : rankCategory === "course"
+        ? courseItems.length === 0
+        : teacherItems.length === 0;
+
+  const getResourceFilterValue = (item: ResourceRankingItem) => {
+    switch (filterType as ResourceRankType) {
+      case "downloads":
+        return item.download_total;
+      case "likes":
+        return item.like_total;
+      case "hot_score":
+        return item.hot_score;
+      case "updated_at":
+        return item.updated_at;
+      case "resource_count":
+        return item.resource_count;
+      default:
+        return item.score;
+    }
+  };
+
   return (
-    <>
-      <div className="container flex flex-col gap-10 mt-10">
-        <div className="flex justify-center items-center flex-col gap-3 w-full">
-          <div className="hero-gradient-text text-4xl font-bold">
-            天梯风云榜
-          </div>
-          <div className="text-gray-600">
-            Rise step by step, witness the top glory.
-          </div>
-        </div>
+    <div className="container flex flex-col gap-10 mt-10">
+      <div className="flex justify-center items-center flex-col gap-3 w-full">
+        <div className="hero-gradient-text text-4xl font-bold">天梯风云榜</div>
+        <div className="text-gray-600">Rise step by step, witness the top glory.</div>
+      </div>
 
-        <div className="flex flex-col gap-5 items-center">
-          <div className="flex gap-5">
-            <div className="relative flex p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 ">
-              <div
-                className="absolute bg-white top-1.5 bottom-1.5 w-28 rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.44)]"
-                style={{
-                  transform: `translateX(${
-                    rankConfig.findIndex(
-                      (item) => item.category === rankCategory,
-                    ) * 100
-                  }%)`,
-                }}
-              />
+      <div className="flex flex-col gap-5 items-center">
+        <div className="flex gap-5">
+          <div className="relative flex p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 ">
+            <div
+              className="absolute bg-white top-1.5 bottom-1.5 w-28 rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.44)]"
+              style={{
+                transform: `translateX(${rankConfig.findIndex((item) => item.category === rankCategory) * 100}%)`,
+              }}
+            />
 
-              {rankConfig.map((item) => (
-                <span
-                  key={item.category}
-                  onClick={() => setRankCategory(item.category)}
-                  className={`relative z-10 w-28 flex justify-center items-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
-                    rankCategory === item.category
-                      ? "text-first-alt font-medium"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <i className={`uil uil-${item.icon}`}></i>
-                  {item.label}
-                </span>
-              ))}
-            </div>
+            {rankConfig.map((item) => (
+              <span
+                key={item.category}
+                onClick={() => setRankCategory(item.category)}
+                className={`relative z-10 w-28 flex justify-center items-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
+                  rankCategory === item.category
+                    ? "text-first-alt font-medium"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <i className={`uil uil-${item.icon}`}></i>
+                {item.label}
+              </span>
+            ))}
           </div>
         </div>
+      </div>
 
-        <div className=" border-t border-gray-300" />
+      <div className=" border-t border-gray-300" />
 
-        <div className="flex justify-between items-center">
-          <div className="flex mt-5">
-            <span
-              onClick={() => setSortType("desc")}
-              className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
-                sortType === "desc"
-                  ? "text-first-alt"
-                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
-              }`}
-            >
-              <i className="uil uil-sort-amount-down text-xl"></i>
-            </span>
-            <label
-              className="relative inline-block w-[4em] h-[2em] text-lg"
-              onClick={(e) => {
+      <div className="flex justify-between items-center">
+        <div className="flex mt-5">
+          <span
+            onClick={() => setSortType("desc")}
+            className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
+              sortType === "desc"
+                ? "text-first-alt"
+                : "text-gray-500 hover:text-gray-700 cursor-pointer"
+            }`}
+          >
+            <i className="uil uil-sort-amount-down text-xl"></i>
+          </span>
+          <label
+            className="relative inline-block w-[4em] h-[2em] text-lg"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setSortType((prev) => (prev === "desc" ? "asc" : "desc"));
+            }}
+          >
+            <input
+              type="checkbox"
+              className="peer opacity-0 w-0 h-0"
+              checked={sortType === "asc"}
+              onChange={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setSortType((prev) => (prev === "desc" ? "asc" : "desc"));
               }}
-            >
-              <input
-                type="checkbox"
-                className="peer opacity-0 w-0 h-0"
-                checked={sortType === "asc"}
-                onChange={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setSortType((prev) => (prev === "desc" ? "asc" : "desc"));
-                }}
-              />
-              <span
-                className="absolute inset-0 cursor-pointer bg-gray-200 transition-all duration-400 rounded-[0.5em] shadow-[0_0.2em_#dfd9d9]
+            />
+            <span
+              className="absolute inset-0 cursor-pointer bg-gray-200 transition-all duration-400 rounded-[0.5em] shadow-[0_0.2em_#dfd9d9]
              before:content-[''] before:absolute before:h-[1.5em] before:w-[1.4em] before:rounded-[0.3em] 
              before:left-[0.3em] before:bottom-[0.7em] before:bg-[lightsalmon] before:transition-all before:duration-400 
              before:shadow-[0_0.4em_#bcb4b4] 
              before:hover:shadow-[0_0.2em_#bcb4b4] before:hover:bottom-[0.5em] 
              peer-checked:before:translate-x-[2em] peer-checked:before:bg-[lightgreen]"
-              ></span>
-            </label>
-            <span
-              onClick={() => setSortType("asc")}
-              className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
-                sortType === "asc"
-                  ? "text-first-alt"
-                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
-              }`}
-            >
-              <i className="uil uil-sort-amount-up text-xl"></i>
-            </span>
-          </div>
+            ></span>
+          </label>
+          <span
+            onClick={() => setSortType("asc")}
+            className={`relative z-10 w-12 flex justify-center items-center py-2 transition-colors duration-300 ${
+              sortType === "asc"
+                ? "text-first-alt"
+                : "text-gray-500 hover:text-gray-700 cursor-pointer"
+            }`}
+          >
+            <i className="uil uil-sort-amount-up text-xl"></i>
+          </span>
+        </div>
 
-          <div className="flex items-center gap-5 -mt-[99px]">
-            <div className="relative flex py-1.5 bg-white shadow-gray-300 border-t-2 border-gray-200">
+        <div className="flex items-center gap-5 -mt-[99px]">
+          <div className="relative flex py-1.5 bg-white shadow-gray-300 border-t-2 border-gray-200">
+            <div
+              className="absolute top-0 bottom-0 w-28 shadow-gray-400 z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)] border-t-2 border-first bg-gradient-to-b from-[var(--first-color)]/20 to-transparent"
+              style={{
+                transform: `translateX(${currentCategory.filters.findIndex((item) => item.type === filterType) * 100}%)`,
+              }}
+            />
+
+            {currentCategory.filters.map((item) => (
               <div
-                className="absolute top-0 bottom-0 w-28 shadow-gray-400 z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)] border-t-2 border-first bg-gradient-to-b from-[var(--first-color)]/20 to-transparent"
-                style={{
-                  transform: `translateX(${
-                    currentCategory.filters.findIndex(
-                      (item) => item.type === filterType,
-                    ) * 100
-                  }%)`,
-                }}
-              />
-
-              {currentCategory.filters.map((item) => (
-                <div
-                  key={item.type}
-                  onClick={() => setFilterType(item.type)}
-                  className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full cursor-pointer transition-transform duration-500 text-sm ${
-                    filterType === item.type
-                      ? "text-first-alt font-medium scale-[1.15]"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  <i className={`uil uil-${item.icon}`}></i>
-                  {item.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-5">
-            <button
-              onClick={fetchRankings}
-              disabled={loading}
-              className="group bg-first text-white font-inherit py-[0.35em] pl-[1.2em] pr-[3.3em] text-[17px] font-medium rounded-[0.9em] border-0 tracking-[0.05em] flex items-center shadow-[inset_0_0_1.6em_-0.6em_#714da6] overflow-hidden relative h-[2.8em] cursor-pointer disabled:opacity-70"
-            >
-              {loading ? "更新中..." : "Get Rank"}
-              <span className="icon bg-white ml-[1em] absolute flex items-center justify-center h-[2.2em] w-[2.2em] rounded-[0.7em] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] right-[0.3em] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
-                <i
-                  className="uil uil-arrow-right
-                text-[1.1em] text-[#7b52b9]
-                transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140"
-                ></i>
-              </span>
-            </button>
+                key={item.type}
+                onClick={() => setFilterType(item.type)}
+                className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full cursor-pointer transition-transform duration-500 text-sm ${
+                  filterType === item.type
+                    ? "text-first-alt font-medium scale-[1.15]"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <i className={`uil uil-${item.icon}`}></i>
+                {item.label}
+              </div>
+            ))}
           </div>
         </div>
 
-        {!hasRequested ? (
-          <div className="flex flex-col gap-5 items-center justify-center mt-15">
-            <div className="text-8xl text-gray-300">
-              <i className="uil uil-filter"></i>
-            </div>
-            <div className="text-2xl text-gray-800">角逐左家垅之巅</div>
-            <div className="text-lg text-gray-500">
-              使用上方的排行筛选器，发现更多精彩内容！
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-base md:text-lg font-semibold text-gray-800">
-                共 {formatInteger(total)} 条记录
-              </div>
-              <div className="text-sm text-gray-500">
-                当前排序：
-                {currentCategory.filters.find(
-                  (item) => item.type === filterType,
-                )?.label || "--"}
-                （{sortType === "desc" ? "降序" : "升序"}）
-              </div>
-            </div>
-
-            {errorMessage ? (
-              <div className="py-12 text-center">
-                <div className="text-red-500 text-base">{errorMessage}</div>
-                <div className="mt-3 text-gray-500 text-sm">
-                  你可以点击右上角按钮重试请求。
-                </div>
-              </div>
-            ) : null}
-
-            {!errorMessage && loading ? (
-              <div className="py-12 text-center text-gray-500">
-                排行榜加载中...
-              </div>
-            ) : null}
-
-            {!errorMessage &&
-            !loading &&
-            rankCategory === "resource" &&
-            resourceItems.length > 0 ? (
-              <div className="grid grid-cols-1 gap-4">
-                {resourceItems.map((item, index) => (
-                  <RankItemCard
-                    key={`${item.id}-${index}`}
-                    type="resource"
-                    item={{ ...item, rank: item.rank || index + 1 }}
-                    filterLabel={
-                      currentCategory.filters.find((f) => f.type === filterType)
-                        ?.label || ""
-                    }
-                    filterValue={
-                      (item[filterType as keyof typeof item] as
-                        | string
-                        | number
-                        | null
-                        | undefined) ?? item.score
-                    }
-                  />
-                ))}
-              </div>
-            ) : null}
-
-            {!errorMessage &&
-            !loading &&
-            ((rankCategory === "resource" && resourceItems.length === 0) ||
-              (rankCategory !== "resource" && rankingItems.length === 0)) ? (
-              <div className="flex flex-col gap-4 items-center justify-center py-12">
-                <div className="text-7xl text-gray-300">
-                  <i className="uil uil-filter"></i>
-                </div>
-                <div className="text-xl text-gray-800">当前条件下暂无数据</div>
-                <div className="text-base text-gray-500">
-                  请切换筛选维度或排序方式后重试。
-                </div>
-              </div>
-            ) : null}
-          </div>
-        )}
+        <div className="mt-5">
+          <button
+            onClick={fetchRankings}
+            disabled={loading}
+            className="group bg-first text-white font-inherit py-[0.35em] pl-[1.2em] pr-[3.3em] text-[17px] font-medium rounded-[0.9em] border-0 tracking-[0.05em] flex items-center shadow-[inset_0_0_1.6em_-0.6em_#714da6] overflow-hidden relative h-[2.8em] cursor-pointer disabled:opacity-70"
+          >
+            {loading ? "更新中..." : "Get Rank"}
+            <span className="icon bg-white ml-[1em] absolute flex items-center justify-center h-[2.2em] w-[2.2em] rounded-[0.7em] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] right-[0.3em] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
+              <i className="uil uil-arrow-right text-[1.1em] text-[#7b52b9] transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140"></i>
+            </span>
+          </button>
+        </div>
       </div>
-    </>
+
+      {!hasRequested ? (
+        <div className="flex flex-col gap-5 items-center justify-center mt-15">
+          <div className="text-8xl text-gray-300">
+            <i className="uil uil-filter"></i>
+          </div>
+          <div className="text-2xl text-gray-800">角逐左家垅之巅</div>
+          <div className="text-lg text-gray-500">
+            使用上方的排行筛选器，发现更多精彩内容！
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-base md:text-lg font-semibold text-gray-800">
+              共 {formatInteger(total)} 条记录
+            </div>
+            <div className="text-sm text-gray-500">
+              当前排序：
+              {currentCategory.filters.find((item) => item.type === filterType)?.label || "--"}
+              （{sortType === "desc" ? "降序" : "升序"}）
+            </div>
+          </div>
+
+          {errorMessage ? (
+            <div className="py-12 text-center">
+              <div className="text-red-500 text-base">{errorMessage}</div>
+              <div className="mt-3 text-gray-500 text-sm">你可以点击右上角按钮重试请求。</div>
+            </div>
+          ) : null}
+
+          {!errorMessage && loading ? (
+            <div className="py-12 text-center text-gray-500">排行榜加载中...</div>
+          ) : null}
+
+          {!errorMessage && !loading && rankCategory === "resource" && resourceItems.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {resourceItems.map((item, index) => (
+                <RankItemCard
+                  key={`${item.course_id}-${index}`}
+                  type="resource"
+                  item={{ ...item, rank: item.rank || index + 1 }}
+                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterValue={getResourceFilterValue(item)}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {!errorMessage && !loading && rankCategory === "course" && courseItems.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {courseItems.map((item, index) => (
+                <RankItemCard
+                  key={`${item.id}-${index}`}
+                  type="course"
+                  item={{ ...item, rank: item.rank || index + 1 }}
+                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterValue={item[filterType as keyof CourseRankingItem]}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {!errorMessage && !loading && rankCategory === "teacher" && teacherItems.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              {teacherItems.map((item, index) => (
+                <RankItemCard
+                  key={`${item.id}-${index}`}
+                  type="teacher"
+                  item={{ ...item, rank: item.rank || index + 1 }}
+                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterValue={item[filterType as keyof TeacherRankingItem]}
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {!errorMessage && !loading && currentItemsEmpty ? (
+            <div className="flex flex-col gap-4 items-center justify-center py-12">
+              <div className="text-7xl text-gray-300">
+                <i className="uil uil-filter"></i>
+              </div>
+              <div className="text-xl text-gray-800">当前条件下暂无数据</div>
+              <div className="text-base text-gray-500">请切换筛选维度或排序方式后重试。</div>
+            </div>
+          ) : null}
+        </div>
+      )}
+    </div>
   );
 }

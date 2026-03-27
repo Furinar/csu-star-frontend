@@ -2,6 +2,7 @@
 import SearchBar from "@/components/ui/SearchBar";
 import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
+import { useRouter } from "next/navigation";
 
 // 模拟数据
 const mockRankData = [
@@ -13,11 +14,20 @@ const mockRankData = [
 ];
 
 export default function Teacher() {
+  const router = useRouter();
+
   return (
     <>
       <div className="container flex flex-col gap-10 mt-10 mb-20">
         <div>
-          <SearchBar placeholder="搜索教师..." />
+          <SearchBar
+            placeholder="搜索教师..."
+            onSearch={(value) => {
+              const keyword = value.trim();
+              if (!keyword) return;
+              router.push(`/search?type=teacher&q=${encodeURIComponent(keyword)}`);
+            }}
+          />
         </div>
 
         <TeacherSlider />

@@ -1,12 +1,11 @@
 import { service } from "@/lib/request";
-import {
-  CourseDetail,
+import type {
+  CourseRankingItem,
   CourseRankingQuery,
   PaginatedData,
-  RankingItem,
   ResourceRankingItem,
   ResourceRankingQuery,
-  TeacherDetail,
+  TeacherRankingItem,
   TeacherRankingQuery,
 } from "@/types/ranking";
 
@@ -22,18 +21,6 @@ type AnyRecord = Record<string, unknown>;
 const isRecord = (value: unknown): value is AnyRecord =>
   typeof value === "object" && value !== null;
 
-const toNumber = (value: unknown, fallback = 0) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return fallback;
-};
-
-const toStringSafe = (value: unknown, fallback = "") =>
-  typeof value === "string" ? value : fallback;
-
 const unwrapResponseData = (payload: unknown): unknown => {
   if (!isRecord(payload)) return undefined;
 
@@ -45,105 +32,134 @@ const unwrapResponseData = (payload: unknown): unknown => {
   return firstLevel;
 };
 
-const normalizeRankingItems = (rawItems: unknown[]): RankingItem[] => {
-  const items: RankingItem[] = [];
-
-  rawItems.forEach((raw, index) => {
-    if (!isRecord(raw)) return;
-
-    items.push({
-      rank: toNumber(raw.rank, index + 1),
-      id: toNumber(raw.id, index + 1),
-      name: toStringSafe(raw.name, `#${index + 1}`),
-      department_name:
-        raw.department_name === null
-          ? null
-          : toStringSafe(raw.department_name, "") || null,
-      score: toNumber(raw.score, 0),
-    });
-  });
-
-  return items;
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
 };
 
-const normalizeResourceItems = (rawItems: unknown[]): ResourceRankingItem[] => {
-  return rawItems.map((raw, index) => {
-    if (!isRecord(raw)) {
-      const title = toStringSafe(raw, `资源 #${index + 1}`);
-      return {
-        rank: index + 1,
-        id: index + 1,
-        title,
-        name: title,
-      };
-    }
+const toStringSafe = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
-    const title =
-      toStringSafe(raw.title, "") || toStringSafe(raw.name, `资源 #${index + 1}`);
-
-    return {
-      rank: toNumber(raw.rank, index + 1),
-      id: toNumber(raw.id, index + 1),
-      title,
-      name: toStringSafe(raw.name, ""),
-      score:
-        typeof raw.score !== "undefined" ? toNumber(raw.score, 0) : undefined,
-      course_id:
-        typeof raw.course_id !== "undefined"
-          ? toNumber(raw.course_id, 0)
-          : undefined,
-      course_name: toStringSafe(raw.course_name, ""),
-      resource_type: toStringSafe(raw.resource_type, ""),
-      semester_start:
-        typeof raw.semester_start === "string" || raw.semester_start === null
-          ? raw.semester_start
-          : undefined,
-      semester_end:
-        typeof raw.semester_end === "string" || raw.semester_end === null
-          ? raw.semester_end
-          : undefined,
-      points_cost:
-        typeof raw.points_cost !== "undefined"
-          ? toNumber(raw.points_cost, 0)
-          : undefined,
-      downloads:
-        typeof raw.downloads !== "undefined"
-          ? toNumber(raw.downloads, 0)
-          : undefined,
-      views:
-        typeof raw.views !== "undefined" ? toNumber(raw.views, 0) : undefined,
-      likes:
-        typeof raw.likes !== "undefined" ? toNumber(raw.likes, 0) : undefined,
-      hot_score:
-        typeof raw.hot_score !== "undefined"
-          ? toNumber(raw.hot_score, 0)
-          : undefined,
-      created_at: toStringSafe(raw.created_at, ""),
-    };
-  });
-};
-
-const normalizePaginated = <T>(raw: unknown, normalizeItems: (input: unknown[]) => T[]): PaginatedData<T> => {
+const normalizePaginated = <T>(
+  raw: unknown,
+  normalizeItems: (items: unknown[]) => T[],
+): PaginatedData<T> => {
   if (!isRecord(raw)) {
     return { total: 0, items: [] };
   }
 
-  const rawItems = Array.isArray(raw.items) ? raw.items : [];
+  const items = Array.isArray(raw.items) ? raw.items : [];
 
   return {
-    total: toNumber(raw.total, rawItems.length),
-    items: normalizeItems(rawItems),
-    page: typeof raw.page !== "undefined" ? toNumber(raw.page, 1) : undefined,
-    size: typeof raw.size !== "undefined" ? toNumber(raw.size, rawItems.length) : undefined,
+    total: toNumber(raw.total) ?? items.length,
+    items: normalizeItems(items),
+    page: toNumber(raw.page) ?? undefined,
+    size: toNumber(raw.size) ?? undefined,
   };
 };
+
+const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
+  items.flatMap((raw, index) => {
+    if (!isRecord(raw)) return [];
+
+    return [
+      {
+        rank: toNumber(raw.rank) ?? index + 1,
+        id: toNumber(raw.id) ?? 0,
+        name: toStringSafe(raw.name) ?? `课程 ${index + 1}`,
+        code: toStringSafe(raw.code),
+        course_type: toStringSafe(raw.course_type),
+        credits: toNumber(raw.credits),
+        department_name: toStringSafe(raw.department_name),
+        score: toNumber(raw.score) ?? 0,
+        avg_score: toNumber(raw.avg_score),
+        avg_homework: toNumber(raw.avg_homework),
+        avg_gain: toNumber(raw.avg_gain),
+        avg_exam_diff: toNumber(raw.avg_exam_diff),
+        eval_count: toNumber(raw.eval_count),
+        resource_count: toNumber(raw.resource_count),
+        hot_score: toNumber(raw.hot_score),
+      },
+    ];
+  });
+
+const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
+  items.flatMap((raw, index) => {
+    if (!isRecord(raw)) return [];
+
+    return [
+      {
+        rank: toNumber(raw.rank) ?? index + 1,
+        id: toNumber(raw.id) ?? 0,
+        name: toStringSafe(raw.name) ?? `教师 ${index + 1}`,
+        title: toStringSafe(raw.title),
+        department_id: toNumber(raw.department_id),
+        department_name: toStringSafe(raw.department_name),
+        score: toNumber(raw.score) ?? 0,
+        avg_score: toNumber(raw.avg_score),
+        avg_quality: toNumber(raw.avg_quality),
+        avg_grading: toNumber(raw.avg_grading),
+        avg_attendance: toNumber(raw.avg_attendance),
+        eval_count: toNumber(raw.eval_count),
+        resource_count: toNumber(raw.resource_count),
+        hot_score: toNumber(raw.hot_score),
+      },
+    ];
+  });
+
+const normalizeResourcePreview = (value: unknown) => {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((raw) => {
+    if (!isRecord(raw)) return [];
+
+    return [
+      {
+        id: toNumber(raw.id) ?? 0,
+        title: toStringSafe(raw.title) ?? "未命名资料",
+        resource_type: toStringSafe(raw.resource_type),
+        downloads: toNumber(raw.downloads),
+        likes: toNumber(raw.likes),
+        created_at: toStringSafe(raw.created_at),
+      },
+    ];
+  });
+};
+
+const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] =>
+  items.flatMap((raw, index) => {
+    if (!isRecord(raw)) return [];
+
+    return [
+      {
+        rank: toNumber(raw.rank) ?? index + 1,
+        course_id: toNumber(raw.course_id) ?? toNumber(raw.id) ?? 0,
+        course_name:
+          toStringSafe(raw.course_name) ??
+          toStringSafe(raw.name) ??
+          `课程资源合集 ${index + 1}`,
+        course_code: toStringSafe(raw.course_code),
+        resource_count: toNumber(raw.resource_count),
+        download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
+        like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
+        hot_score: toNumber(raw.hot_score),
+        updated_at: toStringSafe(raw.updated_at),
+        score: toNumber(raw.score),
+        resources_preview: normalizeResourcePreview(raw.resources_preview),
+      },
+    ];
+  });
 
 export async function getCourseRankings(params: CourseRankingQuery) {
   const response = await service.get<ApiEnvelope<unknown>>("/rankings/courses", {
     params,
   });
 
-  return normalizePaginated(unwrapResponseData(response), normalizeRankingItems);
+  return normalizePaginated(unwrapResponseData(response), normalizeCourseRankingItems);
 }
 
 export async function getTeacherRankings(params: TeacherRankingQuery) {
@@ -151,29 +167,13 @@ export async function getTeacherRankings(params: TeacherRankingQuery) {
     params,
   });
 
-  return normalizePaginated(unwrapResponseData(response), normalizeRankingItems);
+  return normalizePaginated(unwrapResponseData(response), normalizeTeacherRankingItems);
 }
 
 export async function getResourceRankings(params: ResourceRankingQuery) {
   const response = await service.get<ApiEnvelope<unknown>>("/rankings/resources", {
-    params: {
-      rank_type: params.rank_type,
-      period: params.period,
-      page: params.page,
-      size: params.size,
-      is_increased: params.is_increased,
-    },
+    params,
   });
 
-  return normalizePaginated(unwrapResponseData(response), normalizeResourceItems);
-}
-
-export async function getCourseDetail(id: number) {
-  const response = await service.get<ApiEnvelope<CourseDetail>>(`/courses/${id}`);
-  return unwrapResponseData(response) as CourseDetail;
-}
-
-export async function getTeacherDetail(id: number) {
-  const response = await service.get<ApiEnvelope<TeacherDetail>>(`/teachers/${id}`);
-  return unwrapResponseData(response) as TeacherDetail;
+  return normalizePaginated(unwrapResponseData(response), normalizeResourceRankingItems);
 }

@@ -22,6 +22,7 @@ export interface SearchTeacherBrief {
 
 export interface SearchCourseItem {
   id: number;
+  code?: string | null;
   name: string;
   course_type?: string | null;
   credits?: number | null;
@@ -34,13 +35,13 @@ export interface SearchCourseItem {
   hot_score?: number | null;
   teachers?: SearchTeacherBrief[];
   teacher_count?: number | null;
-  download_total?: number | null;
 }
 
 export interface SearchTeacherItem {
   id: number;
   name: string;
   department_id?: number | null;
+  department_name?: string | null;
   title?: string | null;
   avatar_url?: string | null;
   avg_score?: number | null;
@@ -53,32 +54,25 @@ export interface SearchTeacherItem {
   hot_score?: number | null;
 }
 
-export interface SearchResourceHit {
+export interface SearchResourcePreview {
   id: number;
   title: string;
-  course_id: number;
   resource_type?: string | null;
-  semester_start?: string | null;
-  semester_end?: string | null;
-  downloads?: number | null;
-  views?: number | null;
-  likes?: number | null;
-  hot_score?: number | null;
-  created_at?: string | null;
 }
 
 export interface SearchResourceCard {
-  id: number;
   course_id: number;
   course_name: string;
+  course_code?: string | null;
   course_type?: string | null;
   credits?: number | null;
   avg_score?: number | null;
   resource_count: number;
-  download_total: number;
-  matched_resource_count: number;
-  matched_resource_types: string[];
+  download_total?: number | null;
+  like_total?: number | null;
   hot_score?: number | null;
+  updated_at?: string | null;
+  resources_preview?: SearchResourcePreview[];
 }
 
 export interface SearchResponse {

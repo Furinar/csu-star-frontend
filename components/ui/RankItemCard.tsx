@@ -1,34 +1,29 @@
 "use client";
 
+import Link from "next/link";
 import React from "react";
-import {
-  CourseDetail,
-  TeacherDetail,
+import type {
+  CourseRankingItem,
   ResourceRankingItem,
+  TeacherRankingItem,
 } from "@/types/ranking";
-
-export type CombinedCourse = CourseDetail & {
-  rank: number;
-  rankScore: number;
-  department_name?: string | null;
-};
-export type CombinedTeacher = TeacherDetail & {
-  rank: number;
-  rankScore: number;
-  department_name?: string | null;
-};
+import {
+  buildCoursePath,
+  buildResourceCollectionPath,
+  buildTeacherPath,
+} from "@/lib/paths";
 
 type RankItemCardProps =
   | {
       type: "course";
-      item: CombinedCourse;
+      item: CourseRankingItem;
       filterLabel: string;
       filterValue: number | string | null | undefined;
       className?: string;
     }
   | {
       type: "teacher";
-      item: CombinedTeacher;
+      item: TeacherRankingItem;
       filterLabel: string;
       filterValue: number | string | null | undefined;
       className?: string;
@@ -49,7 +44,7 @@ const TYPE_THEME = {
   },
   teacher: { label: "教师", dotClass: "bg-sky-500", textClass: "text-sky-700" },
   resource: {
-    label: "资源",
+    label: "资源合集",
     dotClass: "bg-amber-500",
     textClass: "text-amber-700",
   },
@@ -59,6 +54,13 @@ function formatScore(value?: number | null | string, digits = 1) {
   if (value === null || typeof value === "undefined") return "--";
   if (typeof value === "string") return value;
   return value.toFixed(digits);
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("zh-CN");
 }
 
 function BarRow({
@@ -94,29 +96,27 @@ function BarRow({
 function truncateString(str: string, maxLength: number) {
   if (!str) return "";
   if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength) + "...";
+  return `${str.slice(0, maxLength)}...`;
 }
 
 export default function RankItemCard(props: RankItemCardProps) {
   const { type, filterLabel, filterValue, className = "" } = props;
   const theme = TYPE_THEME[type];
 
+  let href = "#";
   let title = "";
   let isPublic = false;
   let subtitleIcon = "";
   let subtitleContent: React.ReactNode = null;
   let rightDetailsContent: React.ReactNode = null;
-  let bottomStats: Array<{
-    icon: string;
-    label: string;
-    value: string | number;
-  }> = [];
+  let bottomStats: Array<{ icon: string; label: string; value: string | number }> = [];
 
   const rank = props.item.rank || 1;
   const index = rank - 1;
 
   if (type === "course") {
     const item = props.item;
+    href = buildCoursePath(item.id);
     title = item.name;
     isPublic =
       item.course_type === "公选" ||
@@ -130,56 +130,35 @@ export default function RankItemCard(props: RankItemCardProps) {
         <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
           {truncateString(item.course_type || "未知类型", 8)}
         </span>
-        {item.credits && (
-          <span className="text-[10px] sm:text-xs text-gray-500">
-            {item.credits} 学分
-          </span>
-        )}
+        {item.credits ? (
+          <span className="text-[10px] sm:text-xs text-gray-500">{item.credits} 学分</span>
+        ) : null}
       </div>
     );
 
     rightDetailsContent = (
       <>
-        <BarRow
-          label="收获感"
-          value={item.avg_gain}
-          colorClass="bg-emerald-400"
-        />
-        <BarRow
-          label="作业量"
-          value={item.avg_homework}
-          colorClass="bg-orange-400"
-        />
-        <BarRow
-          label="考试难度"
-          value={item.avg_exam_diff}
-          colorClass="bg-red-400"
-        />
+        <BarRow label="收获感" value={item.avg_gain} colorClass="bg-emerald-400" />
+        <BarRow label="作业量" value={item.avg_homework} colorClass="bg-orange-400" />
+        <BarRow label="考试难度" value={item.avg_exam_diff} colorClass="bg-red-400" />
       </>
     );
 
     bottomStats = [
-      {
-        icon: "uil-award",
-        label: "总得分",
-        value: formatScore(item.rankScore),
-      },
-      {
-        icon: "uil-comment-alt-lines",
-        label: "评价",
-        value: item.eval_count ?? 0,
-      },
+      { icon: "uil-award", label: "总得分", value: formatScore(item.score) },
+      { icon: "uil-comment-alt-lines", label: "评价", value: item.eval_count ?? 0 },
       { icon: "uil-folder", label: "资源", value: item.resource_count ?? 0 },
     ];
   } else if (type === "teacher") {
     const item = props.item;
+    href = buildTeacherPath(item.id);
     title = item.name;
     subtitleIcon = "uil-building";
     subtitleContent = (
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] sm:text-xs text-gray-600">
           {item.department_name ||
-            (item.department_id ? "学院ID:" + item.department_id : "未知学院")}
+            (item.department_id ? `学院ID:${item.department_id}` : "未知学院")}
         </span>
         <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
           {item.title || "未知职称"}
@@ -189,137 +168,100 @@ export default function RankItemCard(props: RankItemCardProps) {
 
     rightDetailsContent = (
       <>
-        <BarRow
-          label="教学质量"
-          value={item.avg_quality}
-          colorClass="bg-sky-400"
-        />
-        <BarRow
-          label="给分宽松"
-          value={item.avg_grading}
-          colorClass="bg-purple-400"
-        />
-        <BarRow
-          label="考勤要求"
-          value={item.avg_attendance}
-          colorClass="bg-indigo-400"
-        />
+        <BarRow label="教学质量" value={item.avg_quality} colorClass="bg-sky-400" />
+        <BarRow label="给分宽松" value={item.avg_grading} colorClass="bg-purple-400" />
+        <BarRow label="考勤要求" value={item.avg_attendance} colorClass="bg-indigo-400" />
       </>
     );
 
     bottomStats = [
-      {
-        icon: "uil-award",
-        label: "总得分",
-        value: formatScore(item.rankScore),
-      },
-      {
-        icon: "uil-comment-alt-lines",
-        label: "评价",
-        value: item.eval_count ?? 0,
-      },
-      { icon: "uil-fire", label: "热度", value: formatScore(item.hot_score) },
+      { icon: "uil-award", label: "总得分", value: formatScore(item.score) },
+      { icon: "uil-comment-alt-lines", label: "评价", value: item.eval_count ?? 0 },
+      { icon: "uil-folder", label: "资源", value: item.resource_count ?? 0 },
     ];
-  } else if (type === "resource") {
+  } else {
     const item = props.item;
-    title = item.title;
-    subtitleIcon = "uil-file-info-alt";
+    href = buildResourceCollectionPath(item.course_id);
+    title = item.course_name;
+    subtitleIcon = "uil-folder-open";
     subtitleContent = (
       <div className="flex items-center gap-2 flex-wrap">
-        {item.resource_type && (
-          <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
-            {truncateString(item.resource_type, 6)}
-          </span>
-        )}
-        {item.course_name ? (
-          <span className="text-[10px] sm:text-xs text-gray-500 border border-gray-200 rounded px-1.5 py-0.5">
-            《{truncateString(item.course_name, 12)}》
-          </span>
-        ) : (
-          item.course_id && (
-            <span className="text-[10px] sm:text-xs text-gray-500">
-              课程ID:{item.course_id}
-            </span>
-          )
-        )}
+        {item.course_code ? (
+          <span className="text-[10px] sm:text-xs text-gray-600">{item.course_code}</span>
+        ) : null}
+        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
+          最近更新 {formatDate(item.updated_at)}
+        </span>
       </div>
     );
 
     rightDetailsContent = (
       <div className="flex flex-col gap-1 sm:gap-1.5 justify-center h-full">
         <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-12 sm:w-16">综合分</span>
+          <span className="text-gray-500 w-14 sm:w-18">资源总数</span>
           <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {formatScore(item.score)}
+            {item.resource_count ?? 0}
           </span>
         </div>
         <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-12 sm:w-16">总下载</span>
+          <span className="text-gray-500 w-14 sm:w-18">总下载</span>
           <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.downloads ?? 0}
+            {item.download_total ?? 0}
           </span>
         </div>
         <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-12 sm:w-16">点赞数</span>
+          <span className="text-gray-500 w-14 sm:w-18">总点赞</span>
           <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.likes ?? 0}
+            {item.like_total ?? 0}
           </span>
         </div>
       </div>
     );
 
     bottomStats = [
-      { icon: "uil-eye", label: "浏览", value: item.views ?? 0 },
-      {
-        icon: "uil-coins",
-        label: "积分",
-        value: typeof item.points_cost === "number" ? item.points_cost : "--",
-      },
+      { icon: "uil-award", label: "总得分", value: formatScore(item.score) },
+      { icon: "uil-file-alt", label: "资料", value: item.resource_count ?? 0 },
       { icon: "uil-fire", label: "热度", value: formatScore(item.hot_score) },
     ];
   }
 
   let medalIcon = null;
-  if (index === 0)
+  if (index === 0) {
     medalIcon = (
       <span className="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-300 to-amber-600">
         1
       </span>
     );
-  else if (index === 1)
+  } else if (index === 1) {
     medalIcon = (
       <span className="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-slate-300 to-slate-500">
         2
       </span>
     );
-  else if (index === 2)
+  } else if (index === 2) {
     medalIcon = (
       <span className="text-lg sm:text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-red-600">
         3
       </span>
     );
-  else
+  } else {
     medalIcon = (
-      <span className="text-base sm:text-lg text-gray-400 font-bold w-full text-center">
-        {rank}
-      </span>
+      <span className="text-base sm:text-lg text-gray-400 font-bold w-full text-center">{rank}</span>
     );
+  }
 
   return (
-    <div
-      className={`relative flex flex-row items-stretch w-full min-h-[100px] bg-white rounded-xl shadow-[0_8px_22px_rgba(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gray-200 overflow-hidden cursor-pointer ${className}`}
+    <Link
+      href={href}
+      className={`relative flex flex-row items-stretch w-full min-h-[100px] bg-white rounded-xl shadow-[0_8px_22px_rgba(0,0,0,0.04)] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 border border-gray-200 overflow-hidden ${className}`}
     >
-      {/* Type badge corner */}
       <div className="absolute top-2 right-2 flex items-center gap-1 bg-gray-50/80 px-1.5 py-0.5 rounded-md border border-gray-100 z-10">
         <div className={`w-1.5 h-1.5 rounded-full ${theme.dotClass}`} />
-        <span
-          className={`text-[9px] sm:text-[10px] font-medium ${theme.textClass}`}
-        >
+        <span className={`text-[9px] sm:text-[10px] font-medium ${theme.textClass}`}>
           {theme.label}
         </span>
       </div>
 
-      {/* Rank column */}
       <div className="w-14 sm:w-16 md:w-20 shrink-0 flex items-center justify-center bg-gray-50/40 border-r border-gray-100">
         <div
           className={`flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full shadow-md border ${
@@ -336,7 +278,6 @@ export default function RankItemCard(props: RankItemCardProps) {
         </div>
       </div>
 
-      {/* Main Info */}
       <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col justify-center">
         <div className="mb-2 sm:mb-2 pr-10">
           <div className="flex items-center gap-2">
@@ -346,11 +287,11 @@ export default function RankItemCard(props: RankItemCardProps) {
             >
               {title}
             </h3>
-            {isPublic && (
+            {isPublic ? (
               <span className="shrink-0 bg-amber-50 border border-amber-200 text-amber-600 px-1 py-0.5 text-[9px] font-medium rounded whitespace-nowrap">
                 公选
               </span>
-            )}
+            ) : null}
           </div>
           <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-xs text-gray-500 truncate h-[20px]">
             <i className={`uil ${subtitleIcon} text-gray-400`}></i>
@@ -359,31 +300,21 @@ export default function RankItemCard(props: RankItemCardProps) {
         </div>
 
         <div className="mt-1 flex items-center gap-3 sm:gap-4 overflow-x-auto scroolbar-hide">
-          {bottomStats.map((stat, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-1 text-[10px] sm:text-xs whitespace-nowrap"
-            >
+          {bottomStats.map((stat) => (
+            <div key={stat.label} className="flex items-center gap-1 text-[10px] sm:text-xs whitespace-nowrap">
               <i className={`uil ${stat.icon} text-gray-400`}></i>
-              <span className="text-gray-500 hidden sm:inline">
-                {stat.label}:
-              </span>
+              <span className="text-gray-500 hidden sm:inline">{stat.label}:</span>
               <span className="text-gray-800 font-medium">{stat.value}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Right details & Score group */}
       <div className="w-[150px] sm:w-[220px] md:w-[280px] shrink-0 flex border-l border-gray-100">
-        {/* Attributes panel (hidden on very small screens) */}
         <div className="hidden sm:flex flex-1 flex-col justify-center px-2 md:px-3 border-r border-gray-100 min-w-0">
-          <div className="flex flex-col gap-1 sm:gap-1.5">
-            {rightDetailsContent}
-          </div>
+          <div className="flex flex-col gap-1 sm:gap-1.5">{rightDetailsContent}</div>
         </div>
 
-        {/* Highlighted Filter Panel */}
         <div className="w-[70px] sm:w-[90px] shrink-0 flex flex-col items-center justify-center bg-[var(--first-color)]/5 px-1 py-2 relative overflow-hidden">
           <div className="flex flex-col items-center justify-center relative z-10 w-full h-full">
             <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-[var(--first-color)]/80 mb-0.5 sm:mb-1 truncate w-full justify-center">
@@ -397,19 +328,16 @@ export default function RankItemCard(props: RankItemCardProps) {
                 textShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
               title={
-                typeof filterValue === "string"
-                  ? filterValue
-                  : String(filterValue)
+                typeof filterValue === "string" ? filterValue : String(filterValue ?? "--")
               }
             >
               {typeof filterValue === "number"
                 ? formatScore(filterValue)
-                : filterValue}
+                : filterValue ?? "--"}
             </div>
           </div>
-          {/* Optional subtle background decoration could go here */}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -1,7 +1,8 @@
+"use client";
 import SearchBar from "@/components/ui/SearchBar";
-import TeacherSlider from "@/app/(features)/teacher/components/TeacherSlider";
 import RankCard from "@/components/ui/RankCard";
 import RandomBook from "@/app/(features)/course/components/RandomBook";
+import { useRouter } from "next/navigation";
 
 const mockRankData = [
     { id: "1", name: "原神", score: 9.8 },
@@ -12,11 +13,20 @@ const mockRankData = [
 ];
 
 export default function Course() {
+  const router = useRouter();
+
   return (
       <>
           <div className="container flex flex-col gap-10 mt-10 mb-20">
               <div>
-                  <SearchBar placeholder="搜索课程..." />
+                  <SearchBar
+                      placeholder="搜索课程..."
+                      onSearch={(value) => {
+                          const keyword = value.trim();
+                          if (!keyword) return;
+                          router.push(`/search?type=course&q=${encodeURIComponent(keyword)}`);
+                      }}
+                  />
               </div>
 
               <RandomBook />

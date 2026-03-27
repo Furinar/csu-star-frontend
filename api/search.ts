@@ -4,7 +4,6 @@ import type {
   SearchCourseItem,
   SearchQuery,
   SearchResourceCard,
-  SearchResourceHit,
   SearchResponse,
   SearchTeacherBrief,
   SearchTeacherItem,
@@ -19,34 +18,21 @@ interface ApiEnvelope<T> {
 
 type AnyRecord = Record<string, unknown>;
 
-interface CourseDetailSummary {
-  id: number;
-  name: string;
-  course_type?: string | null;
-  credits?: number | null;
-  avg_score?: number | null;
-  resource_count?: number | null;
-  download_total?: number | null;
-  hot_score?: number | null;
-  teachers: SearchTeacherBrief[];
-}
-
-const courseSummaryCache = new Map<number, Promise<CourseDetailSummary | null>>();
-
 const isRecord = (value: unknown): value is AnyRecord =>
   typeof value === "object" && value !== null;
 
-const toNumber = (value: unknown, fallback = 0) => {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  if (typeof value === "string" && value.trim() !== "") {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
+const unwrapResponseData = (payload: unknown): unknown => {
+  if (!isRecord(payload)) return undefined;
+
+  const firstLevel = payload.data;
+  if (isRecord(firstLevel) && typeof firstLevel.code === "number" && "data" in firstLevel) {
+    return firstLevel.data;
   }
-  return fallback;
+
+  return firstLevel;
 };
 
-const toOptionalNumber = (value: unknown): number | null => {
-  if (value === null || typeof value === "undefined") return null;
+const toNumber = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value.trim() !== "") {
     const parsed = Number(value);
@@ -55,67 +41,103 @@ const toOptionalNumber = (value: unknown): number | null => {
   return null;
 };
 
-const toStringSafe = (value: unknown, fallback = "") =>
-  typeof value === "string" ? value : fallback;
+const toStringSafe = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
-const toOptionalString = (value: unknown): string | null => {
-  if (value === null || typeof value === "undefined") return null;
-  return typeof value === "string" ? value : null;
-};
+const unwrapPaginatedPayload = (raw: unknown): AnyRecord | null => {
+  if (!isRecord(raw)) return null;
 
-const unwrapResponseData = (payload: unknown): unknown => {
-  if (!isRecord(payload)) return undefined;
+  if (Array.isArray(raw.items)) return raw;
 
-  const firstLevel = payload.data;
-  if (
-    isRecord(firstLevel) &&
-    typeof firstLevel.code === "number" &&
-    "data" in firstLevel
-  ) {
-    return firstLevel.data;
+  if (isRecord(raw.items)) {
+    const nested = raw.items;
+    if (
+      Array.isArray(nested.items) ||
+      Array.isArray(nested.records) ||
+      Array.isArray(nested.list)
+    ) {
+      return nested;
+    }
   }
 
-  return firstLevel;
+  if (
+    Array.isArray(raw.records) ||
+    Array.isArray(raw.list)
+  ) {
+    return raw;
+  }
+
+  return raw;
 };
 
 const normalizePaginated = <T>(
   raw: unknown,
   normalizeItems: (items: unknown[]) => T[],
 ): PaginatedData<T> => {
-  if (!isRecord(raw)) {
+  const payload = unwrapPaginatedPayload(raw);
+
+  if (!payload) {
     return { total: 0, items: [] };
   }
 
-  const rawItems = Array.isArray(raw.items) ? raw.items : [];
+  const items = Array.isArray(payload.items)
+    ? payload.items
+    : Array.isArray(payload.records)
+      ? payload.records
+      : Array.isArray(payload.list)
+        ? payload.list
+        : [];
 
   return {
-    total: toNumber(raw.total, rawItems.length),
-    items: normalizeItems(rawItems),
-    page: typeof raw.page !== "undefined" ? toNumber(raw.page, 1) : undefined,
-    size:
-      typeof raw.size !== "undefined"
-        ? toNumber(raw.size, rawItems.length)
-        : undefined,
+    total:
+      toNumber(payload.total) ??
+      toNumber(payload.count) ??
+      toNumber(payload.total_count) ??
+      items.length,
+    items: normalizeItems(items),
+    page: toNumber(payload.page) ?? toNumber(payload.current) ?? undefined,
+    size: toNumber(payload.size) ?? toNumber(payload.page_size) ?? undefined,
   };
+};
+
+const normalizeTeacherBriefs = (items: unknown): SearchTeacherBrief[] => {
+  if (!Array.isArray(items)) return [];
+
+  return items.flatMap((raw) => {
+    if (!isRecord(raw)) return [];
+
+    return [
+      {
+        id: toNumber(raw.id) ?? 0,
+        name: toStringSafe(raw.name) ?? "未命名教师",
+        title: toStringSafe(raw.title),
+      },
+    ];
+  });
 };
 
 const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
   items.flatMap((raw) => {
     if (!isRecord(raw)) return [];
 
+    const teachers = normalizeTeacherBriefs(raw.teachers);
+
     return [
       {
-        id: toNumber(raw.id, 0),
-        name: toStringSafe(raw.name, "未命名课程"),
-        course_type: toOptionalString(raw.course_type),
-        credits: toOptionalNumber(raw.credits),
-        avg_score: toOptionalNumber(raw.avg_score),
-        avg_homework: toOptionalNumber(raw.avg_homework),
-        avg_gain: toOptionalNumber(raw.avg_gain),
-        avg_exam_diff: toOptionalNumber(raw.avg_exam_diff),
-        eval_count: toOptionalNumber(raw.eval_count),
-        resource_count: toOptionalNumber(raw.resource_count),
-        hot_score: toOptionalNumber(raw.hot_score),
+        id: toNumber(raw.id) ?? 0,
+        code: toStringSafe(raw.code),
+        name: toStringSafe(raw.name) ?? "未命名课程",
+        course_type: toStringSafe(raw.course_type),
+        credits: toNumber(raw.credits),
+        avg_score: toNumber(raw.avg_score),
+        avg_homework: toNumber(raw.avg_homework),
+        avg_gain: toNumber(raw.avg_gain),
+        avg_exam_diff: toNumber(raw.avg_exam_diff),
+        eval_count: toNumber(raw.eval_count),
+        resource_count: toNumber(raw.resource_count),
+        hot_score: toNumber(raw.hot_score),
+        teachers,
+        teacher_count: toNumber(raw.teacher_count) ?? teachers.length,
       },
     ];
   });
@@ -126,177 +148,96 @@ const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
 
     return [
       {
-        id: toNumber(raw.id, 0),
-        name: toStringSafe(raw.name, "未命名教师"),
-        department_id: toOptionalNumber(raw.department_id),
-        title: toOptionalString(raw.title),
-        avatar_url: toOptionalString(raw.avatar_url),
-        avg_score: toOptionalNumber(raw.avg_score),
-        avg_quality: toOptionalNumber(raw.avg_quality),
-        avg_grading: toOptionalNumber(raw.avg_grading),
-        avg_attendance: toOptionalNumber(raw.avg_attendance),
-        good_rate: toOptionalNumber(raw.good_rate),
-        eval_count: toOptionalNumber(raw.eval_count),
-        resource_count: toOptionalNumber(raw.resource_count),
-        hot_score: toOptionalNumber(raw.hot_score),
+        id: toNumber(raw.id) ?? 0,
+        name: toStringSafe(raw.name) ?? "未命名教师",
+        department_id: toNumber(raw.department_id),
+        department_name: toStringSafe(raw.department_name),
+        title: toStringSafe(raw.title),
+        avatar_url: toStringSafe(raw.avatar_url),
+        avg_score: toNumber(raw.avg_score),
+        avg_quality: toNumber(raw.avg_quality),
+        avg_grading: toNumber(raw.avg_grading),
+        avg_attendance: toNumber(raw.avg_attendance),
+        good_rate: toNumber(raw.good_rate),
+        eval_count: toNumber(raw.eval_count),
+        resource_count: toNumber(raw.resource_count),
+        hot_score: toNumber(raw.hot_score),
       },
     ];
   });
 
-const normalizeResourceHits = (items: unknown[]): SearchResourceHit[] =>
-  items.flatMap((raw) => {
+const normalizeResourcePreview = (items: unknown) => {
+  if (!Array.isArray(items)) return [];
+
+  return items.flatMap((raw) => {
     if (!isRecord(raw)) return [];
 
     return [
       {
-        id: toNumber(raw.id, 0),
-        title: toStringSafe(raw.title, "未命名资源"),
-        course_id: toNumber(raw.course_id, 0),
-        resource_type: toOptionalString(raw.resource_type),
-        semester_start: toOptionalString(raw.semester_start),
-        semester_end: toOptionalString(raw.semester_end),
-        downloads: toOptionalNumber(raw.downloads),
-        views: toOptionalNumber(raw.views),
-        likes: toOptionalNumber(raw.likes),
-        hot_score: toOptionalNumber(raw.hot_score),
-        created_at: toOptionalString(raw.created_at),
+        id: toNumber(raw.id) ?? 0,
+        title: toStringSafe(raw.title) ?? "未命名资料",
+        resource_type: toStringSafe(raw.resource_type),
       },
     ];
   });
-
-const normalizeTeacherBriefs = (items: unknown[]): SearchTeacherBrief[] =>
-  items.flatMap((raw) => {
-    if (!isRecord(raw)) return [];
-
-    return [
-      {
-        id: toNumber(raw.id, 0),
-        name: toStringSafe(raw.name, "未命名教师"),
-        title: toOptionalString(raw.title),
-      },
-    ];
-  });
-
-const normalizeCourseDetail = (raw: unknown): CourseDetailSummary | null => {
-  if (!isRecord(raw)) return null;
-
-  return {
-    id: toNumber(raw.id, 0),
-    name: toStringSafe(raw.name, "未命名课程"),
-    course_type: toOptionalString(raw.course_type),
-    credits: toOptionalNumber(raw.credits),
-    avg_score: toOptionalNumber(raw.avg_score),
-    resource_count: toOptionalNumber(raw.resource_count),
-    download_total: toOptionalNumber(raw.download_total),
-    hot_score: toOptionalNumber(raw.hot_score),
-    teachers: Array.isArray(raw.teachers)
-      ? normalizeTeacherBriefs(raw.teachers)
-      : [],
-  };
 };
 
-async function getCourseDetailSummary(id: number) {
-  if (!courseSummaryCache.has(id)) {
-    courseSummaryCache.set(
-      id,
-      service
-        .get<ApiEnvelope<unknown>>(`/courses/${id}`)
-        .then((response) => normalizeCourseDetail(unwrapResponseData(response)))
-        .catch(() => null),
-    );
-  }
+const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
+  items.flatMap((raw) => {
+    if (!isRecord(raw)) return [];
 
-  return courseSummaryCache.get(id)!;
-}
+    const courseId = toNumber(raw.course_id) ?? toNumber(raw.id) ?? 0;
 
-async function buildResourceCards(raw: PaginatedData<SearchResourceHit>) {
-  const grouped = new Map<number, SearchResourceHit[]>();
-
-  raw.items.forEach((item) => {
-    if (!item.course_id) return;
-
-    const current = grouped.get(item.course_id) ?? [];
-    current.push(item);
-    grouped.set(item.course_id, current);
+    return [
+      {
+        course_id: courseId,
+        course_name:
+          toStringSafe(raw.course_name) ??
+          toStringSafe(raw.name) ??
+          `课程 ${courseId}`,
+        course_code: toStringSafe(raw.course_code),
+        course_type: toStringSafe(raw.course_type),
+        credits: toNumber(raw.credits),
+        avg_score: toNumber(raw.avg_score),
+        resource_count: toNumber(raw.resource_count) ?? 0,
+        download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
+        like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
+        hot_score: toNumber(raw.hot_score),
+        updated_at: toStringSafe(raw.updated_at),
+        resources_preview: normalizeResourcePreview(raw.resources_preview),
+      },
+    ];
   });
 
-  const courseIds = Array.from(grouped.keys());
-  const detailEntries = await Promise.all(
-    courseIds.map(async (courseId) => [courseId, await getCourseDetailSummary(courseId)] as const),
-  );
-  const detailMap = new Map<number, CourseDetailSummary | null>(detailEntries);
+const splitUnifiedSearchItems = (items: unknown[]) => {
+  const grouped = {
+    resources: [] as unknown[],
+    courses: [] as unknown[],
+    teachers: [] as unknown[],
+  };
 
-  const cards: SearchResourceCard[] = courseIds.map((courseId) => {
-    const hits = grouped.get(courseId) ?? [];
-    const detail = detailMap.get(courseId);
-    const downloadFallback = hits.reduce(
-      (total, item) => total + (item.downloads ?? 0),
-      0,
-    );
-    const matchedTypes = Array.from(
-      new Set(
-        hits
-          .map((item) => item.resource_type)
-          .filter((value): value is string => Boolean(value)),
-      ),
-    );
+  items.forEach((item) => {
+    if (!isRecord(item)) return;
 
-    return {
-      id: courseId,
-      course_id: courseId,
-      course_name: detail?.name ?? `课程 ${courseId}`,
-      course_type: detail?.course_type ?? null,
-      credits: detail?.credits ?? null,
-      avg_score: detail?.avg_score ?? null,
-      resource_count: detail?.resource_count ?? hits.length,
-      download_total: detail?.download_total ?? downloadFallback,
-      matched_resource_count: hits.length,
-      matched_resource_types: matchedTypes,
-      hot_score: detail?.hot_score ?? null,
-    };
+    const rawType = toStringSafe(item.type);
+
+    if (rawType === "course") {
+      grouped.courses.push(item);
+      return;
+    }
+
+    if (rawType === "teacher") {
+      grouped.teachers.push(item);
+      return;
+    }
+
+    if (rawType === "resource" || rawType === "resource_course") {
+      grouped.resources.push(item);
+    }
   });
 
-  return {
-    total: cards.length,
-    items: cards,
-    page: raw.page,
-    size: raw.size,
-  } satisfies PaginatedData<SearchResourceCard>;
-}
-
-async function buildCourseCards(raw: PaginatedData<SearchCourseItem>) {
-  const items = await Promise.all(
-    raw.items.map(async (item) => {
-      if (!item.id) {
-        return {
-          ...item,
-          teachers: item.teachers ?? [],
-          teacher_count: item.teacher_count ?? 0,
-        };
-      }
-
-      const detail = await getCourseDetailSummary(item.id);
-      const teachers = detail?.teachers ?? [];
-
-      return {
-        ...item,
-        course_type: detail?.course_type ?? item.course_type ?? null,
-        credits: detail?.credits ?? item.credits ?? null,
-        avg_score: detail?.avg_score ?? item.avg_score ?? null,
-        resource_count: detail?.resource_count ?? item.resource_count ?? null,
-        hot_score: detail?.hot_score ?? item.hot_score ?? null,
-        download_total: detail?.download_total ?? item.download_total ?? null,
-        teachers,
-        teacher_count: teachers.length,
-      } satisfies SearchCourseItem;
-    }),
-  );
-
-  return {
-    ...raw,
-    items,
-  } satisfies PaginatedData<SearchCourseItem>;
-}
+  return grouped;
+};
 
 export async function searchEverything(params: SearchQuery): Promise<SearchResponse> {
   const response = await service.get<ApiEnvelope<unknown>>("/search", {
@@ -311,15 +252,29 @@ export async function searchEverything(params: SearchQuery): Promise<SearchRespo
   const payload = unwrapResponseData(response);
   const raw = isRecord(payload) ? payload : {};
 
-  const rawCourseResult = normalizePaginated(raw.courses, normalizeCourseItems);
-  const teacherResult = normalizePaginated(raw.teachers, normalizeTeacherItems);
-  const resourceHits = normalizePaginated(raw.resources, normalizeResourceHits);
-  const courseResult = await buildCourseCards(rawCourseResult);
-  const resourceResult = await buildResourceCards(resourceHits);
+  if (Array.isArray(raw.items)) {
+    const grouped = splitUnifiedSearchItems(raw.items);
+    const total = toNumber(raw.total) ?? raw.items.length;
+
+    return {
+      resources: {
+        total,
+        items: normalizeResourceItems(grouped.resources),
+      },
+      courses: {
+        total,
+        items: normalizeCourseItems(grouped.courses),
+      },
+      teachers: {
+        total,
+        items: normalizeTeacherItems(grouped.teachers),
+      },
+    };
+  }
 
   return {
-    resources: resourceResult,
-    courses: courseResult,
-    teachers: teacherResult,
+    resources: normalizePaginated(raw.resources, normalizeResourceItems),
+    courses: normalizePaginated(raw.courses, normalizeCourseItems),
+    teachers: normalizePaginated(raw.teachers, normalizeTeacherItems),
   };
 }

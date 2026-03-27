@@ -10,7 +10,8 @@ import type {
   SearchScope,
   SearchTeacherItem,
 } from "@/types/search";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 const searchConfig: Array<{
   label: string;
@@ -68,6 +69,7 @@ function renderCard(
 }
 
 export default function Search() {
+  const searchParams = useSearchParams();
   const [searchType, setSearchType] = useState<SearchScope>("all");
   const [keyword, setKeyword] = useState("");
   const [, setSubmittedQuery] = useState("");
@@ -206,6 +208,56 @@ export default function Search() {
 
   const showEmptyPrompt = !hasSearched && !isLoading;
   const showNoResults = hasSearched && !isLoading && !error && summary.total === 0;
+
+  useEffect(() => {
+    const typeParam = searchParams.get("type");
+    const qParam = searchParams.get("q");
+    const normalizedType =
+      typeParam === "resource" || typeParam === "course" || typeParam === "teacher"
+        ? typeParam
+        : "all";
+
+    setSearchType(normalizedType);
+    setKeyword(qParam ?? "");
+
+    if (qParam?.trim()) {
+      void (async () => {
+        const currentRequestId = requestIdRef.current + 1;
+        requestIdRef.current = currentRequestId;
+        setHasSearched(true);
+        setSubmittedQuery(qParam.trim());
+        setIsLoading(true);
+        setError(null);
+
+        try {
+          const data = await searchEverything({
+            q: qParam.trim(),
+            type: normalizedType,
+            page: 1,
+            size: 24,
+          });
+
+          if (requestIdRef.current !== currentRequestId) return;
+          setResults(data);
+        } catch (err) {
+          if (requestIdRef.current !== currentRequestId) return;
+          const message = err instanceof Error ? err.message : "搜索失败，请稍后重试。";
+          setError(message);
+          setResults(createEmptyResults());
+        } finally {
+          if (requestIdRef.current === currentRequestId) {
+            setIsLoading(false);
+          }
+        }
+      })();
+    } else {
+      setResults(createEmptyResults());
+      setHasSearched(false);
+      setIsLoading(false);
+      setError(null);
+      setSubmittedQuery("");
+    }
+  }, [searchParams]);
 
   return (
     <div className="container flex flex-col gap-10 mt-10 mb-20">
