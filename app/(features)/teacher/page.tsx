@@ -1,20 +1,73 @@
 "use client";
+import { useEffect, useState } from "react";
 import SearchBar from "@/components/ui/SearchBar";
 import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
 import { useRouter } from "next/navigation";
+import { getTeacherRankings } from "@/api/ranking";
 
-// 模拟数据
-const mockRankData = [
-  { id: "1", name: "李晨瑞", score: 9.8 },
-  { id: "2", name: "陈一鑫", score: 9.5 },
-  { id: "3", name: "张晨", score: 9.2 },
-  { id: "4", name: "LCR", score: 8.9 },
-  { id: "5", name: "CYX", score: 8.7 },
-];
+type RankCardItem = {
+  id: string;
+  name: string;
+  score: number;
+};
+
+const PAGE_SIZE = 5;
+
+const mapRankItems = (items: Array<{ id: number; name: string; score: number }>): RankCardItem[] =>
+  items.slice(0, PAGE_SIZE).map((item) => ({
+    id: String(item.id),
+    name: item.name,
+    score: item.score,
+  }));
 
 export default function Teacher() {
   const router = useRouter();
+  const [qualityRanks, setQualityRanks] = useState<RankCardItem[]>([]);
+  const [gradingRanks, setGradingRanks] = useState<RankCardItem[]>([]);
+  const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    Promise.all([
+      getTeacherRankings({
+        rank_type: "avg_quality",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: false,
+      }),
+      getTeacherRankings({
+        rank_type: "avg_grading",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: false,
+      }),
+      getTeacherRankings({
+        rank_type: "avg_attendance",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: false,
+      }),
+    ])
+      .then(([quality, grading, attendance]) => {
+        if (!active) return;
+        setQualityRanks(mapRankItems(quality.items));
+        setGradingRanks(mapRankItems(grading.items));
+        setAttendanceRanks(mapRankItems(attendance.items));
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!active) return;
+        setQualityRanks([]);
+        setGradingRanks([]);
+        setAttendanceRanks([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <>
@@ -50,15 +103,15 @@ export default function Teacher() {
           <div className="grid grid-cols-3 gap-8">
             <RankCard
               title="教学质量排行榜"
-              data={mockRankData.map((d) => ({ ...d, score: d.score - 0.1 }))}
+              data={qualityRanks}
             />
             <RankCard
               title="给分优异榜"
-              data={mockRankData.map((d) => ({ ...d, score: d.score + 0.1 }))}
+              data={gradingRanks}
             />
             <RankCard
               title="考勤宽松榜"
-              data={mockRankData.map((d) => ({ ...d, score: d.score - 0.2 }))}
+              data={attendanceRanks}
             />
           </div>
         </div>

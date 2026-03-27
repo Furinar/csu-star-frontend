@@ -1,0 +1,123 @@
+import { service } from "@/lib/request";
+import type { CourseShowcaseItem, ShowcaseTeacherBrief, TeacherShowcaseItem } from "@/types/showcase";
+
+interface ApiEnvelope<T> {
+  code: number;
+  msg?: string;
+  message?: string;
+  data: T;
+}
+
+type AnyRecord = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is AnyRecord =>
+  typeof value === "object" && value !== null;
+
+const unwrapResponseData = (payload: unknown): unknown => {
+  if (!isRecord(payload)) return undefined;
+
+  const firstLevel = payload.data;
+  if (isRecord(firstLevel) && typeof firstLevel.code === "number" && "data" in firstLevel) {
+    return firstLevel.data;
+  }
+
+  return firstLevel;
+};
+
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
+
+const toStringSafe = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
+
+const normalizeTeacherBriefs = (raw: unknown): ShowcaseTeacherBrief[] => {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.flatMap((item) => {
+    if (!isRecord(item)) return [];
+
+    return [
+      {
+        id: toNumber(item.id) ?? 0,
+        name: toStringSafe(item.name) ?? "未命名教师",
+        title: toStringSafe(item.title),
+      },
+    ];
+  });
+};
+
+const normalizeCourseShowcaseItems = (raw: unknown): CourseShowcaseItem[] => {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.flatMap((item) => {
+    if (!isRecord(item)) return [];
+
+    return [
+      {
+        id: toNumber(item.id) ?? 0,
+        code: toStringSafe(item.code),
+        name: toStringSafe(item.name) ?? "未命名课程",
+        course_type: toStringSafe(item.course_type),
+        avg_score: toNumber(item.avg_score),
+        avg_homework: toNumber(item.avg_homework),
+        avg_gain: toNumber(item.avg_gain),
+        avg_exam_diff: toNumber(item.avg_exam_diff),
+        eval_count: toNumber(item.eval_count) ?? toNumber(item.evaluation_count),
+        resource_count: toNumber(item.resource_count),
+        teacher_count: toNumber(item.teacher_count),
+        teachers: normalizeTeacherBriefs(item.teachers),
+      },
+    ];
+  });
+};
+
+const normalizeTeacherShowcaseItems = (raw: unknown): TeacherShowcaseItem[] => {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.flatMap((item) => {
+    if (!isRecord(item)) return [];
+
+    return [
+      {
+        id: toNumber(item.id) ?? 0,
+        name: toStringSafe(item.name) ?? "未命名教师",
+        title: toStringSafe(item.title),
+        department_name: toStringSafe(item.department_name),
+        avatar_url: toStringSafe(item.avatar_url),
+        avg_score: toNumber(item.avg_score),
+        avg_quality: toNumber(item.avg_quality),
+        avg_grading: toNumber(item.avg_grading),
+        avg_attendance: toNumber(item.avg_attendance),
+        good_rate: toNumber(item.good_rate),
+        eval_count: toNumber(item.eval_count) ?? toNumber(item.evaluation_count),
+        resource_count: toNumber(item.resource_count),
+      },
+    ];
+  });
+};
+
+const normalizeShowcasePayload = (raw: unknown) => {
+  if (!isRecord(raw)) return [];
+  if (Array.isArray(raw.items)) return raw.items;
+  if (Array.isArray(raw.list)) return raw.list;
+  if (Array.isArray(raw.records)) return raw.records;
+  return [];
+};
+
+export async function getRandomCourseShowcase() {
+  const response = await service.get<ApiEnvelope<unknown>>("/courses/random-showcase");
+  const raw = normalizeShowcasePayload(unwrapResponseData(response));
+  return normalizeCourseShowcaseItems(raw);
+}
+
+export async function getRandomTeacherShowcase() {
+  const response = await service.get<ApiEnvelope<unknown>>("/teachers/random-showcase");
+  const raw = normalizeShowcasePayload(unwrapResponseData(response));
+  return normalizeTeacherShowcaseItems(raw);
+}

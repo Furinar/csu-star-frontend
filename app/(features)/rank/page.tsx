@@ -76,18 +76,15 @@ export default function Rank() {
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
 
   const currentCategory = useMemo(
-    () => rankConfig.find((item) => item.category === rankCategory) ?? rankConfig[0],
+    () =>
+      rankConfig.find((item) => item.category === rankCategory) ??
+      rankConfig[0],
     [rankCategory],
   );
 
   useEffect(() => {
     setFilterType(currentCategory.filters[0].type as FilterType);
   }, [currentCategory]);
-
-  const formatInteger = useCallback((value?: number) => {
-    if (typeof value !== "number" || Number.isNaN(value)) return "--";
-    return value.toLocaleString("zh-CN");
-  }, []);
 
   const fetchRankings = useCallback(async () => {
     setHasRequested(true);
@@ -175,7 +172,9 @@ export default function Rank() {
     <div className="container flex flex-col gap-10 mt-10">
       <div className="flex justify-center items-center flex-col gap-3 w-full">
         <div className="hero-gradient-text text-4xl font-bold">天梯风云榜</div>
-        <div className="text-gray-600">Rise step by step, witness the top glory.</div>
+        <div className="text-gray-600">
+          Rise step by step, witness the top glory.
+        </div>
       </div>
 
       <div className="flex flex-col gap-5 items-center">
@@ -312,12 +311,13 @@ export default function Rank() {
       ) : (
         <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
           <div className="flex items-center justify-between mb-4">
-            <div className="text-base md:text-lg font-semibold text-gray-800">
-              共 {formatInteger(total)} 条记录
+            <div className="text-base md:text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-red-500 tracking-wider">
+              巅峰百强
             </div>
             <div className="text-sm text-gray-500">
               当前排序：
-              {currentCategory.filters.find((item) => item.type === filterType)?.label || "--"}
+              {currentCategory.filters.find((item) => item.type === filterType)
+                ?.label || "--"}
               （{sortType === "desc" ? "降序" : "升序"}）
             </div>
           </div>
@@ -325,50 +325,72 @@ export default function Rank() {
           {errorMessage ? (
             <div className="py-12 text-center">
               <div className="text-red-500 text-base">{errorMessage}</div>
-              <div className="mt-3 text-gray-500 text-sm">你可以点击右上角按钮重试请求。</div>
+              <div className="mt-3 text-gray-500 text-sm">
+                你可以点击右上角按钮重试请求。
+              </div>
             </div>
           ) : null}
 
           {!errorMessage && loading ? (
-            <div className="py-12 text-center text-gray-500">排行榜加载中...</div>
+            <div className="py-12 text-center text-gray-500">
+              排行榜加载中...
+            </div>
           ) : null}
 
-          {!errorMessage && !loading && rankCategory === "resource" && resourceItems.length > 0 ? (
+          {!errorMessage &&
+          !loading &&
+          rankCategory === "resource" &&
+          resourceItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {resourceItems.map((item, index) => (
                 <RankItemCard
                   key={`${item.course_id}-${index}`}
                   type="resource"
                   item={{ ...item, rank: item.rank || index + 1 }}
-                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterLabel={
+                    currentCategory.filters.find((f) => f.type === filterType)
+                      ?.label || ""
+                  }
                   filterValue={getResourceFilterValue(item)}
                 />
               ))}
             </div>
           ) : null}
 
-          {!errorMessage && !loading && rankCategory === "course" && courseItems.length > 0 ? (
+          {!errorMessage &&
+          !loading &&
+          rankCategory === "course" &&
+          courseItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {courseItems.map((item, index) => (
                 <RankItemCard
                   key={`${item.id}-${index}`}
                   type="course"
                   item={{ ...item, rank: item.rank || index + 1 }}
-                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterLabel={
+                    currentCategory.filters.find((f) => f.type === filterType)
+                      ?.label || ""
+                  }
                   filterValue={item[filterType as keyof CourseRankingItem]}
                 />
               ))}
             </div>
           ) : null}
 
-          {!errorMessage && !loading && rankCategory === "teacher" && teacherItems.length > 0 ? (
+          {!errorMessage &&
+          !loading &&
+          rankCategory === "teacher" &&
+          teacherItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {teacherItems.map((item, index) => (
                 <RankItemCard
                   key={`${item.id}-${index}`}
                   type="teacher"
                   item={{ ...item, rank: item.rank || index + 1 }}
-                  filterLabel={currentCategory.filters.find((f) => f.type === filterType)?.label || ""}
+                  filterLabel={
+                    currentCategory.filters.find((f) => f.type === filterType)
+                      ?.label || ""
+                  }
                   filterValue={item[filterType as keyof TeacherRankingItem]}
                 />
               ))}
@@ -381,7 +403,9 @@ export default function Rank() {
                 <i className="uil uil-filter"></i>
               </div>
               <div className="text-xl text-gray-800">当前条件下暂无数据</div>
-              <div className="text-base text-gray-500">请切换筛选维度或排序方式后重试。</div>
+              <div className="text-base text-gray-500">
+                请切换筛选维度或排序方式后重试。
+              </div>
             </div>
           ) : null}
         </div>

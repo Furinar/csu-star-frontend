@@ -9,5 +9,16 @@
     box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.2), -8px -8px 16px rgba(255, 255, 255, 0.9);
     background: linear-gradient(145deg,rgba(0,0,0,0.1),
     rgba(255, 255, 255, 0.6));
+    transition: transform 0.45s ease, box-shadow 0.45s ease;
+}
 
+.random-book .left,
+.random-book .right{
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.random-book.is-switching .left,
+.random-book.is-switching .right{
+    opacity: 0.68;
+    transform: translateY(4px);
 }

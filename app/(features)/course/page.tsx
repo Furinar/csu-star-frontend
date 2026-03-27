@@ -1,19 +1,73 @@
 "use client";
+import { useEffect, useState } from "react";
 import SearchBar from "@/components/ui/SearchBar";
 import RankCard from "@/components/ui/RankCard";
 import RandomBook from "@/app/(features)/course/components/RandomBook";
 import { useRouter } from "next/navigation";
+import { getCourseRankings } from "@/api/ranking";
 
-const mockRankData = [
-    { id: "1", name: "原神", score: 9.8 },
-    { id: "2", name: "绝区零", score: 9.5 },
-    { id: "3", name: "崩坏", score: 9.2 },
-    { id: "4", name: "星铁", score: 8.9 },
-    { id: "5", name: "鸣潮", score: 8.7 },
-];
+type RankCardItem = {
+  id: string;
+  name: string;
+  score: number;
+};
+
+const PAGE_SIZE = 5;
+
+const mapRankItems = (items: Array<{ id: number; name: string; score: number }>): RankCardItem[] =>
+  items.slice(0, PAGE_SIZE).map((item) => ({
+    id: String(item.id),
+    name: item.name,
+    score: item.score,
+  }));
 
 export default function Course() {
   const router = useRouter();
+  const [homeworkRanks, setHomeworkRanks] = useState<RankCardItem[]>([]);
+  const [gainRanks, setGainRanks] = useState<RankCardItem[]>([]);
+  const [examRanks, setExamRanks] = useState<RankCardItem[]>([]);
+
+  useEffect(() => {
+    let active = true;
+
+    Promise.all([
+      getCourseRankings({
+        rank_type: "avg_homework",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: true,
+      }),
+      getCourseRankings({
+        rank_type: "avg_gain",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: false,
+      }),
+      getCourseRankings({
+        rank_type: "avg_exam_diff",
+        page: 1,
+        size: PAGE_SIZE,
+        is_increased: false,
+      }),
+    ])
+      .then(([homework, gain, exam]) => {
+        if (!active) return;
+        setHomeworkRanks(mapRankItems(homework.items));
+        setGainRanks(mapRankItems(gain.items));
+        setExamRanks(mapRankItems(exam.items));
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!active) return;
+        setHomeworkRanks([]);
+        setGainRanks([]);
+        setExamRanks([]);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
       <>
@@ -49,15 +103,15 @@ export default function Course() {
                   <div className="grid grid-cols-3 gap-8">
                       <RankCard
                           title="任务轻松榜"
-                          data={mockRankData.map((d) => ({ ...d, score: d.score - 0.1 }))}
+                          data={homeworkRanks}
                       />
                       <RankCard
                           title="课堂收获榜"
-                          data={mockRankData.map((d) => ({ ...d, score: d.score + 0.1 }))}
+                          data={gainRanks}
                       />
                       <RankCard
                           title="考试难度榜"
-                          data={mockRankData.map((d) => ({ ...d, score: d.score - 0.2 }))}
+                          data={examRanks}
                       />
                   </div>
               </div>

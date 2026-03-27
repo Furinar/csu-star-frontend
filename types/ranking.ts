@@ -79,6 +79,7 @@ export interface TeacherRankingItem extends RankingItem {
   eval_count?: number | null;
   resource_count?: number | null;
   hot_score?: number | null;
+  avatar_url?: string | null;
 }
 
 export interface ResourcePreviewItem {
