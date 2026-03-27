@@ -60,14 +60,29 @@ export default function test() {
           className="px-4 py-2 bg-slate-500 text-white rounded"
           onClick={() =>
             feedback.info({
-              title: "带操作的提示",
-              description: "是否要撤销刚才的删除操作？",
+              title: "自动撤销的 Action",
+              description: "这个操作会在 5 秒后自动消失。",
               actionLabel: "撤销操作",
               onAction: () => console.log("撤销操作被点击"),
             })
           }
         >
-          Action Toast
+          Action (Auto Dismiss)
+        </button>
+
+        <button
+          className="px-4 py-2 bg-slate-700 text-white rounded"
+          onClick={() =>
+            feedback.warning({
+              title: "不自动撤销的 Action",
+              description: "必须手动关闭或点击撤销。",
+              actionLabel: "撤销操作",
+              onAction: () => console.log("撤销操作被点击"),
+              duration: 0,
+            })
+          }
+        >
+          Action (Persist)
         </button>
       </div>
     </div>
