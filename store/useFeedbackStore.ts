@@ -40,6 +40,7 @@ const normalizeInput = (
 export const useFeedbackStore = create<FeedbackState>((set) => ({
   toasts: [],
   push: (options) => {
+    const hasAction = Boolean(options.actionLabel && options.onAction);
     const toast: FeedbackToast = {
       id: createFeedbackId(),
       title: options.title,
@@ -47,7 +48,7 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
       actionLabel: options.actionLabel,
       onAction: options.onAction,
       type: options.type ?? "info",
-      duration: options.duration ?? DEFAULT_FEEDBACK_DURATION,
+      duration: options.duration ?? (hasAction ? 0 : DEFAULT_FEEDBACK_DURATION),
       createdAt: Date.now(),
     };
 
