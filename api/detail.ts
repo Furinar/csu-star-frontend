@@ -339,6 +339,7 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
     }),
     course_resource_collection_path: toStringSafe(data.course_resource_collection_path),
     course_evaluation_anchor: toStringSafe(data.course_evaluation_anchor),
+    is_favorited: toBoolean(data.is_favorited),
   };
 };
 
@@ -414,4 +415,17 @@ export async function listResourceComments(resourceId: number, page = 1, size = 
 
   const raw = unwrapResponseData(response);
   return normalizePaginated(raw, normalizeResourceComments);
+}
+
+export async function addFavorite(target_type: string, target_id: number) {
+  await service.post<ApiEnvelope<unknown>>("/favorites", {
+    target_type,
+    target_id,
+  });
+}
+
+export async function removeFavorite(target_type: string, target_id: number) {
+  await service.delete<ApiEnvelope<unknown>>("/favorites", {
+    params: { target_type, target_id },
+  });
 }

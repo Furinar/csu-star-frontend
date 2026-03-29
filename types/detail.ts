@@ -171,4 +171,5 @@ export interface ResourceDetail {
   files?: ResourceFile[];
   course_resource_collection_path?: string | null;
   course_evaluation_anchor?: string | null;
+  is_favorited?: boolean | null;
 }

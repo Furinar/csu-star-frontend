@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionCard from "@/components/ui/SectionCard";
-import { getResourceDetail, listResourceComments } from "@/api/detail";
+import CollectButton from "@/components/ui/CollectButton";
+import { getResourceDetail, listResourceComments, addFavorite, removeFavorite } from "@/api/detail";
 import type { ResourceComment, ResourceDetail } from "@/types/detail";
 import {
   buildCourseEvaluationAnchor,
@@ -67,6 +68,7 @@ export default function ResourceDetailPage() {
   const [comments, setComments] = useState<ResourceComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isFavorited, setIsFavorited] = useState(false);
 
   useEffect(() => {
     if (isInvalidResourceId) return;
@@ -77,6 +79,7 @@ export default function ResourceDetailPage() {
       .then(([resource, commentData]) => {
         if (!active) return;
         setDetail(resource);
+        setIsFavorited(Boolean(resource.is_favorited));
         setComments(commentData.items);
       })
       .catch((err) => {
@@ -135,7 +138,24 @@ export default function ResourceDetailPage() {
               资源详情
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{detail.title}</h1>
+              <div className="flex items-center gap-4">
+                <h1 className="text-4xl font-bold text-gray-900">{detail.title}</h1>
+                <CollectButton
+                  isCollected={isFavorited}
+                  onClick={async () => {
+                    try {
+                      if (isFavorited) {
+                        await removeFavorite("resource", detail.id);
+                      } else {
+                        await addFavorite("resource", detail.id);
+                      }
+                      setIsFavorited(!isFavorited);
+                    } catch {
+                      // ignore
+                    }
+                  }}
+                />
+              </div>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
                 {detail.description || "暂无资源说明，当前页面聚焦附件信息、课程关联和评论区。"}
               </p>
