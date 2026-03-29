@@ -1,14 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import CryptoJS from "crypto-js";
 import Link from "next/link";
 import type {ReactNode} from "react";
 import {useCallback, useEffect, useState} from "react";
-import {recoverPwd, sendCaptcha} from "@/api/auth";
 import {
-  bindCampusEmail,
-  bindOAuthAccount,
   dailyCheckin,
   getMeDashboard,
   getMyDownloads,
@@ -16,38 +12,54 @@ import {
   listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
-  submitCorrection,
-  submitFeedback,
-  submitReport,
-  updateMyProfile,
-  verifyCampusEmail,
 } from "@/api/me";
 import GlassCard from "@/components/ui/GlassCard";
 import {feedback} from "@/store/useFeedbackStore";
 import {useAuthStore} from "@/store/useAuthStore";
 import type {UserProfile} from "@/types/auth";
 import type {
-  CorrectionInput,
   CourseEvaluation,
-  Department,
   DownloadRecord,
-  EmailStatus,
   FavoriteItem,
-  FeedbackInput,
   InviteCodeInfo,
   MeDashboardData,
-  MyProfileUpdateInput,
   NotificationItem,
   OAuthBindProvider,
   PaginatedData,
   PointsRecord,
-  ReportReason,
-  ReportTargetType,
   ResourceItem,
   TeacherEvaluation,
 } from "@/types/me";
+import ContributionPanel from "./components/panels/ContributionPanel";
+import DownloadsPanel from "./components/panels/DownloadsPanel";
+import EmailPanel from "./components/panels/EmailPanel";
+import FeedbackPanel from "./components/panels/FeedbackPanel";
+import OAuthPanel from "./components/panels/OAuthPanel";
+import PasswordPanel from "./components/panels/PasswordPanel";
+import PointsPanel from "./components/panels/PointsPanel";
+import ProfilePanel from "./components/panels/ProfilePanel";
+import {
+  type AccountMode,
+  type ContributionAction,
+  type ContributionCell,
+  type ContributionSummary,
+  WEEKDAY_LABELS,
+  addDays,
+  buildFallbackEmailStatus,
+  createEmptyPaginated,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  getAccountMode,
+  getAccountPresentation,
+  getDateKey,
+  getDepartmentName,
+  getErrorMessage,
+  getNotificationTypeLabel,
+  getResourceTypeLabel,
+  startOfDay,
+} from "./components/shared/helpers";
 
-type AccountMode = "guest" | "verified" | "oauth_pending_email";
 type TabKey =
     | "overview"
     | "resources"
@@ -66,284 +78,6 @@ type PanelKey =
     | "feedback"
     | "report"
     | "contribution";
-
-type ContributionAction = {
-  label: string;
-  score: number;
-};
-
-type ContributionCell = {
-  key: string;
-  date: Date;
-  score: number;
-  level: 0 | 1 | 2 | 3 | 4;
-  isFuture: boolean;
-  actions: ContributionAction[];
-};
-
-type ContributionSummary = {
-  weeks: ContributionCell[][];
-  totalScore: number;
-  activeDays: number;
-  currentStreak: number;
-  maxDayScore: number;
-};
-
-const FORM_INPUT_CLASS_NAME =
-    "w-full rounded-xl border border-gray-200/60 bg-white/60 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-first/60 focus:bg-white";
-const FORM_TEXTAREA_CLASS_NAME = `${FORM_INPUT_CLASS_NAME} min-h-28 resize-none`;
-
-const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
-
-const CONTRIBUTION_RULES = [
-  {
-    title: "资源上传",
-    score: 5,
-    detail: "上传资源为社区提供内容。",
-  },
-  {
-    title: "教师评价 / 课程评价",
-    score: 3,
-    detail: "为选课与避坑提供直接帮助，权重高于签到。",
-  },
-  {
-    title: "每日签到",
-    score: 1,
-    detail: "鼓励持续活跃，但不挤占内容贡献的主导地位。",
-  },
-  {
-    title: "邀请奖励",
-    score: 5,
-    detail: "有效拉新会扩大社区供给，因此单次给予高分。",
-  },
-];
-
-function createEmptyPaginated<T>(): PaginatedData<T> {
-  return {
-    items: [],
-    total: 0,
-  };
-}
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message.trim()) {
-    return error.message;
-  }
-
-  return fallback;
-}
-
-function assertApiResponse(
-    response: { code: number; message?: string; msg?: string },
-    fallback: string,
-) {
-  if (response.code !== 0 && response.code !== 200) {
-    throw new Error(response.message || response.msg || fallback);
-  }
-}
-
-function toCampusEmail(value: string) {
-  const trimmedValue = value.trim().toLowerCase();
-  if (!trimmedValue) {
-    return "";
-  }
-
-  if (trimmedValue.includes("@")) {
-    return trimmedValue;
-  }
-
-  return `${trimmedValue}@csu.edu.cn`;
-}
-
-function startOfDay(date: Date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function addDays(date: Date, amount: number) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + amount);
-  return copy;
-}
-
-function getDateKey(dateLike: Date | string) {
-  const date = typeof dateLike === "string" ? new Date(dateLike) : dateLike;
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
-function buildFallbackEmailStatus(user: UserProfile | null): EmailStatus {
-  return {
-    email: user?.email ?? null,
-    email_verified: Boolean(user?.email_verified),
-    free_download_count: user?.free_download_count ?? null,
-  };
-}
-
-function formatDate(dateLike?: string | Date | null) {
-  if (!dateLike) {
-    return "--";
-  }
-
-  const date = typeof dateLike === "string" ? new Date(dateLike) : dateLike;
-  if (Number.isNaN(date.getTime())) {
-    return "--";
-  }
-
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "numeric",
-    day: "numeric",
-  }).format(date);
-}
-
-function formatDateTime(dateLike?: string | Date | null) {
-  if (!dateLike) {
-    return "--";
-  }
-
-  const date = typeof dateLike === "string" ? new Date(dateLike) : dateLike;
-  if (Number.isNaN(date.getTime())) {
-    return "--";
-  }
-
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function formatNumber(value: number | undefined | null) {
-  return new Intl.NumberFormat("zh-CN").format(value ?? 0);
-}
-
-function getDepartmentName(departments: Department[], departmentId?: number) {
-  if (!departmentId) {
-    return "学院未填写";
-  }
-
-  return (
-      departments.find((item) => item.id === departmentId)?.name ?? "学院未填写"
-  );
-}
-
-function getAccountMode(profile: UserProfile | null, emailStatus: EmailStatus) {
-  if (!profile) {
-    return "guest";
-  }
-
-  if (emailStatus.email_verified || profile.email_verified) {
-    return "verified";
-  }
-
-  return "oauth_pending_email";
-}
-
-function getAccountPresentation(
-    mode: AccountMode,
-    emailStatus: EmailStatus,
-    profile: UserProfile | null,
-) {
-  if (mode === "verified") {
-    return {
-      subtitle: "已认证",
-      badge: "校园邮箱已认证",
-      badgeClassName:
-          "border border-emerald-200/70 bg-emerald-50/80 text-emerald-700",
-      hint:
-          emailStatus.email ??
-          profile?.email ??
-          "已完成校园认证，可使用完整个人中心能力。",
-    };
-  }
-
-  if (mode === "oauth_pending_email") {
-    const freeDownloads =
-        emailStatus.free_download_count ?? profile?.free_download_count;
-    return {
-      subtitle: "待完成校园认证",
-      badge: "第三方登录用户",
-      badgeClassName:
-          "border border-amber-200/70 bg-amber-50/85 text-amber-700",
-      hint:
-          freeDownloads == null
-              ? "当前账号已通过第三方授权登录，请补充校园邮箱认证。"
-              : `剩余 ${freeDownloads} 次免费下载，完成校园邮箱认证后解除限制。`,
-    };
-  }
-
-  return {
-    subtitle: "游客模式",
-    badge: "未登录",
-    badgeClassName: "border border-gray-200/70 bg-white/75 text-gray-600",
-    hint: "登录后可查看资源、贡献、通知和全部个人设置。",
-  };
-}
-
-function getResourceTypeLabel(
-    type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"],
-) {
-  if (type === "ppt") {
-    return "课件";
-  }
-
-  if (type === "pdf") {
-    return "文档";
-  }
-
-  if (type === "notes") {
-    return "笔记";
-  }
-
-  if (type === "exam") {
-    return "试卷";
-  }
-
-  if (type === "lab") {
-    return "实验";
-  }
-
-  return "其他";
-}
-
-function getPointsReasonLabel(reason: PointsRecord["reason"]) {
-  if (reason === "daily_checkin") {
-    return "每日签到";
-  }
-
-  if (reason === "upload_reward") {
-    return "上传奖励";
-  }
-
-  if (reason === "download_cost") {
-    return "下载扣减";
-  }
-
-  if (reason === "invite_reward") {
-    return "邀请奖励";
-  }
-
-  return "管理员调整";
-}
-
-function getNotificationTypeLabel(type: NotificationItem["type"]) {
-  if (type === "liked") {
-    return "收到点赞";
-  }
-
-  if (type === "commented") {
-    return "收到评论";
-  }
-
-  return "系统通知";
-}
 
 function getFavoriteType(item: FavoriteItem) {
   if (item.resource_type) {
@@ -564,66 +298,12 @@ export default function Me() {
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [isLoadingInvite, setIsLoadingInvite] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);
-  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
-  const [isBindingOAuth, setIsBindingOAuth] = useState(false);
-  const [isSendingPasswordCode, setIsSendingPasswordCode] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
-  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-  const [isSubmittingCorrection, setIsSubmittingCorrection] = useState(false);
   const [favoriteFilter, setFavoriteFilter] = useState<
       "all" | "resource" | "course" | "teacher"
   >("all");
   const [evaluationFilter, setEvaluationFilter] = useState<
       "all" | "teacher" | "course"
   >("all");
-  const [oauthProviders, setOAuthProviders] = useState<OAuthBindProvider[]>([]);
-  const [reportMode, setReportMode] = useState<"report" | "correction">(
-      "report",
-  );
-  const [profileForm, setProfileForm] = useState({
-    nickname: "",
-    avatar_url: "",
-    department_id: "",
-    grade: "",
-  });
-  const [emailForm, setEmailForm] = useState({
-    email: "",
-    captcha: "",
-  });
-  const [oauthForm, setOAuthForm] = useState({
-    provider: "qq" as OAuthBindProvider,
-    code: "",
-  });
-  const [passwordForm, setPasswordForm] = useState({
-    email: "",
-    captcha: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [feedbackForm, setFeedbackForm] = useState<FeedbackInput>({
-    type: "suggestion",
-    title: "",
-    content: "",
-    contact: "",
-    screenshots: [],
-  });
-  const [reportForm, setReportForm] = useState({
-    target_type: "resource" as ReportTargetType,
-    target_id: "",
-    reason: "other" as ReportReason,
-    description: "",
-  });
-  const [correctionForm, setCorrectionForm] = useState<CorrectionInput>({
-    target_type: "resource",
-    target_id: 0,
-    field_name: "",
-    original_value: "",
-    correct_value: "",
-    description: "",
-  });
 
   const accessToken = useAuthStore((state) => state.access_token);
   const storedUser = useAuthStore((state) => state.user);
@@ -773,66 +453,6 @@ export default function Me() {
       return;
     }
 
-    if (panel === "profile") {
-      setProfileForm({
-        nickname: profile.nickname ?? "",
-        avatar_url: profile.avatar_url ?? "",
-        department_id: profile.department_id ? `${profile.department_id}` : "",
-        grade: profile.grade ? `${profile.grade}` : "",
-      });
-    }
-
-    if (panel === "email") {
-      setEmailForm({
-        email: emailStatus.email ?? profile.email ?? "",
-        captcha: "",
-      });
-    }
-
-    if (panel === "password") {
-      setPasswordForm({
-        email: emailStatus.email ?? profile.email ?? "",
-        captcha: "",
-        password: "",
-        confirmPassword: "",
-      });
-    }
-
-    if (panel === "oauth") {
-      setOAuthForm({
-        provider: "qq",
-        code: "",
-      });
-    }
-
-    if (panel === "feedback") {
-      setFeedbackForm({
-        type: "suggestion",
-        title: "",
-        content: "",
-        contact: profile.email ?? "",
-        screenshots: [],
-      });
-    }
-
-    if (panel === "report") {
-      setReportMode("report");
-      setReportForm({
-        target_type: "resource",
-        target_id: "",
-        reason: "other",
-        description: "",
-      });
-      setCorrectionForm({
-        target_type: "resource",
-        target_id: 0,
-        field_name: "",
-        original_value: "",
-        correct_value: "",
-        description: "",
-      });
-    }
-
     if (panel === "downloads") {
       void loadDownloadsData();
     }
@@ -909,372 +529,14 @@ export default function Me() {
     }
   };
 
-  const handleSaveProfile = async () => {
-    if (!profile || !accessToken) {
-      setOpenPanel("guest");
-      return;
-    }
-
-    if (!profileForm.nickname.trim()) {
-      feedback.warning({
-        title: "昵称不能为空",
-        description: "请填写要展示的昵称。",
-      });
-      return;
-    }
-
-    const payload: MyProfileUpdateInput = {
-      nickname: profileForm.nickname.trim(),
-      avatar_url: profileForm.avatar_url.trim() || undefined,
-      department_id: profileForm.department_id
-          ? Number(profileForm.department_id)
-          : undefined,
-      grade: profileForm.grade ? Number(profileForm.grade) : undefined,
-    };
-
-    setIsSavingProfile(true);
-    try {
-      const nextProfile = await updateMyProfile(payload);
-      setDashboard((current) =>
-          current
-              ? {
-                ...current,
-                profile: nextProfile,
-              }
-              : current,
-      );
-      setUser(nextProfile);
-      setOpenPanel(null);
-      feedback.success({
-        title: "资料已更新",
-        description: "个人信息已经同步到你的主页。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "资料保存失败",
-        description: getErrorMessage(error, "请稍后再试"),
-      });
-    } finally {
-      setIsSavingProfile(false);
-    }
+  const handleProfileUpdated = (nextProfile: UserProfile, updater: (current: MeDashboardData | null) => MeDashboardData | null) => {
+    setDashboard(updater);
+    setUser(nextProfile);
   };
 
-  const handleSendEmailCode = async () => {
-    const email = toCampusEmail(emailForm.email);
-    if (!email) {
-      feedback.warning({
-        title: "请输入校园邮箱",
-        description: "支持直接填写邮箱前缀，系统会自动补全为 `@csu.edu.cn`。",
-      });
-      return;
-    }
-
-    setIsSendingEmailCode(true);
-    try {
-      const message = await bindCampusEmail({email});
-      setEmailForm((current) => ({
-        ...current,
-        email,
-      }));
-      feedback.success({
-        title: "验证码已发送",
-        description: message,
-      });
-    } catch (error) {
-      feedback.error({
-        title: "发送失败",
-        description: getErrorMessage(error, "请检查邮箱后重试"),
-      });
-    } finally {
-      setIsSendingEmailCode(false);
-    }
-  };
-
-  const handleVerifyEmail = async () => {
-    if (!profile) {
-      setOpenPanel("guest");
-      return;
-    }
-
-    const email = toCampusEmail(emailForm.email);
-    if (!email || !emailForm.captcha.trim()) {
-      feedback.warning({
-        title: "信息不完整",
-        description: "请先填写邮箱并输入收到的验证码。",
-      });
-      return;
-    }
-
-    setIsVerifyingEmail(true);
-    try {
-      await verifyCampusEmail({
-        email,
-        captcha: emailForm.captcha.trim(),
-      });
-
-      const nextProfile = {
-        ...profile,
-        email,
-        email_verified: true,
-        free_download_count: null,
-      };
-
-      setDashboard((current) =>
-          current
-              ? {
-                ...current,
-                profile: nextProfile,
-                emailStatus: {
-                  email,
-                  email_verified: true,
-                  free_download_count: null,
-                },
-              }
-              : current,
-      );
-      setUser(nextProfile);
-      setOpenPanel(null);
-      feedback.success({
-        title: "校园邮箱认证完成",
-        description: "你的个人中心已切换为校园认证状态。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "验证失败",
-        description: getErrorMessage(error, "验证码无效或已过期"),
-      });
-    } finally {
-      setIsVerifyingEmail(false);
-    }
-  };
-
-  const handleBindOAuth = async () => {
-    if (!profile) {
-      setOpenPanel("guest");
-      return;
-    }
-
-    if (!oauthForm.code.trim()) {
-      feedback.warning({
-        title: "请填写授权码",
-        description: "当前接口需要 provider 与 code 两个字段完成绑定。",
-      });
-      return;
-    }
-
-    setIsBindingOAuth(true);
-    try {
-      const result = await bindOAuthAccount({
-        provider: oauthForm.provider,
-        code: oauthForm.code.trim(),
-      });
-
-      setOAuthProviders((current) =>
-          current.includes(result.provider)
-              ? current
-              : [...current, result.provider],
-      );
-      setOpenPanel(null);
-      feedback.success({
-        title: "第三方账号已绑定",
-        description: `${result.provider === "qq" ? "QQ" : "微信"} 已可用于快捷登录。`,
-      });
-    } catch (error) {
-      feedback.error({
-        title: "绑定失败",
-        description: getErrorMessage(error, "请检查授权码后重试"),
-      });
-    } finally {
-      setIsBindingOAuth(false);
-    }
-  };
-
-  const handleSendPasswordCode = async () => {
-    const email = toCampusEmail(passwordForm.email);
-    if (!email) {
-      feedback.warning({
-        title: "请先填写邮箱",
-        description: "修改密码仍通过校园邮箱验证码完成。",
-      });
-      return;
-    }
-
-    setIsSendingPasswordCode(true);
-    try {
-      const response = await sendCaptcha(email);
-      assertApiResponse(response, "验证码发送失败");
-      setPasswordForm((current) => ({
-        ...current,
-        email,
-      }));
-      feedback.success({
-        title: "验证码已发送",
-        description: "请前往邮箱查收后继续完成密码修改。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "发送失败",
-        description: getErrorMessage(error, "请稍后再试"),
-      });
-    } finally {
-      setIsSendingPasswordCode(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    const email = toCampusEmail(passwordForm.email);
-    if (
-        !email ||
-        !passwordForm.captcha.trim() ||
-        !passwordForm.password.trim()
-    ) {
-      feedback.warning({
-        title: "信息不完整",
-        description: "邮箱、验证码和新密码都不能为空。",
-      });
-      return;
-    }
-
-    if (passwordForm.password.trim().length < 8) {
-      feedback.warning({
-        title: "密码长度不足",
-        description: "新密码至少需要 8 位。",
-      });
-      return;
-    }
-
-    if (passwordForm.password !== passwordForm.confirmPassword) {
-      feedback.warning({
-        title: "两次输入不一致",
-        description: "请确认新密码和确认密码保持一致。",
-      });
-      return;
-    }
-
-    setIsResettingPassword(true);
-    try {
-      const response = await recoverPwd({
-        email,
-        password: CryptoJS.SHA256(passwordForm.password).toString(
-            CryptoJS.enc.Hex,
-        ),
-        captcha: passwordForm.captcha.trim(),
-      });
-      assertApiResponse(response, "密码修改失败");
-      setOpenPanel(null);
-      feedback.success({
-        title: "密码已更新",
-        description: "下次登录请使用新的密码。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "修改失败",
-        description: getErrorMessage(error, "请检查验证码后重试"),
-      });
-    } finally {
-      setIsResettingPassword(false);
-    }
-  };
-
-  const handleSubmitFeedback = async () => {
-    if (!feedbackForm.title.trim() || !feedbackForm.content.trim()) {
-      feedback.warning({
-        title: "内容不完整",
-        description: "请至少填写标题和反馈内容。",
-      });
-      return;
-    }
-
-    setIsSubmittingFeedback(true);
-    try {
-      await submitFeedback({
-        ...feedbackForm,
-        title: feedbackForm.title.trim(),
-        content: feedbackForm.content.trim(),
-        contact: feedbackForm.contact?.trim() || null,
-      });
-      setOpenPanel(null);
-      feedback.success({
-        title: "反馈已提交",
-        description: "感谢你的建议，我们会尽快处理。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "提交失败",
-        description: getErrorMessage(error, "请稍后重试"),
-      });
-    } finally {
-      setIsSubmittingFeedback(false);
-    }
-  };
-
-  const handleSubmitReport = async () => {
-    if (!reportForm.target_id.trim()) {
-      feedback.warning({
-        title: "请填写目标 ID",
-        description: "举报需要明确的对象编号。",
-      });
-      return;
-    }
-
-    setIsSubmittingReport(true);
-    try {
-      await submitReport({
-        target_type: reportForm.target_type,
-        target_id: reportForm.target_id.trim(),
-        reason: reportForm.reason,
-        description: reportForm.description.trim() || null,
-      });
-      setOpenPanel(null);
-      feedback.success({
-        title: "举报已提交",
-        description: "我们会结合内容与上下文尽快核查。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "提交失败",
-        description: getErrorMessage(error, "请稍后重试"),
-      });
-    } finally {
-      setIsSubmittingReport(false);
-    }
-  };
-
-  const handleSubmitCorrection = async () => {
-    if (
-        !correctionForm.target_id ||
-        Number.isNaN(Number(correctionForm.target_id))
-    ) {
-      feedback.warning({
-        title: "目标 ID 无效",
-        description: "纠错需要数字类型的对象 ID。",
-      });
-      return;
-    }
-
-    setIsSubmittingCorrection(true);
-    try {
-      await submitCorrection({
-        ...correctionForm,
-        target_id: Number(correctionForm.target_id),
-        field_name: correctionForm.field_name?.trim() || null,
-        original_value: correctionForm.original_value?.trim() || null,
-        correct_value: correctionForm.correct_value?.trim() || null,
-        description: correctionForm.description?.trim() || null,
-      });
-      setOpenPanel(null);
-      feedback.success({
-        title: "纠错已提交",
-        description: "感谢协助完善平台内容。",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "提交失败",
-        description: getErrorMessage(error, "请稍后重试"),
-      });
-    } finally {
-      setIsSubmittingCorrection(false);
-    }
+  const handleEmailVerified = (nextProfile: UserProfile, updater: (current: MeDashboardData | null) => MeDashboardData | null) => {
+    setDashboard(updater);
+    setUser(nextProfile);
   };
 
   const handleMarkNotificationRead = async (id: number) => {
@@ -2119,85 +1381,14 @@ export default function Me() {
             description="在当前页面内直接修改昵称、头像、学院和年级，不再跳转其他设置页。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>昵称</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={profileForm.nickname}
-                  onChange={(event) =>
-                      setProfileForm((current) => ({
-                        ...current,
-                        nickname: event.target.value,
-                      }))
-                  }
+          {profile ? (
+              <ProfilePanel
+                  profile={profile}
+                  departments={departments}
+                  onClose={() => setOpenPanel(null)}
+                  onProfileUpdated={handleProfileUpdated}
               />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>头像 URL</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={profileForm.avatar_url}
-                  onChange={(event) =>
-                      setProfileForm((current) => ({
-                        ...current,
-                        avatar_url: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>学院</span>
-              <select
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={profileForm.department_id}
-                  onChange={(event) =>
-                      setProfileForm((current) => ({
-                        ...current,
-                        department_id: event.target.value,
-                      }))
-                  }
-              >
-                <option value="">请选择学院</option>
-                {departments.map((department) => (
-                    <option key={department.id} value={department.id}>
-                      {department.name}
-                    </option>
-                ))}
-              </select>
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>入学年份</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  placeholder="例如 2022"
-                  value={profileForm.grade}
-                  onChange={(event) =>
-                      setProfileForm((current) => ({
-                        ...current,
-                        grade: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-                type="button"
-                onClick={() => setOpenPanel(null)}
-                className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              取消
-            </button>
-            <button
-                type="button"
-                onClick={handleSaveProfile}
-                disabled={isSavingProfile}
-                className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSavingProfile ? "保存中..." : "保存资料"}
-            </button>
-          </div>
+          ) : null}
         </FloatingPanel>
 
         <FloatingPanel
@@ -2206,91 +1397,10 @@ export default function Me() {
             description="保持原有风格，但不再跳转找回密码页面，直接在悬浮卡片里完成验证码与新密码设置。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-              <span>校园邮箱</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  placeholder="填写邮箱前缀或完整邮箱"
-                  value={passwordForm.email}
-                  onChange={(event) =>
-                      setPasswordForm((current) => ({
-                        ...current,
-                        email: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>验证码</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  placeholder="6 位验证码"
-                  value={passwordForm.captcha}
-                  onChange={(event) =>
-                      setPasswordForm((current) => ({
-                        ...current,
-                        captcha: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <div className="flex items-end">
-              <button
-                  type="button"
-                  onClick={handleSendPasswordCode}
-                  disabled={isSendingPasswordCode}
-                  className="w-full rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isSendingPasswordCode ? "发送中..." : "发送验证码"}
-              </button>
-            </div>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>新密码</span>
-              <input
-                  type="password"
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={passwordForm.password}
-                  onChange={(event) =>
-                      setPasswordForm((current) => ({
-                        ...current,
-                        password: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>确认密码</span>
-              <input
-                  type="password"
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={passwordForm.confirmPassword}
-                  onChange={(event) =>
-                      setPasswordForm((current) => ({
-                        ...current,
-                        confirmPassword: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-                type="button"
-                onClick={() => setOpenPanel(null)}
-                className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              取消
-            </button>
-            <button
-                type="button"
-                onClick={handleResetPassword}
-                disabled={isResettingPassword}
-                className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isResettingPassword ? "提交中..." : "确认修改"}
-            </button>
-          </div>
+          <PasswordPanel
+              initialEmail={emailStatus.email ?? profile?.email ?? ""}
+              onClose={() => setOpenPanel(null)}
+          />
         </FloatingPanel>
 
         <FloatingPanel
@@ -2299,70 +1409,15 @@ export default function Me() {
             description="区分校园认证用户与第三方登录用户的关键状态都在这里完成。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="space-y-4">
-            <div
-                className={`rounded-2xl border px-4 py-3 text-sm ${accountPresentation.badgeClassName}`}
-            >
-              当前状态：{accountPresentation.badge}。{accountPresentation.hint}
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-                <span>校园邮箱</span>
-                <input
-                    className={FORM_INPUT_CLASS_NAME}
-                    placeholder="填写邮箱前缀或完整邮箱"
-                    value={emailForm.email}
-                    onChange={(event) =>
-                        setEmailForm((current) => ({
-                          ...current,
-                          email: event.target.value,
-                        }))
-                    }
-                />
-              </label>
-              <label className="space-y-2 text-sm text-gray-600">
-                <span>验证码</span>
-                <input
-                    className={FORM_INPUT_CLASS_NAME}
-                    placeholder="6 位验证码"
-                    value={emailForm.captcha}
-                    onChange={(event) =>
-                        setEmailForm((current) => ({
-                          ...current,
-                          captcha: event.target.value,
-                        }))
-                    }
-                />
-              </label>
-              <div className="flex items-end">
-                <button
-                    type="button"
-                    onClick={handleSendEmailCode}
-                    disabled={isSendingEmailCode}
-                    className="w-full rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isSendingEmailCode ? "发送中..." : "发送验证码"}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-                type="button"
-                onClick={() => setOpenPanel(null)}
-                className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              取消
-            </button>
-            <button
-                type="button"
-                onClick={handleVerifyEmail}
-                disabled={isVerifyingEmail}
-                className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isVerifyingEmail ? "验证中..." : "完成认证"}
-            </button>
-          </div>
+          {profile ? (
+              <EmailPanel
+                  profile={profile}
+                  emailStatus={emailStatus}
+                  accountMode={accountMode}
+                  onClose={() => setOpenPanel(null)}
+                  onEmailVerified={handleEmailVerified}
+              />
+          ) : null}
         </FloatingPanel>
 
         <FloatingPanel
@@ -2371,76 +1426,11 @@ export default function Me() {
             description="接口按文档要求保留 provider + code 绑定方式，避免强制跳离当前页面。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {[
-                {key: "qq" as OAuthBindProvider, label: "QQ"},
-                {key: "wechat" as OAuthBindProvider, label: "微信"},
-              ].map((item) => (
-                  <button
-                      key={item.key}
-                      type="button"
-                      onClick={() =>
-                          setOAuthForm((current) => ({
-                            ...current,
-                            provider: item.key,
-                          }))
-                      }
-                      className={`rounded-full px-3 py-1.5 text-sm transition ${
-                          oauthForm.provider === item.key
-                              ? "bg-first text-white"
-                              : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
-                      }`}
-                  >
-                    {item.label}
-                  </button>
-              ))}
-            </div>
-            <div className="rounded-2xl border border-gray-200/70 bg-white/55 px-4 py-3 text-sm text-gray-600">
-              {accountMode === "oauth_pending_email"
-                  ? "当前账户已经是第三方登录态，继续绑定可补齐更多快捷登录方式。"
-                  : "如果后端返回授权码，可直接在这里完成绑定，无需跳转到独立设置页。"}
-              {oauthProviders.length > 0 ? (
-                  <p className="mt-2">
-                    已成功绑定：
-                    {oauthProviders
-                        .map((item) => (item === "qq" ? "QQ" : "微信"))
-                        .join(" / ")}
-                  </p>
-              ) : null}
-            </div>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>OAuth 授权码</span>
-              <textarea
-                  className={FORM_TEXTAREA_CLASS_NAME}
-                  placeholder="将 provider 对应的 code 粘贴到这里"
-                  value={oauthForm.code}
-                  onChange={(event) =>
-                      setOAuthForm((current) => ({
-                        ...current,
-                        code: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-                type="button"
-                onClick={() => setOpenPanel(null)}
-                className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              取消
-            </button>
-            <button
-                type="button"
-                onClick={handleBindOAuth}
-                disabled={isBindingOAuth}
-                className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isBindingOAuth ? "绑定中..." : "确认绑定"}
-            </button>
-          </div>
+          <OAuthPanel
+              accountMode={accountMode}
+              onClose={() => setOpenPanel(null)}
+              onOAuthBound={() => {}}
+          />
         </FloatingPanel>
 
         <FloatingPanel
@@ -2449,44 +1439,7 @@ export default function Me() {
             description="你在资源上传、签到、邀请等行为产生的积分变化都会记录在这里。"
             onClose={() => setOpenPanel(null)}
         >
-          {points.items.length > 0 ? (
-              <div className="space-y-3">
-                {points.items.map((item) => (
-                    <GlassCard key={item.id} className="border border-white/50 p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {getPointsReasonLabel(item.reason)}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {formatDateTime(item.created_at)}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p
-                              className={`text-lg font-semibold ${
-                                  item.change_amount >= 0
-                                      ? "text-emerald-600"
-                                      : "text-rose-500"
-                              }`}
-                          >
-                            {item.change_amount >= 0 ? "+" : ""}
-                            {item.change_amount}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            余额 {item.balance_after}
-                          </p>
-                        </div>
-                      </div>
-                    </GlassCard>
-                ))}
-              </div>
-          ) : (
-              <SectionEmptyState
-                  title="还没有积分流水"
-                  description="签到、上传资源和邀请好友后会自动产生积分记录。"
-              />
-          )}
+          <PointsPanel points={points.items}/>
         </FloatingPanel>
 
         <FloatingPanel
@@ -2536,35 +1489,10 @@ export default function Me() {
             description="结合个人中心文档中的下载历史接口，统一收进概览页下方的设置入口。"
             onClose={() => setOpenPanel(null)}
         >
-          {isLoadingDownloads ? (
-              <SectionEmptyState title="下载记录加载中..." description="请稍候。"/>
-          ) : downloads.items.length > 0 ? (
-              <div className="space-y-3">
-                {downloads.items.map((item) => (
-                    <GlassCard key={item.id} className="border border-white/50 p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {item.resource.title}
-                          </p>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {formatDateTime(item.created_at)}
-                          </p>
-                        </div>
-                        <div className="text-right text-sm text-gray-600">
-                          <p>{getResourceTypeLabel(item.resource.resource_type)}</p>
-                          <p>消耗 1 积分</p>
-                        </div>
-                      </div>
-                    </GlassCard>
-                ))}
-              </div>
-          ) : (
-              <SectionEmptyState
-                  title="暂无下载记录"
-                  description="下载过的资源会按时间倒序展示在这里。"
-              />
-          )}
+          <DownloadsPanel
+              downloads={downloads.items}
+              isLoading={isLoadingDownloads}
+          />
         </FloatingPanel>
 
         <FloatingPanel
@@ -2573,82 +1501,11 @@ export default function Me() {
             description="延续现有页面风格，把建议提交入口直接收进玻璃卡片。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="grid grid-cols-1 gap-4">
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>反馈类型</span>
-              <select
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={feedbackForm.type}
-                  onChange={(event) =>
-                      setFeedbackForm((current) => ({
-                        ...current,
-                        type: event.target.value as FeedbackInput["type"],
-                      }))
-                  }
-              >
-                <option value="suggestion">建议</option>
-                <option value="bug">问题反馈</option>
-                <option value="complaint">投诉</option>
-                <option value="other">其他</option>
-              </select>
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>标题</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={feedbackForm.title}
-                  onChange={(event) =>
-                      setFeedbackForm((current) => ({
-                        ...current,
-                        title: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>内容</span>
-              <textarea
-                  className={FORM_TEXTAREA_CLASS_NAME}
-                  value={feedbackForm.content}
-                  onChange={(event) =>
-                      setFeedbackForm((current) => ({
-                        ...current,
-                        content: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-            <label className="space-y-2 text-sm text-gray-600">
-              <span>联系方式</span>
-              <input
-                  className={FORM_INPUT_CLASS_NAME}
-                  value={feedbackForm.contact ?? ""}
-                  onChange={(event) =>
-                      setFeedbackForm((current) => ({
-                        ...current,
-                        contact: event.target.value,
-                      }))
-                  }
-              />
-            </label>
-          </div>
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-                type="button"
-                onClick={() => setOpenPanel(null)}
-                className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-            >
-              取消
-            </button>
-            <button
-                type="button"
-                onClick={handleSubmitFeedback}
-                disabled={isSubmittingFeedback}
-                className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSubmittingFeedback ? "提交中..." : "提交反馈"}
-            </button>
-          </div>
+          <FeedbackPanel
+              initialContact={profile?.email ?? ""}
+              mode="feedback"
+              onClose={() => setOpenPanel(null)}
+          />
         </FloatingPanel>
 
         <FloatingPanel
@@ -2657,216 +1514,11 @@ export default function Me() {
             description="同一张悬浮卡片内处理内容治理和信息修正，不额外切换页面。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="mb-4 flex gap-2">
-            {[
-              {key: "report" as const, label: "举报"},
-              {key: "correction" as const, label: "纠错"},
-            ].map((item) => (
-                <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => setReportMode(item.key)}
-                    className={`rounded-full px-3 py-1.5 text-sm transition ${
-                        reportMode === item.key
-                            ? "bg-first text-white"
-                            : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
-                    }`}
-                >
-                  {item.label}
-                </button>
-            ))}
-          </div>
-
-          {reportMode === "report" ? (
-              <>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>目标类型</span>
-                    <select
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={reportForm.target_type}
-                        onChange={(event) =>
-                            setReportForm((current) => ({
-                              ...current,
-                              target_type: event.target.value as ReportTargetType,
-                            }))
-                        }
-                    >
-                      <option value="resource">资源</option>
-                      <option value="evaluation">评价</option>
-                      <option value="comment">评论</option>
-                      <option value="user">用户</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>原因</span>
-                    <select
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={reportForm.reason}
-                        onChange={(event) =>
-                            setReportForm((current) => ({
-                              ...current,
-                              reason: event.target.value as ReportReason,
-                            }))
-                        }
-                    >
-                      <option value="copyright">侵权</option>
-                      <option value="spam">垃圾内容</option>
-                      <option value="inappropriate">不当内容</option>
-                      <option value="other">其他</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-                    <span>目标 ID</span>
-                    <input
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={reportForm.target_id}
-                        onChange={(event) =>
-                            setReportForm((current) => ({
-                              ...current,
-                              target_id: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-                    <span>补充说明</span>
-                    <textarea
-                        className={FORM_TEXTAREA_CLASS_NAME}
-                        value={reportForm.description}
-                        onChange={(event) =>
-                            setReportForm((current) => ({
-                              ...current,
-                              description: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                      type="button"
-                      onClick={() => setOpenPanel(null)}
-                      className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-                  >
-                    取消
-                  </button>
-                  <button
-                      type="button"
-                      onClick={handleSubmitReport}
-                      disabled={isSubmittingReport}
-                      className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSubmittingReport ? "提交中..." : "提交举报"}
-                  </button>
-                </div>
-              </>
-          ) : (
-              <>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>目标类型</span>
-                    <select
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={correctionForm.target_type}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              target_type: event.target
-                                  .value as CorrectionInput["target_type"],
-                            }))
-                        }
-                    >
-                      <option value="resource">资源</option>
-                      <option value="course">课程</option>
-                      <option value="teacher">教师</option>
-                    </select>
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>目标 ID</span>
-                    <input
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={correctionForm.target_id || ""}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              target_id: Number(event.target.value),
-                            }))
-                        }
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>字段名</span>
-                    <input
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={correctionForm.field_name ?? ""}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              field_name: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>原始值</span>
-                    <input
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={correctionForm.original_value ?? ""}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              original_value: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600">
-                    <span>正确值</span>
-                    <input
-                        className={FORM_INPUT_CLASS_NAME}
-                        value={correctionForm.correct_value ?? ""}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              correct_value: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                  <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-                    <span>补充说明</span>
-                    <textarea
-                        className={FORM_TEXTAREA_CLASS_NAME}
-                        value={correctionForm.description ?? ""}
-                        onChange={(event) =>
-                            setCorrectionForm((current) => ({
-                              ...current,
-                              description: event.target.value,
-                            }))
-                        }
-                    />
-                  </label>
-                </div>
-                <div className="mt-6 flex justify-end gap-3">
-                  <button
-                      type="button"
-                      onClick={() => setOpenPanel(null)}
-                      className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
-                  >
-                    取消
-                  </button>
-                  <button
-                      type="button"
-                      onClick={handleSubmitCorrection}
-                      disabled={isSubmittingCorrection}
-                      className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {isSubmittingCorrection ? "提交中..." : "提交纠错"}
-                  </button>
-                </div>
-              </>
-          )}
+          <FeedbackPanel
+              initialContact={profile?.email ?? ""}
+              mode="report"
+              onClose={() => setOpenPanel(null)}
+          />
         </FloatingPanel>
 
         <FloatingPanel
@@ -2875,27 +1527,7 @@ export default function Me() {
             description="贡献图不再用随机色块，而是按个人中心真实行为生成。"
             onClose={() => setOpenPanel(null)}
         >
-          <div className="space-y-3">
-            {CONTRIBUTION_RULES.map((rule) => (
-                <GlassCard key={rule.title} className="border border-white/50 p-4">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">{rule.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-gray-600">
-                        {rule.detail}
-                      </p>
-                    </div>
-                    <span
-                        className="rounded-full border border-gray-200 bg-white/60 px-3 py-1 text-sm font-semibold text-first">
-                  +{rule.score} 分
-                </span>
-                  </div>
-                </GlassCard>
-            ))}
-            <p className="text-sm leading-6 text-gray-600">
-              这套规则的核心是“内容生产权重大于纯活跃”。上传通过审核的资源与高质量评价会直接主导热力图颜色，签到与邀请作为辅助信号存在，但不会盖过真正能帮助他人的贡献。
-            </p>
-          </div>
+          <ContributionPanel/>
         </FloatingPanel>
 
         {!hasHydrated || (accessToken && !dashboard && isLoadingDashboard) ? (
