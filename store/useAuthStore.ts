@@ -1,3 +1,4 @@
+import {getMyProfile} from "@/api/me";
 import {UserProfile} from "@/types/auth";
 import {create} from "zustand";
 import {createJSONStorage, persist} from "zustand/middleware";
@@ -18,11 +19,12 @@ interface AuthState {
   ) => void;
   logout: () => void;
   setHasHydrated: (v: boolean) => void;
+  refreshProfile: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
           access_token: null,
           refresh_token: null,
           user: null,
@@ -33,7 +35,17 @@ export const useAuthStore = create<AuthState>()(
           login: (access_token, refresh_token, user = null) =>
             set({access_token, refresh_token, user}),
           logout: () => set({access_token: null, refresh_token: null, user: null}),
-          setHasHydrated: (v) => set({_hasHydrated: v})
+          setHasHydrated: (v) => set({_hasHydrated: v}),
+          refreshProfile: async () => {
+            const {access_token} = get();
+            if (!access_token) return;
+            try {
+              const profile = await getMyProfile();
+              set({user: profile});
+            } catch {
+              // silently ignore – caller can handle if needed
+            }
+          }
         }),
 
         //持久化配置
