@@ -80,7 +80,10 @@ export default function Search() {
   const requestIdRef = useRef(0);
 
   const currentSearchType = useMemo(() => {
-    return searchConfig.find((option) => option.type === searchType) ?? searchConfig[0];
+    return (
+      searchConfig.find((option) => option.type === searchType) ??
+      searchConfig[0]
+    );
   }, [searchType]);
 
   const summary = useMemo(() => {
@@ -207,13 +210,16 @@ export default function Search() {
   };
 
   const showEmptyPrompt = !hasSearched && !isLoading;
-  const showNoResults = hasSearched && !isLoading && !error && summary.total === 0;
+  const showNoResults =
+    hasSearched && !isLoading && !error && summary.total === 0;
 
   useEffect(() => {
     const typeParam = searchParams.get("type");
     const qParam = searchParams.get("q");
     const normalizedType =
-      typeParam === "resource" || typeParam === "course" || typeParam === "teacher"
+      typeParam === "resource" ||
+      typeParam === "course" ||
+      typeParam === "teacher"
         ? typeParam
         : "all";
 
@@ -241,7 +247,8 @@ export default function Search() {
           setResults(data);
         } catch (err) {
           if (requestIdRef.current !== currentRequestId) return;
-          const message = err instanceof Error ? err.message : "搜索失败，请稍后重试。";
+          const message =
+            err instanceof Error ? err.message : "搜索失败，请稍后重试。";
           setError(message);
           setResults(createEmptyResults());
         } finally {
@@ -293,12 +300,12 @@ export default function Search() {
           ))}
         </div>
         <div className="w-full max-w-2xl">
-          <SearchBar 
+          <SearchBar
             value={keyword}
             onChange={setKeyword}
             onSearch={handleSearch}
             debounceOnChange={false}
-            placeholder={currentSearchType?.placeholder} 
+            placeholder={currentSearchType?.placeholder}
           />
         </div>
       </div>
@@ -332,14 +339,16 @@ export default function Search() {
 
       {error ? (
         <div className="flex flex-col items-center justify-center mt-10 bg-red-50 p-6 rounded-2xl border border-red-200 shadow-sm max-w-2xl mx-auto w-full">
-          <div className="text-red-500 text-4xl mb-3"><i className="uil uil-exclamation-triangle"></i></div>
+          <div className="text-red-500 text-4xl mb-3">
+            <i className="uil uil-exclamation-triangle"></i>
+          </div>
           <div className="text-red-700 font-medium">搜索请求失败</div>
           <div className="text-red-600 text-sm mt-1">{error}</div>
         </div>
       ) : null}
 
       {showNoResults ? (
-         <div className="flex flex-col gap-5 items-center justify-center mt-15">
+        <div className="flex flex-col gap-5 items-center justify-center mt-15">
           <div className="text-8xl text-gray-300">
             <i className="uil uil-tear"></i>
           </div>
@@ -358,15 +367,16 @@ export default function Search() {
         <div className="flex flex-col gap-10">
           {/* Summary */}
           <div className="flex items-center gap-4 text-sm text-gray-500">
-             找到相关的 <span className="font-semibold text-gray-800">{summary.total}</span> 条结果
-             
-             {searchType === 'all' && (
-                <div className="flex gap-3 ml-2 border-l border-gray-300 pl-4">
-                  <span>课程: {summary.counts.course}</span>
-                  <span>教师: {summary.counts.teacher}</span>
-                  <span>资源: {summary.counts.resource}</span>
-                </div>
-             )}
+            找到相关的{" "}
+            <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
+            条结果
+            {searchType === "all" && (
+              <div className="flex gap-3 ml-2 border-l border-gray-300 pl-4">
+                <span>课程: {summary.counts.course}</span>
+                <span>教师: {summary.counts.teacher}</span>
+                <span>资源: {summary.counts.resource}</span>
+              </div>
+            )}
           </div>
 
           {/* Result Sections */}
@@ -374,7 +384,9 @@ export default function Search() {
             {sections.map((section) => (
               <section key={section.key} className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">{section.title}</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {section.title}
+                  </h2>
                   <span className="bg-gray-100 text-gray-500 text-sm px-2 py-0.5 rounded-full">
                     {section.items.length}
                   </span>
@@ -385,7 +397,10 @@ export default function Search() {
                     <div
                       key={`${section.key}-${"id" in item ? item.id : JSON.stringify(item)}`}
                     >
-                      {renderCard(section.key as "course" | "teacher" | "resource", item)}
+                      {renderCard(
+                        section.key as "course" | "teacher" | "resource",
+                        item,
+                      )}
                     </div>
                   ))}
                 </div>
