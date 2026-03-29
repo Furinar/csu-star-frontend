@@ -111,6 +111,7 @@ const normalizeTeacherBriefs = (items: unknown): SearchTeacherBrief[] => {
         id: toNumber(raw.id) ?? 0,
         name: toStringSafe(raw.name) ?? "未命名教师",
         title: toStringSafe(raw.title),
+        avatar_url: toStringSafe(raw.avatar_url),
       },
     ];
   });
@@ -125,10 +126,8 @@ const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
     return [
       {
         id: toNumber(raw.id) ?? 0,
-        code: toStringSafe(raw.code),
         name: toStringSafe(raw.name) ?? "未命名课程",
-        course_type: toStringSafe(raw.course_type),
-        credits: toNumber(raw.credits),
+        course_type: toStringSafe(raw.course_type) as SearchCourseItem["course_type"],
         avg_score: toNumber(raw.avg_score),
         avg_homework: toNumber(raw.avg_homework),
         avg_gain: toNumber(raw.avg_gain),
@@ -195,9 +194,7 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
           `课程 ${courseId}`,
-        course_code: toStringSafe(raw.course_code),
-        course_type: toStringSafe(raw.course_type),
-        credits: toNumber(raw.credits),
+        course_type: toStringSafe(raw.course_type) as SearchResourceCard["course_type"],
         avg_score: toNumber(raw.avg_score),
         resource_count: toNumber(raw.resource_count) ?? 0,
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),

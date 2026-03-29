@@ -85,7 +85,7 @@ export default function CourseResourceCollectionPage() {
               课程资源合集
             </div>
             <div>
-              <div className="text-sm text-gray-400">{detail.course.code || "未录入课程代码"}</div>
+              <div className="text-sm text-gray-400">{"课程信息"}</div>
               <h1 className="mt-2 text-4xl font-bold text-gray-900">{detail.course.name}</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
                 搜索结果与资源排行榜都会先落到这里，再继续进入单个资源详情或课程评价区。

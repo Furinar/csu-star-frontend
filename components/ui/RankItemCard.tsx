@@ -108,22 +108,14 @@ export default function RankItemCard(props: RankItemCardProps) {
     href = buildCoursePath(item.id);
     title = item.name;
     isPublic =
-      item.course_type === "公选" ||
-      item.course_type === "public" ||
-      item.course_type === "公共选修课";
+      item.course_type === "公选课";
 
     subtitleIcon = "uil-tag-alt";
     subtitleContent = (
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-xs text-gray-600">{item.code || "无代码"}</span>
         <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
           {truncateString(item.course_type || "未知类型", 8)}
         </span>
-        {item.credits ? (
-          <span className="text-[10px] sm:text-xs text-gray-500">
-            {item.credits} 学分
-          </span>
-        ) : null}
       </div>
     );
 
@@ -209,11 +201,6 @@ export default function RankItemCard(props: RankItemCardProps) {
     subtitleIcon = "uil-folder-open";
     subtitleContent = (
       <div className="flex items-center gap-2 flex-wrap">
-        {item.course_code ? (
-          <span className="text-[10px] sm:text-xs text-gray-600">
-            {item.course_code}
-          </span>
-        ) : null}
         <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
           最近更新 {formatDate(item.updated_at)}
         </span>

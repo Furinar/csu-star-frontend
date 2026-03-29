@@ -18,14 +18,13 @@ export interface SearchTeacherBrief {
   id: number;
   name: string;
   title?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface SearchCourseItem {
   id: number;
-  code?: string | null;
   name: string;
-  course_type?: string | null;
-  credits?: number | null;
+  course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
   avg_homework?: number | null;
   avg_gain?: number | null;
@@ -63,9 +62,7 @@ export interface SearchResourcePreview {
 export interface SearchResourceCard {
   course_id: number;
   course_name: string;
-  course_code?: string | null;
-  course_type?: string | null;
-  credits?: number | null;
+  course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
   resource_count: number;
   download_total?: number | null;

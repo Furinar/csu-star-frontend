@@ -57,9 +57,7 @@ export interface RankingItem {
 }
 
 export interface CourseRankingItem extends RankingItem {
-  code?: string | null;
-  course_type?: string | null;
-  credits?: number | null;
+  course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
   avg_homework?: number | null;
   avg_gain?: number | null;
@@ -95,7 +93,6 @@ export interface ResourceRankingItem {
   rank: number;
   course_id: number;
   course_name: string;
-  course_code?: string | null;
   resource_count?: number | null;
   download_total?: number | null;
   like_total?: number | null;

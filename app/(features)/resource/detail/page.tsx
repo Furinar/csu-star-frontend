@@ -190,7 +190,7 @@ export default function ResourceDetailPage() {
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5">
-            <div className="text-sm text-gray-400">{detail.course?.code || "课程信息"}</div>
+            <div className="text-sm text-gray-400">{"课程信息"}</div>
             <div className="mt-2 text-xl font-semibold text-gray-900">
               {detail.course?.name || `课程 ${courseId}`}
             </div>

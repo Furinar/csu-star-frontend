@@ -127,7 +127,7 @@ export default function TeacherDetailPage() {
               href={buildCoursePath(course.id)}
               className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="text-sm text-gray-400">{course.code || "未录入课程代码"}</div>
+              <div className="text-sm text-gray-400">{course.name}</div>
               <div className="mt-2 text-xl font-semibold text-gray-900">{course.name}</div>
               <div className="mt-4 text-sm text-[var(--first-color)]">查看课程详情</div>
             </Link>

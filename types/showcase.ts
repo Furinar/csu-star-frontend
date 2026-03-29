@@ -2,11 +2,11 @@ export interface ShowcaseTeacherBrief {
   id: number;
   name: string;
   title?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface CourseShowcaseItem {
   id: number;
-  code?: string | null;
   name: string;
   course_type?: string | null;
   avg_score?: number | null;

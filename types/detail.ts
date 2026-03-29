@@ -9,11 +9,11 @@ export interface TeacherBrief {
   id: number;
   name: string;
   title?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface CourseBrief {
   id: number;
-  code?: string | null;
   name: string;
 }
 
@@ -106,10 +106,8 @@ export interface TeacherDetail {
 
 export interface CourseDetail {
   id: number;
-  code?: string | null;
   name: string;
-  course_type?: string | null;
-  credits?: number | null;
+  course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
   avg_homework?: number | null;
   avg_gain?: number | null;

@@ -1,4 +1,4 @@
-import { service } from "@/lib/request";
+import {service} from "@/lib/request";
 import type {
   CourseDetail,
   CourseEvaluation,
@@ -22,7 +22,7 @@ interface ApiEnvelope<T> {
 type AnyRecord = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is AnyRecord =>
-  typeof value === "object" && value !== null;
+    typeof value === "object" && value !== null;
 
 const unwrapResponseData = (payload: unknown): unknown => {
   if (!isRecord(payload)) return undefined;
@@ -45,7 +45,7 @@ const toNumber = (value: unknown): number | null => {
 };
 
 const toStringSafe = (value: unknown): string | null =>
-  typeof value === "string" ? value : null;
+    typeof value === "string" ? value : null;
 
 const toBoolean = (value: unknown): boolean | null => {
   if (typeof value === "boolean") return value;
@@ -53,11 +53,11 @@ const toBoolean = (value: unknown): boolean | null => {
 };
 
 const normalizePaginated = <T>(
-  raw: unknown,
-  normalizeItems: (items: unknown[]) => T[],
+    raw: unknown,
+    normalizeItems: (items: unknown[]) => T[],
 ): PaginatedData<T> => {
   if (!isRecord(raw)) {
-    return { total: 0, items: [] };
+    return {total: 0, items: []};
   }
 
   const items = Array.isArray(raw.items) ? raw.items : [];
@@ -92,6 +92,7 @@ const normalizeTeacherBriefs = (raw: unknown) => {
         id: toNumber(item.id) ?? 0,
         name: toStringSafe(item.name) ?? "未命名教师",
         title: toStringSafe(item.title),
+        avatar_url: toStringSafe(item.avatar_url),
       },
     ];
   });
@@ -106,7 +107,6 @@ const normalizeCourseBriefs = (raw: unknown) => {
     return [
       {
         id: toNumber(item.id) ?? 0,
-        code: toStringSafe(item.code),
         name: toStringSafe(item.name) ?? "未命名课程",
       },
     ];
@@ -266,10 +266,8 @@ const normalizeCourseDetail = (raw: unknown): CourseDetail => {
 
   return {
     id: toNumber(data.id) ?? 0,
-    code: toStringSafe(data.code),
     name: toStringSafe(data.name) ?? "未命名课程",
-    course_type: toStringSafe(data.course_type),
-    credits: toNumber(data.credits),
+    course_type: toStringSafe(data.course_type) as CourseDetail["course_type"],
     avg_score: toNumber(data.avg_score),
     avg_homework: toNumber(data.avg_homework),
     avg_gain: toNumber(data.avg_gain),
@@ -291,7 +289,6 @@ const normalizeResourceCollection = (raw: unknown): CourseResourceCollection => 
   return {
     course: {
       id: toNumber(course.id) ?? 0,
-      code: toStringSafe(course.code),
       name: toStringSafe(course.name) ?? "未命名课程",
     },
     resource_count: toNumber(data.resource_count) ?? 0,
@@ -313,12 +310,11 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
     title: toStringSafe(data.title) ?? "未命名资料",
     course_id: toNumber(data.course_id) ?? 0,
     course: course
-      ? {
+        ? {
           id: toNumber(course.id) ?? 0,
-          code: toStringSafe(course.code),
           name: toStringSafe(course.name) ?? "未命名课程",
         }
-      : null,
+        : null,
     resource_type: toStringSafe(data.resource_type),
     semester_start: toStringSafe(data.semester_start),
     semester_end: toStringSafe(data.semester_end),
@@ -362,7 +358,7 @@ export async function getCourseDetail(id: number) {
 
 export async function getCourseResourceCollection(id: number, page = 1, size = 20) {
   const response = await service.get<ApiEnvelope<unknown>>(`/course-resource-collections/${id}`, {
-    params: { page, size },
+    params: {page, size},
   });
 
   return normalizeResourceCollection(unwrapResponseData(response));
@@ -374,8 +370,8 @@ export async function getResourceDetail(id: number) {
 }
 
 export async function listTeacherEvaluations(teacherId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/evaluations/teachers/${teacherId}`, {
-    params: { page, size, sort: "created_at" },
+  const response = await service.get<ApiEnvelope<unknown>>(`/teachers/evaluations/${teacherId}`, {
+    params: {page, size, sort: "created_at"},
   });
 
   const raw = unwrapResponseData(response);
@@ -383,8 +379,8 @@ export async function listTeacherEvaluations(teacherId: number, page = 1, size =
 }
 
 export async function listCourseEvaluations(courseId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/evaluations/courses/${courseId}`, {
-    params: { page, size, sort: "created_at" },
+  const response = await service.get<ApiEnvelope<unknown>>(`/courses/evaluations/${courseId}`, {
+    params: {page, size, sort: "created_at"},
   });
 
   const raw = unwrapResponseData(response);
@@ -392,24 +388,24 @@ export async function listCourseEvaluations(courseId: number, page = 1, size = 2
 }
 
 export async function createTeacherEvaluationReply(
-  evaluationId: number,
-  payload: EvaluationReplyInput,
+    evaluationId: number,
+    payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-    `/teacher-evaluations/${evaluationId}/replies`,
-    payload,
+      `/teacher-evaluations/${evaluationId}/replies`,
+      payload,
   );
 
   return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
 }
 
 export async function createCourseEvaluationReply(
-  evaluationId: number,
-  payload: EvaluationReplyInput,
+    evaluationId: number,
+    payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-    `/course-evaluations/${evaluationId}/replies`,
-    payload,
+      `/course-evaluations/${evaluationId}/replies`,
+      payload,
   );
 
   return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
@@ -417,7 +413,7 @@ export async function createCourseEvaluationReply(
 
 export async function listResourceComments(resourceId: number, page = 1, size = 20) {
   const response = await service.get<ApiEnvelope<unknown>>(`/resources/${resourceId}/comments`, {
-    params: { page, size, sort: "created_at" },
+    params: {page, size, sort: "created_at"},
   });
 
   const raw = unwrapResponseData(response);

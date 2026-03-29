@@ -106,7 +106,6 @@ export default function CourseDetailPage() {
               课程详情
             </div>
             <div>
-              <div className="text-sm text-gray-400">{detail.code || "未录入课程代码"}</div>
               <h1 className="mt-2 text-4xl font-bold text-gray-900">{detail.name}</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
                 这里集中展示课程评分、授课教师、资料入口与课程评价区，作为资源与教师之间的主跳转页面。

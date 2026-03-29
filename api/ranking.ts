@@ -71,9 +71,7 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
         rank: toNumber(raw.rank) ?? index + 1,
         id: toNumber(raw.id) ?? 0,
         name: toStringSafe(raw.name) ?? `课程 ${index + 1}`,
-        code: toStringSafe(raw.code),
-        course_type: toStringSafe(raw.course_type),
-        credits: toNumber(raw.credits),
+        course_type: toStringSafe(raw.course_type) as CourseRankingItem["course_type"],
         department_name: toStringSafe(raw.department_name),
         score: toNumber(raw.score) ?? 0,
         avg_score: toNumber(raw.avg_score),
@@ -142,7 +140,6 @@ const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] 
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
           `课程资源合集 ${index + 1}`,
-        course_code: toStringSafe(raw.course_code),
         resource_count: toNumber(raw.resource_count),
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
         like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),

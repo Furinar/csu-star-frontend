@@ -47,6 +47,7 @@ const normalizeTeacherBriefs = (raw: unknown): ShowcaseTeacherBrief[] => {
         id: toNumber(item.id) ?? 0,
         name: toStringSafe(item.name) ?? "未命名教师",
         title: toStringSafe(item.title),
+        avatar_url: toStringSafe(item.avatar_url),
       },
     ];
   });
@@ -61,7 +62,6 @@ const normalizeCourseShowcaseItems = (raw: unknown): CourseShowcaseItem[] => {
     return [
       {
         id: toNumber(item.id) ?? 0,
-        code: toStringSafe(item.code),
         name: toStringSafe(item.name) ?? "未命名课程",
         course_type: toStringSafe(item.course_type),
         avg_score: toNumber(item.avg_score),

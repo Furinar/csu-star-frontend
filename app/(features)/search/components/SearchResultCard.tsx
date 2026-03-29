@@ -131,7 +131,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const item = props.item;
     href = buildCoursePath(item.id);
     title = item.name;
-    isPublic = item.course_type === "公选" || item.course_type === "public";
+    isPublic = item.course_type === "公选课";
     const teachers = item.teachers ?? [];
     const teacherCount = item.teacher_count ?? teachers.length;
     subtitleIcon = "uil-users-alt";
@@ -196,7 +196,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const item = props.item;
     href = buildResourceCollectionPath(item.course_id);
     title = item.course_name;
-    isPublic = item.course_type === "公选" || item.course_type === "public";
+    isPublic = item.course_type === "公选课";
     subtitleIcon = "uil-folder-open";
     subtitleContent = (
       <span className="text-xs text-gray-600">
