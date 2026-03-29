@@ -65,6 +65,7 @@ export interface CourseRankingItem extends RankingItem {
   eval_count?: number | null;
   resource_count?: number | null;
   hot_score?: number | null;
+  teachers?: Array<{ id: number; name: string; title?: string | null; avatar_url?: string | null }>;
 }
 
 export interface TeacherRankingItem extends RankingItem {
@@ -78,6 +79,7 @@ export interface TeacherRankingItem extends RankingItem {
   resource_count?: number | null;
   hot_score?: number | null;
   avatar_url?: string | null;
+  courses?: Array<{ id: number; name: string }>;
 }
 
 export interface ResourcePreviewItem {

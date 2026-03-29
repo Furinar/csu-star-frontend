@@ -81,6 +81,10 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
         hot_score: toNumber(raw.hot_score),
+        teachers: Array.isArray(raw.teachers) ? (raw.teachers as Record<string, unknown>[]).flatMap((t) => {
+          if (typeof t !== "object" || t === null) return [];
+          return [{ id: toNumber(t.id) ?? 0, name: toStringSafe(t.name) ?? "", title: toStringSafe(t.title), avatar_url: toStringSafe(t.avatar_url) }];
+        }) : [],
       },
     ];
   });
@@ -105,6 +109,10 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
         hot_score: toNumber(raw.hot_score),
+        courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
+          if (typeof c !== "object" || c === null) return [];
+          return [{ id: toNumber(c.id) ?? 0, name: toStringSafe(c.name) ?? "" }];
+        }) : [],
       },
     ];
   });

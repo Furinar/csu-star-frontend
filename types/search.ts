@@ -51,6 +51,7 @@ export interface SearchTeacherItem {
   eval_count?: number | null;
   resource_count?: number | null;
   hot_score?: number | null;
+  courses?: Array<{ id: number; name: string }>;
 }
 
 export interface SearchResourcePreview {

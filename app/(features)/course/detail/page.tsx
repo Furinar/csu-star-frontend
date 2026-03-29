@@ -6,11 +6,12 @@ import { useSearchParams } from "next/navigation";
 import EvaluationThread from "@/components/ui/EvaluationThread";
 import SectionCard from "@/components/ui/SectionCard";
 import {
+  createCourseEvaluation,
   createCourseEvaluationReply,
   getCourseDetail,
   listCourseEvaluations,
 } from "@/api/detail";
-import type { CourseDetail, CourseEvaluation } from "@/types/detail";
+import type { CourseDetail, CourseEvaluation, CourseEvaluationInput } from "@/types/detail";
 import {
   buildResourceCollectionPath,
   buildResourcePath,
@@ -176,7 +177,12 @@ export default function CourseDetailPage() {
           title="课程评价区"
           description="一级评价下支持平级二级回复；回复某条回复时，通过 @ 关系表达引用。"
           evaluations={evaluations}
+          evaluationType="course"
+          relatedItems={(detail.teachers ?? []).map((t) => ({ id: t.id, name: t.name }))}
           onReply={(evaluationId, payload) => createCourseEvaluationReply(evaluationId, payload)}
+          onCreateEvaluation={async (payload) => {
+            return createCourseEvaluation({ ...payload, course_id: detail.id } as CourseEvaluationInput);
+          }}
         />
       </div>
     </div>

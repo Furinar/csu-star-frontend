@@ -6,11 +6,12 @@ import { useSearchParams } from "next/navigation";
 import EvaluationThread from "@/components/ui/EvaluationThread";
 import SectionCard from "@/components/ui/SectionCard";
 import {
+  createTeacherEvaluation,
   createTeacherEvaluationReply,
   getTeacherDetail,
   listTeacherEvaluations,
 } from "@/api/detail";
-import type { TeacherDetail, TeacherEvaluation } from "@/types/detail";
+import type { TeacherDetail, TeacherEvaluation, TeacherEvaluationInput } from "@/types/detail";
 import { buildCoursePath } from "@/lib/paths";
 
 function formatScore(value?: number | null) {
@@ -139,7 +140,12 @@ export default function TeacherDetailPage() {
         title="教师评价区"
         description="一级评价支持展开/收起二级回复；回复其他二级回复时，仍在同一层级展示。"
         evaluations={evaluations}
+        evaluationType="teacher"
+        relatedItems={(detail.courses ?? []).map((c) => ({ id: c.id, name: c.name }))}
         onReply={(evaluationId, payload) => createTeacherEvaluationReply(evaluationId, payload)}
+        onCreateEvaluation={async (payload) => {
+          return createTeacherEvaluation({ ...payload, teacher_id: detail.id } as TeacherEvaluationInput);
+        }}
       />
     </div>
   );

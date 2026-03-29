@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionCard from "@/components/ui/SectionCard";
 import CollectButton from "@/components/ui/CollectButton";
-import { getResourceDetail, listResourceComments, addFavorite, removeFavorite } from "@/api/detail";
+import { getResourceDetail, listResourceComments, addFavorite, removeFavorite, createResourceComment } from "@/api/detail";
 import type { ResourceComment, ResourceDetail } from "@/types/detail";
 import {
   buildCourseEvaluationAnchor,
@@ -69,6 +69,8 @@ export default function ResourceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
     if (isInvalidResourceId) return;
@@ -237,6 +239,38 @@ export default function ResourceDetailPage() {
 
       <SectionCard title="资源评论" subtitle="资源详情继续保留原有资源评论区。">
         <div className="space-y-4">
+          <div className="rounded-2xl border border-dashed border-[var(--first-color)]/20 bg-white p-4">
+            <textarea
+              value={commentDraft}
+              onChange={(e) => setCommentDraft(e.target.value)}
+              rows={3}
+              placeholder="写下你的评论..."
+              className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
+            />
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                disabled={isSubmittingComment || !commentDraft.trim()}
+                onClick={async () => {
+                  const content = commentDraft.trim();
+                  if (!content) return;
+                  setIsSubmittingComment(true);
+                  try {
+                    const newComment = await createResourceComment(resourceId, { content });
+                    if (newComment) {
+                      setComments((prev) => [newComment, ...prev]);
+                      setCommentDraft("");
+                    }
+                  } finally {
+                    setIsSubmittingComment(false);
+                  }
+                }}
+                className="rounded-full bg-[var(--first-color)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmittingComment ? "提交中..." : "发表评论"}
+              </button>
+            </div>
+          </div>
           {comments.length ? (
             comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
           ) : (

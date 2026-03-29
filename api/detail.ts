@@ -2,14 +2,17 @@ import {service} from "@/lib/request";
 import type {
   CourseDetail,
   CourseEvaluation,
+  CourseEvaluationInput,
   CourseResourceCollection,
   EvaluationReply,
   EvaluationReplyInput,
   PaginatedData,
   ResourceComment,
+  ResourceCommentInput,
   ResourceDetail,
   TeacherDetail,
   TeacherEvaluation,
+  TeacherEvaluationInput,
 } from "@/types/detail";
 
 interface ApiEnvelope<T> {
@@ -168,6 +171,7 @@ const normalizeTeacherEvaluations = (raw: unknown): TeacherEvaluation[] => {
         id: toNumber(item.id) ?? 0,
         teacher_id: toNumber(item.teacher_id) ?? 0,
         course_id: toNumber(item.course_id),
+        course_name: toStringSafe(item.course_name),
         user: normalizeUserBrief(item.user),
         rating_quality: toNumber(item.rating_quality),
         rating_grading: toNumber(item.rating_grading),
@@ -195,6 +199,8 @@ const normalizeCourseEvaluations = (raw: unknown): CourseEvaluation[] => {
       {
         id: toNumber(item.id) ?? 0,
         course_id: toNumber(item.course_id) ?? 0,
+        teacher_id: toNumber(item.teacher_id),
+        teacher_name: toStringSafe(item.teacher_name),
         user: normalizeUserBrief(item.user),
         rating_homework: toNumber(item.rating_homework),
         rating_gain: toNumber(item.rating_gain),
@@ -367,7 +373,7 @@ export async function getResourceDetail(id: number) {
 }
 
 export async function listTeacherEvaluations(teacherId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/teachers/evaluations/${teacherId}`, {
+  const response = await service.get<ApiEnvelope<unknown>>(`/teachers/${teacherId}/evaluations`, {
     params: {page, size, sort: "created_at"},
   });
 
@@ -376,7 +382,7 @@ export async function listTeacherEvaluations(teacherId: number, page = 1, size =
 }
 
 export async function listCourseEvaluations(courseId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/courses/evaluations/${courseId}`, {
+  const response = await service.get<ApiEnvelope<unknown>>(`/courses/${courseId}/evaluations`, {
     params: {page, size, sort: "created_at"},
   });
 
@@ -389,7 +395,7 @@ export async function createTeacherEvaluationReply(
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/teacher-evaluations/${evaluationId}/replies`,
+      `/teachers/evaluations/${evaluationId}/replies`,
       payload,
   );
 
@@ -401,11 +407,27 @@ export async function createCourseEvaluationReply(
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/course-evaluations/${evaluationId}/replies`,
+      `/courses/evaluations/${evaluationId}/replies`,
       payload,
   );
 
   return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
+}
+
+export async function createTeacherEvaluation(payload: TeacherEvaluationInput) {
+  const response = await service.post<ApiEnvelope<unknown>>(
+      "/teachers/evaluations",
+      payload,
+  );
+  return normalizeTeacherEvaluations([unwrapResponseData(response)])[0];
+}
+
+export async function createCourseEvaluation(payload: CourseEvaluationInput) {
+  const response = await service.post<ApiEnvelope<unknown>>(
+      "/courses/evaluations",
+      payload,
+  );
+  return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
 }
 
 export async function listResourceComments(resourceId: number, page = 1, size = 20) {
@@ -415,6 +437,22 @@ export async function listResourceComments(resourceId: number, page = 1, size = 
 
   const raw = unwrapResponseData(response);
   return normalizePaginated(raw, normalizeResourceComments);
+}
+
+export async function createResourceComment(resourceId: number, payload: ResourceCommentInput) {
+  const response = await service.post<ApiEnvelope<unknown>>(
+      `/resources/${resourceId}/comments`,
+      payload,
+  );
+  return normalizeResourceComments([unwrapResponseData(response)])[0];
+}
+
+export async function createResourceCommentReply(commentId: number, payload: EvaluationReplyInput) {
+  const response = await service.post<ApiEnvelope<unknown>>(
+      `/resources/comments/${commentId}/replies`,
+      payload,
+  );
+  return normalizeResourceComments([unwrapResponseData(response)])[0];
 }
 
 export async function addFavorite(target_type: string, target_id: number) {

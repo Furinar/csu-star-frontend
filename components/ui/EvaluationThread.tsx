@@ -10,11 +10,19 @@ import type {
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 
+interface RelatedItem {
+  id: number;
+  name: string;
+}
+
 interface EvaluationThreadProps {
   title: string;
   description: string;
   evaluations: ThreadEvaluation[];
   onReply: (evaluationId: number, payload: EvaluationReplyInput) => Promise<EvaluationReply | undefined>;
+  evaluationType?: "teacher" | "course";
+  relatedItems?: RelatedItem[];
+  onCreateEvaluation?: (payload: Record<string, unknown>) => Promise<ThreadEvaluation | undefined>;
 }
 
 interface ReplyTarget {
@@ -22,6 +30,18 @@ interface ReplyTarget {
   userId?: string | null;
   userName?: string | null;
 }
+
+const TEACHER_DIMENSIONS = [
+  { key: "rating_quality", label: "教学质量" },
+  { key: "rating_grading", label: "给分宽松" },
+  { key: "rating_attendance", label: "考勤要求" },
+];
+
+const COURSE_DIMENSIONS = [
+  { key: "rating_homework", label: "作业量" },
+  { key: "rating_gain", label: "收获感" },
+  { key: "rating_exam_difficulty", label: "考试难度" },
+];
 
 function formatDateTime(value?: string) {
   if (!value) return "--";
@@ -35,11 +55,35 @@ function formatScore(value?: number | null) {
   return value.toFixed(1);
 }
 
+function RatingInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-20 text-sm text-gray-600">{label}</span>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(star)}
+            className={`text-lg transition ${star <= value ? "text-amber-400" : "text-gray-300"} hover:text-amber-400`}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+      <span className="text-sm text-gray-400">{value}/5</span>
+    </div>
+  );
+}
+
 export default function EvaluationThread({
   title,
   description,
   evaluations,
   onReply,
+  evaluationType,
+  relatedItems,
+  onCreateEvaluation,
 }: EvaluationThreadProps) {
   const [items, setItems] = useState<ThreadEvaluation[]>(evaluations);
   const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
@@ -47,11 +91,19 @@ export default function EvaluationThread({
   const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<number | null>(null);
 
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createRatings, setCreateRatings] = useState<Record<string, number>>({});
+  const [createComment, setCreateComment] = useState("");
+  const [createRelatedId, setCreateRelatedId] = useState<number | null>(null);
+  const [createAnonymous, setCreateAnonymous] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
   useEffect(() => {
     setItems(evaluations);
   }, [evaluations]);
 
   const hasItems = useMemo(() => items.length > 0, [items]);
+  const dimensions = evaluationType === "course" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
 
   const toggleExpanded = (evaluationId: number) => {
     setExpandedMap((prev) => ({
@@ -95,14 +147,121 @@ export default function EvaluationThread({
     }
   };
 
+  const handleCreateEvaluation = async () => {
+    if (!onCreateEvaluation) return;
+
+    const allRated = dimensions.every((d) => (createRatings[d.key] ?? 0) > 0);
+    if (!allRated) return;
+
+    setIsCreating(true);
+    try {
+      const payload: Record<string, unknown> = {
+        ...createRatings,
+        comment: createComment.trim() || undefined,
+        is_anonymous: createAnonymous,
+      };
+
+      if (evaluationType === "teacher" && createRelatedId) {
+        payload.course_id = createRelatedId;
+      } else if (evaluationType === "course" && createRelatedId) {
+        payload.teacher_id = createRelatedId;
+      }
+
+      const result = await onCreateEvaluation(payload);
+      if (result) {
+        setItems((prev) => [result, ...prev]);
+        setShowCreateForm(false);
+        setCreateRatings({});
+        setCreateComment("");
+        setCreateRelatedId(null);
+        setCreateAnonymous(false);
+      }
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   return (
     <div className="rounded-[28px] border border-white/50 bg-white/85 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-      <div className="border-b border-gray-100 pb-4">
-        <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-        <p className="mt-1 text-sm text-gray-500">{description}</p>
+      <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
+          <p className="mt-1 text-sm text-gray-500">{description}</p>
+        </div>
+        {onCreateEvaluation ? (
+          <button
+            type="button"
+            onClick={() => setShowCreateForm((prev) => !prev)}
+            className="rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+          >
+            {showCreateForm ? "取消" : "发表评价"}
+          </button>
+        ) : null}
       </div>
 
-      {!hasItems ? (
+      {showCreateForm && onCreateEvaluation ? (
+        <div className="mt-5 rounded-3xl border border-[var(--first-color)]/20 bg-gradient-to-br from-white to-gray-50 p-5">
+          <h3 className="text-lg font-semibold text-gray-900">发表新评价</h3>
+          <div className="mt-4 space-y-3">
+            {dimensions.map((dim) => (
+              <RatingInput
+                key={dim.key}
+                label={dim.label}
+                value={createRatings[dim.key] ?? 0}
+                onChange={(v) => setCreateRatings((prev) => ({ ...prev, [dim.key]: v }))}
+              />
+            ))}
+          </div>
+
+          {relatedItems && relatedItems.length > 0 ? (
+            <div className="mt-4">
+              <label className="text-sm text-gray-600">
+                {evaluationType === "teacher" ? "关联课程（可选）" : "关联教师（可选）"}
+              </label>
+              <select
+                value={createRelatedId ?? ""}
+                onChange={(e) => setCreateRelatedId(e.target.value ? Number(e.target.value) : null)}
+                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-[var(--first-color)]"
+              >
+                <option value="">不关联</option>
+                {relatedItems.map((item) => (
+                  <option key={item.id} value={item.id}>{item.name}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+
+          <textarea
+            value={createComment}
+            onChange={(e) => setCreateComment(e.target.value)}
+            rows={4}
+            placeholder="写下你的评价内容（可选）..."
+            className="mt-4 w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
+          />
+
+          <div className="mt-3 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <input
+                type="checkbox"
+                checked={createAnonymous}
+                onChange={(e) => setCreateAnonymous(e.target.checked)}
+                className="rounded"
+              />
+              匿名发表
+            </label>
+            <button
+              type="button"
+              onClick={handleCreateEvaluation}
+              disabled={isCreating || !dimensions.every((d) => (createRatings[d.key] ?? 0) > 0)}
+              className="rounded-full bg-[var(--first-color)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isCreating ? "提交中..." : "提交评价"}
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {!hasItems && !showCreateForm ? (
         <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-gray-500">
           <div className="text-5xl text-gray-300">
             <i className="uil uil-comment-alt-lines"></i>

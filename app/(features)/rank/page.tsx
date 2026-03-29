@@ -371,7 +371,7 @@ export default function Rank() {
                     currentCategory.filters.find((f) => f.type === filterType)
                       ?.label || ""
                   }
-                  filterValue={item[filterType as keyof CourseRankingItem]}
+                  filterValue={item[filterType as keyof CourseRankingItem] as string | number | null | undefined}
                 />
               ))}
             </div>
@@ -391,7 +391,7 @@ export default function Rank() {
                     currentCategory.filters.find((f) => f.type === filterType)
                       ?.label || ""
                   }
-                  filterValue={item[filterType as keyof TeacherRankingItem]}
+                  filterValue={item[filterType as keyof TeacherRankingItem] as string | number | null | undefined}
                 />
               ))}
             </div>

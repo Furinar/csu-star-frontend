@@ -53,6 +53,7 @@ export interface TeacherEvaluation {
   id: number;
   teacher_id: number;
   course_id?: number | null;
+  course_name?: string | null;
   user?: UserBrief | null;
   rating_quality?: number | null;
   rating_grading?: number | null;
@@ -70,6 +71,8 @@ export interface TeacherEvaluation {
 export interface CourseEvaluation {
   id: number;
   course_id: number;
+  teacher_id?: number | null;
+  teacher_name?: string | null;
   user?: UserBrief | null;
   rating_homework?: number | null;
   rating_gain?: number | null;
@@ -82,6 +85,33 @@ export interface CourseEvaluation {
   created_at: string;
   reply_count?: number | null;
   replies?: EvaluationReply[];
+}
+
+export interface TeacherEvaluationInput {
+  teacher_id: number;
+  course_id?: number | null;
+  rating_quality: number;
+  rating_grading: number;
+  rating_attendance: number;
+  comment?: string;
+  is_anonymous?: boolean;
+}
+
+export interface CourseEvaluationInput {
+  course_id: number;
+  teacher_id?: number | null;
+  rating_homework: number;
+  rating_gain: number;
+  rating_exam_difficulty: number;
+  comment?: string;
+  is_anonymous?: boolean;
+}
+
+export interface ResourceCommentInput {
+  content: string;
+  parent_id?: number | null;
+  reply_to_comment_id?: number | null;
+  reply_to_user_id?: string | null;
 }
 
 export interface TeacherDetail {
