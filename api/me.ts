@@ -66,7 +66,6 @@ export function updateMyProfile(payload: MyProfileUpdateInput) {
 }
 
 export function getMyResources(params?: {
-  status?: ResourceItem["status"];
   page?: number;
   size?: number;
 }) {

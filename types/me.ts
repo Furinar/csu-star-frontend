@@ -1,10 +1,7 @@
 import type { UserProfile, Role } from "@/types/auth";
 
-export type AuditStatus = "draft" | "pending" | "approved" | "rejected";
 export type FavoriteTargetType = "resource" | "course" | "teacher";
 export type NotificationType =
-  | "audit_pass"
-  | "audit_reject"
   | "liked"
   | "commented"
   | "system";
@@ -53,11 +50,7 @@ export interface ResourceItem {
   uploader_id?: string;
   course_id: number;
   resource_type: ResourceType;
-  semester_start?: string | null;
-  semester_end?: string | null;
   size_bytes?: number;
-  points_cost?: number;
-  status: AuditStatus;
   downloads?: number;
   views?: number;
   likes?: number;
@@ -70,7 +63,6 @@ export interface ResourceItem {
 export interface DownloadRecord {
   id: number;
   resource: ResourceBrief;
-  points_cost: number;
   created_at: string;
 }
 
@@ -87,7 +79,6 @@ export interface TeacherEvaluation {
   is_anonymous?: boolean;
   likes?: number;
   is_liked?: boolean | null;
-  status: "approved" | "rejected";
   created_at?: string;
 }
 
@@ -103,7 +94,6 @@ export interface CourseEvaluation {
   is_anonymous?: boolean;
   likes?: number;
   is_liked?: boolean | null;
-  status: "approved" | "rejected";
   created_at?: string;
 }
 

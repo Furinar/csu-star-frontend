@@ -160,11 +160,7 @@ export interface ResourceDetail {
   course_id: number;
   course?: CourseBrief | null;
   resource_type?: string | null;
-  semester_start?: string | null;
-  semester_end?: string | null;
   size_bytes?: number | null;
-  points_cost?: number | null;
-  status?: string | null;
   downloads?: number | null;
   views?: number | null;
   likes?: number | null;

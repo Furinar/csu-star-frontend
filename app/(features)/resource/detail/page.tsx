@@ -155,8 +155,8 @@ export default function ResourceDetailPage() {
               <div className="mt-1 text-lg font-semibold text-gray-900">{formatBytes(detail.size_bytes)}</div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">所需积分</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.points_cost ?? 0}</div>
+              <div className="text-xs text-gray-400">点赞数</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.likes ?? 0}</div>
             </div>
           </div>
         </div>

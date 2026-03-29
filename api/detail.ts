@@ -316,11 +316,7 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
         }
         : null,
     resource_type: toStringSafe(data.resource_type),
-    semester_start: toStringSafe(data.semester_start),
-    semester_end: toStringSafe(data.semester_end),
     size_bytes: toNumber(data.size_bytes),
-    points_cost: toNumber(data.points_cost),
-    status: toStringSafe(data.status),
     downloads: toNumber(data.downloads),
     views: toNumber(data.views),
     likes: toNumber(data.likes),
