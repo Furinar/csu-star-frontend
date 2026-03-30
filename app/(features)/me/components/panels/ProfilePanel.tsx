@@ -111,13 +111,13 @@ export default function ProfilePanel({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <label className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-4">
+      <label className="block space-y-2 text-sm text-gray-600">
         <span>昵称</span>
         <input
           className={FORM_INPUT_CLASS_NAME}
           maxLength={30}
-          placeholder="请输入昵称"
+          placeholder="请输入想要的昵称"
           value={form.nickname}
           onChange={(event) =>
             setForm((current) => ({
@@ -127,11 +127,11 @@ export default function ProfilePanel({
           }
         />
       </label>
-      <label className="space-y-2 text-sm text-gray-600">
+      <label className="block space-y-2 text-sm text-gray-600">
         <span>头像 URL</span>
         <input
           className={FORM_INPUT_CLASS_NAME}
-          placeholder="https://example.com/avatar.jpg"
+          placeholder="输入你的新头像链接 (http/https)"
           value={form.avatar_url}
           onChange={(event) =>
             setForm((current) => ({
@@ -141,8 +141,8 @@ export default function ProfilePanel({
           }
         />
       </label>
-      <label className="space-y-2 text-sm text-gray-600">
-        <span>学院</span>
+      <label className="block space-y-2 text-sm text-gray-600">
+        <span>所属学院</span>
         <select
           className={FORM_INPUT_CLASS_NAME}
           value={form.department_id}
@@ -153,7 +153,7 @@ export default function ProfilePanel({
             }))
           }
         >
-          <option value="">请选择学院</option>
+          <option value="">点击选择你的学院</option>
           {departments.map((department) => (
             <option key={department.id} value={department.id}>
               {department.name}
@@ -161,12 +161,12 @@ export default function ProfilePanel({
           ))}
         </select>
       </label>
-      <label className="space-y-2 text-sm text-gray-600">
+      <label className="block space-y-2 text-sm text-gray-600">
         <span>入学年份</span>
         <input
           type="number"
           className={FORM_INPUT_CLASS_NAME}
-          placeholder="例如 2022"
+          placeholder="例如：2022"
           min={2000}
           max={new Date().getFullYear() + 1}
           value={form.grade}
@@ -178,12 +178,12 @@ export default function ProfilePanel({
           }
         />
       </label>
-      <div className="col-span-full mt-2 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={isSaving}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-white"
         >
           取消
         </button>
@@ -191,9 +191,9 @@ export default function ProfilePanel({
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-first px-6 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? "保存中..." : "保存资料"}
+          {isSaving ? "正在保存..." : "保存资料"}
         </button>
       </div>
     </div>

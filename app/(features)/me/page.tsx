@@ -690,7 +690,7 @@ export default function Me() {
       >
         <div className="space-y-4">
           <p className="text-sm leading-6 text-gray-600">
-            完成登录后，你可以直接在当前页面内继续处理资料编辑、校园邮箱认证、积分查询和其他设置，不需要再进入独立设置页。
+            登录后即可管理你的个人信息、进行校园认证、查看积分和消息通知，并解锁社区的完整功能。
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -712,7 +712,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "profile"}
         title="编辑个人资料"
-        description="在当前页面内直接修改昵称、头像、学院和年级，不再跳转其他设置页。"
+        description="修改你的昵称、头像或学院信息。"
         onClose={() => setOpenPanel(null)}
       >
         {profile ? (
@@ -728,7 +728,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "password"}
         title="修改密码"
-        description="保持原有风格，但不再跳转找回密码页面，直接在悬浮卡片里完成验证码与新密码设置。"
+        description="通过校园邮箱验证码来重置你的登录密码。"
         onClose={() => setOpenPanel(null)}
       >
         <PasswordPanel
@@ -740,7 +740,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "email"}
         title="绑定校园邮箱"
-        description="区分校园认证用户与第三方登录用户的关键状态都在这里完成。"
+        description="绑定校园邮箱以获取在中南星的完整访问权限。"
         onClose={() => setOpenPanel(null)}
       >
         {profile ? (
@@ -757,7 +757,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "oauth"}
         title="绑定第三方账号"
-        description="接口按文档要求保留 provider + code 绑定方式，避免强制跳离当前页面。"
+        description="绑定你的其他账号，以后可以使用它们一键快捷登录。"
         onClose={() => setOpenPanel(null)}
       >
         <OAuthPanel
@@ -781,7 +781,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "invite"}
         title="分享邀请码"
-        description="邀请码直接放在当前页悬浮卡片里查看和复制，无需再切走。"
+        description="邀请身边的好友加入中南星社区，获取丰厚奖励。"
         onClose={() => setOpenPanel(null)}
       >
         {isLoadingInvite ? (
@@ -822,7 +822,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "downloads"}
         title="下载记录"
-        description="结合个人中心文档中的下载历史接口，统一收进概览页下方的设置入口。"
+        description="查看你曾下载过的全部资源记录。"
         onClose={() => setOpenPanel(null)}
       >
         <DownloadsPanel
@@ -834,7 +834,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "feedback"}
         title="意见反馈"
-        description="延续现有页面风格，把建议提交入口直接收进玻璃卡片。"
+        description="如果你有任何建议或遇到了问题，请告诉我们。"
         onClose={() => setOpenPanel(null)}
       >
         <FeedbackPanel
@@ -846,8 +846,8 @@ export default function Me() {
 
       <FloatingPanel
         open={openPanel === "report"}
-        title="举报 / 纠错"
-        description="同一张悬浮卡片内处理内容治理和信息修正，不额外切换页面。"
+        title="违规举报与信息纠错"
+        description="感谢你协助我们维护社区的环境与信息准确性。"
         onClose={() => setOpenPanel(null)}
       >
         <FeedbackPanel
@@ -860,7 +860,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "contribution"}
         title="贡献度策略"
-        description="贡献图不再用随机色块，而是按个人中心真实行为生成。"
+        description="了解你在社区的活跃度与贡献是如何计算的。"
         onClose={() => setOpenPanel(null)}
       >
         <ContributionPanel />
@@ -980,7 +980,7 @@ function SectionEmptyState({
 
 function GuestTabState({
   title = "登录后查看个人内容",
-  description = "资源、收藏、评价等个人数据都已接入接口，但需要登录后才能拉取与展示。",
+  description = "登录后即可查看你的资源、收藏和评价记录。",
 }: {
   title?: string;
   description?: string;

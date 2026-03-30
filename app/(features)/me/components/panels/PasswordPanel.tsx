@@ -127,12 +127,12 @@ export default function PasswordPanel({
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
+      <div className="space-y-4">
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>校园邮箱</span>
           <input
             className={FORM_INPUT_CLASS_NAME}
-            placeholder="填写邮箱前缀或完整邮箱"
+            placeholder="填写你的校园邮箱（如 @csu.edu.cn）"
             autoComplete="email"
             value={form.email}
             onChange={(event) =>
@@ -143,37 +143,40 @@ export default function PasswordPanel({
             }
           />
         </label>
-        <label className="space-y-2 text-sm text-gray-600">
+
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>验证码</span>
-          <input
-            className={FORM_INPUT_CLASS_NAME}
-            placeholder="6 位验证码"
-            inputMode="numeric"
-            maxLength={6}
-            value={form.captcha}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                captcha: event.target.value,
-              }))
-            }
-          />
+          <div className="flex gap-3">
+            <input
+              className={FORM_INPUT_CLASS_NAME}
+              placeholder="请输入 6 位验证码"
+              inputMode="numeric"
+              maxLength={6}
+              value={form.captcha}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  captcha: event.target.value,
+                }))
+              }
+            />
+            <button
+              type="button"
+              onClick={handleSendCode}
+              disabled={isSendingCode}
+              className="flex-shrink-0 rounded-xl bg-first px-4 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSendingCode ? "发送中..." : "获取验证码"}
+            </button>
+          </div>
         </label>
-        <div className="flex items-end">
-          <button
-            type="button"
-            onClick={handleSendCode}
-            disabled={isSendingCode}
-            className="w-full rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSendingCode ? "发送中..." : "发送验证码"}
-          </button>
-        </div>
-        <label className="space-y-2 text-sm text-gray-600">
+
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>新密码</span>
           <input
             type="password"
             className={FORM_INPUT_CLASS_NAME}
+            placeholder="至少 8 位的新密码"
             minLength={8}
             autoComplete="new-password"
             value={form.password}
@@ -185,11 +188,13 @@ export default function PasswordPanel({
             }
           />
         </label>
-        <label className="space-y-2 text-sm text-gray-600">
-          <span>确认密码</span>
+
+        <label className="block space-y-2 text-sm text-gray-600">
+          <span>确认新密码</span>
           <input
             type="password"
             className={FORM_INPUT_CLASS_NAME}
+            placeholder="请再次输入新密码"
             minLength={8}
             autoComplete="new-password"
             value={form.confirmPassword}
@@ -207,7 +212,7 @@ export default function PasswordPanel({
           type="button"
           onClick={onClose}
           disabled={isSendingCode || isResetting}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-white"
         >
           取消
         </button>
@@ -215,9 +220,9 @@ export default function PasswordPanel({
           type="button"
           onClick={handleReset}
           disabled={isResetting || isSendingCode}
-          className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-first px-6 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isResetting ? "提交中..." : "确认修改"}
+          {isResetting ? "正在修改..." : "确认修改"}
         </button>
       </div>
     </>

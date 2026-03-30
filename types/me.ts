@@ -15,7 +15,7 @@ export type FeedbackType = "bug" | "suggestion" | "complaint" | "other";
 export type ReportReason = "copyright" | "spam" | "inappropriate" | "other";
 export type ReportTargetType = "resource" | "evaluation" | "comment" | "user";
 export type CorrectionTargetType = "resource" | "course" | "teacher";
-export type OAuthBindProvider = "qq" | "wechat";
+export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
 export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other";
 
 export interface PaginatedData<T> {
@@ -143,12 +143,12 @@ export interface NotificationItem {
   title: string;
   content?: string;
   source_type?:
-    | "resource"
-    | "teacher_evaluation"
-    | "course_evaluation"
-    | "comment"
-    | "announcement"
-    | null;
+  | "resource"
+  | "teacher_evaluation"
+  | "course_evaluation"
+  | "comment"
+  | "announcement"
+  | null;
   source_id?: number | null;
   is_read: boolean;
   created_at: string;

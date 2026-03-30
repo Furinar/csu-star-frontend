@@ -4,11 +4,14 @@ import { useState } from "react";
 import { bindOAuthAccount } from "@/api/me";
 import { feedback } from "@/store/useFeedbackStore";
 import type { OAuthBindProvider } from "@/types/me";
+import { type AccountMode } from "../shared/helpers";
 import {
-  type AccountMode,
-  FORM_TEXTAREA_CLASS_NAME,
-  getErrorMessage,
-} from "../shared/helpers";
+  buildAuthUrl,
+  createCodeChallenge,
+  createOAuthState,
+  OAUTH_CONTEXT_STORAGE_KEY,
+  type AuthPlatform,
+} from "@/lib/oauth";
 
 export default function OAuthPanel({
   accountMode,
@@ -19,136 +22,121 @@ export default function OAuthPanel({
   onClose: () => void;
   onOAuthBound: (provider: OAuthBindProvider) => void;
 }) {
-  const [form, setForm] = useState({
-    provider: "qq" as OAuthBindProvider,
-    code: "",
-  });
   const [providers, setProviders] = useState<OAuthBindProvider[]>([]);
   const [isBinding, setIsBinding] = useState(false);
 
-  const providerLabel = form.provider === "qq" ? "QQ" : "微信";
-
-  const handleBind = async () => {
-    const code = form.code.trim();
-
-    if (!code) {
-      feedback.warning({
-        title: "请填写授权码",
-        description: "当前接口需要 provider 与 code 两个字段完成绑定。",
-      });
-      return;
-    }
-
-    if (code.length < 6) {
-      feedback.warning({
-        title: "授权码长度异常",
-        description: "请粘贴完整授权码后再提交。",
-      });
-      return;
-    }
-
-    setIsBinding(true);
+  const handleOAuthBind = async (platform: AuthPlatform) => {
     try {
-      const result = await bindOAuthAccount({
-        provider: form.provider,
-        code,
-      });
+      setIsBinding(true);
 
-      setProviders((current) =>
-        current.includes(result.provider)
-          ? current
-          : [...current, result.provider],
-      );
-      setForm((current) => ({
-        ...current,
-        code: "",
-      }));
-      onOAuthBound(result.provider);
-      feedback.success({
-        title: "第三方账号已绑定",
-        description: `${result.provider === "qq" ? "QQ" : "微信"} 已可用于快捷登录，可继续绑定其他方式。`,
-      });
+      const state = createOAuthState(platform);
+      const challengeResult = await createCodeChallenge();
+
+      const context = {
+        state,
+        platform,
+        codeChallenge: challengeResult,
+        action: "bind" as const,
+      };
+      localStorage.setItem(OAUTH_CONTEXT_STORAGE_KEY, JSON.stringify(context));
+
+      const isMobile =
+        typeof window !== "undefined" &&
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
+      const authUrl = buildAuthUrl(platform, state, challengeResult, isMobile);
+      window.location.assign(authUrl);
     } catch (error) {
-      feedback.error({
-        title: "绑定失败",
-        description: getErrorMessage(error, "请检查授权码后重试"),
-      });
-    } finally {
+      console.error(`${platform} 绑定初始化失败:`, error);
       setIsBinding(false);
+      feedback.error({
+        title: "初始化绑定失败",
+        description: "请稍后重试",
+      });
     }
   };
 
   return (
     <>
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { key: "qq" as OAuthBindProvider, label: "QQ" },
-            { key: "wechat" as OAuthBindProvider, label: "微信" },
-          ].map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() =>
-                setForm((current) => ({
-                  ...current,
-                  provider: item.key,
-                }))
-              }
-              className={`rounded-full px-3 py-1.5 text-sm transition ${
-                form.provider === item.key
-                  ? "bg-first text-white"
-                  : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-        <div className="rounded-2xl border border-gray-200/70 bg-white/55 px-4 py-3 text-sm text-gray-600">
-          {accountMode === "oauth_pending_email"
-            ? "当前账户已经是第三方登录态，继续绑定可补齐更多快捷登录方式。"
-            : "如果后端返回授权码，可直接在这里完成绑定，无需跳转到独立设置页。"}
+      <div className="space-y-6">
+        <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-sm text-gray-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.02),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
+          <p>
+            {accountMode === "oauth_pending_email"
+              ? "绑定更多第三方账号，以便在不同设备上快捷登录南极星。"
+              : "将你的账号与第三方平台绑定，下次可以直接使用快捷登录。"}
+          </p>
           {providers.length > 0 ? (
-            <p className="mt-2">
+            <p className="mt-2 font-medium text-first">
               已成功绑定：
               {providers
-                .map((item) => (item === "qq" ? "QQ" : "微信"))
+                .map((item) => {
+                  if (item === "qq") return "QQ";
+                  if (item === "github") return "GitHub";
+                  if (item === "google") return "Google";
+                  return item;
+                })
                 .join(" / ")}
             </p>
           ) : null}
         </div>
-        <label className="space-y-2 text-sm text-gray-600">
-          <span>OAuth 授权码</span>
-          <textarea
-            className={FORM_TEXTAREA_CLASS_NAME}
-            placeholder={`将 ${providerLabel} 对应的 code 粘贴到这里`}
-            value={form.code}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                code: event.target.value,
-              }))
-            }
-          />
-        </label>
+
+        <div className="flex flex-col gap-4 py-2">
+          <button
+            type="button"
+            onClick={() => handleOAuthBind("qq")}
+            disabled={isBinding}
+            className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-[#12b7f5] text-white font-medium hover:bg-[#0e9kcc] transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
+          >
+            <i className="fa-brands fa-qq text-lg" />
+            绑定 QQ 账号
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOAuthBind("github")}
+            disabled={isBinding}
+            className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
+          >
+            <i className="fa-brands fa-github text-lg" />
+            绑定 GitHub 账号
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOAuthBind("google")}
+            disabled={isBinding}
+            className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-white text-gray-700 font-medium border border-gray-200 hover:bg-gray-50 transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.05)]"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+              <path fill="none" d="M1 1h22v22H1z" />
+            </svg>
+            绑定 Google 账号
+          </button>
+        </div>
       </div>
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div className="mt-8 flex justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={isBinding}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+          className="rounded-xl border border-gray-200/70 bg-white px-6 py-2 text-sm font-medium text-gray-600 shadow-sm transition hover:bg-gray-50"
         >
           取消
-        </button>
-        <button
-          type="button"
-          onClick={handleBind}
-          disabled={isBinding}
-          className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isBinding ? "绑定中..." : "确认绑定"}
         </button>
       </div>
     </>

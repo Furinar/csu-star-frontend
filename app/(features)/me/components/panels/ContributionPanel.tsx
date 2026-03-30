@@ -22,7 +22,7 @@ export default function ContributionPanel() {
         </GlassCard>
       ))}
       <p className="text-sm leading-6 text-gray-600">
-        这套规则的核心是&quot;内容生产权重大于纯活跃&quot;。上传通过审核的资源与高质量评价会直接主导热力图颜色，签到与邀请作为辅助信号存在，但不会盖过真正能帮助他人的贡献。
+        你的每一次真诚分享都会点亮贡献图中的星光。高质量的资源上传与课程评价是社区最宝贵的财富，因此也会为你带来更多贡献值。感谢你对中南星的建设与付出！
       </p>
     </div>
   );

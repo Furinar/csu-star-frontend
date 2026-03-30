@@ -34,7 +34,7 @@ export type ContributionSummary = {
 };
 
 export const FORM_INPUT_CLASS_NAME =
-  "w-full rounded-xl border border-gray-200/60 bg-white/60 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-first/60 focus:bg-white";
+  "w-full rounded-xl border-none bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none shadow-[inset_2px_2px_5px_rgba(148,163,184,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] transition focus:ring-2 focus:ring-first/50 focus:bg-white";
 export const FORM_TEXTAREA_CLASS_NAME = `${FORM_INPUT_CLASS_NAME} min-h-28 resize-none`;
 
 export const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"];

@@ -81,8 +81,8 @@ function FeedbackForm({
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4">
-        <label className="space-y-2 text-sm text-gray-600">
+      <div className="space-y-4">
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>反馈类型</span>
           <select
             className={FORM_INPUT_CLASS_NAME}
@@ -100,7 +100,7 @@ function FeedbackForm({
             <option value="other">其他</option>
           </select>
         </label>
-        <label className="space-y-2 text-sm text-gray-600">
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>标题</span>
           <input
             className={FORM_INPUT_CLASS_NAME}
@@ -113,7 +113,7 @@ function FeedbackForm({
             }
           />
         </label>
-        <label className="space-y-2 text-sm text-gray-600">
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>内容</span>
           <textarea
             className={FORM_TEXTAREA_CLASS_NAME}
@@ -126,7 +126,7 @@ function FeedbackForm({
             }
           />
         </label>
-        <label className="space-y-2 text-sm text-gray-600">
+        <label className="block space-y-2 text-sm text-gray-600">
           <span>联系方式</span>
           <input
             className={FORM_INPUT_CLASS_NAME}
@@ -145,7 +145,7 @@ function FeedbackForm({
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
         >
           取消
         </button>
@@ -153,7 +153,7 @@ function FeedbackForm({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "提交中..." : "提交反馈"}
         </button>
@@ -299,8 +299,8 @@ function ReportForm({ onClose }: { onClose: () => void }) {
 
       {reportMode === "report" ? (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-gray-600">
+          <div className="space-y-4 md:grid-cols-2">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>目标类型</span>
               <select
                 className={FORM_INPUT_CLASS_NAME}
@@ -318,7 +318,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 <option value="user">用户</option>
               </select>
             </label>
-            <label className="space-y-2 text-sm text-gray-600">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>原因</span>
               <select
                 className={FORM_INPUT_CLASS_NAME}
@@ -336,7 +336,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 <option value="other">其他</option>
               </select>
             </label>
-            <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
+            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
               <span>目标 ID</span>
               <input
                 className={FORM_INPUT_CLASS_NAME}
@@ -349,7 +349,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
-            <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
+            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
               <span>补充说明</span>
               <textarea
                 className={FORM_TEXTAREA_CLASS_NAME}
@@ -368,7 +368,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={onClose}
               disabled={isSubmittingReport}
-              className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+              className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
             >
               取消
             </button>
@@ -376,7 +376,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={handleSubmitReport}
               disabled={isSubmittingReport}
-              className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmittingReport ? "提交中..." : "提交举报"}
             </button>
@@ -384,8 +384,8 @@ function ReportForm({ onClose }: { onClose: () => void }) {
         </>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <label className="space-y-2 text-sm text-gray-600">
+          <div className="space-y-4 md:grid-cols-2">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>目标类型</span>
               <select
                 className={FORM_INPUT_CLASS_NAME}
@@ -403,7 +403,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 <option value="teacher">教师</option>
               </select>
             </label>
-            <label className="space-y-2 text-sm text-gray-600">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>目标 ID</span>
               <input
                 type="number"
@@ -415,7 +415,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
-            <label className="space-y-2 text-sm text-gray-600">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>字段名</span>
               <input
                 className={FORM_INPUT_CLASS_NAME}
@@ -428,7 +428,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
-            <label className="space-y-2 text-sm text-gray-600">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>原始值</span>
               <input
                 className={FORM_INPUT_CLASS_NAME}
@@ -441,7 +441,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
-            <label className="space-y-2 text-sm text-gray-600">
+            <label className="block space-y-2 text-sm text-gray-600">
               <span>正确值</span>
               <input
                 className={FORM_INPUT_CLASS_NAME}
@@ -454,7 +454,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
-            <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
+            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
               <span>补充说明</span>
               <textarea
                 className={FORM_TEXTAREA_CLASS_NAME}
@@ -473,7 +473,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={onClose}
               disabled={isSubmittingCorrection}
-              className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+              className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
             >
               取消
             </button>
@@ -481,7 +481,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={handleSubmitCorrection}
               disabled={isSubmittingCorrection}
-              className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmittingCorrection ? "提交中..." : "提交纠错"}
             </button>
