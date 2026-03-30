@@ -1,6 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  addLike,
+  removeLike,
+} from "@/api/detail";
+import { submitReport } from "@/api/me";
+import { feedback } from "@/store/useFeedbackStore";
 import type {
   CourseEvaluation,
   EvaluationReply,
@@ -9,6 +15,7 @@ import type {
 } from "@/types/detail";
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
+type EvaluationType = "teacher" | "course";
 
 interface RelatedItem {
   id: number;
@@ -20,7 +27,7 @@ interface EvaluationThreadProps {
   description: string;
   evaluations: ThreadEvaluation[];
   onReply: (evaluationId: number, payload: EvaluationReplyInput) => Promise<EvaluationReply | undefined>;
-  evaluationType?: "teacher" | "course";
+  evaluationType?: EvaluationType;
   relatedItems?: RelatedItem[];
   onCreateEvaluation?: (payload: Record<string, unknown>) => Promise<ThreadEvaluation | undefined>;
 }
@@ -31,13 +38,18 @@ interface ReplyTarget {
   userName?: string | null;
 }
 
-const TEACHER_DIMENSIONS = [
+interface RatingDimension {
+  key: string;
+  label: string;
+}
+
+const TEACHER_DIMENSIONS: RatingDimension[] = [
   { key: "rating_quality", label: "教学质量" },
   { key: "rating_grading", label: "给分宽松" },
   { key: "rating_attendance", label: "考勤要求" },
 ];
 
-const COURSE_DIMENSIONS = [
+const COURSE_DIMENSIONS: RatingDimension[] = [
   { key: "rating_homework", label: "作业量" },
   { key: "rating_gain", label: "收获感" },
   { key: "rating_exam_difficulty", label: "考试难度" },
@@ -53,6 +65,26 @@ function formatDateTime(value?: string) {
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
   return value.toFixed(1);
+}
+
+function getPrimaryDimensions(type: EvaluationType) {
+  return type === "course" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
+}
+
+function getRelatedDimensions(type: EvaluationType) {
+  return type === "course" ? TEACHER_DIMENSIONS : COURSE_DIMENSIONS;
+}
+
+function getRelatedLabel(type: EvaluationType) {
+  return type === "teacher" ? "关联课程" : "关联教师";
+}
+
+function isLinkedEvaluation(evaluation: ThreadEvaluation) {
+  return evaluation.mode === "linked" || Boolean(("course_id" in evaluation ? evaluation.course_id : evaluation.teacher_id));
+}
+
+function getDimensionValue(evaluation: ThreadEvaluation, key: string) {
+  return evaluation[key as keyof ThreadEvaluation] as number | null | undefined;
 }
 
 function RatingInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -76,12 +108,21 @@ function RatingInput({ label, value, onChange }: { label: string; value: number;
   );
 }
 
+function StatPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600">
+      <span className="mr-2 text-gray-400">{label}</span>
+      <span className="font-medium text-gray-900">{value}</span>
+    </div>
+  );
+}
+
 export default function EvaluationThread({
   title,
   description,
   evaluations,
   onReply,
-  evaluationType,
+  evaluationType = "teacher",
   relatedItems,
   onCreateEvaluation,
 }: EvaluationThreadProps) {
@@ -90,6 +131,8 @@ export default function EvaluationThread({
   const [draftMap, setDraftMap] = useState<Record<number, string>>({});
   const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
+  const [reportingKey, setReportingKey] = useState<string | null>(null);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createRatings, setCreateRatings] = useState<Record<string, number>>({});
@@ -103,13 +146,125 @@ export default function EvaluationThread({
   }, [evaluations]);
 
   const hasItems = useMemo(() => items.length > 0, [items]);
-  const dimensions = evaluationType === "course" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
+  const primaryDimensions = getPrimaryDimensions(evaluationType);
+  const relatedDimensions = getRelatedDimensions(evaluationType);
+  const currentCreateDimensions = createRelatedId ? [...primaryDimensions, ...relatedDimensions] : primaryDimensions;
 
   const toggleExpanded = (evaluationId: number) => {
     setExpandedMap((prev) => ({
       ...prev,
       [evaluationId]: !prev[evaluationId],
     }));
+  };
+
+  const updateEvaluationLike = async (evaluationId: number, targetType: "teacher_evaluation" | "course_evaluation") => {
+    const evaluation = items.find((item) => item.id === evaluationId);
+    if (!evaluation) return;
+
+    const loadingKey = `evaluation-${evaluationId}`;
+    setLikeLoadingKey(loadingKey);
+
+    try {
+      if (evaluation.is_liked) {
+        await removeLike(targetType, evaluationId);
+      } else {
+        await addLike(targetType, evaluationId);
+      }
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === evaluationId
+            ? {
+              ...item,
+              is_liked: !item.is_liked,
+              likes: Math.max(0, (item.likes ?? 0) + (item.is_liked ? -1 : 1)),
+            }
+            : item,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      feedback.error({
+        title: "点赞失败",
+        description: "请稍后重试。",
+      });
+    } finally {
+      setLikeLoadingKey(null);
+    }
+  };
+
+  const updateReplyLike = async (evaluationId: number, replyId: number) => {
+    const evaluation = items.find((item) => item.id === evaluationId);
+    const reply = evaluation?.replies?.find((item) => item.id === replyId);
+    if (!reply) return;
+
+    const loadingKey = `reply-${replyId}`;
+    setLikeLoadingKey(loadingKey);
+
+    try {
+      if (reply.is_liked) {
+        await removeLike("comment", replyId);
+      } else {
+        await addLike("comment", replyId);
+      }
+
+      setItems((prev) =>
+        prev.map((item) => {
+          if (item.id !== evaluationId) return item;
+
+          return {
+            ...item,
+            replies: (item.replies ?? []).map((entry) =>
+              entry.id === replyId
+                ? {
+                  ...entry,
+                  is_liked: !entry.is_liked,
+                  likes: Math.max(0, (entry.likes ?? 0) + (entry.is_liked ? -1 : 1)),
+                }
+                : entry,
+            ),
+          };
+        }),
+      );
+    } catch (error) {
+      console.error(error);
+      feedback.error({
+        title: "点赞失败",
+        description: "请稍后重试。",
+      });
+    } finally {
+      setLikeLoadingKey(null);
+    }
+  };
+
+  const reportTarget = async (
+      key: string,
+      target_type: "evaluation" | "comment",
+      target_id: number,
+      label: string,
+  ) => {
+    setReportingKey(key);
+
+    try {
+      await submitReport({
+        target_type,
+        target_id: String(target_id),
+        reason: "other",
+        description: `${label}内容举报`,
+      });
+      feedback.success({
+        title: "举报已提交",
+        description: "感谢反馈，管理员会尽快处理。",
+      });
+    } catch (error) {
+      console.error(error);
+      feedback.error({
+        title: "举报失败",
+        description: "请稍后重试。",
+      });
+    } finally {
+      setReportingKey(null);
+    }
   };
 
   const handleSubmit = async (evaluationId: number) => {
@@ -150,7 +305,7 @@ export default function EvaluationThread({
   const handleCreateEvaluation = async () => {
     if (!onCreateEvaluation) return;
 
-    const allRated = dimensions.every((d) => (createRatings[d.key] ?? 0) > 0);
+    const allRated = currentCreateDimensions.every((d) => (createRatings[d.key] ?? 0) > 0);
     if (!allRated) return;
 
     setIsCreating(true);
@@ -203,7 +358,7 @@ export default function EvaluationThread({
         <div className="mt-5 rounded-3xl border border-[var(--first-color)]/20 bg-gradient-to-br from-white to-gray-50 p-5">
           <h3 className="text-lg font-semibold text-gray-900">发表新评价</h3>
           <div className="mt-4 space-y-3">
-            {dimensions.map((dim) => (
+            {primaryDimensions.map((dim) => (
               <RatingInput
                 key={dim.key}
                 label={dim.label}
@@ -215,9 +370,7 @@ export default function EvaluationThread({
 
           {relatedItems && relatedItems.length > 0 ? (
             <div className="mt-4">
-              <label className="text-sm text-gray-600">
-                {evaluationType === "teacher" ? "关联课程（可选）" : "关联教师（可选）"}
-              </label>
+              <label className="text-sm text-gray-600">{getRelatedLabel(evaluationType)}（可选）</label>
               <select
                 value={createRelatedId ?? ""}
                 onChange={(e) => setCreateRelatedId(e.target.value ? Number(e.target.value) : null)}
@@ -228,6 +381,22 @@ export default function EvaluationThread({
                   <option key={item.id} value={item.id}>{item.name}</option>
                 ))}
               </select>
+            </div>
+          ) : null}
+
+          {createRelatedId ? (
+            <div className="mt-4 rounded-2xl border border-[var(--first-color)]/15 bg-white p-4">
+              <div className="mb-3 text-sm font-medium text-gray-700">已开启关联评价，需要补充另外 3 个维度</div>
+              <div className="space-y-3">
+                {relatedDimensions.map((dim) => (
+                  <RatingInput
+                    key={dim.key}
+                    label={dim.label}
+                    value={createRatings[dim.key] ?? 0}
+                    onChange={(v) => setCreateRatings((prev) => ({ ...prev, [dim.key]: v }))}
+                  />
+                ))}
+              </div>
             </div>
           ) : null}
 
@@ -252,7 +421,7 @@ export default function EvaluationThread({
             <button
               type="button"
               onClick={handleCreateEvaluation}
-              disabled={isCreating || !dimensions.every((d) => (createRatings[d.key] ?? 0) > 0)}
+              disabled={isCreating || !currentCreateDimensions.every((d) => (createRatings[d.key] ?? 0) > 0)}
               className="rounded-full bg-[var(--first-color)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isCreating ? "提交中..." : "提交评价"}
@@ -274,6 +443,9 @@ export default function EvaluationThread({
             const replies = evaluation.replies ?? [];
             const expanded = expandedMap[evaluation.id] ?? replies.length <= 2;
             const target = targetMap[evaluation.id];
+            const linked = isLinkedEvaluation(evaluation);
+            const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
+            const visibleDimensions = linked ? [...primaryDimensions, ...relatedDimensions] : primaryDimensions;
 
             return (
               <article
@@ -281,31 +453,74 @@ export default function EvaluationThread({
                 className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)]"
               >
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="rounded-full bg-[var(--first-color)]/10 px-3 py-1 text-xs font-semibold text-[var(--first-color)]">
                         {evaluation.user?.nickname ?? "匿名用户"}
                       </span>
+                      <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                        {linked ? "关联评价" : "单独评价"}
+                      </span>
+                      {linked ? (
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs text-amber-700">
+                          {evaluationType === "teacher"
+                            ? `关联课程 ${(evaluation as TeacherEvaluation).course_name ?? (evaluation as TeacherEvaluation).course_id ?? ""}`
+                            : `关联教师 ${(evaluation as CourseEvaluation).teacher_name ?? (evaluation as CourseEvaluation).teacher_id ?? ""}`}
+                        </span>
+                      ) : null}
                       <span className="text-xs text-gray-400">{formatDateTime(evaluation.created_at)}</span>
                     </div>
                     <p className="text-sm leading-7 text-gray-700">
                       {evaluation.comment || "该评价未填写文字内容。"}
                     </p>
+                    <div className="flex flex-wrap gap-2">
+                      <StatPill label="综合评分" value={formatScore(evaluation.avg_rating)} />
+                      {visibleDimensions.map((dimension) => (
+                        <StatPill
+                          key={`${evaluation.id}-${dimension.key}`}
+                          label={dimension.label}
+                          value={formatScore(getDimensionValue(evaluation, dimension.key))}
+                        />
+                      ))}
+                    </div>
                   </div>
                   <div className="grid min-w-44 grid-cols-2 gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-sm">
-                    <div>
-                      <div className="text-xs text-gray-400">综合评分</div>
-                      <div className="mt-1 font-semibold text-gray-900">
-                        {formatScore(evaluation.avg_rating)}
-                      </div>
-                    </div>
                     <div>
                       <div className="text-xs text-gray-400">点赞数</div>
                       <div className="mt-1 font-semibold text-gray-900">
                         {evaluation.likes ?? 0}
                       </div>
                     </div>
+                    <div>
+                      <div className="text-xs text-gray-400">回复数</div>
+                      <div className="mt-1 font-semibold text-gray-900">
+                        {evaluation.reply_count ?? replies.length}
+                      </div>
+                    </div>
                   </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => updateEvaluationLike(evaluation.id, evaluationLikeType)}
+                    disabled={likeLoadingKey === `evaluation-${evaluation.id}`}
+                    className={`rounded-full px-3 py-1.5 text-xs transition ${
+                      evaluation.is_liked
+                        ? "bg-[var(--first-color)] text-white"
+                        : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+                    }`}
+                  >
+                    {likeLoadingKey === `evaluation-${evaluation.id}` ? "处理中..." : evaluation.is_liked ? "已点赞" : "点赞"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => reportTarget(`evaluation-${evaluation.id}`, "evaluation", evaluation.id, "评价")}
+                    disabled={reportingKey === `evaluation-${evaluation.id}`}
+                    className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+                  >
+                    {reportingKey === `evaluation-${evaluation.id}` ? "提交中..." : "举报"}
+                  </button>
                 </div>
 
                 <div className="mt-4 rounded-2xl bg-gray-50/80 p-4">
@@ -347,22 +562,44 @@ export default function EvaluationThread({
                             </span>
                           </div>
                           <p className="mt-2 text-sm leading-7 text-gray-600">{reply.content}</p>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setTargetMap((prev) => ({
-                                ...prev,
-                                [evaluation.id]: {
-                                  replyId: reply.id,
-                                  userId: reply.user.id,
-                                  userName: reply.user.nickname,
-                                },
-                              }))
-                            }
-                            className="mt-2 text-xs font-medium text-[var(--first-color)] transition hover:opacity-80"
-                          >
-                            回复这条
-                          </button>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setTargetMap((prev) => ({
+                                  ...prev,
+                                  [evaluation.id]: {
+                                    replyId: reply.id,
+                                    userId: reply.user.id,
+                                    userName: reply.user.nickname,
+                                  },
+                                }))
+                              }
+                              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+                            >
+                              回复这条
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateReplyLike(evaluation.id, reply.id)}
+                              disabled={likeLoadingKey === `reply-${reply.id}`}
+                              className={`rounded-full px-3 py-1.5 text-xs transition ${
+                                reply.is_liked
+                                  ? "bg-[var(--first-color)] text-white"
+                                  : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+                              }`}
+                            >
+                              {likeLoadingKey === `reply-${reply.id}` ? "处理中..." : `${reply.is_liked ? "已点赞" : "点赞"} ${reply.likes ?? 0}`}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => reportTarget(`reply-${reply.id}`, "comment", reply.id, "回复")}
+                              disabled={reportingKey === `reply-${reply.id}`}
+                              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+                            >
+                              {reportingKey === `reply-${reply.id}` ? "提交中..." : "举报"}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>

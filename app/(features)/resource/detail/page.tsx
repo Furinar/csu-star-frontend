@@ -5,7 +5,18 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionCard from "@/components/ui/SectionCard";
 import CollectButton from "@/components/ui/CollectButton";
-import { getResourceDetail, listResourceComments, addFavorite, removeFavorite, createResourceComment } from "@/api/detail";
+import {
+  addFavorite,
+  addLike,
+  createResourceComment,
+  createResourceCommentReply,
+  getResourceDetail,
+  listResourceComments,
+  removeFavorite,
+  removeLike,
+} from "@/api/detail";
+import { submitReport } from "@/api/me";
+import { feedback } from "@/store/useFeedbackStore";
 import type { ResourceComment, ResourceDetail } from "@/types/detail";
 import {
   buildCourseEvaluationAnchor,
@@ -34,7 +45,66 @@ function formatDateTime(value?: string | null) {
   return date.toLocaleString("zh-CN", { hour12: false });
 }
 
-function CommentItem({ comment }: { comment: ResourceComment }) {
+interface ReplyTarget {
+  rootId: number;
+  commentId?: number | null;
+  userId?: string | null;
+  userName?: string | null;
+}
+
+function appendReplyToTree(
+    comments: ResourceComment[],
+    rootId: number,
+    reply: ResourceComment,
+) {
+  return comments.map((comment) => {
+    if (comment.id !== rootId) return comment;
+
+    return {
+      ...comment,
+      children: [...(comment.children ?? []), reply],
+    };
+  });
+}
+
+function updateCommentInTree(
+    comments: ResourceComment[],
+    targetId: number,
+    updater: (comment: ResourceComment) => ResourceComment,
+): ResourceComment[] {
+  return comments.map((comment) => {
+    if (comment.id === targetId) {
+      return updater(comment);
+    }
+
+    if (!comment.children?.length) {
+      return comment;
+    }
+
+    return {
+      ...comment,
+      children: updateCommentInTree(comment.children, targetId, updater),
+    };
+  });
+}
+
+function CommentCard({
+  comment,
+  rootId,
+  onReply,
+  onToggleLike,
+  onReport,
+  pendingLikeId,
+  pendingReportId,
+}: {
+  comment: ResourceComment;
+  rootId: number;
+  onReply: (target: ReplyTarget) => void;
+  onToggleLike: (comment: ResourceComment) => void;
+  onReport: (comment: ResourceComment) => void;
+  pendingLikeId: number | null;
+  pendingReportId: number | null;
+}) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-4">
       <div className="flex items-center justify-between gap-3">
@@ -49,10 +119,55 @@ function CommentItem({ comment }: { comment: ResourceComment }) {
         <span className="text-xs text-gray-400">{formatDateTime(comment.created_at)}</span>
       </div>
       <p className="mt-3 text-sm leading-7 text-gray-600">{comment.content}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() =>
+            onReply({
+              rootId,
+              commentId: comment.id,
+              userId: comment.user?.id ?? null,
+              userName: comment.user?.nickname ?? null,
+            })
+          }
+          className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+        >
+          回复
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleLike(comment)}
+          disabled={pendingLikeId === comment.id}
+          className={`rounded-full px-3 py-1.5 text-xs transition ${
+            comment.is_liked
+              ? "bg-[var(--first-color)] text-white"
+              : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+          }`}
+        >
+          {pendingLikeId === comment.id ? "处理中..." : `${comment.is_liked ? "已点赞" : "点赞"} ${comment.likes ?? 0}`}
+        </button>
+        <button
+          type="button"
+          onClick={() => onReport(comment)}
+          disabled={pendingReportId === comment.id}
+          className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+        >
+          {pendingReportId === comment.id ? "提交中..." : "举报"}
+        </button>
+      </div>
       {comment.children?.length ? (
         <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
           {comment.children.map((child) => (
-            <CommentItem key={child.id} comment={child} />
+            <CommentCard
+              key={child.id}
+              comment={child}
+              rootId={rootId}
+              onReply={onReply}
+              onToggleLike={onToggleLike}
+              onReport={onReport}
+              pendingLikeId={pendingLikeId}
+              pendingReportId={pendingReportId}
+            />
           ))}
         </div>
       ) : null}
@@ -70,7 +185,12 @@ export default function ResourceDetailPage() {
   const [error, setError] = useState("");
   const [isFavorited, setIsFavorited] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
+  const [replyDraft, setReplyDraft] = useState("");
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [pendingLikeId, setPendingLikeId] = useState<number | null>(null);
+  const [pendingReportId, setPendingReportId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isInvalidResourceId) return;
@@ -97,6 +217,59 @@ export default function ResourceDetailPage() {
       active = false;
     };
   }, [isInvalidResourceId, resourceId]);
+
+  const toggleCommentLike = async (comment: ResourceComment) => {
+    setPendingLikeId(comment.id);
+
+    try {
+      if (comment.is_liked) {
+        await removeLike("comment", comment.id);
+      } else {
+        await addLike("comment", comment.id);
+      }
+
+      setComments((prev) =>
+        updateCommentInTree(prev, comment.id, (current) => ({
+          ...current,
+          is_liked: !current.is_liked,
+          likes: Math.max(0, (current.likes ?? 0) + (current.is_liked ? -1 : 1)),
+        })),
+      );
+    } catch (err) {
+      console.error(err);
+      feedback.error({
+        title: "点赞失败",
+        description: "请稍后重试。",
+      });
+    } finally {
+      setPendingLikeId(null);
+    }
+  };
+
+  const reportComment = async (comment: ResourceComment) => {
+    setPendingReportId(comment.id);
+
+    try {
+      await submitReport({
+        target_type: "comment",
+        target_id: String(comment.id),
+        reason: "other",
+        description: "资源评论举报",
+      });
+      feedback.success({
+        title: "举报已提交",
+        description: "感谢反馈，管理员会尽快处理。",
+      });
+    } catch (err) {
+      console.error(err);
+      feedback.error({
+        title: "举报失败",
+        description: "请稍后重试。",
+      });
+    } finally {
+      setPendingReportId(null);
+    }
+  };
 
   if (isInvalidResourceId) {
     return (
@@ -237,7 +410,7 @@ export default function ResourceDetailPage() {
         </div>
       </SectionCard>
 
-      <SectionCard title="资源评论" subtitle="资源详情继续保留原有资源评论区。">
+      <SectionCard title="资源评论" subtitle="资源只支持评论；一级评论下的二级评论可以互相回复，但展示时保持平级。">
         <div className="space-y-4">
           <div className="rounded-2xl border border-dashed border-[var(--first-color)]/20 bg-white p-4">
             <textarea
@@ -271,8 +444,80 @@ export default function ResourceDetailPage() {
               </button>
             </div>
           </div>
+
+          {replyTarget ? (
+            <div className="rounded-2xl border border-[var(--first-color)]/20 bg-white p-4">
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="text-sm font-medium text-gray-700">
+                  {replyTarget.userName ? `回复 @${replyTarget.userName}` : "回复该评论"}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReplyTarget(null);
+                    setReplyDraft("");
+                  }}
+                  className="text-xs text-gray-400 transition hover:text-gray-600"
+                >
+                  取消目标
+                </button>
+              </div>
+              <textarea
+                value={replyDraft}
+                onChange={(event) => setReplyDraft(event.target.value)}
+                rows={3}
+                placeholder="写下你的回复..."
+                className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
+              />
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  disabled={isSubmittingReply || !replyDraft.trim()}
+                  onClick={async () => {
+                    if (!replyTarget) return;
+                    const content = replyDraft.trim();
+                    if (!content) return;
+
+                    setIsSubmittingReply(true);
+                    try {
+                      const reply = await createResourceCommentReply(replyTarget.rootId, {
+                        content,
+                        reply_to_comment_id: replyTarget.commentId && replyTarget.commentId !== replyTarget.rootId
+                          ? replyTarget.commentId
+                          : null,
+                        reply_to_user_id: replyTarget.userId ?? null,
+                      });
+
+                      if (reply) {
+                        setComments((prev) => appendReplyToTree(prev, replyTarget.rootId, reply));
+                        setReplyTarget(null);
+                        setReplyDraft("");
+                      }
+                    } finally {
+                      setIsSubmittingReply(false);
+                    }
+                  }}
+                  className="rounded-full bg-[var(--first-color)] px-5 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isSubmittingReply ? "提交中..." : "发送回复"}
+                </button>
+              </div>
+            </div>
+          ) : null}
+
           {comments.length ? (
-            comments.map((comment) => <CommentItem key={comment.id} comment={comment} />)
+            comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                comment={comment}
+                rootId={comment.id}
+                onReply={setReplyTarget}
+                onToggleLike={toggleCommentLike}
+                onReport={reportComment}
+                pendingLikeId={pendingLikeId}
+                pendingReportId={pendingReportId}
+              />
+            ))
           ) : (
             <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
               暂无评论内容。

@@ -40,6 +40,8 @@ export interface EvaluationReply {
   content: string;
   reply_to_user?: UserBrief | null;
   reply_to_reply_id?: number | null;
+  likes?: number | null;
+  is_liked?: boolean | null;
   created_at: string;
 }
 
@@ -52,28 +54,15 @@ export interface EvaluationReplyInput {
 export interface TeacherEvaluation {
   id: number;
   teacher_id: number;
+  mode?: "standalone" | "linked" | null;
   course_id?: number | null;
   course_name?: string | null;
+  mirror_evaluation_id?: number | null;
+  mirror_entity_type?: "teacher" | "course" | null;
   user?: UserBrief | null;
   rating_quality?: number | null;
   rating_grading?: number | null;
   rating_attendance?: number | null;
-  avg_rating?: number | null;
-  comment?: string | null;
-  is_anonymous?: boolean;
-  likes?: number | null;
-  is_liked?: boolean | null;
-  created_at: string;
-  reply_count?: number | null;
-  replies?: EvaluationReply[];
-}
-
-export interface CourseEvaluation {
-  id: number;
-  course_id: number;
-  teacher_id?: number | null;
-  teacher_name?: string | null;
-  user?: UserBrief | null;
   rating_homework?: number | null;
   rating_gain?: number | null;
   rating_exam_difficulty?: number | null;
@@ -87,22 +76,51 @@ export interface CourseEvaluation {
   replies?: EvaluationReply[];
 }
 
+export interface CourseEvaluation {
+  id: number;
+  course_id: number;
+  mode?: "standalone" | "linked" | null;
+  teacher_id?: number | null;
+  teacher_name?: string | null;
+  mirror_evaluation_id?: number | null;
+  mirror_entity_type?: "teacher" | "course" | null;
+  user?: UserBrief | null;
+  rating_homework?: number | null;
+  rating_gain?: number | null;
+  rating_exam_difficulty?: number | null;
+  rating_quality?: number | null;
+  rating_grading?: number | null;
+  rating_attendance?: number | null;
+  avg_rating?: number | null;
+  comment?: string | null;
+  is_anonymous?: boolean;
+  likes?: number | null;
+  is_liked?: boolean | null;
+  created_at: string;
+  reply_count?: number | null;
+  replies?: EvaluationReply[];
+}
+
 export interface TeacherEvaluationInput {
-  teacher_id: number;
   course_id?: number | null;
   rating_quality: number;
   rating_grading: number;
   rating_attendance: number;
+  rating_homework?: number | null;
+  rating_gain?: number | null;
+  rating_exam_difficulty?: number | null;
   comment?: string;
   is_anonymous?: boolean;
 }
 
 export interface CourseEvaluationInput {
-  course_id: number;
   teacher_id?: number | null;
   rating_homework: number;
   rating_gain: number;
   rating_exam_difficulty: number;
+  rating_quality?: number | null;
+  rating_grading?: number | null;
+  rating_attendance?: number | null;
   comment?: string;
   is_anonymous?: boolean;
 }

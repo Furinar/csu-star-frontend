@@ -88,7 +88,7 @@ export function getMyDownloads(params?: { page?: number; size?: number }) {
 export function getMyTeacherEvaluations(params?: { page?: number; size?: number }) {
   return unwrap<PaginatedData<TeacherEvaluation>>(
     service.get<ApiEnvelope<PaginatedEnvelope<TeacherEvaluation>>>(
-      "/me/evaluations/teachers",
+      "/me/teacher-evaluations",
       { params },
     ),
   );
@@ -97,7 +97,7 @@ export function getMyTeacherEvaluations(params?: { page?: number; size?: number 
 export function getMyCourseEvaluations(params?: { page?: number; size?: number }) {
   return unwrap<PaginatedData<CourseEvaluation>>(
     service.get<ApiEnvelope<PaginatedEnvelope<CourseEvaluation>>>(
-      "/me/evaluations/courses",
+      "/me/course-evaluations",
       { params },
     ),
   );

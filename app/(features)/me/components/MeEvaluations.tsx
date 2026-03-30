@@ -72,6 +72,9 @@ export default function MeEvaluations({
                             className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
                           教师评价
                         </span>
+                          <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
+                          {item.mode === "linked" || item.course_id ? "关联评价" : "单独评价"}
+                        </span>
                           <span className="text-sm text-gray-500">
                           #{item.teacher_id}
                         </span>
@@ -79,6 +82,11 @@ export default function MeEvaluations({
                         <p className="mt-2 text-sm text-gray-500">
                           发布于 {formatDateTime(item.created_at)}
                         </p>
+                        {item.course_id ? (
+                            <p className="mt-1 text-sm text-gray-500">
+                              关联课程：{item.course_name || `#${item.course_id}`}
+                            </p>
+                        ) : null}
                       </div>
                     </div>
                     <p className="mb-3 text-sm leading-6 text-gray-700">
@@ -101,6 +109,24 @@ export default function MeEvaluations({
                           label="考勤要求"
                           value={`${item.rating_attendance ?? "-"}`}
                       />
+                      {item.course_id ? (
+                          <StatPill
+                              label="作业量"
+                              value={`${item.rating_homework ?? "-"}`}
+                          />
+                      ) : null}
+                      {item.course_id ? (
+                          <StatPill
+                              label="收获感"
+                              value={`${item.rating_gain ?? "-"}`}
+                          />
+                      ) : null}
+                      {item.course_id ? (
+                          <StatPill
+                              label="考试难度"
+                              value={`${item.rating_exam_difficulty ?? "-"}`}
+                          />
+                      ) : null}
                       <StatPill
                           label="点赞"
                           value={formatNumber(item.likes)}
@@ -119,6 +145,9 @@ export default function MeEvaluations({
                             className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
                           课程评价
                         </span>
+                          <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
+                          {item.mode === "linked" || item.teacher_id ? "关联评价" : "单独评价"}
+                        </span>
                           <span className="text-sm text-gray-500">
                           #{item.course_id}
                         </span>
@@ -126,6 +155,11 @@ export default function MeEvaluations({
                         <p className="mt-2 text-sm text-gray-500">
                           发布于 {formatDateTime(item.created_at)}
                         </p>
+                        {item.teacher_id ? (
+                            <p className="mt-1 text-sm text-gray-500">
+                              关联教师：{item.teacher_name || `#${item.teacher_id}`}
+                            </p>
+                        ) : null}
                       </div>
                     </div>
                     <p className="mb-3 text-sm leading-6 text-gray-700">
@@ -148,6 +182,24 @@ export default function MeEvaluations({
                           label="考试难度"
                           value={`${item.rating_exam_difficulty ?? "-"}`}
                       />
+                      {item.teacher_id ? (
+                          <StatPill
+                              label="教学质量"
+                              value={`${item.rating_quality ?? "-"}`}
+                          />
+                      ) : null}
+                      {item.teacher_id ? (
+                          <StatPill
+                              label="给分宽松"
+                              value={`${item.rating_grading ?? "-"}`}
+                          />
+                      ) : null}
+                      {item.teacher_id ? (
+                          <StatPill
+                              label="考勤要求"
+                              value={`${item.rating_attendance ?? "-"}`}
+                          />
+                      ) : null}
                       <StatPill
                           label="点赞"
                           value={formatNumber(item.likes)}

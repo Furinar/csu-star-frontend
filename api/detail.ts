@@ -154,6 +154,8 @@ const normalizeEvaluationReplies = (raw: unknown): EvaluationReply[] => {
         content: toStringSafe(item.content) ?? "",
         reply_to_user: normalizeUserBrief(item.reply_to_user),
         reply_to_reply_id: toNumber(item.reply_to_reply_id),
+        likes: toNumber(item.likes),
+        is_liked: toBoolean(item.is_liked),
         created_at: toStringSafe(item.created_at) ?? "",
       },
     ];
@@ -170,12 +172,18 @@ const normalizeTeacherEvaluations = (raw: unknown): TeacherEvaluation[] => {
       {
         id: toNumber(item.id) ?? 0,
         teacher_id: toNumber(item.teacher_id) ?? 0,
+        mode: (toStringSafe(item.mode) as TeacherEvaluation["mode"]) ?? null,
         course_id: toNumber(item.course_id),
         course_name: toStringSafe(item.course_name),
+        mirror_evaluation_id: toNumber(item.mirror_evaluation_id),
+        mirror_entity_type: (toStringSafe(item.mirror_entity_type) as TeacherEvaluation["mirror_entity_type"]) ?? null,
         user: normalizeUserBrief(item.user),
         rating_quality: toNumber(item.rating_quality),
         rating_grading: toNumber(item.rating_grading),
         rating_attendance: toNumber(item.rating_attendance),
+        rating_homework: toNumber(item.rating_homework),
+        rating_gain: toNumber(item.rating_gain),
+        rating_exam_difficulty: toNumber(item.rating_exam_difficulty),
         avg_rating: toNumber(item.avg_rating),
         comment: toStringSafe(item.comment),
         is_anonymous: toBoolean(item.is_anonymous) ?? false,
@@ -199,12 +207,18 @@ const normalizeCourseEvaluations = (raw: unknown): CourseEvaluation[] => {
       {
         id: toNumber(item.id) ?? 0,
         course_id: toNumber(item.course_id) ?? 0,
+        mode: (toStringSafe(item.mode) as CourseEvaluation["mode"]) ?? null,
         teacher_id: toNumber(item.teacher_id),
         teacher_name: toStringSafe(item.teacher_name),
+        mirror_evaluation_id: toNumber(item.mirror_evaluation_id),
+        mirror_entity_type: (toStringSafe(item.mirror_entity_type) as CourseEvaluation["mirror_entity_type"]) ?? null,
         user: normalizeUserBrief(item.user),
         rating_homework: toNumber(item.rating_homework),
         rating_gain: toNumber(item.rating_gain),
         rating_exam_difficulty: toNumber(item.rating_exam_difficulty),
+        rating_quality: toNumber(item.rating_quality),
+        rating_grading: toNumber(item.rating_grading),
+        rating_attendance: toNumber(item.rating_attendance),
         avg_rating: toNumber(item.avg_rating),
         comment: toStringSafe(item.comment),
         is_anonymous: toBoolean(item.is_anonymous) ?? false,
@@ -373,7 +387,7 @@ export async function getResourceDetail(id: number) {
 }
 
 export async function listTeacherEvaluations(teacherId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/teachers/${teacherId}/evaluations`, {
+  const response = await service.get<ApiEnvelope<unknown>>(`/teachers/evaluations/${teacherId}`, {
     params: {page, size, sort: "created_at"},
   });
 
@@ -382,7 +396,7 @@ export async function listTeacherEvaluations(teacherId: number, page = 1, size =
 }
 
 export async function listCourseEvaluations(courseId: number, page = 1, size = 20) {
-  const response = await service.get<ApiEnvelope<unknown>>(`/courses/${courseId}/evaluations`, {
+  const response = await service.get<ApiEnvelope<unknown>>(`/courses/evaluations/${courseId}`, {
     params: {page, size, sort: "created_at"},
   });
 
@@ -395,7 +409,7 @@ export async function createTeacherEvaluationReply(
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/teachers/evaluations/${evaluationId}/replies`,
+      `/teacher-evaluations/${evaluationId}/replies`,
       payload,
   );
 
@@ -407,24 +421,24 @@ export async function createCourseEvaluationReply(
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/courses/evaluations/${evaluationId}/replies`,
+      `/course-evaluations/${evaluationId}/replies`,
       payload,
   );
 
   return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
 }
 
-export async function createTeacherEvaluation(payload: TeacherEvaluationInput) {
+export async function createTeacherEvaluation(teacherId: number, payload: TeacherEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      "/teachers/evaluations",
+      `/teachers/${teacherId}/evaluations`,
       payload,
   );
   return normalizeTeacherEvaluations([unwrapResponseData(response)])[0];
 }
 
-export async function createCourseEvaluation(payload: CourseEvaluationInput) {
+export async function createCourseEvaluation(courseId: number, payload: CourseEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      "/courses/evaluations",
+      `/courses/${courseId}/evaluations`,
       payload,
   );
   return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
@@ -447,7 +461,7 @@ export async function createResourceComment(resourceId: number, payload: Resourc
   return normalizeResourceComments([unwrapResponseData(response)])[0];
 }
 
-export async function createResourceCommentReply(commentId: number, payload: EvaluationReplyInput) {
+export async function createResourceCommentReply(commentId: number, payload: ResourceCommentInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
       `/resources/comments/${commentId}/replies`,
       payload,
@@ -465,5 +479,27 @@ export async function addFavorite(target_type: string, target_id: number) {
 export async function removeFavorite(target_type: string, target_id: number) {
   await service.delete<ApiEnvelope<unknown>>("/favorites", {
     params: { target_type, target_id },
+  });
+}
+
+export async function addLike(
+    target_type: "resource" | "teacher_evaluation" | "course_evaluation" | "comment",
+    target_id: number,
+) {
+  await service.post<ApiEnvelope<unknown>>("/likes", {
+    target_type,
+    target_id,
+  });
+}
+
+export async function removeLike(
+    target_type: "resource" | "teacher_evaluation" | "course_evaluation" | "comment",
+    target_id: number,
+) {
+  await service.delete<ApiEnvelope<unknown>>("/likes", {
+    data: {
+      target_type,
+      target_id,
+    },
   });
 }

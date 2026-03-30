@@ -181,7 +181,7 @@ export default function CourseDetailPage() {
           relatedItems={(detail.teachers ?? []).map((t) => ({ id: t.id, name: t.name }))}
           onReply={(evaluationId, payload) => createCourseEvaluationReply(evaluationId, payload)}
           onCreateEvaluation={async (payload) => {
-            return createCourseEvaluation({ ...payload, course_id: detail.id } as CourseEvaluationInput);
+            return createCourseEvaluation(detail.id, payload as unknown as CourseEvaluationInput);
           }}
         />
       </div>

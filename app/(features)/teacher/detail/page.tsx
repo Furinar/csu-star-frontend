@@ -144,7 +144,7 @@ export default function TeacherDetailPage() {
         relatedItems={(detail.courses ?? []).map((c) => ({ id: c.id, name: c.name }))}
         onReply={(evaluationId, payload) => createTeacherEvaluationReply(evaluationId, payload)}
         onCreateEvaluation={async (payload) => {
-          return createTeacherEvaluation({ ...payload, teacher_id: detail.id } as TeacherEvaluationInput);
+          return createTeacherEvaluation(detail.id, payload as unknown as TeacherEvaluationInput);
         }}
       />
     </div>
