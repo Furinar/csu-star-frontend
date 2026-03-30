@@ -4,6 +4,12 @@ export enum Role {
   Student = "student",
 }
 
+export interface OAuthBindingStatus {
+  qq: boolean;
+  github: boolean;
+  google: boolean;
+}
+
 export interface UserProfile {
   /**
    * 头像图片 URL
@@ -53,6 +59,10 @@ export interface UserProfile {
    * 累计上传资源数
    */
   upload_count?: number;
+  /**
+   * 第三方 OAuth 绑定状态
+   */
+  oauth_bindings?: OAuthBindingStatus | null;
 }
 
 export interface LoginRequest {
@@ -92,4 +102,3 @@ export interface VerifyRegisterCodeResponse {
   valid: boolean;
   message?: string;
 }
-

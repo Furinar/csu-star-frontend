@@ -33,3 +33,11 @@ export interface TeacherShowcaseItem {
   eval_count?: number | null;
   resource_count?: number | null;
 }
+
+export interface SiteShowcaseStats {
+  user_count: number;
+  resource_count: number;
+  evaluation_count: number;
+  teacher_count: number;
+  course_count: number;
+}

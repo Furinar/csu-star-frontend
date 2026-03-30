@@ -430,7 +430,7 @@ export async function createCourseEvaluationReply(
 
 export async function createTeacherEvaluation(teacherId: number, payload: TeacherEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/teachers/${teacherId}/evaluations`,
+      `/teachers/evaluations/${teacherId}`,
       payload,
   );
   return normalizeTeacherEvaluations([unwrapResponseData(response)])[0];
@@ -438,7 +438,7 @@ export async function createTeacherEvaluation(teacherId: number, payload: Teache
 
 export async function createCourseEvaluation(courseId: number, payload: CourseEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
-      `/courses/${courseId}/evaluations`,
+      `/courses/evaluations/${courseId}`,
       payload,
   );
   return normalizeCourseEvaluations([unwrapResponseData(response)])[0];

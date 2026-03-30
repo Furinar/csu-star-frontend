@@ -1,5 +1,10 @@
 import { service } from "@/lib/request";
-import type { CourseShowcaseItem, ShowcaseTeacherBrief, TeacherShowcaseItem } from "@/types/showcase";
+import type {
+  CourseShowcaseItem,
+  ShowcaseTeacherBrief,
+  SiteShowcaseStats,
+  TeacherShowcaseItem,
+} from "@/types/showcase";
 
 interface ApiEnvelope<T> {
   code: number;
@@ -110,6 +115,18 @@ const normalizeShowcasePayload = (raw: unknown) => {
   return [];
 };
 
+const normalizeSiteShowcaseStats = (raw: unknown): SiteShowcaseStats => {
+  const data = isRecord(raw) ? raw : {};
+
+  return {
+    user_count: toNumber(data.user_count) ?? toNumber(data.users_count) ?? 0,
+    resource_count: toNumber(data.resource_count) ?? 0,
+    evaluation_count: toNumber(data.evaluation_count) ?? toNumber(data.eval_count) ?? 0,
+    teacher_count: toNumber(data.teacher_count) ?? 0,
+    course_count: toNumber(data.course_count) ?? 0,
+  };
+};
+
 export async function getRandomCourseShowcase() {
   const response = await service.get<ApiEnvelope<unknown>>("/courses/random-showcase");
   const raw = normalizeShowcasePayload(unwrapResponseData(response));
@@ -120,4 +137,9 @@ export async function getRandomTeacherShowcase() {
   const response = await service.get<ApiEnvelope<unknown>>("/teachers/random-showcase");
   const raw = normalizeShowcasePayload(unwrapResponseData(response));
   return normalizeTeacherShowcaseItems(raw);
+}
+
+export async function getSiteShowcaseStats() {
+  const response = await service.get<ApiEnvelope<unknown>>("/showcase/stats");
+  return normalizeSiteShowcaseStats(unwrapResponseData(response));
 }

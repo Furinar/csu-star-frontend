@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { bindOAuthAccount } from "@/api/me";
 import { feedback } from "@/store/useFeedbackStore";
 import type { OAuthBindProvider } from "@/types/me";
+import type { OAuthBindingStatus } from "@/types/auth";
 import { type AccountMode } from "../shared/helpers";
 import {
   buildAuthUrl,
@@ -15,15 +15,22 @@ import {
 
 export default function OAuthPanel({
   accountMode,
+  bindings,
   onClose,
   onOAuthBound,
 }: {
   accountMode: AccountMode;
+  bindings?: OAuthBindingStatus | null;
   onClose: () => void;
   onOAuthBound: (provider: OAuthBindProvider) => void;
 }) {
-  const [providers, setProviders] = useState<OAuthBindProvider[]>([]);
   const [isBinding, setIsBinding] = useState(false);
+
+  const providers = ([
+    bindings?.qq ? "qq" : null,
+    bindings?.github ? "github" : null,
+    bindings?.google ? "google" : null,
+  ].filter(Boolean) as OAuthBindProvider[]);
 
   const handleOAuthBind = async (platform: AuthPlatform) => {
     try {
@@ -85,25 +92,25 @@ export default function OAuthPanel({
           <button
             type="button"
             onClick={() => handleOAuthBind("qq")}
-            disabled={isBinding}
+            disabled={isBinding || Boolean(bindings?.qq)}
             className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-[#12b7f5] text-white font-medium hover:bg-[#0e9kcc] transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
           >
             <i className="fa-brands fa-qq text-lg" />
-            绑定 QQ 账号
+            {bindings?.qq ? "QQ 已绑定" : "绑定 QQ 账号"}
           </button>
           <button
             type="button"
             onClick={() => handleOAuthBind("github")}
-            disabled={isBinding}
+            disabled={isBinding || Boolean(bindings?.github)}
             className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
           >
             <i className="fa-brands fa-github text-lg" />
-            绑定 GitHub 账号
+            {bindings?.github ? "GitHub 已绑定" : "绑定 GitHub 账号"}
           </button>
           <button
             type="button"
             onClick={() => handleOAuthBind("google")}
-            disabled={isBinding}
+            disabled={isBinding || Boolean(bindings?.google)}
             className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-white text-gray-700 font-medium border border-gray-200 hover:bg-gray-50 transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.05)]"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -125,7 +132,7 @@ export default function OAuthPanel({
               />
               <path fill="none" d="M1 1h22v22H1z" />
             </svg>
-            绑定 Google 账号
+            {bindings?.google ? "Google 已绑定" : "绑定 Google 账号"}
           </button>
         </div>
       </div>
