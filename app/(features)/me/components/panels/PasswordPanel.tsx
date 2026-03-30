@@ -1,15 +1,21 @@
 "use client";
 
 import CryptoJS from "crypto-js";
-import {useState} from "react";
-import {recoverPwd, sendCaptcha} from "@/api/auth";
-import {feedback} from "@/store/useFeedbackStore";
-import {FORM_INPUT_CLASS_NAME, assertApiResponse, getErrorMessage, toCampusEmail} from "../shared/helpers";
+import { useState } from "react";
+import { recoverPwd, sendCaptcha } from "@/api/auth";
+import { feedback } from "@/store/useFeedbackStore";
+import {
+  FORM_INPUT_CLASS_NAME,
+  assertApiResponse,
+  getErrorMessage,
+  isCampusEmail,
+  toCampusEmail,
+} from "../shared/helpers";
 
 export default function PasswordPanel({
-                                        initialEmail,
-                                        onClose,
-                                      }: {
+  initialEmail,
+  onClose,
+}: {
   initialEmail: string;
   onClose: () => void;
 }) {
@@ -28,6 +34,14 @@ export default function PasswordPanel({
       feedback.warning({
         title: "请先填写邮箱",
         description: "修改密码仍通过校园邮箱验证码完成。",
+      });
+      return;
+    }
+
+    if (!isCampusEmail(email)) {
+      feedback.warning({
+        title: "邮箱格式不正确",
+        description: "请使用 `@csu.edu.cn` 校园邮箱接收验证码。",
       });
       return;
     }
@@ -56,14 +70,18 @@ export default function PasswordPanel({
 
   const handleReset = async () => {
     const email = toCampusEmail(form.email);
-    if (
-        !email ||
-        !form.captcha.trim() ||
-        !form.password.trim()
-    ) {
+    if (!email || !form.captcha.trim() || !form.password.trim()) {
       feedback.warning({
         title: "信息不完整",
         description: "邮箱、验证码和新密码都不能为空。",
+      });
+      return;
+    }
+
+    if (!isCampusEmail(email)) {
+      feedback.warning({
+        title: "邮箱格式不正确",
+        description: "请确认邮箱为 `@csu.edu.cn` 后重试。",
       });
       return;
     }
@@ -88,9 +106,7 @@ export default function PasswordPanel({
     try {
       const response = await recoverPwd({
         email,
-        password: CryptoJS.SHA256(form.password).toString(
-            CryptoJS.enc.Hex,
-        ),
+        password: CryptoJS.SHA256(form.password).toString(CryptoJS.enc.Hex),
         captcha: form.captcha.trim(),
       });
       assertApiResponse(response, "密码修改失败");
@@ -110,92 +126,100 @@ export default function PasswordPanel({
   };
 
   return (
-      <>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
-            <span>校园邮箱</span>
-            <input
-                className={FORM_INPUT_CLASS_NAME}
-                placeholder="填写邮箱前缀或完整邮箱"
-                value={form.email}
-                onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      email: event.target.value,
-                    }))
-                }
-            />
-          </label>
-          <label className="space-y-2 text-sm text-gray-600">
-            <span>验证码</span>
-            <input
-                className={FORM_INPUT_CLASS_NAME}
-                placeholder="6 位验证码"
-                value={form.captcha}
-                onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      captcha: event.target.value,
-                    }))
-                }
-            />
-          </label>
-          <div className="flex items-end">
-            <button
-                type="button"
-                onClick={handleSendCode}
-                disabled={isSendingCode}
-                className="w-full rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSendingCode ? "发送中..." : "发送验证码"}
-            </button>
-          </div>
-          <label className="space-y-2 text-sm text-gray-600">
-            <span>新密码</span>
-            <input
-                type="password"
-                className={FORM_INPUT_CLASS_NAME}
-                value={form.password}
-                onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      password: event.target.value,
-                    }))
-                }
-            />
-          </label>
-          <label className="space-y-2 text-sm text-gray-600">
-            <span>确认密码</span>
-            <input
-                type="password"
-                className={FORM_INPUT_CLASS_NAME}
-                value={form.confirmPassword}
-                onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      confirmPassword: event.target.value,
-                    }))
-                }
-            />
-          </label>
-        </div>
-        <div className="mt-6 flex justify-end gap-3">
+    <>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <label className="space-y-2 text-sm text-gray-600 md:col-span-2">
+          <span>校园邮箱</span>
+          <input
+            className={FORM_INPUT_CLASS_NAME}
+            placeholder="填写邮箱前缀或完整邮箱"
+            autoComplete="email"
+            value={form.email}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                email: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <label className="space-y-2 text-sm text-gray-600">
+          <span>验证码</span>
+          <input
+            className={FORM_INPUT_CLASS_NAME}
+            placeholder="6 位验证码"
+            inputMode="numeric"
+            maxLength={6}
+            value={form.captcha}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                captcha: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <div className="flex items-end">
           <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+            type="button"
+            onClick={handleSendCode}
+            disabled={isSendingCode}
+            className="w-full rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            取消
-          </button>
-          <button
-              type="button"
-              onClick={handleReset}
-              disabled={isResetting}
-              className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isResetting ? "提交中..." : "确认修改"}
+            {isSendingCode ? "发送中..." : "发送验证码"}
           </button>
         </div>
-      </>
+        <label className="space-y-2 text-sm text-gray-600">
+          <span>新密码</span>
+          <input
+            type="password"
+            className={FORM_INPUT_CLASS_NAME}
+            minLength={8}
+            autoComplete="new-password"
+            value={form.password}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                password: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <label className="space-y-2 text-sm text-gray-600">
+          <span>确认密码</span>
+          <input
+            type="password"
+            className={FORM_INPUT_CLASS_NAME}
+            minLength={8}
+            autoComplete="new-password"
+            value={form.confirmPassword}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                confirmPassword: event.target.value,
+              }))
+            }
+          />
+        </label>
+      </div>
+      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={isSendingCode || isResetting}
+          className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700"
+        >
+          取消
+        </button>
+        <button
+          type="button"
+          onClick={handleReset}
+          disabled={isResetting || isSendingCode}
+          className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isResetting ? "提交中..." : "确认修改"}
+        </button>
+      </div>
+    </>
   );
 }

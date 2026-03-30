@@ -1,4 +1,4 @@
-import type {UserProfile} from "@/types/auth";
+import type { UserProfile } from "@/types/auth";
 import type {
   Department,
   EmailStatus,
@@ -34,7 +34,7 @@ export type ContributionSummary = {
 };
 
 export const FORM_INPUT_CLASS_NAME =
-    "w-full rounded-xl border border-gray-200/60 bg-white/60 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-first/60 focus:bg-white";
+  "w-full rounded-xl border border-gray-200/60 bg-white/60 px-4 py-2.5 text-sm text-gray-800 outline-none transition focus:border-first/60 focus:bg-white";
 export const FORM_TEXTAREA_CLASS_NAME = `${FORM_INPUT_CLASS_NAME} min-h-28 resize-none`;
 
 export const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
@@ -78,8 +78,8 @@ export function getErrorMessage(error: unknown, fallback: string) {
 }
 
 export function assertApiResponse(
-    response: { code: number; message?: string; msg?: string },
-    fallback: string,
+  response: { code: number; message?: string; msg?: string },
+  fallback: string,
 ) {
   if (response.code !== 0 && response.code !== 200) {
     throw new Error(response.message || response.msg || fallback);
@@ -97,6 +97,10 @@ export function toCampusEmail(value: string) {
   }
 
   return `${trimmedValue}@csu.edu.cn`;
+}
+
+export function isCampusEmail(value: string) {
+  return /@csu\.edu\.cn$/i.test(value.trim());
 }
 
 export function startOfDay(date: Date) {
@@ -174,7 +178,7 @@ export function getDepartmentName(departments: Department[], departmentId?: numb
   }
 
   return (
-      departments.find((item) => item.id === departmentId)?.name ?? "学院未填写"
+    departments.find((item) => item.id === departmentId)?.name ?? "学院未填写"
   );
 }
 
@@ -191,35 +195,35 @@ export function getAccountMode(profile: UserProfile | null, emailStatus: EmailSt
 }
 
 export function getAccountPresentation(
-    mode: AccountMode,
-    emailStatus: EmailStatus,
-    profile: UserProfile | null,
+  mode: AccountMode,
+  emailStatus: EmailStatus,
+  profile: UserProfile | null,
 ) {
   if (mode === "verified") {
     return {
       subtitle: "已认证",
       badge: "校园邮箱已认证",
       badgeClassName:
-          "border border-emerald-200/70 bg-emerald-50/80 text-emerald-700",
+        "border border-emerald-200/70 bg-emerald-50/80 text-emerald-700",
       hint:
-          emailStatus.email ??
-          profile?.email ??
-          "已完成校园认证，可使用完整个人中心能力。",
+        emailStatus.email ??
+        profile?.email ??
+        "已完成校园认证，可使用完整个人中心能力。",
     };
   }
 
   if (mode === "oauth_pending_email") {
     const freeDownloads =
-        emailStatus.free_download_count ?? profile?.free_download_count;
+      emailStatus.free_download_count ?? profile?.free_download_count;
     return {
       subtitle: "待完成校园认证",
       badge: "第三方登录用户",
       badgeClassName:
-          "border border-amber-200/70 bg-amber-50/85 text-amber-700",
+        "border border-amber-200/70 bg-amber-50/85 text-amber-700",
       hint:
-          freeDownloads == null
-              ? "当前账号已通过第三方授权登录，请补充校园邮箱认证。"
-              : `剩余 ${freeDownloads} 次免费下载，完成校园邮箱认证后解除限制。`,
+        freeDownloads == null
+          ? "当前账号已通过第三方授权登录，请补充校园邮箱认证。"
+          : `剩余 ${freeDownloads} 次免费下载，完成校园邮箱认证后解除限制。`,
     };
   }
 
@@ -232,7 +236,7 @@ export function getAccountPresentation(
 }
 
 export function getResourceTypeLabel(
-    type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"],
+  type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"],
 ) {
   if (type === "ppt") {
     return "课件";
