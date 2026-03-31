@@ -32,26 +32,34 @@ export default function SearchBar({
   allowClear = true,
   ...props
 }: SearchBarProps) {
+  const loadInitialHistory = () => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+
+    const saved = window.localStorage.getItem("csu_star_search_history");
+    if (!saved) {
+      return [];
+    }
+
+    try {
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const isControlled = propValue !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<string[]>(loadInitialHistory);
 
   const value = isControlled ? propValue : internalValue;
   const debouncedValue = useDebounce(value, delay);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("csu_star_search_history");
-    if (saved) {
-      try {
-        setHistory(JSON.parse(saved));
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  }, []);
 
   const saveHistory = useCallback((newHistory: string[]) => {
     setHistory(newHistory);

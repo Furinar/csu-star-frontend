@@ -1,237 +1,222 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection";
 import RatingBar from "@/components/ui/RatingBar";
+import GlassCard from "@/components/ui/GlassCard";
 import {
   createCourseEvaluation,
   createCourseEvaluationReply,
   getCourseDetail,
   listCourseEvaluations,
 } from "@/api/detail";
-import type {
-  CourseDetail,
-  CourseEvaluation,
-  CourseEvaluationInput,
-} from "@/types/detail";
-import {
-  buildResourceCollectionPath,
-  buildTeacherPath,
-} from "@/lib/paths";
-
-function formatScore(value?: number | null) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(1);
-}
-
-function getSafeScore(value?: number | null) {
-  if (typeof value !== "number" || Number.isNaN(value)) return 0;
-  return value;
-}
+import type { CourseDetail, CourseEvaluation } from "@/types/detail";
 
 export default function CourseDetailPage() {
   const searchParams = useSearchParams();
-  const courseId = Number(searchParams.get("id"));
-  const isInvalidCourseId = !Number.isFinite(courseId);
-  const [detail, setDetail] = useState<CourseDetail | null>(null);
+  const idStr = searchParams.get("id");
+  const courseId = idStr ? parseInt(idStr, 10) : null;
+
+  const [course, setCourse] = useState<CourseDetail | null>(null);
   const [evaluations, setEvaluations] = useState<CourseEvaluation[]>([]);
   const [evaluationTotal, setEvaluationTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Fetch initial data
   useEffect(() => {
-    if (isInvalidCourseId) return;
+    if (!courseId) return;
 
-    let active = true;
+    let isMounted = true;
 
-    Promise.all([getCourseDetail(courseId), listCourseEvaluations(courseId, 1, 20)])
-      .then(([course, evaluationData]) => {
-        if (!active) return;
-        setDetail(course);
-        setEvaluations(evaluationData.items);
-        setEvaluationTotal(evaluationData.total);
+    Promise.all([
+      getCourseDetail(courseId),
+      listCourseEvaluations(courseId, 1, 10),
+    ])
+      .then(([detail, evalData]) => {
+        if (!isMounted) return;
+        setCourse(detail);
+        setEvaluations(evalData.items);
+        setEvaluationTotal(evalData.total);
       })
       .catch((err) => {
-        console.error(err);
-        if (!active) return;
-        setError("课程详情加载失败，请稍后重试。");
+        console.error("Failed to load course details:", err);
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (isMounted) setIsLoading(false);
       });
 
     return () => {
-      active = false;
+      isMounted = false;
     };
-  }, [courseId, isInvalidCourseId]);
+  }, [courseId]);
 
-  if (isInvalidCourseId) {
+  const statsMap = useMemo(
+    () => [
+      { key: "homework", label: "作业量", value: course?.avg_homework || 0 },
+      { key: "gain", label: "收获感", value: course?.avg_gain || 0 },
+      { key: "exam", label: "考试难度", value: course?.avg_exam_diff || 0 },
+    ],
+    [course],
+  );
+
+  const relatedTeachers = useMemo(
+    () =>
+      (course?.teachers || []).map((t) => ({
+        id: t.id,
+        name: t.name,
+      })),
+    [course],
+  );
+
+  if (!courseId) {
     return (
-      <div className="container mt-10 mb-20">
-        <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
-          课程 ID 无效。
+      <div className="flex min-h-[50vh] items-center justify-center p-8 text-slate-500">
+        请提供有效的课程 ID
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-blue-500" />
+          <span className="text-sm text-slate-500">正在加载课程信息...</span>
         </div>
       </div>
     );
   }
 
-  if (loading) {
+  if (!course) {
     return (
-      <div className="container mt-10 mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
-        课程详情加载中...
-      </div>
-    );
-  }
-
-  if (error || !detail) {
-    return (
-      <div className="container mt-10 mb-20">
-        <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
-          {error || "课程不存在。"}
-        </div>
+      <div className="flex min-h-[50vh] items-center justify-center p-8 text-slate-500">
+        课程不存在或已被删除
       </div>
     );
   }
 
   return (
-    <div className="container mt-10 mb-20 space-y-8">
-      <section className="relative overflow-hidden rounded-[40px] border border-white/60 bg-[linear-gradient(135deg,rgba(255,255,255,0.92)_0%,rgba(241,248,255,0.92)_45%,rgba(234,250,244,0.9)_100%)] p-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-9">
-        <div className="absolute -right-10 top-0 h-52 w-52 rounded-full bg-sky-300/35 blur-3xl animate-blob"></div>
-        <div className="absolute -bottom-10 left-8 h-48 w-48 rounded-full bg-emerald-200/35 blur-3xl animate-blob animation-delay-2000"></div>
+    <div className="mx-auto w-full max-w-4xl space-y-12 pb-24">
+      {/* Hero Section (Course Layout: Left aligned large number, 2 orbs) */}
+      <section className="relative overflow-hidden rounded-[32px] p-8 md:p-12">
+        {/* Background Effects */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50/50" />
+        
+        {/* Orb 1: Top Right */}
+        <div className="absolute -top-24 -right-24 h-96 w-96 animate-blob rounded-full bg-blue-200/50 mix-blend-multiply blur-3xl filter" />
+        {/* Orb 2: Bottom Mid */}
+        <div className="absolute -bottom-32 left-1/4 h-80 w-80 animate-blob rounded-full bg-indigo-200/50 mix-blend-multiply blur-3xl filter animation-delay-2000" />
 
-        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_340px] lg:items-end">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-4 py-2 text-sm font-medium text-[var(--first-color)] shadow-sm">
-              <i className="uil uil-graduation-cap"></i>
-              课程详情
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-5xl">
-                {detail.name}
-              </h1>
-              {detail.course_type ? (
-                <span className="rounded-full border border-white/70 bg-white/85 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
-                  {detail.course_type}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+          {/* Main Info */}
+          <div className="flex-1 space-y-4">
+            <div className="flex items-center gap-3">
+              {course.course_type && (
+                <span className="inline-flex items-center rounded-full border border-blue-200/50 bg-blue-50/80 px-3 py-1 text-xs font-medium text-blue-700 backdrop-blur-sm">
+                  {course.course_type}
                 </span>
-              ) : null}
-              {detail.course_type === "公选课" ? (
-                <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-                  公选课程
-                </span>
-              ) : null}
+              )}
+              <span className="inline-flex items-center rounded-full border border-orange-200/50 bg-orange-50/80 px-3 py-1 text-xs font-medium text-orange-700 backdrop-blur-sm">
+                热度: {course.hot_score || 0}
+              </span>
             </div>
+            
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+              {course.name}
+            </h1>
 
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-gray-600 md:text-base">
-              这里聚合课程核心评分、授课教师与完整评价列表。评价内容会持续向下加载，帮助你更快判断课程体验。
-            </p>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <div className="rounded-full border border-white/70 bg-white/85 px-4 py-2 text-sm text-gray-500 shadow-sm">
-                评价数量 <span className="ml-2 font-semibold text-gray-900">{detail.eval_count ?? 0}</span>
-              </div>
-              <div className="rounded-full border border-white/70 bg-white/85 px-4 py-2 text-sm text-gray-500 shadow-sm">
-                资源总数 <span className="ml-2 font-semibold text-gray-900">{detail.resource_count ?? 0}</span>
-              </div>
-              <div className="rounded-full border border-white/70 bg-white/85 px-4 py-2 text-sm text-gray-500 shadow-sm">
-                热度 <span className="ml-2 font-semibold text-gray-900">{formatScore(detail.hot_score)}</span>
-              </div>
-            </div>
-
-            <div className="mt-7 rounded-[28px] border border-white/70 bg-white/75 p-5 shadow-sm">
-              <div className="mb-4 text-sm font-medium text-gray-500">课程维度</div>
-              <div className="space-y-3">
-                <RatingBar label="作业量" score={getSafeScore(detail.avg_homework)} color={2} />
-                <RatingBar label="收获感" score={getSafeScore(detail.avg_gain)} color={0} />
-                <RatingBar label="考试难度" score={getSafeScore(detail.avg_exam_diff)} color={1} />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] border border-white/70 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.07)] backdrop-blur-md">
-            <div className="text-sm text-gray-400">综合评分</div>
-            <div className="mt-3 text-6xl font-black tracking-tight text-gray-900">
-              {formatScore(detail.avg_score)}
-            </div>
-            <div className="mt-2 text-sm text-gray-500">/ 5.0</div>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-[22px] bg-slate-50 px-4 py-3">
-                <div className="text-xs text-gray-400">授课教师</div>
-                <div className="mt-1 text-lg font-semibold text-gray-900">
-                  {(detail.teachers ?? []).length}
+            {/* Teaching Teachers Pills */}
+            {course.teachers && course.teachers.length > 0 && (
+              <div className="mt-6">
+                <h3 className="text-sm font-medium text-slate-500 mb-3">授课教师</h3>
+                <div className="flex flex-wrap gap-2">
+                  {course.teachers.map((teacher) => (
+                    <Link
+                      key={teacher.id}
+                      href={`/teacher/detail?id=${teacher.id}`}
+                      className="group flex items-center gap-2 rounded-full border border-slate-200 bg-white/60 px-4 py-2 text-sm shadow-sm backdrop-blur-md transition-all hover:border-blue-300 hover:bg-blue-50 hover:shadow-md"
+                    >
+                      <span className="font-medium text-slate-700 group-hover:text-blue-700">
+                        {teacher.name}
+                      </span>
+                    </Link>
+                  ))}
                 </div>
               </div>
-              <div className="rounded-[22px] bg-slate-50 px-4 py-3">
-                <div className="text-xs text-gray-400">资源合集</div>
-                <Link
-                  href={buildResourceCollectionPath(detail.id)}
-                  className="mt-2 inline-flex rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-                >
-                  查看该课程下的资源
-                </Link>
+            )}
+          </div>
+
+          {/* Master Rating Block */}
+          <div className="w-full md:w-80 shrink-0">
+            <GlassCard className="flex flex-col items-center justify-center p-6 text-center border border-white/40 shadow-lg">
+              <div className="text-sm font-medium text-slate-500">综合评分</div>
+              <div className="mt-2 text-6xl font-black tracking-tighter text-[var(--first-color)] drop-shadow-sm">
+                {(course.avg_score || 0).toFixed(1)}
               </div>
-            </div>
+              
+              <div className="mt-6 w-full space-y-4">
+                {statsMap.map((stat) => (
+                  <div key={stat.key} className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-medium">
+                      <span className="text-slate-600">{stat.label}</span>
+                      <span className="text-slate-800">{stat.value.toFixed(1)}</span>
+                    </div>
+                    <RatingBar value={stat.value} max={5} />
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[32px] border border-white/60 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl md:p-8">
-        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="inline-flex rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[var(--first-color)] shadow-sm">
-              授课教师
-            </div>
-            <h2 className="mt-3 text-2xl font-semibold text-gray-900">本课程授课教师</h2>
-            <p className="mt-1 text-sm text-gray-500">
-              点击教师名称可继续查看教师画像、维度评分与全部教师评价。
-            </p>
-          </div>
-
-          <Link
-            href={buildResourceCollectionPath(detail.id)}
-            className="inline-flex rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-2 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
-          >
-            进入资源合集
-          </Link>
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          {(detail.teachers ?? []).map((teacher) => (
-            <Link
-              key={teacher.id}
-              href={buildTeacherPath(teacher.id)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/90 px-4 py-2.5 text-sm text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--first-color)]/20 hover:text-[var(--first-color)]"
-            >
-              <span className="font-medium">{teacher.name}</span>
-              {teacher.title ? (
-                <span className="text-xs text-gray-400">{teacher.title}</span>
-              ) : null}
-            </Link>
-          ))}
-        </div>
+      {/* Resource Gateway Entry */}
+      <section>
+        <Link 
+          href={`/resource/course?course_id=${course.id}`}
+          className="group relative flex w-full items-center justify-between overflow-hidden rounded-[24px] border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-6 shadow-sm transition-all hover:border-blue-200 hover:shadow-md"
+        >
+           <div className="flex items-center gap-4">
+             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100/50 text-[var(--first-color)]">
+               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+               </svg>
+             </div>
+             <div>
+               <h3 className="text-lg font-semibold text-slate-900 group-hover:text-blue-700 transition-colors">
+                 课程资料合集
+               </h3>
+               <p className="text-sm text-slate-500">
+                 查看此课程的所有PPT、考卷、笔记等（共 {course.resource_count || 0} 份）
+               </p>
+             </div>
+           </div>
+           
+           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 group-hover:text-blue-600 shadow-sm transition-colors">
+             <svg className="h-5 w-5 rtl:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+             </svg>
+           </div>
+        </Link>
       </section>
 
-      <DetailEvaluationSection
-        title="课程评价"
-        description="从最新评价开始向下浏览，滚动到底会自动加载更多内容。"
-        evaluationType="course"
-        initialItems={evaluations}
-        initialTotal={evaluationTotal}
-        relatedItems={(detail.teachers ?? []).map((teacher) => ({
-          id: teacher.id,
-          name: teacher.name,
-        }))}
-        listEvaluations={(page, size) => listCourseEvaluations(detail.id, page, size)}
-        onReply={(evaluationId, payload) =>
-          createCourseEvaluationReply(evaluationId, payload)
-        }
-        onCreateEvaluation={(payload) =>
-          createCourseEvaluation(detail.id, payload as CourseEvaluationInput)
-        }
-      />
+      {/* Evaluations Content Area */}
+      <section>
+        <DetailEvaluationSection
+          title="课程评价"
+          description="大家对这门课怎么看？直接滚动浏览全部评价。"
+          evaluationType="course"
+          initialItems={evaluations}
+          initialTotal={evaluationTotal}
+          initialPage={1}
+          relatedItems={relatedTeachers}
+          listEvaluations={(page, size) => listCourseEvaluations(courseId, page, size)}
+          onCreateEvaluation={(payload) => createCourseEvaluation(courseId, payload)}
+          onReply={createCourseEvaluationReply}
+        />
+      </section>
     </div>
   );
 }
