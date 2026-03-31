@@ -1,19 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import {
-  getResourceDetail,
-  listResourceComments,
+  addLike,
   createResourceComment,
   createResourceCommentReply,
-  addLike,
+  getResourceDetail,
+  listResourceComments,
   removeLike,
 } from "@/api/detail";
-import type { ResourceDetail, ResourceComment } from "@/types/detail";
+import type { ResourceComment, ResourceDetail } from "@/types/detail";
 import { feedback } from "@/store/useFeedbackStore";
+import CommentComposerForm from "@/components/detail/CommentComposerForm";
+import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import CollectButton from "@/components/ui/CollectButton";
+import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import {
+  DetailHero,
+  DetailPageShell,
+  DetailRibbonTag,
+  DetailSection,
+  EntityPillLink,
+} from "@/components/detail/DetailScaffold";
+import {
+  buildCoursePath,
+  buildResourceCollectionPath,
+} from "@/lib/paths";
+
+interface ReplyTarget {
+  replyId?: number | null;
+  userId?: string | null;
+  userName?: string | null;
+}
+
+function formatDate(value?: string) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("zh-CN", { hour12: false });
+}
+
+function formatFileSize(bytes?: number | null) {
+  if (!bytes) return "未知大小";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
 
 export default function ResourceDetailPage() {
   const searchParams = useSearchParams();
@@ -25,180 +58,180 @@ export default function ResourceDetailPage() {
   const [totalComments, setTotalComments] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Pagination for comments
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasFetchedMore, setHasFetchedMore] = useState(false);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-
-  // Comment Replies State
-  const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
   const [draftMap, setDraftMap] = useState<Record<number, string>>({});
-  const [targetMap, setTargetMap] = useState<Record<number, {replyId?: number, userId?: string, userName?: string}>>({});
+  const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
 
-  // New Comment Draft
-  const [newCommentStr, setNewCommentStr] = useState("");
-  const [isSubmittingNew, setIsSubmittingNew] = useState(false);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!resourceId) return;
-    let isMounted = true;
+    let mounted = true;
     setIsLoading(true);
 
-    Promise.all([
-      getResourceDetail(resourceId),
-      listResourceComments(resourceId, 1, 10),
-    ])
-      .then(([resData, commentRes]) => {
-        if (!isMounted) return;
-        setResource(resData);
-        setComments(commentRes.items);
-        setTotalComments(commentRes.total);
+    Promise.all([getResourceDetail(resourceId), listResourceComments(resourceId, 1, 10)])
+      .then(([resourceData, commentData]) => {
+        if (!mounted) return;
+        setResource(resourceData);
+        setComments(commentData.items);
+        setTotalComments(commentData.total);
+        setPage(1);
+        setDraftMap({});
+        setTargetMap({});
       })
-      .catch((err) => {
-        console.error("加载资源详情失败", err);
+      .catch((error) => {
+        console.error("加载资源详情失败", error);
       })
       .finally(() => {
-        if (isMounted) setIsLoading(false);
+        if (mounted) setIsLoading(false);
       });
 
     return () => {
-      isMounted = false;
+      mounted = false;
     };
   }, [resourceId]);
 
-  // Infinite scroll
-  const hasMore = comments.length < totalComments || (!hasFetchedMore && totalComments === 0 && comments.length === 0);
+  const hasMore = comments.length < totalComments;
+
+  const fetchMore = useCallback(async () => {
+    if (!resourceId) return;
+
+    try {
+      setIsLoadingMore(true);
+      const nextPage = page + 1;
+      const result = await listResourceComments(resourceId, nextPage, 10);
+      setComments((prev) => {
+        const existing = new Set(prev.map((comment) => comment.id));
+        return [...prev, ...result.items.filter((comment) => !existing.has(comment.id))];
+      });
+      setTotalComments(result.total);
+      setPage(nextPage);
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "加载评论失败", description: "请稍后重试。" });
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [page, resourceId]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
     if (!node || isLoadingMore || !hasMore || !resourceId) return;
 
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        fetchMore();
-      }
-    });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void fetchMore();
+        }
+      },
+      { rootMargin: "280px" },
+    );
+
     observer.observe(node);
     return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, page, resourceId]);
-
-  const fetchMore = async () => {
-    if (!resourceId) return;
-    try {
-      setIsLoadingMore(true);
-      const nextPage = page + 1;
-      const res = await listResourceComments(resourceId, nextPage, 10);
-      setComments((prev) => {
-        const existing = new Set(prev.map((c) => c.id));
-        return [...prev, ...res.items.filter((c) => !existing.has(c.id))];
-      });
-      setTotalComments(res.total);
-      setPage(nextPage);
-      setHasFetchedMore(true);
-    } catch {
-      feedback.showToast({ title: "加载评论失败", type: "error" });
-    } finally {
-      setIsLoadingMore(false);
-    }
-  };
-
-  const handleCreateComment = async () => {
-    if (!resourceId || !newCommentStr.trim()) return;
-    try {
-      setIsSubmittingNew(true);
-      const res = await createResourceComment(resourceId, {
-        content: newCommentStr.trim(),
-      });
-      if (res) {
-        setComments((prev) => [res, ...prev]);
-        setTotalComments((t) => t + 1);
-        setNewCommentStr("");
-        feedback.showToast({ title: "评论成功", type: "success" });
-      }
-    } catch {
-      feedback.showToast({ title: "评论失败", type: "error" });
-    } finally {
-      setIsSubmittingNew(false);
-    }
-  };
+  }, [fetchMore, hasMore, isLoadingMore, resourceId]);
 
   const handleReplySubmit = async (parentId: number) => {
     const content = draftMap[parentId]?.trim();
-    if (!content) return;
+    if (!content) {
+      feedback.warning({ title: "回复内容不能为空" });
+      return;
+    }
 
     try {
       setSubmittingId(parentId);
       const target = targetMap[parentId] || {};
-
-      const res = await createResourceCommentReply(parentId, {
+      const result = await createResourceCommentReply(parentId, {
         content,
         reply_to_comment_id: target.replyId ?? null,
         reply_to_user_id: target.userId ?? null,
       });
 
-      if (res) {
-        setComments((prev) =>
-          prev.map((c) => {
-            if (c.id === parentId) {
-              return { ...c, children: [...(c.children || []), res] };
-            }
-            return c;
-          }),
-        );
-        setDraftMap((p) => ({ ...p, [parentId]: "" }));
-        setTargetMap((p) => ({ ...p, [parentId]: {} }));
+      if (!result) {
+        return;
       }
-    } catch {
-      feedback.showToast({ title: "回复失败", type: "error" });
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.id === parentId
+            ? {
+                ...comment,
+                children: [...(comment.children || []), result],
+              }
+            : comment,
+        ),
+      );
+      setDraftMap((prev) => ({ ...prev, [parentId]: "" }));
+      setTargetMap((prev) => ({ ...prev, [parentId]: {} }));
+      feedback.success({ title: "回复成功" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "回复失败", description: "请稍后重试。" });
     } finally {
       setSubmittingId(null);
     }
   };
 
-    const handleToggleLike = async (id: number, currentLiked: boolean, parentId?: number) => {
-      try {
-        if (currentLiked) {
-          await removeLike("comment", id);
-        } else {
-          await addLike("comment", id);
-        }
-  
-        setComments((prev) => {
-          return prev.map((item) => {
-             if (!parentId && item.id === id) {
-                 return { ...item, is_liked: !currentLiked, likes: (item.likes || 0) + (currentLiked ? -1 : 1) };
-             }
-             if (parentId && item.id === parentId && item.children) {
-                 return {
-                     ...item,
-                     children: item.children.map(r => r.id === id ? { ...r, is_liked: !currentLiked, likes: (r.likes || 0) + (currentLiked ? -1 : 1) } : r)
-                 };
-             }
-             return item;
-          });
-        });
-      } catch {
-          feedback.showToast({ title: "操作失败", type: "error"});
-      }
-    };
+  const handleToggleLike = async (id: number, currentLiked: boolean, parentId?: number) => {
+    const key = parentId ? `reply-${id}` : `comment-${id}`;
+    if (likeLoadingKey) return;
 
-  const formatFileSize = (bytes?: number | null) => {
-    if (!bytes) return "未知大小";
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    try {
+      setLikeLoadingKey(key);
+      if (currentLiked) {
+        await removeLike("comment", id);
+      } else {
+        await addLike("comment", id);
+      }
+
+      setComments((prev) =>
+        prev.map((comment) => {
+          if (!parentId && comment.id === id) {
+            return {
+              ...comment,
+              is_liked: !currentLiked,
+              likes: Math.max(0, (comment.likes || 0) + (currentLiked ? -1 : 1)),
+            };
+          }
+
+          if (parentId && comment.id === parentId && comment.children) {
+            return {
+              ...comment,
+              children: comment.children.map((child) =>
+                child.id === id
+                  ? {
+                      ...child,
+                      is_liked: !currentLiked,
+                      likes: Math.max(0, (child.likes || 0) + (currentLiked ? -1 : 1)),
+                    }
+                  : child,
+              ),
+            };
+          }
+
+          return comment;
+        }),
+      );
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "操作失败", description: "请稍后重试。" });
+    } finally {
+      setLikeLoadingKey(null);
+    }
   };
 
   if (!resourceId) {
-    return <div className="p-8 text-center text-slate-500">请提供资源ID</div>;
+    return <div className="p-8 text-center text-slate-500">请提供资源 ID</div>;
   }
 
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-teal-500" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
       </div>
     );
   }
@@ -208,253 +241,381 @@ export default function ResourceDetailPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-8 pb-24">
-      {/* Hero Section: Resource Theme (Teal/Emerald) */}
-      <section className="relative overflow-hidden rounded-[32px] p-8 md:p-12 border border-teal-100/50 shadow-sm">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-emerald-50/40" />
-        <div className="absolute -top-32 -left-20 h-96 w-96 animate-blob rounded-full bg-teal-200/40 mix-blend-multiply blur-3xl filter" />
-        <div className="absolute -bottom-24 right-10 h-80 w-80 animate-blob rounded-full bg-emerald-200/40 mix-blend-multiply blur-3xl filter animation-delay-2000" />
-
-        <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="inline-flex rounded-full bg-teal-100/80 px-3 py-1 text-xs font-medium text-teal-800 backdrop-blur-sm shadow-sm ring-1 ring-teal-200/50">
-              {resource.resource_type || "未知类型"}
-            </span>
-            <span className="text-sm font-medium text-emerald-800 bg-emerald-100/50 px-3 py-1 rounded-full ring-1 ring-emerald-200/50">
-               ★ {resource.hot_score || 0} 热度
-            </span>
-            <div className="ml-auto">
-               <CollectButton
-                  targetId={resource.id}
-                  targetType="resource"
-                  initialStatus={resource.is_favorited ?? false}
-                  className="rounded-full bg-white/60 p-2 shadow-sm backdrop-blur-md transition-colors hover:bg-teal-50"
-                  activeColor="text-teal-500"
-                />
-            </div>
-          </div>
-
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            {resource.title}
-          </h1>
-
-          {resource.course && (
-             <div className="mt-4 flex items-center gap-2">
-                <span className="text-slate-500 text-sm">所属课程：</span>
-                <Link
-                  href={`/course/detail?id=${resource.course.id}`}
-                  className="text-sm font-medium text-teal-700 bg-white/50 px-3 py-1 rounded-full transition-colors hover:bg-teal-100/80"
-                >
-                  {resource.course.name}
-                </Link>
-             </div>
-          )}
-
-          {resource.description && (
-            <p className="mt-6 max-w-2xl text-slate-700 leading-relaxed bg-white/40 p-4 rounded-2xl border border-white/60">
-              {resource.description}
-            </p>
-          )}
-
-          <div className="mt-6 flex flex-wrap gap-6 text-sm font-medium text-slate-600">
-            <div className="flex items-center gap-1.5 bg-white/50 px-3 py-1.5 rounded-xl border border-white/60">
-              <svg className="h-4 w-4 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              {resource.downloads || 0} 次下载
-            </div>
-            <div className="flex items-center gap-1.5 bg-white/50 px-3 py-1.5 rounded-xl border border-white/60">
-              <svg className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              {resource.views || 0} 次浏览
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* File First Content Area */}
-      <section className="space-y-6">
-         <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-slate-900">附件列表</h2>
-            <div className="h-px flex-1 bg-slate-100"></div>
-         </div>
-         
-         <div className="grid gap-4">
-           {resource.files && resource.files.length > 0 ? (
-             resource.files.map((file) => (
-               <div key={file.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-teal-200">
-                 <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="font-medium text-slate-800 break-all">{file.filename}</p>
-                      <p className="text-sm text-slate-500 mt-0.5">{formatFileSize(file.size_bytes)}</p>
-                    </div>
-                 </div>
-                 <button
-                    onClick={() => {
-                        window.open(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/resources/files/${file.id}/download`, "_blank");
-                    }}
-                    className="flex shrink-0 items-center justify-center rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow-md shadow-teal-500/20 transition-all hover:bg-teal-700"
-                 >
-                    下载
-                 </button>
-               </div>
-             ))
-           ) : (
-             <div className="rounded-2xl border border-dashed border-slate-200 py-12 text-center text-slate-500">
-                该资源尚未包含任何文件
-             </div>
-           )}
-         </div>
-      </section>
-
-      {/* Resource Level Comments */}
-      <section className="space-y-6 pt-6">
-        <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">资源讨论交流</h2>
-            <span className="text-sm text-slate-500">共 {totalComments} 条评论</span>
-        </div>
-
-        {/* Input for new top-level comment */}
-        <div className="flex gap-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-            <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center">
-                 <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                 </svg>
-            </div>
-            <div className="flex w-full flex-col gap-3">
-              <textarea
-                placeholder="分享你对这份资料的看法或提出问题..."
-                className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm focus:border-teal-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-teal-400"
-                rows={2}
-                value={newCommentStr}
-                onChange={(e) => setNewCommentStr(e.target.value)}
-              />
-              <div className="flex justify-end">
-                <button
-                  onClick={handleCreateComment}
-                  disabled={isSubmittingNew || !newCommentStr.trim()}
-                  className="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
-                >
-                  发表评论
-                </button>
+    <>
+      <DetailPageShell>
+        <DetailHero
+          accent="resource"
+          eyebrow={
+            <>
+              <DetailRibbonTag text={resource.resource_type || "资料"} tone="resource" />
+            </>
+          }
+          title={resource.title}
+          description="查看文件信息、课程归属和使用反馈。"
+          aside={
+            <div className="space-y-4 rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+              <div>
+                <div className="text-sm font-medium text-slate-500">快速动作</div>
+                <div className="mt-4">
+                  <CollectButton
+                    size="md"
+                    targetId={resource.id}
+                    targetType="resource"
+                    initialStatus={resource.is_favorited ?? false}
+                  />
+                </div>
+              </div>
+              <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-7 text-slate-600">
+                收藏后可以稍后再看。
               </div>
             </div>
-        </div>
+          }
+        />
 
-        {/* Comments List */}
-        <div className="space-y-4">
-           {comments.map((comment) => (
-             <div key={comment.id} className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
-                 <div className="flex items-start gap-3">
-                     <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 overflow-hidden">
+        <DetailSection
+          title="文件列表"
+          description="下载并查看这份资源包含的文件。"
+          action={
+            <div className="flex flex-wrap gap-3">
+              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                {resource.files?.length || 0} 个文件
+              </div>
+              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                下载 {resource.downloads || 0}
+              </div>
+              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                浏览 {resource.views || 0}
+              </div>
+            </div>
+          }
+        >
+          {resource.files && resource.files.length > 0 ? (
+            <div className="grid gap-4">
+              {resource.files.map((file, index) => (
+                <div
+                  key={file.id}
+                  className="flex flex-col gap-4 rounded-[30px] border border-emerald-100 bg-gradient-to-r from-white to-emerald-50/50 p-5 shadow-sm md:flex-row md:items-center md:justify-between"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-emerald-100 text-emerald-700 shadow-sm">
+                      <i className="uil uil-file-download-alt text-2xl" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
+                        文件 {index + 1}
+                      </div>
+                      <div className="mt-2 break-all text-lg font-semibold text-slate-950">{file.filename}</div>
+                      <div className="mt-2 flex flex-wrap gap-3 text-sm text-slate-500">
+                        <span>{formatFileSize(file.size_bytes)}</span>
+                        <span>{file.mime || "未知格式"}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(
+                        `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/resources/files/${file.id}/download`,
+                        "_blank",
+                      )
+                    }
+                    className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                  >
+                    下载文件
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50/70 py-16 text-center text-slate-500">
+              该资源暂未包含任何文件
+            </div>
+          )}
+        </DetailSection>
+
+        <DetailSection
+          title="补充信息"
+          description="资源的课程信息、标签和补充说明。"
+          action={
+            <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+              点赞 {resource.likes || 0}
+            </div>
+          }
+        >
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
+              <div className="text-sm font-medium text-slate-700">所属课程</div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {resource.course ? (
+                  <>
+                    <EntityPillLink href={buildCoursePath(resource.course.id)} tone="resource">
+                      {resource.course.name}
+                    </EntityPillLink>
+                    <EntityPillLink href={buildResourceCollectionPath(resource.course.id)} tone="resource">
+                      课程资源合集
+                    </EntityPillLink>
+                  </>
+                ) : (
+                  <div className="text-sm text-slate-400">暂无所属课程信息</div>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
+              <div className="text-sm font-medium text-slate-700">标签</div>
+              <div className="mt-4 text-sm leading-7 text-slate-600">
+                {resource.tags && resource.tags.length > 0 ? resource.tags.join(" / ") : "暂无标签"}
+              </div>
+            </div>
+          </div>
+
+          {resource.description ? (
+            <div className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="text-sm font-medium text-slate-700">资源说明</div>
+              <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">{resource.description}</div>
+            </div>
+          ) : null}
+        </DetailSection>
+
+        <div id="comments">
+          <DetailSection
+            title="资源评论"
+            description="看看大家的使用反馈，也可以留下你的评论。"
+            action={
+              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                {totalComments} 条评论
+              </div>
+            }
+          >
+            <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              <span>点击回复可继续讨论</span>
+            </div>
+
+            <div className="space-y-5">
+              {comments.map((comment) => {
+                const children = comment.children || [];
+                const activeReplyTarget = targetMap[comment.id];
+
+                return (
+                  <article
+                    key={comment.id}
+                    className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white to-slate-50/75 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)]"
+                  >
+                    <div className="flex gap-4">
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-semibold text-slate-400">
                         {comment.user?.avatar_url ? (
-                           <img src={comment.user.avatar_url} alt="" className="h-full w-full object-cover" />
+                          <img src={comment.user.avatar_url} alt="" className="h-full w-full object-cover" />
                         ) : (
-                           <div className="flex h-full items-center justify-center text-slate-400 text-xs text-center border-none">
-                              {comment.user?.nickname?.charAt(0) || "U"}
-                           </div>
+                          <span>{(comment.user?.nickname || "?").slice(0, 1)}</span>
                         )}
-                     </div>
-                     <div className="flex-1">
-                         <div className="flex items-center justify-between">
-                            <span className="font-medium text-slate-900 text-sm">{comment.user?.nickname || "未知用户"}</span>
-                            <span className="text-xs text-slate-400">{comment.created_at ? new Date(comment.created_at).toLocaleDateString() : ""}</span>
-                         </div>
-                         <p className="mt-1 text-sm text-slate-700">{comment.content}</p>
-                         
-                         <div className="mt-3 flex gap-4 text-xs font-medium text-slate-500">
-                             <button
-                               onClick={() => handleToggleLike(comment.id, !!comment.is_liked)}
-                               className={`hover:text-teal-600 transition ${comment.is_liked ? "text-teal-600" : ""}`}
-                             >
-                                 点赞 ({comment.likes || 0})
-                             </button>
-                             <button
-                               onClick={() => {
-                                 setExpandedMap(p => ({ ...p, [comment.id]: !p[comment.id] }));
-                                 if (!expandedMap[comment.id]) setTargetMap(p => ({ ...p, [comment.id]: {} }));
-                               }}
-                               className="hover:text-slate-800 transition"
-                             >
-                                 展开回复 ({comment.children?.length || 0})
-                             </button>
-                         </div>
+                      </div>
 
-                         {/* Nested Replies */}
-                         {expandedMap[comment.id] && (
-                             <div className="mt-4 rounded-xl bg-slate-50/80 p-4">
-                                {comment.children?.length ? (
-                                  <div className="space-y-4 mb-4">
-                                      {comment.children.map(child => (
-                                          <div key={child.id} className="text-sm">
-                                             <div className="flex items-center gap-2">
-                                                <span className="font-medium text-slate-900">{child.user?.nickname}</span>
-                                                {child.reply_to_user && (
-                                                   <span className="text-slate-400">回复 <span className="text-slate-700">@{child.reply_to_user.nickname}</span></span>
-                                                )}
-                                                <span className="text-xs text-slate-400 ml-auto">{child.created_at ? new Date(child.created_at).toLocaleDateString() : ""}</span>
-                                             </div>
-                                             <p className="mt-1 text-slate-700">{child.content}</p>
-                                             <div className="mt-1.5 gap-3 flex text-xs font-medium text-slate-500">
-                                                <button onClick={() => setTargetMap(p => ({...p, [comment.id]: { replyId: child.id, userId: child.user?.id, userName: child.user?.nickname }}))} className="hover:text-teal-600">回复</button>
-                                                <button onClick={() => handleToggleLike(child.id, !!child.is_liked, comment.id)} className={`hover:text-teal-600 ${child.is_liked ? "text-teal-600":""}`}>点赞 ({child.likes || 0})</button>
-                                             </div>
-                                          </div>
-                                      ))}
-                                  </div>
-                                ) : null}
+                      <div className="min-w-0 flex-1 space-y-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <div className="font-medium text-slate-900">{comment.user?.nickname || "未知用户"}</div>
+                            <div className="mt-1 text-xs text-slate-400">{formatDate(comment.created_at)}</div>
+                          </div>
+                          <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
+                            点赞 {comment.likes || 0}
+                          </div>
+                        </div>
 
-                                <div className="flex flex-col gap-2">
-                                  {targetMap[comment.id]?.userName && (
-                                     <div className="flex items-center justify-between text-xs text-teal-700 bg-teal-50 px-3 py-1.5 rounded-lg w-max">
-                                         <span>回复 @{targetMap[comment.id].userName}</span>
-                                         <button onClick={() => setTargetMap(p => ({...p, [comment.id]: {}}))} className="ml-2 hover:text-teal-900">×</button>
-                                     </div>
-                                  )}
-                                  <div className="flex gap-2">
-                                     <input
-                                        type="text"
-                                        placeholder="写下你的回复..."
-                                        value={draftMap[comment.id] || ""}
-                                        onChange={(e) => setDraftMap(p => ({...p, [comment.id]: e.target.value}))}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleReplySubmit(comment.id);
-                                            }
+                        <div className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{comment.content}</div>
+
+                        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLike(comment.id, !!comment.is_liked)}
+                            disabled={likeLoadingKey === `comment-${comment.id}`}
+                            className={`inline-flex items-center gap-2 transition ${
+                              comment.is_liked ? "text-emerald-700" : "hover:text-slate-700"
+                            }`}
+                          >
+                            <i className="uil uil-thumbs-up text-base" />
+                            <span>赞 {comment.likes || 0}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
+                            className="inline-flex items-center gap-2 transition hover:text-slate-700"
+                          >
+                            <i className="uil uil-comment-message text-base" />
+                            <span>回复 {children.length}</span>
+                          </button>
+                        </div>
+
+                        <div className="rounded-[28px] border border-slate-200 bg-white/80 p-4">
+                          {children.length > 0 ? (
+                            <div className="space-y-3 border-l-2 border-slate-100 pl-4">
+                              {children.map((child) => {
+                                const isTarget = activeReplyTarget?.replyId === child.id;
+
+                                return (
+                                  <div
+                                    key={child.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    onClick={() =>
+                                      setTargetMap((prev) => ({
+                                        ...prev,
+                                        [comment.id]: {
+                                          replyId: child.id,
+                                          userId: child.user?.id || null,
+                                          userName: child.user?.nickname || null,
+                                        },
+                                      }))
+                                    }
+                                    onKeyDown={(event) => {
+                                      if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        setTargetMap((prev) => ({
+                                          ...prev,
+                                          [comment.id]: {
+                                            replyId: child.id,
+                                            userId: child.user?.id || null,
+                                            userName: child.user?.nickname || null,
+                                          },
+                                        }));
+                                      }
+                                    }}
+                                    className={`rounded-[22px] border p-4 text-left shadow-sm transition ${
+                                      isTarget
+                                        ? "border-emerald-200 bg-emerald-50/80"
+                                        : "border-white bg-slate-50/80 hover:border-slate-200 hover:bg-white"
+                                    }`}
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                      <div className="text-sm text-slate-700">
+                                        <span className="font-medium text-slate-900">{child.user?.nickname || "未知用户"}</span>
+                                        {child.reply_to_user ? (
+                                          <span className="ml-2 text-slate-400">回复 @{child.reply_to_user.nickname}</span>
+                                        ) : null}
+                                      </div>
+                                      <div className="text-xs text-slate-400">{formatDate(child.created_at)}</div>
+                                    </div>
+                                    <div className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700">
+                                      {child.content}
+                                    </div>
+                                    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400">
+                                      <button
+                                        type="button"
+                                        onClick={(event) => {
+                                          event.stopPropagation();
+                                          void handleToggleLike(child.id, !!child.is_liked, comment.id);
                                         }}
-                                        className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-400 focus:outline-none focus:ring-1 focus:ring-teal-400 bg-white"
-                                     />
-                                     <button
-                                        disabled={submittingId === comment.id}
-                                        onClick={() => handleReplySubmit(comment.id)}
-                                        className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
-                                     >
-                                        发布
-                                     </button>
+                                        disabled={likeLoadingKey === `reply-${child.id}`}
+                                        className={`inline-flex items-center gap-2 transition ${
+                                          child.is_liked ? "text-emerald-700" : "hover:text-slate-600"
+                                        }`}
+                                      >
+                                        <i className="uil uil-thumbs-up text-sm" />
+                                        <span>{child.likes || 0}</span>
+                                      </button>
+                                      <span>点击继续回复</span>
+                                    </div>
                                   </div>
-                                </div>
-                             </div>
-                         )}
-                     </div>
-                 </div>
-             </div>
-           ))}
-        </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="rounded-[22px] bg-slate-50 px-4 py-5 text-sm text-slate-400">
+                              还没有回复，来留下第一句吧。
+                            </div>
+                          )}
 
-        <div ref={loadMoreRef} className="py-6 text-center text-sm text-slate-500">
-            {isLoadingMore && "加载中..."}
-            {!hasMore && comments.length > 0 && "没有更多评论了"}
-            {comments.length === 0 && !isLoadingMore && "还没有人发表评论，来抢占沙发吧！"}
+                          <div className="mt-4 rounded-[24px] border border-dashed border-emerald-200 bg-slate-50/90 p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                              <div className="text-sm text-slate-500">
+                                {activeReplyTarget?.userName ? (
+                                  <span>
+                                    当前回复 <span className="text-emerald-700">@{activeReplyTarget.userName}</span>
+                                  </span>
+                                ) : (
+                                  "当前回复主贴"
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
+                                className="text-sm text-slate-400 transition hover:text-slate-600"
+                              >
+                                切回回复主贴
+                              </button>
+                            </div>
+                            <textarea
+                              rows={3}
+                              value={draftMap[comment.id] || ""}
+                              onChange={(event) =>
+                                setDraftMap((prev) => ({
+                                  ...prev,
+                                  [comment.id]: event.target.value,
+                                }))
+                              }
+                              placeholder="写下你的回复..."
+                              className="mt-3 w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition focus:border-emerald-300"
+                            />
+                            <div className="mt-3 flex items-center justify-end">
+                              <button
+                                type="button"
+                                onClick={() => handleReplySubmit(comment.id)}
+                                disabled={submittingId === comment.id}
+                                className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                              >
+                                {submittingId === comment.id ? "发送中..." : "发送回复"}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+
+              {!isLoadingMore && comments.length === 0 ? (
+                <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50/70 px-6 py-16 text-center text-slate-500">
+                  还没有人发表资源评论，欢迎留下第一条反馈。
+                </div>
+              ) : null}
+
+              <div ref={loadMoreRef} className="py-4 text-center text-sm text-slate-500">
+                {isLoadingMore ? "正在加载更多评论..." : null}
+                {!hasMore && comments.length > 0 ? "没有更多评论了" : null}
+              </div>
+            </div>
+          </DetailSection>
         </div>
-      </section>
-    </div>
+      </DetailPageShell>
+
+      <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评论" tone="resource" />
+
+      <DetailComposerModal
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
+        accent="resource"
+        badge="资源评论"
+        title={`聊聊 ${resource.title}`}
+        description="不用跳页，直接在当前详情里补一句使用反馈、问题说明或适用场景。"
+      >
+        <CommentComposerForm
+          placeholder="这份资源适合考前速刷、平时补笔记还是查漏补缺？文件是否完整、清晰、好下载？"
+          onSubmit={async (content) => {
+            try {
+              const result = await createResourceComment(resource.id, { content });
+              if (!result) return;
+              setComments((prev) => [result, ...prev]);
+              setTotalComments((prev) => prev + 1);
+              setIsComposerOpen(false);
+              feedback.success({ title: "评论已发布" });
+            } catch (error) {
+              console.error(error);
+              feedback.error({ title: "发布失败", description: "请稍后重试。" });
+              throw error;
+            }
+          }}
+        />
+      </DetailComposerModal>
+    </>
   );
 }

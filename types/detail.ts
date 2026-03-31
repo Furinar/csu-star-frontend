@@ -35,7 +35,6 @@ export interface UserBrief {
 
 export interface EvaluationReply {
   id: number;
-  evaluation_id: number;
   user: UserBrief;
   content: string;
   reply_to_user?: UserBrief | null;
@@ -57,8 +56,6 @@ export interface TeacherEvaluation {
   mode?: "standalone" | "linked" | null;
   course_id?: number | null;
   course_name?: string | null;
-  mirror_evaluation_id?: number | null;
-  mirror_entity_type?: "teacher" | "course" | null;
   user?: UserBrief | null;
   rating_quality?: number | null;
   rating_grading?: number | null;
@@ -82,8 +79,6 @@ export interface CourseEvaluation {
   mode?: "standalone" | "linked" | null;
   teacher_id?: number | null;
   teacher_name?: string | null;
-  mirror_evaluation_id?: number | null;
-  mirror_entity_type?: "teacher" | "course" | null;
   user?: UserBrief | null;
   rating_homework?: number | null;
   rating_gain?: number | null;
@@ -140,6 +135,10 @@ export interface TeacherDetail {
   department_name?: string | null;
   avatar_url?: string | null;
   bio?: string | null;
+  metadata?: {
+    tutor_type?: string | null;
+    homepage_url?: string | null;
+  } | null;
   avg_score?: number | null;
   avg_quality?: number | null;
   avg_grading?: number | null;
@@ -149,7 +148,7 @@ export interface TeacherDetail {
   resource_count?: number | null;
   hot_score?: number | null;
   courses?: CourseBrief[];
-  latest_evaluations?: TeacherEvaluation[];
+  is_favorited?: boolean | null;
 }
 
 export interface CourseDetail {
@@ -165,8 +164,7 @@ export interface CourseDetail {
   hot_score?: number | null;
   download_total?: number | null;
   teachers?: TeacherBrief[];
-  resources_preview?: ResourceBrief[];
-  latest_evaluations?: CourseEvaluation[];
+  is_favorited?: boolean | null;
 }
 
 export interface CourseResourceCollection {
@@ -217,7 +215,5 @@ export interface ResourceDetail {
   description?: string | null;
   tags?: string[];
   files?: ResourceFile[];
-  course_resource_collection_path?: string | null;
-  course_evaluation_anchor?: string | null;
   is_favorited?: boolean | null;
 }

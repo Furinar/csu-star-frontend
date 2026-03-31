@@ -1,8 +1,11 @@
 interface RatingBarProps {
-    label: string;
-    score: number;
+    label?: string;
+    score?: number;
     maxScore?: number;
-    color: number;
+    color?: number;
+    value?: number;
+    max?: number;
+    colorClass?: string;
 }
 
 const COLOR_PRESETS = [
@@ -14,23 +17,47 @@ const COLOR_PRESETS = [
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-export default function RatingBar({ label, score, maxScore = 5, color }: RatingBarProps) {
-    const safeMaxScore = maxScore > 0 ? maxScore : 5;
-    const safeScore = clamp(Number.isFinite(score) ? score : 0, 0, safeMaxScore);
-    const colorIndex = ((Math.floor(color) % COLOR_PRESETS.length) + COLOR_PRESETS.length) % COLOR_PRESETS.length;
+const COLOR_CLASS_TO_INDEX: Record<string, number> = {
+    "bg-emerald-500": 0,
+    "bg-green-500": 0,
+    "bg-sky-500": 1,
+    "bg-blue-500": 1,
+    "bg-amber-500": 2,
+    "bg-yellow-500": 2,
+    "bg-purple-500": 3,
+    "bg-fuchsia-500": 3,
+};
+
+export default function RatingBar({
+    label = "",
+    score,
+    maxScore = 5,
+    color = 1,
+    value,
+    max,
+    colorClass,
+}: RatingBarProps) {
+    const resolvedMax = max ?? maxScore;
+    const resolvedScore = value ?? score ?? 0;
+    const safeMaxScore = resolvedMax > 0 ? resolvedMax : 5;
+    const safeScore = clamp(Number.isFinite(resolvedScore) ? resolvedScore : 0, 0, safeMaxScore);
+    const fallbackColor = colorClass ? (COLOR_CLASS_TO_INDEX[colorClass] ?? color) : color;
+    const colorIndex = ((Math.floor(fallbackColor) % COLOR_PRESETS.length) + COLOR_PRESETS.length) % COLOR_PRESETS.length;
     const width = `${(safeScore / safeMaxScore) * 100}%`;
-    const displayLabel = label.trim() || "未命名";
+    const displayLabel = label.trim();
 
     return (
         <div className="flex w-full items-center gap-3 py-1">
-            <span className="w-20 truncate text-sm font-medium text-gray-600">{displayLabel}</span>
+            {displayLabel ? (
+                <span className="w-20 truncate text-sm font-medium text-gray-600">{displayLabel}</span>
+            ) : null}
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200/90">
                 <div
                     className="h-full rounded-full transition-[width] duration-300 ease-out"
                     style={{ width, background: COLOR_PRESETS[colorIndex] }}
                 />
             </div>
-            <span className="w-11 text-right text-sm font-semibold tabular-nums text-gray-500">
+            <span className="w-11 shrink-0 text-right text-sm font-semibold tabular-nums text-gray-500">
                 {safeScore.toFixed(2)}
             </span>
         </div>

@@ -1,0 +1,210 @@
+"use client";
+
+import type { ReactNode } from "react";
+import Link from "next/link";
+
+interface DetailHeroProps {
+  accent: "course" | "teacher" | "resource";
+  eyebrow?: ReactNode;
+  title: ReactNode;
+  description?: ReactNode;
+  aside?: ReactNode;
+  meta?: ReactNode;
+  children?: ReactNode;
+  footer?: ReactNode;
+  layout?: "default" | "course-grid";
+}
+
+const accentStyles = {
+  course: {
+    shell: "border-sky-100/80 bg-gradient-to-br from-sky-50 via-white to-indigo-50",
+    spotlightA: "bg-sky-200/55",
+    spotlightB: "bg-indigo-200/45",
+    stripe: "from-sky-500/10 via-transparent to-white/30",
+  },
+  teacher: {
+    shell: "border-rose-100/80 bg-gradient-to-br from-rose-50 via-white to-amber-50",
+    spotlightA: "bg-rose-200/55",
+    spotlightB: "bg-amber-200/45",
+    stripe: "from-rose-500/10 via-transparent to-white/30",
+  },
+  resource: {
+    shell: "border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50",
+    spotlightA: "bg-emerald-200/55",
+    spotlightB: "bg-cyan-200/45",
+    stripe: "from-emerald-500/10 via-transparent to-white/30",
+  },
+} as const;
+
+export function DetailPageShell({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-24 pt-8 md:px-6 lg:px-8">{children}</div>;
+}
+
+export function DetailHero({
+  accent,
+  eyebrow,
+  title,
+  description,
+  aside,
+  meta,
+  children,
+  footer,
+  layout = "default",
+}: DetailHeroProps) {
+  const style = accentStyles[accent];
+  const contentWidth = layout === "course-grid" ? "lg:grid-cols-[minmax(0,1.15fr)_320px]" : "lg:grid-cols-[minmax(0,1fr)_320px]";
+
+  return (
+    <section className={`relative overflow-hidden rounded-[36px] border p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-7 ${style.shell}`}>
+      <div className={`absolute -left-12 top-6 h-48 w-48 rounded-full blur-3xl ${style.spotlightA}`} />
+      <div className={`absolute right-0 top-0 h-56 w-56 rounded-full blur-3xl ${style.spotlightB}`} />
+      <div className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-r ${style.stripe}`} />
+      <div className="absolute inset-[1px] rounded-[35px] border border-white/70" />
+
+      <div className={`relative grid gap-5 ${aside ? contentWidth : ""}`}>
+        <div className="space-y-6 px-1 py-2 md:px-2 md:py-4">
+          {eyebrow ? <div className="flex flex-wrap items-center gap-3">{eyebrow}</div> : null}
+          <div className="space-y-3">
+            <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-slate-950 md:text-5xl">{title}</h1>
+            {description ? (
+              <div className="max-w-3xl text-sm leading-7 text-slate-600 md:text-base">{description}</div>
+            ) : null}
+          </div>
+          {meta ? <div className="flex flex-wrap gap-3">{meta}</div> : null}
+          {children}
+        </div>
+
+        {aside ? <div className="relative">{aside}</div> : null}
+      </div>
+
+      {footer ? (
+        <div className="relative mt-5 rounded-[30px] border border-white/75 bg-white/72 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl md:p-6">
+          {footer}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+export function DetailRibbonTag({
+  text,
+  tone = "course",
+}: {
+  text: string;
+  tone?: "course" | "teacher" | "resource";
+}) {
+  const label = text.trim();
+  if (!label) return null;
+
+  const chars = Array.from(label).slice(0, 2);
+  const toneStyles = {
+    course: "bg-[var(--first-color)] text-white",
+    teacher: "bg-rose-500 text-white",
+    resource: "bg-emerald-500 text-white",
+  } as const;
+
+  return (
+    <span className={`inline-flex flex-col rounded-b-sm px-1.5 py-1 text-sm font-bold shadow-lg ${toneStyles[tone]}`}>
+      {chars.map((char, index) => (
+        <span key={`${label}-${index}`}>{char}</span>
+      ))}
+    </span>
+  );
+}
+
+export function DetailMetricPill({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: ReactNode;
+  tone?: "default" | "course" | "teacher" | "resource";
+}) {
+  const toneStyles = {
+    default: "border-slate-200 bg-white text-slate-700",
+    course: "border-sky-100 bg-sky-50/80 text-sky-700",
+    teacher: "border-rose-100 bg-rose-50/80 text-rose-700",
+    resource: "border-emerald-100 bg-emerald-50/80 text-emerald-700",
+  } as const;
+
+  return (
+    <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm shadow-sm ${toneStyles[tone]}`}>
+      <span className="text-slate-400">{label}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+export function DetailStatCard({
+  label,
+  value,
+  helper,
+}: {
+  label: string;
+  value: ReactNode;
+  helper?: ReactNode;
+}) {
+  return (
+    <div className="rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <div className="text-sm font-medium text-slate-500">{label}</div>
+      <div className="mt-3 text-6xl font-semibold tracking-[-0.07em] text-slate-950">{value}</div>
+      {helper ? <div className="mt-5 text-sm text-slate-500">{helper}</div> : null}
+    </div>
+  );
+}
+
+export function DetailSection({
+  title,
+  description,
+  action,
+  children,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="rounded-[32px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:p-7">
+      <div className="flex flex-col gap-3 border-b border-slate-100 pb-5 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">{title}</h2>
+          {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+        </div>
+        {action}
+      </div>
+      <div className="pt-6">{children}</div>
+    </section>
+  );
+}
+
+export function EntityPillLink({
+  href,
+  children,
+  tone = "default",
+}: {
+  href: string;
+  children: ReactNode;
+  tone?: "default" | "course" | "teacher" | "resource";
+}) {
+  const toneStyles = {
+    default: "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
+    course: "border-sky-100 bg-white hover:border-sky-200 hover:bg-sky-50/70",
+    teacher: "border-rose-100 bg-white hover:border-rose-200 hover:bg-rose-50/70",
+    resource: "border-emerald-100 bg-white hover:border-emerald-200 hover:bg-emerald-50/70",
+  } as const;
+
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition ${toneStyles[tone]}`}
+    >
+      {children}
+    </Link>
+  );
+}

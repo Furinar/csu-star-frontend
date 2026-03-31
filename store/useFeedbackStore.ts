@@ -67,6 +67,8 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
 export const feedback = {
   show: (input: FeedbackInput) =>
     useFeedbackStore.getState().push(normalizeInput(input)),
+  showToast: (input: FeedbackInput) =>
+    useFeedbackStore.getState().push(normalizeInput(input)),
   success: (input: FeedbackInput) =>
     useFeedbackStore.getState().push(normalizeInput(input, "success")),
   error: (input: FeedbackInput) =>

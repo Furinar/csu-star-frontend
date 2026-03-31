@@ -144,7 +144,6 @@ const normalizeEvaluationReplies = (raw: unknown): EvaluationReply[] => {
     return [
       {
         id: toNumber(item.id) ?? 0,
-        evaluation_id: toNumber(item.evaluation_id) ?? 0,
         user: normalizeUserBrief(item.user) ?? {
           id: "",
           nickname: "匿名用户",
@@ -175,8 +174,6 @@ const normalizeTeacherEvaluations = (raw: unknown): TeacherEvaluation[] => {
         mode: (toStringSafe(item.mode) as TeacherEvaluation["mode"]) ?? null,
         course_id: toNumber(item.course_id),
         course_name: toStringSafe(item.course_name),
-        mirror_evaluation_id: toNumber(item.mirror_evaluation_id),
-        mirror_entity_type: (toStringSafe(item.mirror_entity_type) as TeacherEvaluation["mirror_entity_type"]) ?? null,
         user: normalizeUserBrief(item.user),
         rating_quality: toNumber(item.rating_quality),
         rating_grading: toNumber(item.rating_grading),
@@ -210,8 +207,6 @@ const normalizeCourseEvaluations = (raw: unknown): CourseEvaluation[] => {
         mode: (toStringSafe(item.mode) as CourseEvaluation["mode"]) ?? null,
         teacher_id: toNumber(item.teacher_id),
         teacher_name: toStringSafe(item.teacher_name),
-        mirror_evaluation_id: toNumber(item.mirror_evaluation_id),
-        mirror_entity_type: (toStringSafe(item.mirror_entity_type) as CourseEvaluation["mirror_entity_type"]) ?? null,
         user: normalizeUserBrief(item.user),
         rating_homework: toNumber(item.rating_homework),
         rating_gain: toNumber(item.rating_gain),
@@ -259,6 +254,7 @@ const normalizeResourceComments = (raw: unknown): ResourceComment[] => {
 
 const normalizeTeacherDetail = (raw: unknown): TeacherDetail => {
   const data = isRecord(raw) ? raw : {};
+  const metadata = isRecord(data.metadata) ? data.metadata : null;
 
   return {
     id: toNumber(data.id) ?? 0,
@@ -268,6 +264,12 @@ const normalizeTeacherDetail = (raw: unknown): TeacherDetail => {
     department_name: toStringSafe(data.department_name),
     avatar_url: toStringSafe(data.avatar_url),
     bio: toStringSafe(data.bio),
+    metadata: metadata
+      ? {
+          tutor_type: toStringSafe(metadata.tutor_type),
+          homepage_url: toStringSafe(metadata.homepage_url),
+        }
+      : null,
     avg_score: toNumber(data.avg_score),
     avg_quality: toNumber(data.avg_quality),
     avg_grading: toNumber(data.avg_grading),
@@ -277,7 +279,7 @@ const normalizeTeacherDetail = (raw: unknown): TeacherDetail => {
     resource_count: toNumber(data.resource_count),
     hot_score: toNumber(data.hot_score),
     courses: normalizeCourseBriefs(data.courses),
-    latest_evaluations: normalizeTeacherEvaluations(data.latest_evaluations),
+    is_favorited: toBoolean(data.is_favorited),
   };
 };
 
@@ -297,8 +299,7 @@ const normalizeCourseDetail = (raw: unknown): CourseDetail => {
     hot_score: toNumber(data.hot_score),
     download_total: toNumber(data.download_total),
     teachers: normalizeTeacherBriefs(data.teachers),
-    resources_preview: normalizeResourceBriefs(data.resources_preview),
-    latest_evaluations: normalizeCourseEvaluations(data.latest_evaluations),
+    is_favorited: toBoolean(data.is_favorited),
   };
 };
 
@@ -357,8 +358,6 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
         },
       ];
     }),
-    course_resource_collection_path: toStringSafe(data.course_resource_collection_path),
-    course_evaluation_anchor: toStringSafe(data.course_evaluation_anchor),
     is_favorited: toBoolean(data.is_favorited),
   };
 };
