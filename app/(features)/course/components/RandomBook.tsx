@@ -45,6 +45,7 @@ export default function RandomBook() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     let alive = true;
@@ -73,18 +74,24 @@ export default function RandomBook() {
   useEffect(() => {
     if (courses.length <= 1) return;
 
-    let timeoutId: number | undefined;
+    let switchTimeoutId: number | undefined;
     const intervalId = window.setInterval(() => {
-      setIsAnimating(true);
-      timeoutId = window.setTimeout(() => {
-        setActiveIndex((current) => (current + 1) % courses.length);
-        setIsAnimating(false);
-      }, 220);
-    }, 5000);
+      setCountdown((current) => {
+        if (current <= 1) {
+          setIsAnimating(true);
+          switchTimeoutId = window.setTimeout(() => {
+            setActiveIndex((index) => (index + 1) % courses.length);
+            setIsAnimating(false);
+          }, 220);
+          return 10;
+        }
+        return current - 1;
+      });
+    }, 1000);
 
     return () => {
       window.clearInterval(intervalId);
-      if (timeoutId) window.clearTimeout(timeoutId);
+      if (switchTimeoutId) window.clearTimeout(switchTimeoutId);
     };
   }, [courses.length]);
 
@@ -93,13 +100,15 @@ export default function RandomBook() {
   const coursePath = course.id ? buildCoursePath(course.id) : null;
   const resourcePath = course.id ? buildResourceCollectionPath(course.id) : null;
   const evaluationPath = course.id ? buildCourseEvaluationAnchor(course.id) : null;
+  const courseTypeChars = course.course_type?.includes("公") ? ["公", "选"] : ["非", "公", "选"];
 
   return (
     <>
       <div className={`random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative ${isAnimating ? "is-switching" : ""}`}>
         <div className="absolute top-0 left-7 py-1 px-1.5 bg-first flex flex-col rounded-b-sm text-white font-bold shadow-lg user-invalid:">
-          <span>{course.course_type?.includes("公") ? "公" : "随"}</span>
-          <span>{course.course_type?.includes("公") ? "选" : "机"}</span>
+          {courseTypeChars.map((char, index) => (
+            <span key={`${course.id}-${index}-${char}`}>{char}</span>
+          ))}
         </div>
         <div className="left flex flex-col gap-4">
           <div className="course-info flex flex-wrap gap-4 items-center justify-between">
@@ -120,7 +129,19 @@ export default function RandomBook() {
               <span>公选</span>
             </div> */}
 
-            <CollectButton  size="sm"/>
+            <div className="flex items-center gap-3">
+              <div className="rounded-full border border-white/70 bg-white/75 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm">
+                {countdown}s 后切换
+              </div>
+              <CollectButton
+                key={`random-course-collect-${course.id}`}
+                size="sm"
+                isCollected={false}
+                targetId={course.id}
+                targetType="course"
+                initialStatus={false}
+              />
+            </div>
           </div>
 
           <div className="course-relate flex-1 grid grid-cols-3 gap-6 pt-4">
@@ -243,7 +264,7 @@ export default function RandomBook() {
                 label={"推荐指数"}
                 score={normalizeRating(course.avg_score)}
                 maxScore={5.0}
-                color={3}
+                color={1}
               />
               <RatingBar
                 label={"给分情况"}
@@ -255,7 +276,7 @@ export default function RandomBook() {
                 label={"任务量"}
                 score={normalizeRating(course.avg_exam_diff)}
                 maxScore={5.0}
-                color={0}
+                color={2}
               />
               <RatingBar
                 label={"课程收获"}
