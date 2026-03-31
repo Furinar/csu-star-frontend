@@ -137,3 +137,51 @@
   opacity: 1;
   transition: opacity 0.3s ease;
 }
+
+/* ---------- 详情页 Hero 背景动效 ---------- */
+@keyframes detail-orb-drift-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(18px, -14px, 0) scale(1.05);
+  }
+}
+
+@keyframes detail-orb-drift-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(-20px, 16px, 0) scale(1.08);
+  }
+}
+
+@keyframes detail-shimmer {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: translate3d(8px, -6px, 0);
+  }
+}
+
+.animate-detail-orb-a {
+  animation: detail-orb-drift-a 10s ease-in-out infinite;
+}
+
+.animate-detail-orb-b {
+  animation: detail-orb-drift-b 12s ease-in-out infinite;
+}
+
+.animate-detail-shimmer {
+  animation: detail-shimmer 8s ease-in-out infinite;
+}

@@ -15,7 +15,7 @@ function formatScore(value?: number | null) {
 
 export default function CourseResourceCollectionPage() {
   const searchParams = useSearchParams();
-  const courseId = Number(searchParams.get("courseId"));
+  const courseId = Number(searchParams.get("courseId") || searchParams.get("course_id"));
   const isInvalidCourseId = !Number.isFinite(courseId);
   const [detail, setDetail] = useState<CourseResourceCollection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,8 +88,22 @@ export default function CourseResourceCollectionPage() {
               <div className="text-sm text-gray-400">{"课程信息"}</div>
               <h1 className="mt-2 text-4xl font-bold text-gray-900">{detail.course.name}</h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
-                搜索结果与资源排行榜都会先落到这里，再继续进入单个资源详情或课程评价区。
+                这门课收录的资料都集中在这里，课程详情和评价入口保留在顶部，不再单独重复展开。
               </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={buildCoursePath(detail.course.id)}
+                className="rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-2 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
+              >
+                进入课程详情
+              </Link>
+              <Link
+                href={buildCourseEvaluationAnchor(detail.course.id)}
+                className="rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                跳转课程评价区
+              </Link>
             </div>
           </div>
           <div className="grid min-w-full grid-cols-2 gap-3 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-sm lg:min-w-[420px]">
@@ -114,24 +128,8 @@ export default function CourseResourceCollectionPage() {
       </section>
 
       <SectionCard
-        title="课程入口"
-        subtitle="可以跳回课程详情页查看授课教师和课程评价。"
-        action={
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={buildCoursePath(detail.course.id)}
-              className="rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-2 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
-            >
-              进入课程详情
-            </Link>
-            <Link
-              href={buildCourseEvaluationAnchor(detail.course.id)}
-              className="rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              跳转课程评价区
-            </Link>
-          </div>
-        }
+        title="课程资料"
+        subtitle="按资源卡片继续进入单个资料详情。"
       >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {detail.items.items.map((resource) => (
