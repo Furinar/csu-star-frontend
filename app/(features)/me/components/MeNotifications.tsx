@@ -26,6 +26,7 @@ export default function MeNotifications({onUnreadCountChange}: MeNotificationsPr
   );
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const notificationItems = notifications.items ?? [];
 
   const loadNotifications = useCallback(async () => {
     setIsLoading(true);
@@ -75,7 +76,7 @@ export default function MeNotifications({onUnreadCountChange}: MeNotificationsPr
   const handleMarkAllRead = async () => {
     try {
       await markAllNotificationsRead();
-      const unreadCount = notifications.items.filter((item) => !item.is_read).length;
+      const unreadCount = notificationItems.filter((item) => !item.is_read).length;
       setNotifications((current) => ({
         ...current,
         items: current.items.map((item) => ({
@@ -95,10 +96,10 @@ export default function MeNotifications({onUnreadCountChange}: MeNotificationsPr
     }
   };
 
-  const announcementItems = notifications.items.filter(
+  const announcementItems = notificationItems.filter(
       (item) => item.type === "system",
   );
-  const messageItems = notifications.items.filter(
+  const messageItems = notificationItems.filter(
       (item) => item.type !== "system",
   );
 
@@ -111,7 +112,7 @@ export default function MeNotifications({onUnreadCountChange}: MeNotificationsPr
   return (
       <div className="space-y-6">
         <div className="flex justify-end">
-          {notifications.items.length > 0 ? (
+          {notificationItems.length > 0 ? (
               <button
                   type="button"
                   onClick={() => void handleMarkAllRead()}

@@ -22,13 +22,16 @@ export default function MeEvaluations({
       "all" | "teacher" | "course"
   >("all");
 
+  const teacherEvaluationItems = teacherEvaluations.items ?? [];
+  const courseEvaluationItems = courseEvaluations.items ?? [];
+
   const filteredTeacherEvaluations =
       evaluationFilter === "all" || evaluationFilter === "teacher"
-          ? teacherEvaluations.items
+          ? teacherEvaluationItems
           : [];
   const filteredCourseEvaluations =
       evaluationFilter === "all" || evaluationFilter === "course"
-          ? courseEvaluations.items
+          ? courseEvaluationItems
           : [];
 
   return (

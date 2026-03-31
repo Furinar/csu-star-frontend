@@ -31,7 +31,7 @@ interface ApiEnvelope<T> {
 }
 
 interface PaginatedEnvelope<T> {
-  items: T[];
+  items: T[] | null;
   total: number;
 }
 
@@ -48,6 +48,13 @@ const unwrap = async <T>(
 
   return payload.data;
 };
+
+const normalizePaginated = <T>(
+  data: PaginatedData<T> | PaginatedEnvelope<T> | null | undefined,
+): PaginatedData<T> => ({
+  items: Array.isArray(data?.items) ? data.items : [],
+  total: typeof data?.total === "number" ? data.total : 0,
+});
 
 export function listDepartments() {
   return unwrap<Department[]>(
@@ -69,38 +76,44 @@ export function getMyResources(params?: {
   page?: number;
   size?: number;
 }) {
-  return unwrap<PaginatedData<ResourceItem>>(
+  return unwrap<PaginatedData<ResourceItem> | PaginatedEnvelope<ResourceItem>>(
     service.get<ApiEnvelope<PaginatedEnvelope<ResourceItem>>>("/me/resources", {
       params,
     }),
-  );
+  ).then(normalizePaginated);
 }
 
 export function getMyDownloads(params?: { page?: number; size?: number }) {
-  return unwrap<PaginatedData<DownloadRecord>>(
+  return unwrap<
+    PaginatedData<DownloadRecord> | PaginatedEnvelope<DownloadRecord>
+  >(
     service.get<ApiEnvelope<PaginatedEnvelope<DownloadRecord>>>(
       "/me/downloads",
       { params },
     ),
-  );
+  ).then(normalizePaginated);
 }
 
 export function getMyTeacherEvaluations(params?: { page?: number; size?: number }) {
-  return unwrap<PaginatedData<TeacherEvaluation>>(
+  return unwrap<
+    PaginatedData<TeacherEvaluation> | PaginatedEnvelope<TeacherEvaluation>
+  >(
     service.get<ApiEnvelope<PaginatedEnvelope<TeacherEvaluation>>>(
       "/me/teacher-evaluations",
       { params },
     ),
-  );
+  ).then(normalizePaginated);
 }
 
 export function getMyCourseEvaluations(params?: { page?: number; size?: number }) {
-  return unwrap<PaginatedData<CourseEvaluation>>(
+  return unwrap<
+    PaginatedData<CourseEvaluation> | PaginatedEnvelope<CourseEvaluation>
+  >(
     service.get<ApiEnvelope<PaginatedEnvelope<CourseEvaluation>>>(
       "/me/course-evaluations",
       { params },
     ),
-  );
+  ).then(normalizePaginated);
 }
 
 export function getMyFavorites(params?: {
@@ -108,11 +121,11 @@ export function getMyFavorites(params?: {
   page?: number;
   size?: number;
 }) {
-  return unwrap<PaginatedData<FavoriteItem>>(
+  return unwrap<PaginatedData<FavoriteItem> | PaginatedEnvelope<FavoriteItem>>(
     service.get<ApiEnvelope<PaginatedEnvelope<FavoriteItem>>>("/me/favorites", {
       params,
     }),
-  );
+  ).then(normalizePaginated);
 }
 
 export function getMyPoints(params?: {
@@ -120,11 +133,11 @@ export function getMyPoints(params?: {
   page?: number;
   size?: number;
 }) {
-  return unwrap<PaginatedData<PointsRecord>>(
+  return unwrap<PaginatedData<PointsRecord> | PaginatedEnvelope<PointsRecord>>(
     service.get<ApiEnvelope<PaginatedEnvelope<PointsRecord>>>("/me/points", {
       params,
     }),
-  );
+  ).then(normalizePaginated);
 }
 
 export function dailyCheckin() {
@@ -151,12 +164,14 @@ export function listMyNotifications(params?: {
   page?: number;
   size?: number;
 }) {
-  return unwrap<PaginatedData<NotificationItem>>(
+  return unwrap<
+    PaginatedData<NotificationItem> | PaginatedEnvelope<NotificationItem>
+  >(
     service.get<ApiEnvelope<PaginatedEnvelope<NotificationItem>>>(
       "/me/notifications",
       { params },
     ),
-  );
+  ).then(normalizePaginated);
 }
 
 export async function getUnreadNotificationCount() {
@@ -239,23 +254,23 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
       unreadCountResult.status === "fulfilled" ? unreadCountResult.value : 0,
     resources:
       resourcesResult.status === "fulfilled"
-        ? resourcesResult.value
+        ? normalizePaginated(resourcesResult.value)
         : { items: [], total: 0 },
     favorites:
       favoritesResult.status === "fulfilled"
-        ? favoritesResult.value
+        ? normalizePaginated(favoritesResult.value)
         : { items: [], total: 0 },
     teacherEvaluations:
       teacherEvaluationsResult.status === "fulfilled"
-        ? teacherEvaluationsResult.value
+        ? normalizePaginated(teacherEvaluationsResult.value)
         : { items: [], total: 0 },
     courseEvaluations:
       courseEvaluationsResult.status === "fulfilled"
-        ? courseEvaluationsResult.value
+        ? normalizePaginated(courseEvaluationsResult.value)
         : { items: [], total: 0 },
     points:
       pointsResult.status === "fulfilled"
-        ? pointsResult.value
+        ? normalizePaginated(pointsResult.value)
         : { items: [], total: 0 },
   };
 }

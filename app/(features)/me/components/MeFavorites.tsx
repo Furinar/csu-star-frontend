@@ -45,11 +45,12 @@ export default function MeFavorites({favorites}: MeFavoritesProps) {
   const [favoriteFilter, setFavoriteFilter] = useState<
       "all" | "resource" | "course" | "teacher"
   >("all");
+  const favoriteItems = favorites.items ?? [];
 
   const filteredFavorites =
       favoriteFilter === "all"
-          ? favorites.items
-          : favorites.items.filter(
+          ? favoriteItems
+          : favoriteItems.filter(
               (item) => getFavoriteType(item) === favoriteFilter,
           );
 

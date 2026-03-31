@@ -13,7 +13,7 @@ interface MeResourcesProps {
 }
 
 export default function MeResources({resources}: MeResourcesProps) {
-  const items = resources.items;
+  const items = resources.items ?? [];
 
   return (
       <div className="space-y-4">
