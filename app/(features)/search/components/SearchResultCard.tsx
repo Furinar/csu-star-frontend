@@ -171,11 +171,32 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const item = props.item;
     href = buildTeacherPath(item.id);
     title = item.name;
+    const courses = item.courses ?? [];
     subtitleIcon = "uil-bag";
     subtitleContent = (
-      <span className="text-xs text-gray-600">
-        {item.department_name || item.title || "未录入职称"}
-      </span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="text-xs text-gray-600">
+          {item.department_name || item.title || "未录入职称"}
+        </span>
+        <span className="text-xs text-gray-300">|</span>
+        {courses.length > 0 ? (
+          <>
+            {courses.slice(0, 3).map((course) => (
+              <span
+                key={course.id}
+                className="bg-gray-100 px-2 py-0.5 rounded-full text-xs text-gray-600"
+              >
+                {course.name}
+              </span>
+            ))}
+            <span className="text-xs text-gray-400">
+              共{courses.length}门课程
+            </span>
+          </>
+        ) : (
+          <span className="text-xs text-gray-400">暂无关联课程</span>
+        )}
+      </div>
     );
     leftScoreValue = item.avg_score ?? 0;
     leftScoreHint = "/ 5.0";

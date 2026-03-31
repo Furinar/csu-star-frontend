@@ -4,6 +4,7 @@ import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchBar from "@/components/ui/SearchBar";
 import RankCard from "@/components/ui/RankCard";
 import RandomBook from "@/app/(features)/course/components/RandomBook";
+import { buildCoursePath } from "@/lib/paths";
 import { useRouter } from "next/navigation";
 import { getCourseRankings } from "@/api/ranking";
 
@@ -106,9 +107,21 @@ export default function Course() {
           </div>
 
           <div className="grid grid-cols-3 gap-8">
-            <RankCard title="任务轻松榜" data={homeworkRanks} />
-            <RankCard title="课堂收获榜" data={gainRanks} />
-            <RankCard title="考试难度榜" data={examRanks} />
+            <RankCard
+              title="任务轻松榜"
+              data={homeworkRanks}
+              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+            />
+            <RankCard
+              title="课堂收获榜"
+              data={gainRanks}
+              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+            />
+            <RankCard
+              title="考试难度榜"
+              data={examRanks}
+              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+            />
           </div>
         </div>
       </div>

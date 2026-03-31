@@ -12,9 +12,10 @@ interface RankItem {
 interface RankCardProps {
   title: string;
   data: RankItem[];
+  onItemClick?: (item: RankItem) => void;
 }
 
-export default function RankCard({ title, data }: RankCardProps) {
+export default function RankCard({ title, data, onItemClick }: RankCardProps) {
   return (
     <div className="flex flex-col flex-1 p-6 rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] min-w-[280px]">
       <div className="flex items-center justify-between mb-6">
@@ -63,11 +64,12 @@ export default function RankCard({ title, data }: RankCardProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.02, x: 5 }}
-              className={`flex items-center gap-4 p-3 rounded-2xl transition-colors cursor-pointer ${
+              onClick={() => onItemClick?.(item)}
+              className={`flex items-center gap-4 p-3 rounded-2xl transition-colors ${
                 isTop3
                   ? "bg-white/50 hover:bg-white/80"
                   : "hover:bg-white/40"
-              }`}
+              } ${onItemClick ? "cursor-pointer" : "cursor-default"}`}
             >
               <div
                 className={`flex items-center justify-center w-8 h-8 rounded-full shadow-lg border ${

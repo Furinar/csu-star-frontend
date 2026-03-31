@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchBar from "@/components/ui/SearchBar";
+import { buildTeacherPath } from "@/lib/paths";
 import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
 import { useRouter } from "next/navigation";
@@ -107,14 +108,17 @@ export default function Teacher() {
             <RankCard
               title="教学质量排行榜"
               data={qualityRanks}
+              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
             />
             <RankCard
               title="给分优异榜"
               data={gradingRanks}
+              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
             />
             <RankCard
               title="考勤宽松榜"
               data={attendanceRanks}
+              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
             />
           </div>
         </div>
