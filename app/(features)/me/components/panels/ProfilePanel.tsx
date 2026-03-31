@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateMyProfile } from "@/api/me";
+import { DEPARTMENTS } from "@/data/departments";
 import { feedback } from "@/store/useFeedbackStore";
 import type { UserProfile } from "@/types/auth";
 import type {
@@ -32,6 +33,7 @@ export default function ProfilePanel({
     grade: profile.grade ? `${profile.grade}` : "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const resolvedDepartments = departments.length > 0 ? departments : DEPARTMENTS;
 
   const handleSave = async () => {
     const nickname = form.nickname.trim();
@@ -154,7 +156,7 @@ export default function ProfilePanel({
           }
         >
           <option value="">点击选择你的学院</option>
-          {departments.map((department) => (
+          {resolvedDepartments.map((department) => (
             <option key={department.id} value={department.id}>
               {department.name}
             </option>

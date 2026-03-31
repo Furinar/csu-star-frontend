@@ -1,6 +1,8 @@
 "use client";
 
 import GlassCard from "@/components/ui/GlassCard";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 import type { UserProfile } from "@/types/auth";
 import {
   type AccountMode,
@@ -61,6 +63,8 @@ export default function MeOverview({
   contributionData,
   onOpenPanel,
 }: MeOverviewProps) {
+  const router = useRouter();
+  const logout = useAuthStore((state) => state.logout);
   const settingsActions: Array<{
     key: PanelKey;
     title: string;
@@ -125,6 +129,11 @@ export default function MeOverview({
       desc: "提交举报或纠错",
     },
   ];
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
   return (
     <div className="space-y-6">
@@ -228,6 +237,18 @@ export default function MeOverview({
             />
           ))}
         </div>
+        {accountMode !== "guest" ? (
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-medium text-rose-600 shadow-sm transition hover:bg-rose-50"
+            >
+              <i className="uil uil-signout text-base" />
+              退出登录
+            </button>
+          </div>
+        ) : null}
       </div>
     </div>
   );

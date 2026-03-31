@@ -1,3 +1,4 @@
+import { getDepartmentNameById } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
 import type {
   Department,
@@ -178,7 +179,9 @@ export function getDepartmentName(departments: Department[], departmentId?: numb
   }
 
   return (
-    departments.find((item) => item.id === departmentId)?.name ?? "学院未填写"
+    departments.find((item) => item.id === departmentId)?.name ??
+    getDepartmentNameById(departmentId) ??
+    "学院未填写"
   );
 }
 

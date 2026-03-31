@@ -1,10 +1,10 @@
 import { service } from "@/lib/request";
+import { DEPARTMENTS } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
 import type {
   CheckinResult,
   CorrectionInput,
   CourseEvaluation,
-  Department,
   DownloadRecord,
   EmailBindInput,
   EmailStatus,
@@ -57,9 +57,7 @@ const normalizePaginated = <T>(
 });
 
 export function listDepartments() {
-  return unwrap<Department[]>(
-    service.get<ApiEnvelope<Department[]>>("/departments"),
-  );
+  return Promise.resolve(DEPARTMENTS);
 }
 
 export function getMyProfile() {
@@ -218,7 +216,6 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
   const [
     profileResult,
     emailStatusResult,
-    departmentsResult,
     resourcesResult,
     favoritesResult,
     teacherEvaluationsResult,
@@ -228,7 +225,6 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
   ] = await Promise.allSettled([
     getMyProfile(),
     getMyEmailStatus(),
-    listDepartments(),
     getMyResources({ page: 1, size: 100 }),
     getMyFavorites({ page: 1, size: 100 }),
     getMyTeacherEvaluations({ page: 1, size: 100 }),
@@ -248,8 +244,7 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
   return {
     profile: profileResult.value,
     emailStatus: emailStatusResult.value,
-    departments:
-      departmentsResult.status === "fulfilled" ? departmentsResult.value : [],
+    departments: DEPARTMENTS,
     unreadCount:
       unreadCountResult.status === "fulfilled" ? unreadCountResult.value : 0,
     resources:
