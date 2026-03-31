@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import SectionCard from "@/components/ui/SectionCard";
 import CollectButton from "@/components/ui/CollectButton";
 import {
   addFavorite,
@@ -53,9 +52,9 @@ interface ReplyTarget {
 }
 
 function appendReplyToTree(
-    comments: ResourceComment[],
-    rootId: number,
-    reply: ResourceComment,
+  comments: ResourceComment[],
+  rootId: number,
+  reply: ResourceComment,
 ) {
   return comments.map((comment) => {
     if (comment.id !== rootId) return comment;
@@ -68,9 +67,9 @@ function appendReplyToTree(
 }
 
 function updateCommentInTree(
-    comments: ResourceComment[],
-    targetId: number,
-    updater: (comment: ResourceComment) => ResourceComment,
+  comments: ResourceComment[],
+  targetId: number,
+  updater: (comment: ResourceComment) => ResourceComment,
 ): ResourceComment[] {
   return comments.map((comment) => {
     if (comment.id === targetId) {
@@ -106,19 +105,23 @@ function CommentCard({
   pendingReportId: number | null;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4">
+    <div className="rounded-[24px] border border-white/70 bg-white/92 p-4 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-gray-700">
             {comment.user?.nickname ?? "匿名用户"}
           </span>
           {comment.reply_to_user ? (
-            <span className="text-xs text-gray-400">回复 @{comment.reply_to_user.nickname}</span>
+            <span className="text-xs text-gray-400">
+              回复 @{comment.reply_to_user.nickname}
+            </span>
           ) : null}
         </div>
         <span className="text-xs text-gray-400">{formatDateTime(comment.created_at)}</span>
       </div>
+
       <p className="mt-3 text-sm leading-7 text-gray-600">{comment.content}</p>
+
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
@@ -144,7 +147,9 @@ function CommentCard({
               : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
           }`}
         >
-          {pendingLikeId === comment.id ? "处理中..." : `${comment.is_liked ? "已点赞" : "点赞"} ${comment.likes ?? 0}`}
+          {pendingLikeId === comment.id
+            ? "处理中..."
+            : `${comment.is_liked ? "已点赞" : "点赞"} ${comment.likes ?? 0}`}
         </button>
         <button
           type="button"
@@ -155,22 +160,81 @@ function CommentCard({
           {pendingReportId === comment.id ? "提交中..." : "举报"}
         </button>
       </div>
+
       {comment.children?.length ? (
-        <div className="mt-3 space-y-3 border-t border-gray-100 pt-3">
+        <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
           {comment.children.map((child) => (
-            <CommentCard
+            <div
               key={child.id}
-              comment={child}
-              rootId={rootId}
-              onReply={onReply}
-              onToggleLike={onToggleLike}
-              onReport={onReport}
-              pendingLikeId={pendingLikeId}
-              pendingReportId={pendingReportId}
-            />
+              onClick={() =>
+                onReply({
+                  rootId,
+                  commentId: child.id,
+                  userId: child.user?.id ?? null,
+                  userName: child.user?.nickname ?? null,
+                })
+              }
+              className="cursor-pointer rounded-[20px] border border-gray-100 bg-slate-50/80 p-4 transition hover:border-[var(--first-color)]/20 hover:bg-[var(--first-color)]/3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-800">
+                    {child.user?.nickname ?? "匿名用户"}
+                  </span>
+                  {child.reply_to_user ? (
+                    <span className="text-xs text-gray-400">
+                      回复 @{child.reply_to_user.nickname}
+                    </span>
+                  ) : null}
+                </div>
+                <span className="text-xs text-gray-400">
+                  {formatDateTime(child.created_at)}
+                </span>
+              </div>
+              <p className="mt-2 text-sm leading-7 text-gray-600">{child.content}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onToggleLike(child);
+                  }}
+                  disabled={pendingLikeId === child.id}
+                  className={`rounded-full px-3 py-1.5 text-xs transition ${
+                    child.is_liked
+                      ? "bg-[var(--first-color)] text-white"
+                      : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+                  }`}
+                >
+                  {pendingLikeId === child.id
+                    ? "处理中..."
+                    : `${child.is_liked ? "已点赞" : "点赞"} ${child.likes ?? 0}`}
+                </button>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onReport(child);
+                  }}
+                  disabled={pendingReportId === child.id}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+                >
+                  {pendingReportId === child.id ? "提交中..." : "举报"}
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function FileBadge({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-full border border-white/70 bg-white/85 px-4 py-2 text-sm text-gray-500 shadow-sm">
+      {label}
+      <span className="ml-2 font-semibold text-gray-900">{value}</span>
     </div>
   );
 }
@@ -303,122 +367,174 @@ export default function ResourceDetailPage() {
 
   return (
     <div className="container mt-10 mb-20 space-y-8">
-      <section className="relative overflow-hidden rounded-[36px] border border-white/60 bg-gradient-to-br from-white via-[var(--star-50)] to-[var(--ice-50)] p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--first-color)]/10 blur-3xl"></div>
-        <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-sky-200/40 blur-3xl"></div>
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm text-[var(--first-color)] shadow-sm">
+      <section className="relative overflow-hidden rounded-[40px] border border-white/60 bg-[linear-gradient(140deg,rgba(255,255,255,0.94)_0%,rgba(250,248,240,0.92)_48%,rgba(239,247,255,0.9)_100%)] p-7 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl md:p-9">
+        <div className="absolute -right-10 top-2 h-52 w-52 rounded-full bg-amber-200/30 blur-3xl animate-blob"></div>
+        <div className="absolute -left-6 bottom-0 h-48 w-48 rounded-full bg-sky-200/28 blur-3xl animate-blob animation-delay-2000"></div>
+
+        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_340px] lg:items-end">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/82 px-4 py-2 text-sm font-medium text-[var(--first-color)] shadow-sm">
               <i className="uil uil-file-alt"></i>
               资源详情
             </div>
-            <div>
-              <div className="flex items-center gap-4">
-                <h1 className="text-4xl font-bold text-gray-900">{detail.title}</h1>
-                <CollectButton
-                  isCollected={isFavorited}
-                  onClick={async () => {
-                    try {
-                      if (isFavorited) {
-                        await removeFavorite("resource", detail.id);
-                      } else {
-                        await addFavorite("resource", detail.id);
+
+            <div className="mt-5 flex flex-wrap items-start gap-4">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-4xl font-semibold tracking-tight text-gray-900 md:text-5xl">
+                    {detail.title}
+                  </h1>
+                  <CollectButton
+                    isCollected={isFavorited}
+                    onClick={async () => {
+                      try {
+                        if (isFavorited) {
+                          await removeFavorite("resource", detail.id);
+                        } else {
+                          await addFavorite("resource", detail.id);
+                        }
+                        setIsFavorited(!isFavorited);
+                      } catch {
+                        // ignore
                       }
-                      setIsFavorited(!isFavorited);
-                    } catch {
-                      // ignore
-                    }
-                  }}
-                />
+                    }}
+                  />
+                </div>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {detail.resource_type ? (
+                    <span className="rounded-full border border-white/70 bg-white/85 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
+                      {detail.resource_type}
+                    </span>
+                  ) : null}
+                  <span className="rounded-full border border-white/70 bg-white/85 px-3 py-1 text-xs font-medium text-gray-600 shadow-sm">
+                    所属课程 {detail.course?.name || `#${courseId}`}
+                  </span>
+                </div>
+
+                <p className="mt-5 max-w-3xl text-sm leading-7 text-gray-600 md:text-base">
+                  {detail.description || "当前页面聚焦展示资源文件、关联课程入口与评论互动。"}
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <FileBadge label="下载" value={`${detail.downloads ?? 0}`} />
+                  <FileBadge label="浏览" value={`${detail.views ?? 0}`} />
+                  <FileBadge label="点赞" value={`${detail.likes ?? 0}`} />
+                  <FileBadge label="大小" value={formatBytes(detail.size_bytes)} />
+                </div>
               </div>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
-                {detail.description || "暂无资源说明，当前页面聚焦附件信息、课程关联和评论区。"}
-              </p>
             </div>
           </div>
-          <div className="grid min-w-full grid-cols-2 gap-3 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-sm lg:min-w-[420px]">
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">下载次数</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.downloads ?? 0}</div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">浏览次数</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.views ?? 0}</div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">文件大小</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{formatBytes(detail.size_bytes)}</div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">点赞数</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.likes ?? 0}</div>
+
+          <div className="rounded-[32px] border border-white/70 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.07)] backdrop-blur-md">
+            <div className="text-sm text-gray-400">资源操作</div>
+            <div className="mt-4 space-y-3">
+              <Link
+                href={buildResourceCollectionPath(courseId)}
+                className="flex w-full items-center justify-center rounded-full bg-[var(--first-color)] px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                查看资源合集
+              </Link>
+              <Link
+                href={buildCoursePath(courseId)}
+                className="flex w-full items-center justify-center rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-3 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
+              >
+                进入课程详情
+              </Link>
+              <Link
+                href={buildCourseEvaluationAnchor(courseId)}
+                className="flex w-full items-center justify-center rounded-full border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 transition hover:border-[var(--first-color)]/20 hover:text-[var(--first-color)]"
+              >
+                跳转课程评价
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      <SectionCard
-        title="课程关联"
-        subtitle="资源不会单独承担搜索入口，所有资料都归属于课程资源合集与课程评价体系。"
-        action={
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={buildCoursePath(courseId)}
-              className="rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-2 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
-            >
-              进入课程详情
-            </Link>
-            <Link
-              href={buildResourceCollectionPath(courseId)}
-              className="rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              查看资源合集
-            </Link>
-            <Link
-              href={buildCourseEvaluationAnchor(courseId)}
-              className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-[var(--first-color)]/20 hover:text-[var(--first-color)]"
-            >
-              跳转课程评价区
-            </Link>
+      <section className="rounded-[32px] border border-white/60 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl md:p-8">
+        <div>
+          <div className="inline-flex rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[var(--first-color)] shadow-sm">
+            文件列表
           </div>
-        }
-      >
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5">
-            <div className="text-sm text-gray-400">{"课程信息"}</div>
+          <h2 className="mt-3 text-2xl font-semibold text-gray-900">资源文件</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            当前资源以文件为主展示，评论和讨论会在下方继续展开。
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+          <div className="space-y-3">
+            {(detail.files ?? []).length > 0 ? (
+              (detail.files ?? []).map((file, index) => (
+                <div
+                  key={file.id}
+                  className="flex items-center justify-between rounded-[24px] border border-white/70 bg-white/92 px-5 py-4 shadow-sm"
+                >
+                  <div className="min-w-0">
+                    <div className="text-xs uppercase tracking-[0.24em] text-gray-400">
+                      File {String(index + 1).padStart(2, "0")}
+                    </div>
+                    <div className="mt-1 truncate text-sm font-medium text-gray-900">
+                      {file.filename}
+                    </div>
+                  </div>
+                  <div className="text-right text-sm text-gray-500">
+                    <div>{formatBytes(file.size_bytes)}</div>
+                    <div className="text-xs text-gray-400">{file.mime || "未知格式"}</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-gray-200 bg-slate-50 p-6 text-center text-sm text-gray-500">
+                暂无文件信息。
+              </div>
+            )}
+          </div>
+
+          <div className="rounded-[28px] border border-white/70 bg-white/90 p-5 shadow-sm">
+            <div className="text-sm text-gray-400">关联课程</div>
             <div className="mt-2 text-xl font-semibold text-gray-900">
               {detail.course?.name || `课程 ${courseId}`}
             </div>
-            <div className="mt-3 text-sm text-gray-500">
-              资源类型：{detail.resource_type || "未分类"} · 上传时间：{formatDateTime(detail.created_at)}
+            <div className="mt-3 text-sm leading-6 text-gray-500">
+              上传时间：{formatDateTime(detail.created_at)}
             </div>
-          </div>
-          <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5">
-            <div className="text-sm text-gray-400">附件列表</div>
-            <div className="mt-3 space-y-2">
-              {(detail.files ?? []).map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3 text-sm"
-                >
-                  <span className="truncate text-gray-700">{file.filename}</span>
-                  <span className="text-gray-400">{formatBytes(file.size_bytes)}</span>
-                </div>
-              ))}
-            </div>
+            {detail.tags?.length ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {detail.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-slate-100 px-3 py-1 text-xs text-gray-600"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
-      </SectionCard>
+      </section>
 
-      <SectionCard title="资源评论" subtitle="资源只支持评论；一级评论下的二级评论可以互相回复，但展示时保持平级。">
-        <div className="space-y-4">
-          <div className="rounded-2xl border border-dashed border-[var(--first-color)]/20 bg-white p-4">
+      <section className="rounded-[32px] border border-white/60 bg-white/78 p-6 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl md:p-8">
+        <div>
+          <div className="inline-flex rounded-full border border-white/70 bg-white/90 px-3 py-1 text-xs font-medium text-[var(--first-color)] shadow-sm">
+            资源评论
+          </div>
+          <h2 className="mt-3 text-2xl font-semibold text-gray-900">围绕资源的讨论</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            评论只在资源详情页展示。点击一级评论的回复按钮，或直接点击二级评论，都可以继续回复。
+          </p>
+        </div>
+
+        <div className="mt-6 space-y-4">
+          <div className="rounded-[24px] border border-dashed border-[var(--first-color)]/20 bg-white p-4">
             <textarea
               value={commentDraft}
-              onChange={(e) => setCommentDraft(e.target.value)}
+              onChange={(event) => setCommentDraft(event.target.value)}
               rows={3}
               placeholder="写下你的评论..."
-              className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
+              className="w-full resize-none rounded-[20px] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
             />
             <div className="mt-3 flex justify-end">
               <button
@@ -446,7 +562,7 @@ export default function ResourceDetailPage() {
           </div>
 
           {replyTarget ? (
-            <div className="rounded-2xl border border-[var(--first-color)]/20 bg-white p-4">
+            <div className="rounded-[24px] border border-[var(--first-color)]/20 bg-white p-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="text-sm font-medium text-gray-700">
                   {replyTarget.userName ? `回复 @${replyTarget.userName}` : "回复该评论"}
@@ -467,7 +583,7 @@ export default function ResourceDetailPage() {
                 onChange={(event) => setReplyDraft(event.target.value)}
                 rows={3}
                 placeholder="写下你的回复..."
-                className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
+                className="w-full resize-none rounded-[20px] border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[var(--first-color)] focus:bg-white"
               />
               <div className="mt-3 flex justify-end">
                 <button
@@ -482,9 +598,11 @@ export default function ResourceDetailPage() {
                     try {
                       const reply = await createResourceCommentReply(replyTarget.rootId, {
                         content,
-                        reply_to_comment_id: replyTarget.commentId && replyTarget.commentId !== replyTarget.rootId
-                          ? replyTarget.commentId
-                          : null,
+                        reply_to_comment_id:
+                          replyTarget.commentId &&
+                          replyTarget.commentId !== replyTarget.rootId
+                            ? replyTarget.commentId
+                            : null,
                         reply_to_user_id: replyTarget.userId ?? null,
                       });
 
@@ -519,12 +637,12 @@ export default function ResourceDetailPage() {
               />
             ))
           ) : (
-            <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-sm text-gray-500">
+            <div className="rounded-[24px] border border-dashed border-gray-200 bg-slate-50 p-6 text-center text-sm text-gray-500">
               暂无评论内容。
             </div>
           )}
         </div>
-      </SectionCard>
+      </section>
     </div>
   );
 }
