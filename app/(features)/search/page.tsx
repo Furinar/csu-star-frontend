@@ -8,10 +8,13 @@ import type {
   SearchResourceCard,
   SearchResponse,
   SearchScope,
+  SearchUnifiedItem,
   SearchTeacherItem,
 } from "@/types/search";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+
+const PAGE_SIZE = 24;
 
 const searchConfig: Array<{
   label: string;
@@ -50,10 +53,11 @@ function createEmptyResults(): SearchResponse {
     resources: { total: 0, items: [] },
     courses: { total: 0, items: [] },
     teachers: { total: 0, items: [] },
+    all: { total: 0, items: [] },
   };
 }
 
-function renderCard(
+function renderTypedCard(
   type: "course" | "teacher" | "resource",
   item: SearchCourseItem | SearchTeacherItem | SearchResourceCard,
 ) {
@@ -68,6 +72,54 @@ function renderCard(
   return <SearchResultCard type="resource" item={item as SearchResourceCard} />;
 }
 
+function renderUnifiedCard(item: SearchUnifiedItem) {
+  return renderTypedCard(item.type, item.item);
+}
+
+function mergeResults(
+  previous: SearchResponse,
+  incoming: SearchResponse,
+  searchType: SearchScope,
+) {
+  if (searchType === "all") {
+    return {
+      ...incoming,
+      all: {
+        ...incoming.all,
+        items: [...previous.all.items, ...incoming.all.items],
+      },
+    };
+  }
+
+  if (searchType === "resource") {
+    return {
+      ...incoming,
+      resources: {
+        ...incoming.resources,
+        items: [...previous.resources.items, ...incoming.resources.items],
+      },
+    };
+  }
+
+  if (searchType === "course") {
+    return {
+      ...incoming,
+      courses: {
+        ...incoming.courses,
+        items: [...previous.courses.items, ...incoming.courses.items],
+      },
+    };
+  }
+
+  return {
+    ...incoming,
+    teachers: {
+      ...incoming.teachers,
+      items: [...previous.teachers.items, ...incoming.teachers.items],
+    },
+  };
+}
+
 export default function Search() {
   const searchParams = useSearchParams();
   const [searchType, setSearchType] = useState<SearchScope>("all");
@@ -76,8 +128,11 @@ export default function Search() {
   const [results, setResults] = useState<SearchResponse>(createEmptyResults);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const requestIdRef = useRef(0);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const currentSearchType = useMemo(() => {
     return (
@@ -88,125 +143,170 @@ export default function Search() {
 
   const summary = useMemo(() => {
     const counts = {
-      resource: results.resources.items.length,
-      course: results.courses.items.length,
-      teacher: results.teachers.items.length,
+      resource: results.resources.total,
+      course: results.courses.total,
+      teacher: results.teachers.total,
     };
 
-    return {
-      counts,
-      total: counts.resource + counts.course + counts.teacher,
-    };
-  }, [results]);
+    if (searchType === "all") {
+      return {
+        counts,
+        total: results.all.total,
+        loaded: results.all.items.length,
+      };
+    }
 
-  const sections = useMemo(() => {
     if (searchType === "resource") {
-      return [
-        {
-          key: "resource",
-          title: "资源结果",
-          description: "按课程聚合展示命中的资源结果。",
-          items: results.resources.items,
-        },
-      ];
+      return {
+        counts,
+        total: results.resources.total,
+        loaded: results.resources.items.length,
+      };
     }
 
     if (searchType === "course") {
-      return [
-        {
-          key: "course",
-          title: "课程结果",
-          description: "展示课程评分、数据和资源情况。",
-          items: results.courses.items,
-        },
-      ];
+      return {
+        counts,
+        total: results.courses.total,
+        loaded: results.courses.items.length,
+      };
     }
 
-    if (searchType === "teacher") {
-      return [
-        {
-          key: "teacher",
-          title: "教师结果",
-          description: "展示教师教学画像与评价概况。",
-          items: results.teachers.items,
-        },
-      ];
-    }
-
-    return [
-      {
-        key: "course",
-        title: "课程结果",
-        description: "展示课程评分、数据和资源情况。",
-        items: results.courses.items,
-      },
-      {
-        key: "teacher",
-        title: "教师结果",
-        description: "展示教师教学画像与评价概况。",
-        items: results.teachers.items,
-      },
-      {
-        key: "resource",
-        title: "资源结果",
-        description: "资源搜索按课程聚合展示。",
-        items: results.resources.items,
-      },
-    ].filter((section) => section.items.length > 0);
+    return {
+      counts,
+      total: results.teachers.total,
+      loaded: results.teachers.items.length,
+    };
   }, [results, searchType]);
 
-  const handleSearchTypeChange = (type: SearchScope) => {
-    requestIdRef.current += 1;
-    setSearchType(type);
-    setHasSearched(false);
-    setIsLoading(false);
-    setError(null);
-    setResults(createEmptyResults());
-  };
+  const displayedItems = useMemo(() => {
+    if (searchType === "all") {
+      return results.all.items;
+    }
 
-  const handleSearch = async (value: string) => {
-    const trimmedValue = value.trim();
-    setKeyword(value);
+    if (searchType === "resource") {
+      return results.resources.items.map((item) => ({
+        type: "resource" as const,
+        item,
+      }));
+    }
 
-    if (!trimmedValue) {
+    if (searchType === "course") {
+      return results.courses.items.map((item) => ({
+        type: "course" as const,
+        item,
+      }));
+    }
+
+    return results.teachers.items.map((item) => ({
+      type: "teacher" as const,
+      item,
+    }));
+  }, [results, searchType]);
+
+  const hasMore = summary.loaded < summary.total;
+
+  const runSearch = async ({
+    query,
+    type,
+    page,
+    append,
+  }: {
+    query: string;
+    type: SearchScope;
+    page: number;
+    append: boolean;
+  }) => {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
       requestIdRef.current += 1;
       setHasSearched(false);
       setIsLoading(false);
+      setIsLoadingMore(false);
       setError(null);
       setSubmittedQuery("");
+      setCurrentPage(1);
       setResults(createEmptyResults());
       return;
     }
 
-    const currentRequestId = requestIdRef.current + 1;
-    requestIdRef.current = currentRequestId;
-    setHasSearched(true);
-    setSubmittedQuery(trimmedValue);
-    setIsLoading(true);
-    setError(null);
+    const currentRequestId = append
+      ? requestIdRef.current
+      : requestIdRef.current + 1;
+
+    if (!append) {
+      requestIdRef.current = currentRequestId;
+      setHasSearched(true);
+      setSubmittedQuery(trimmedQuery);
+      setIsLoading(true);
+      setIsLoadingMore(false);
+      setError(null);
+      setCurrentPage(1);
+    } else {
+      setIsLoadingMore(true);
+    }
 
     try {
       const data = await searchEverything({
-        q: trimmedValue,
-        type: searchType,
-        page: 1,
-        size: 24,
+        q: trimmedQuery,
+        type,
+        page,
+        size: PAGE_SIZE,
       });
 
       if (requestIdRef.current !== currentRequestId) return;
-      setResults(data);
+
+      setResults((previous) =>
+        append ? mergeResults(previous, data, type) : data,
+      );
+      setCurrentPage(page);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
 
       const message =
         err instanceof Error ? err.message : "搜索失败，请稍后重试。";
       setError(message);
-      setResults(createEmptyResults());
+
+      if (!append) {
+        setResults(createEmptyResults());
+      }
     } finally {
       if (requestIdRef.current === currentRequestId) {
-        setIsLoading(false);
+        if (append) {
+          setIsLoadingMore(false);
+        } else {
+          setIsLoading(false);
+        }
       }
     }
+  };
+
+  const handleSearchTypeChange = (type: SearchScope) => {
+    requestIdRef.current += 1;
+    setSearchType(type);
+
+    if (keyword.trim()) {
+      void runSearch({
+        query: keyword,
+        type,
+        page: 1,
+        append: false,
+      });
+      return;
+    }
+
+    setHasSearched(false);
+    setIsLoading(false);
+    setIsLoadingMore(false);
+    setError(null);
+    setCurrentPage(1);
+    setResults(createEmptyResults());
+  };
+
+  const handleSearch = async (value: string) => {
+    setKeyword(value);
+    await runSearch({ query: value, type: searchType, page: 1, append: false });
   };
 
   const showEmptyPrompt = !hasSearched && !isLoading;
@@ -227,44 +327,56 @@ export default function Search() {
     setKeyword(qParam ?? "");
 
     if (qParam?.trim()) {
-      void (async () => {
-        const currentRequestId = requestIdRef.current + 1;
-        requestIdRef.current = currentRequestId;
-        setHasSearched(true);
-        setSubmittedQuery(qParam.trim());
-        setIsLoading(true);
-        setError(null);
-
-        try {
-          const data = await searchEverything({
-            q: qParam.trim(),
-            type: normalizedType,
-            page: 1,
-            size: 24,
-          });
-
-          if (requestIdRef.current !== currentRequestId) return;
-          setResults(data);
-        } catch (err) {
-          if (requestIdRef.current !== currentRequestId) return;
-          const message =
-            err instanceof Error ? err.message : "搜索失败，请稍后重试。";
-          setError(message);
-          setResults(createEmptyResults());
-        } finally {
-          if (requestIdRef.current === currentRequestId) {
-            setIsLoading(false);
-          }
-        }
-      })();
+      void runSearch({
+        query: qParam,
+        type: normalizedType,
+        page: 1,
+        append: false,
+      });
     } else {
       setResults(createEmptyResults());
       setHasSearched(false);
       setIsLoading(false);
+      setIsLoadingMore(false);
       setError(null);
+      setCurrentPage(1);
       setSubmittedQuery("");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const node = loadMoreRef.current;
+
+    if (!node || !hasSearched || isLoading || isLoadingMore || !hasMore || error) {
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+
+      if (!entry?.isIntersecting) return;
+
+      void runSearch({
+        query: keyword,
+        type: searchType,
+        page: currentPage + 1,
+        append: true,
+      });
+    }, { rootMargin: "240px 0px" });
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, [
+    currentPage,
+    error,
+    hasMore,
+    hasSearched,
+    isLoading,
+    isLoadingMore,
+    keyword,
+    searchType,
+  ]);
 
   return (
     <div className="container flex flex-col gap-10 mt-10 mb-20">
@@ -365,7 +477,6 @@ export default function Search() {
       {/* Render Results */}
       {!isLoading && !error && hasSearched && summary.total > 0 ? (
         <div className="flex flex-col gap-10">
-          {/* Summary */}
           <div className="flex items-center gap-4 text-sm text-gray-500">
             找到相关的{" "}
             <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
@@ -377,36 +488,34 @@ export default function Search() {
                 <span>资源: {summary.counts.resource}</span>
               </div>
             )}
+            <div className="ml-auto text-gray-400">
+              已加载 {summary.loaded} / {summary.total}
+            </div>
           </div>
 
-          {/* Result Sections */}
-          <div className="flex flex-col gap-12">
-            {sections.map((section) => (
-              <section key={section.key} className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    {section.title}
-                  </h2>
-                  <span className="bg-gray-100 text-gray-500 text-sm px-2 py-0.5 rounded-full">
-                    {section.items.length}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {section.items.map((item) => (
-                    <div
-                      key={`${section.key}-${"id" in item ? item.id : JSON.stringify(item)}`}
-                    >
-                      {renderCard(
-                        section.key as "course" | "teacher" | "resource",
-                        item,
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedItems.map((entry) => (
+              <div
+                key={`${entry.type}-${entry.type === "resource" ? entry.item.course_id : entry.item.id}`}
+              >
+                {renderUnifiedCard(entry)}
+              </div>
             ))}
           </div>
+
+          {isLoadingMore ? (
+            <div className="flex items-center justify-center py-8 text-gray-500">
+              正在加载更多结果...
+            </div>
+          ) : null}
+
+          {!isLoadingMore && !hasMore ? (
+            <div className="flex items-center justify-center py-6 text-sm text-gray-400">
+              已经到底了
+            </div>
+          ) : null}
+
+          <div ref={loadMoreRef} className="h-1" />
         </div>
       ) : null}
     </div>

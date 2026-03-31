@@ -7,6 +7,7 @@ import type {
   SearchResponse,
   SearchTeacherBrief,
   SearchTeacherItem,
+  SearchUnifiedItem,
 } from "@/types/search";
 
 interface ApiEnvelope<T> {
@@ -141,6 +142,9 @@ const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
     ];
   });
 
+const normalizeCourseItem = (item: unknown): SearchCourseItem | null =>
+  normalizeCourseItems([item])[0] ?? null;
+
 const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
   items.flatMap((raw) => {
     if (!isRecord(raw)) return [];
@@ -168,6 +172,9 @@ const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
       },
     ];
   });
+
+const normalizeTeacherItem = (item: unknown): SearchTeacherItem | null =>
+  normalizeTeacherItems([item])[0] ?? null;
 
 const normalizeResourcePreview = (items: unknown) => {
   if (!Array.isArray(items)) return [];
@@ -210,11 +217,15 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
     ];
   });
 
+const normalizeResourceItem = (item: unknown): SearchResourceCard | null =>
+  normalizeResourceItems([item])[0] ?? null;
+
 const splitUnifiedSearchItems = (items: unknown[]) => {
   const grouped = {
     resources: [] as unknown[],
     courses: [] as unknown[],
     teachers: [] as unknown[],
+    ordered: [] as SearchUnifiedItem[],
   };
 
   items.forEach((item) => {
@@ -223,17 +234,26 @@ const splitUnifiedSearchItems = (items: unknown[]) => {
     const rawType = toStringSafe(item.type);
 
     if (rawType === "course") {
+      const normalized = normalizeCourseItem(item);
+      if (!normalized) return;
       grouped.courses.push(item);
+      grouped.ordered.push({ type: "course", item: normalized });
       return;
     }
 
     if (rawType === "teacher") {
+      const normalized = normalizeTeacherItem(item);
+      if (!normalized) return;
       grouped.teachers.push(item);
+      grouped.ordered.push({ type: "teacher", item: normalized });
       return;
     }
 
     if (rawType === "resource" || rawType === "resource_course") {
+      const normalized = normalizeResourceItem(item);
+      if (!normalized) return;
       grouped.resources.push(item);
+      grouped.ordered.push({ type: "resource", item: normalized });
     }
   });
 
@@ -270,12 +290,30 @@ export async function searchEverything(params: SearchQuery): Promise<SearchRespo
         total,
         items: normalizeTeacherItems(grouped.teachers),
       },
+      all: {
+        total,
+        items: grouped.ordered,
+        page: toNumber(raw.page) ?? toNumber(raw.current) ?? undefined,
+        size: toNumber(raw.size) ?? toNumber(raw.page_size) ?? undefined,
+      },
     };
   }
 
+  const resources = normalizePaginated(raw.resources, normalizeResourceItems);
+  const courses = normalizePaginated(raw.courses, normalizeCourseItems);
+  const teachers = normalizePaginated(raw.teachers, normalizeTeacherItems);
+
   return {
-    resources: normalizePaginated(raw.resources, normalizeResourceItems),
-    courses: normalizePaginated(raw.courses, normalizeCourseItems),
-    teachers: normalizePaginated(raw.teachers, normalizeTeacherItems),
+    resources,
+    courses,
+    teachers,
+    all: {
+      total: resources.total + courses.total + teachers.total,
+      items: [
+        ...courses.items.map((item) => ({ type: "course" as const, item })),
+        ...teachers.items.map((item) => ({ type: "teacher" as const, item })),
+        ...resources.items.map((item) => ({ type: "resource" as const, item })),
+      ],
+    },
   };
 }

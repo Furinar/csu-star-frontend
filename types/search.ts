@@ -73,8 +73,14 @@ export interface SearchResourceCard {
   resources_preview?: SearchResourcePreview[];
 }
 
+export type SearchUnifiedItem =
+  | { type: "course"; item: SearchCourseItem }
+  | { type: "teacher"; item: SearchTeacherItem }
+  | { type: "resource"; item: SearchResourceCard };
+
 export interface SearchResponse {
   resources: PaginatedData<SearchResourceCard>;
   courses: PaginatedData<SearchCourseItem>;
   teachers: PaginatedData<SearchTeacherItem>;
+  all: PaginatedData<SearchUnifiedItem>;
 }
