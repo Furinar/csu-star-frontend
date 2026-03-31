@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchBar from "@/components/ui/SearchBar";
 import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
@@ -76,9 +77,11 @@ export default function Teacher() {
           <SearchBar
             placeholder="搜索教师..."
             onSearch={(value) => {
-              const keyword = value.trim();
-              if (!keyword) return;
-              router.push(`/search?type=teacher&q=${encodeURIComponent(keyword)}`);
+              const searchHref = buildSearchPageHref(value, "teacher");
+
+              if (!searchHref) return;
+
+              router.push(searchHref);
             }}
           />
         </div>

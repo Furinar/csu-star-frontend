@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchBar from "@/components/ui/SearchBar";
 import RankCard from "@/components/ui/RankCard";
 import RandomBook from "@/app/(features)/course/components/RandomBook";
@@ -78,11 +79,11 @@ export default function Course() {
           <SearchBar
             placeholder="搜索课程..."
             onSearch={(value) => {
-              const keyword = value.trim();
-              if (!keyword) return;
-              router.push(
-                `/search?type=course&q=${encodeURIComponent(keyword)}`,
-              );
+              const searchHref = buildSearchPageHref(value, "course");
+
+              if (!searchHref) return;
+
+              router.push(searchHref);
             }}
           />
         </div>
