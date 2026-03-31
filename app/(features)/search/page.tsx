@@ -1,6 +1,6 @@
 "use client";
 
-import { searchEverything } from "@/api/search";
+import {searchEverything} from "@/api/search";
 import SearchResultCard from "@/app/(features)/search/components/SearchResultCard";
 import SearchBar from "@/components/ui/SearchBar";
 import type {
@@ -8,11 +8,11 @@ import type {
   SearchResourceCard,
   SearchResponse,
   SearchScope,
-  SearchUnifiedItem,
   SearchTeacherItem,
+  SearchUnifiedItem,
 } from "@/types/search";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import {useEffect, useMemo, useRef, useState} from "react";
+import {useSearchParams} from "next/navigation";
 
 const PAGE_SIZE = 24;
 
@@ -50,26 +50,26 @@ const searchConfig: Array<{
 
 function createEmptyResults(): SearchResponse {
   return {
-    resources: { total: 0, items: [] },
-    courses: { total: 0, items: [] },
-    teachers: { total: 0, items: [] },
-    all: { total: 0, items: [] },
+    resources: {total: 0, items: []},
+    courses: {total: 0, items: []},
+    teachers: {total: 0, items: []},
+    all: {total: 0, items: []},
   };
 }
 
 function renderTypedCard(
-  type: "course" | "teacher" | "resource",
-  item: SearchCourseItem | SearchTeacherItem | SearchResourceCard,
+    type: "course" | "teacher" | "resource",
+    item: SearchCourseItem | SearchTeacherItem | SearchResourceCard,
 ) {
   if (type === "course") {
-    return <SearchResultCard type="course" item={item as SearchCourseItem} />;
+    return <SearchResultCard type="course" item={item as SearchCourseItem}/>;
   }
 
   if (type === "teacher") {
-    return <SearchResultCard type="teacher" item={item as SearchTeacherItem} />;
+    return <SearchResultCard type="teacher" item={item as SearchTeacherItem}/>;
   }
 
-  return <SearchResultCard type="resource" item={item as SearchResourceCard} />;
+  return <SearchResultCard type="resource" item={item as SearchResourceCard}/>;
 }
 
 function renderUnifiedCard(item: SearchUnifiedItem) {
@@ -77,9 +77,9 @@ function renderUnifiedCard(item: SearchUnifiedItem) {
 }
 
 function mergeResults(
-  previous: SearchResponse,
-  incoming: SearchResponse,
-  searchType: SearchScope,
+    previous: SearchResponse,
+    incoming: SearchResponse,
+    searchType: SearchScope,
 ) {
   if (searchType === "all") {
     return {
@@ -136,8 +136,8 @@ export default function Search() {
 
   const currentSearchType = useMemo(() => {
     return (
-      searchConfig.find((option) => option.type === searchType) ??
-      searchConfig[0]
+        searchConfig.find((option) => option.type === searchType) ??
+        searchConfig[0]
     );
   }, [searchType]);
 
@@ -207,11 +207,11 @@ export default function Search() {
   const hasMore = summary.loaded < summary.total;
 
   const runSearch = async ({
-    query,
-    type,
-    page,
-    append,
-  }: {
+                             query,
+                             type,
+                             page,
+                             append,
+                           }: {
     query: string;
     type: SearchScope;
     page: number;
@@ -232,8 +232,8 @@ export default function Search() {
     }
 
     const currentRequestId = append
-      ? requestIdRef.current
-      : requestIdRef.current + 1;
+        ? requestIdRef.current
+        : requestIdRef.current + 1;
 
     if (!append) {
       requestIdRef.current = currentRequestId;
@@ -258,14 +258,14 @@ export default function Search() {
       if (requestIdRef.current !== currentRequestId) return;
 
       setResults((previous) =>
-        append ? mergeResults(previous, data, type) : data,
+          append ? mergeResults(previous, data, type) : data,
       );
       setCurrentPage(page);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
 
       const message =
-        err instanceof Error ? err.message : "搜索失败，请稍后重试。";
+          err instanceof Error ? err.message : "搜索失败，请稍后重试。";
       setError(message);
 
       if (!append) {
@@ -306,22 +306,22 @@ export default function Search() {
 
   const handleSearch = async (value: string) => {
     setKeyword(value);
-    await runSearch({ query: value, type: searchType, page: 1, append: false });
+    await runSearch({query: value, type: searchType, page: 1, append: false});
   };
 
   const showEmptyPrompt = !hasSearched && !isLoading;
   const showNoResults =
-    hasSearched && !isLoading && !error && summary.total === 0;
+      hasSearched && !isLoading && !error && summary.total === 0;
 
   useEffect(() => {
     const typeParam = searchParams.get("type");
     const qParam = searchParams.get("q");
     const normalizedType =
-      typeParam === "resource" ||
-      typeParam === "course" ||
-      typeParam === "teacher"
-        ? typeParam
-        : "all";
+        typeParam === "resource" ||
+        typeParam === "course" ||
+        typeParam === "teacher"
+            ? typeParam
+            : "all";
 
     setSearchType(normalizedType);
     setKeyword(qParam ?? "");
@@ -362,7 +362,7 @@ export default function Search() {
         page: currentPage + 1,
         append: true,
       });
-    }, { rootMargin: "240px 0px" });
+    }, {rootMargin: "240px 0px"});
 
     observer.observe(node);
 
@@ -379,145 +379,139 @@ export default function Search() {
   ]);
 
   return (
-    <div className="container flex flex-col gap-10 mt-10 mb-20">
-      {/* Retained your original Hero and Searchbar UI unchanged */}
-      <div className="w-full flex justify-center items-center flex-col gap-3">
-        <div className="hero-gradient-text text-4xl font-bold">风影情报处</div>
-        <div className="text-gray-600">
-          Explore freely, discover what you need.
+      <div className="container flex flex-col gap-10 mt-10 mb-20">
+        {/* Retained your original Hero and Searchbar UI unchanged */}
+        <div className="w-full flex justify-center items-center flex-col gap-3">
+          <div className="hero-gradient-text text-4xl font-bold">风影情报处</div>
+          <div className="text-gray-600">
+            Explore freely, discover what you need.
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-5 items-center">
-        <div className="relative flex p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300">
-          <div
-            className="absolute top-1.5 bottom-1.5 w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
-            style={{
-              transform: `translateX(${searchConfig.findIndex((item) => item.type === searchType) * 100}%)`,
-            }}
-          />
-          {searchConfig.map((item) => (
-            <span
-              key={item.type}
-              onClick={() => handleSearchTypeChange(item.type)}
-              className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
-                searchType === item.type
-                  ? "text-first-alt font-medium"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
+        <div className="flex flex-col gap-5 items-center">
+          <div className="relative flex p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300">
+            <div
+                className="absolute top-1.5 bottom-1.5 w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
+                style={{
+                  transform: `translateX(${searchConfig.findIndex((item) => item.type === searchType) * 100}%)`,
+                }}
+            />
+            {searchConfig.map((item) => (
+                <span
+                    key={item.type}
+                    onClick={() => handleSearchTypeChange(item.type)}
+                    className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
+                        searchType === item.type
+                            ? "text-first-alt font-medium"
+                            : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
               <i className={`uil uil-${item.icon} text-lg`}></i>
-              {item.label}
+                  {item.label}
             </span>
-          ))}
-        </div>
-        <div className="w-full max-w-2xl">
-          <SearchBar
-            value={keyword}
-            onChange={setKeyword}
-            onSearch={handleSearch}
-            debounceOnChange={false}
-            placeholder={currentSearchType?.placeholder}
-          />
-        </div>
-      </div>
-
-      <div className="border-t border-gray-300" />
-
-      {/* Conditional rendering based on search state */}
-      {showEmptyPrompt ? (
-        <div className="flex flex-col gap-5 items-center justify-center mt-15">
-          <div className="text-8xl text-gray-300">
-            <i className="uil uil-search"></i>
-          </div>
-
-          <div className="text-2xl text-gray-800">
-            开始搜索{currentSearchType?.label}吧！
-          </div>
-          <div className="text-lg text-gray-500">
-            使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
-          </div>
-        </div>
-      ) : null}
-
-      {isLoading ? (
-        <div className="flex flex-col gap-5 items-center justify-center mt-10">
-          <div className="text-4xl text-first-alt animate-spin">
-            <i className="uil uil-spinner-alt"></i>
-          </div>
-          <div className="text-gray-500">正在拼命搜索中...</div>
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className="flex flex-col items-center justify-center mt-10 bg-red-50 p-6 rounded-2xl border border-red-200 shadow-sm max-w-2xl mx-auto w-full">
-          <div className="text-red-500 text-4xl mb-3">
-            <i className="uil uil-exclamation-triangle"></i>
-          </div>
-          <div className="text-red-700 font-medium">搜索请求失败</div>
-          <div className="text-red-600 text-sm mt-1">{error}</div>
-        </div>
-      ) : null}
-
-      {showNoResults ? (
-        <div className="flex flex-col gap-5 items-center justify-center mt-15">
-          <div className="text-8xl text-gray-300">
-            <i className="uil uil-tear"></i>
-          </div>
-
-          <div className="text-2xl text-gray-800">
-            没有找到匹配的{currentSearchType?.label}
-          </div>
-          <div className="text-lg text-gray-500">
-            可以尝试换一个简短的关键词重新搜索看看~
-          </div>
-        </div>
-      ) : null}
-
-      {/* Render Results */}
-      {!isLoading && !error && hasSearched && summary.total > 0 ? (
-        <div className="flex flex-col gap-10">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            找到相关的{" "}
-            <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
-            条结果
-            {searchType === "all" && (
-              <div className="flex gap-3 ml-2 border-l border-gray-300 pl-4">
-                <span>课程: {summary.counts.course}</span>
-                <span>教师: {summary.counts.teacher}</span>
-                <span>资源: {summary.counts.resource}</span>
-              </div>
-            )}
-            <div className="ml-auto text-gray-400">
-              已加载 {summary.loaded} / {summary.total}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedItems.map((entry) => (
-              <div
-                key={`${entry.type}-${entry.type === "resource" ? entry.item.course_id : entry.item.id}`}
-              >
-                {renderUnifiedCard(entry)}
-              </div>
             ))}
           </div>
-
-          {isLoadingMore ? (
-            <div className="flex items-center justify-center py-8 text-gray-500">
-              正在加载更多结果...
-            </div>
-          ) : null}
-
-          {!isLoadingMore && !hasMore ? (
-            <div className="flex items-center justify-center py-6 text-sm text-gray-400">
-              已经到底了
-            </div>
-          ) : null}
-
-          <div ref={loadMoreRef} className="h-1" />
+          <div className="w-full max-w-2xl">
+            <SearchBar
+                value={keyword}
+                onChange={setKeyword}
+                onSearch={handleSearch}
+                debounceOnChange={false}
+                placeholder={currentSearchType?.placeholder}
+            />
+          </div>
         </div>
-      ) : null}
-    </div>
+
+        <div className="border-t border-gray-300"/>
+
+        {/* Conditional rendering based on search state */}
+        {showEmptyPrompt ? (
+            <div className="flex flex-col gap-5 items-center justify-center mt-15">
+              <div className="text-8xl text-gray-300">
+                <i className="uil uil-search"></i>
+              </div>
+
+              <div className="text-2xl text-gray-800">
+                开始搜索{currentSearchType?.label}吧！
+              </div>
+              <div className="text-lg text-gray-500">
+                使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
+              </div>
+            </div>
+        ) : null}
+
+        {isLoading ? (
+            <div className="flex flex-col gap-5 items-center justify-center mt-10">
+              <div className="text-4xl text-first-alt animate-spin">
+                <i className="uil uil-spinner-alt"></i>
+              </div>
+              <div className="text-gray-500">正在拼命搜索中...</div>
+            </div>
+        ) : null}
+
+        {error ? (
+            <div
+                className="flex flex-col items-center justify-center mt-10 bg-red-50 p-6 rounded-2xl border border-red-200 shadow-sm max-w-2xl mx-auto w-full">
+              <div className="text-red-500 text-4xl mb-3">
+                <i className="uil uil-exclamation-triangle"></i>
+              </div>
+              <div className="text-red-700 font-medium">搜索请求失败</div>
+              <div className="text-red-600 text-sm mt-1">{error}</div>
+            </div>
+        ) : null}
+
+        {showNoResults ? (
+            <div className="flex flex-col gap-5 items-center justify-center mt-15">
+              <div className="text-8xl text-gray-300">
+                <i className="uil uil-tear"></i>
+              </div>
+
+              <div className="text-2xl text-gray-800">
+                没有找到匹配的{currentSearchType?.label}
+              </div>
+              <div className="text-lg text-gray-500">
+                可以尝试换一个简短的关键词重新搜索看看~
+              </div>
+            </div>
+        ) : null}
+
+        {/* Render Results */}
+        {!isLoading && !error && hasSearched && summary.total > 0 ? (
+            <div className="flex flex-col gap-10">
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                找到相关的{" "}
+                <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
+                条结果
+                <div className="ml-auto text-gray-400">
+                  已加载 {summary.loaded} / {summary.total}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {displayedItems.map((entry) => (
+                    <div
+                        key={`${entry.type}-${entry.type === "resource" ? entry.item.course_id : entry.item.id}`}
+                    >
+                      {renderUnifiedCard(entry)}
+                    </div>
+                ))}
+              </div>
+
+              {isLoadingMore ? (
+                  <div className="flex items-center justify-center py-8 text-gray-500">
+                    正在加载更多结果...
+                  </div>
+              ) : null}
+
+              {!isLoadingMore && !hasMore ? (
+                  <div className="flex items-center justify-center py-6 text-sm text-gray-400">
+                    已经到底了
+                  </div>
+              ) : null}
+
+              <div ref={loadMoreRef} className="h-1"/>
+            </div>
+        ) : null}
+      </div>
   );
 }
