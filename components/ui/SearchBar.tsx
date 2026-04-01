@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useSyncExternalStore,
+} from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 
 interface SearchBarProps extends Omit<
@@ -19,6 +25,59 @@ interface SearchBarProps extends Omit<
   allowClear?: boolean;
 }
 
+const SEARCH_HISTORY_KEY = "csu_star_search_history";
+const SEARCH_HISTORY_EVENT = "csu-star-search-history-change";
+const EMPTY_HISTORY: string[] = [];
+
+let cachedHistoryRaw: string | null | undefined;
+let cachedHistorySnapshot: string[] = EMPTY_HISTORY;
+
+const readSearchHistory = () => {
+  if (typeof window === "undefined") {
+    return EMPTY_HISTORY;
+  }
+
+  const saved = window.localStorage.getItem(SEARCH_HISTORY_KEY);
+  if (saved === cachedHistoryRaw) {
+    return cachedHistorySnapshot;
+  }
+
+  cachedHistoryRaw = saved;
+
+  if (!saved) {
+    cachedHistorySnapshot = EMPTY_HISTORY;
+    return cachedHistorySnapshot;
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    cachedHistorySnapshot = Array.isArray(parsed) ? parsed : EMPTY_HISTORY;
+    return cachedHistorySnapshot;
+  } catch (err) {
+    console.error(err);
+    cachedHistorySnapshot = EMPTY_HISTORY;
+    return cachedHistorySnapshot;
+  }
+};
+
+const getSearchHistoryServerSnapshot = () => EMPTY_HISTORY;
+
+const subscribeSearchHistory = (callback: () => void) => {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleChange = () => callback();
+
+  window.addEventListener("storage", handleChange);
+  window.addEventListener(SEARCH_HISTORY_EVENT, handleChange);
+
+  return () => {
+    window.removeEventListener("storage", handleChange);
+    window.removeEventListener(SEARCH_HISTORY_EVENT, handleChange);
+  };
+};
+
 export default function SearchBar({
   value: propValue,
   defaultValue = "",
@@ -32,29 +91,14 @@ export default function SearchBar({
   allowClear = true,
   ...props
 }: SearchBarProps) {
-  const loadInitialHistory = () => {
-    if (typeof window === "undefined") {
-      return [];
-    }
-
-    const saved = window.localStorage.getItem("csu_star_search_history");
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (err) {
-      console.error(err);
-      return [];
-    }
-  };
-
   const isControlled = propValue !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
-  const [history, setHistory] = useState<string[]>(loadInitialHistory);
+  const history = useSyncExternalStore(
+    subscribeSearchHistory,
+    readSearchHistory,
+    getSearchHistoryServerSnapshot,
+  );
 
   const value = isControlled ? propValue : internalValue;
   const debouncedValue = useDebounce(value, delay);
@@ -62,8 +106,13 @@ export default function SearchBar({
   const isInitialMount = useRef(true);
 
   const saveHistory = useCallback((newHistory: string[]) => {
-    setHistory(newHistory);
-    localStorage.setItem("csu_star_search_history", JSON.stringify(newHistory));
+    const nextSnapshot = [...newHistory];
+    const serializedHistory = JSON.stringify(nextSnapshot);
+
+    cachedHistoryRaw = serializedHistory;
+    cachedHistorySnapshot = nextSnapshot;
+    window.localStorage.setItem(SEARCH_HISTORY_KEY, serializedHistory);
+    window.dispatchEvent(new Event(SEARCH_HISTORY_EVENT));
   }, []);
 
   const addHistoryItem = useCallback(

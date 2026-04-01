@@ -127,19 +127,43 @@ const normalizeSiteShowcaseStats = (raw: unknown): SiteShowcaseStats => {
   };
 };
 
+async function withShowcaseFallback<T>(
+  request: () => Promise<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await request();
+  } catch {
+    // Showcase modules are non-critical. Fall back to empty data when the API is unreachable.
+    return fallback;
+  }
+}
+
 export async function getRandomCourseShowcase() {
-  const response = await service.get<ApiEnvelope<unknown>>("/courses/random-showcase");
-  const raw = normalizeShowcasePayload(unwrapResponseData(response));
-  return normalizeCourseShowcaseItems(raw);
+  return withShowcaseFallback(async () => {
+    const response = await service.get<ApiEnvelope<unknown>>("/courses/random-showcase");
+    const raw = normalizeShowcasePayload(unwrapResponseData(response));
+    return normalizeCourseShowcaseItems(raw);
+  }, []);
 }
 
 export async function getRandomTeacherShowcase() {
-  const response = await service.get<ApiEnvelope<unknown>>("/teachers/random-showcase");
-  const raw = normalizeShowcasePayload(unwrapResponseData(response));
-  return normalizeTeacherShowcaseItems(raw);
+  return withShowcaseFallback(async () => {
+    const response = await service.get<ApiEnvelope<unknown>>("/teachers/random-showcase");
+    const raw = normalizeShowcasePayload(unwrapResponseData(response));
+    return normalizeTeacherShowcaseItems(raw);
+  }, []);
 }
 
 export async function getSiteShowcaseStats() {
-  const response = await service.get<ApiEnvelope<unknown>>("/showcase/stats");
-  return normalizeSiteShowcaseStats(unwrapResponseData(response));
+  return withShowcaseFallback(async () => {
+    const response = await service.get<ApiEnvelope<unknown>>("/showcase/stats");
+    return normalizeSiteShowcaseStats(unwrapResponseData(response));
+  }, {
+    user_count: 0,
+    resource_count: 0,
+    evaluation_count: 0,
+    teacher_count: 0,
+    course_count: 0,
+  });
 }
