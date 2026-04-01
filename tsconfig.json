@@ -37,7 +37,7 @@
     "**/*.mts",
     "out/types/**/*.ts",
     "out/dev/types/**/*.ts"
-  ],
+, "template/copy"  ],
   "exclude": [
     "node_modules"
   ]
