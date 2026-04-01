@@ -12,6 +12,10 @@ export default function AuthBootstrap() {
   const requestKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
+    void useAuthStore.persist.rehydrate();
+  }, []);
+
+  useEffect(() => {
     if (!hasHydrated || !accessToken) {
       requestKeyRef.current = null;
       return;
