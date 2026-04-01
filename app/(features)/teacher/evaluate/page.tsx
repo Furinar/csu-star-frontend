@@ -8,6 +8,7 @@ import {
 } from "@/api/detail";
 import ComposePageShell from "@/components/detail/ComposePageShell";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildTeacherPath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
 import type { TeacherDetail, TeacherEvaluationInput } from "@/types/detail";
@@ -15,13 +16,19 @@ import type { TeacherDetail, TeacherEvaluationInput } from "@/types/detail";
 export default function TeacherEvaluationComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const teacherId = Number(searchParams.get("id"));
-  const isInvalidTeacherId = !Number.isFinite(teacherId) || teacherId <= 0;
+  const hasMounted = useHasMounted();
+  const teacherId = Number(hasMounted ? searchParams.get("id") : null);
+  const isInvalidTeacherId =
+    hasMounted && (!Number.isFinite(teacherId) || teacherId <= 0);
 
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
     if (isInvalidTeacherId) {
       return;
     }
@@ -48,7 +55,7 @@ export default function TeacherEvaluationComposerPage() {
     return () => {
       active = false;
     };
-  }, [isInvalidTeacherId, teacherId]);
+  }, [hasMounted, isInvalidTeacherId, teacherId]);
 
   const relatedCourses = useMemo(
     () =>
@@ -63,7 +70,7 @@ export default function TeacherEvaluationComposerPage() {
     return <div className="p-8 text-center text-slate-500">请提供有效的教师 ID</div>;
   }
 
-  if (isLoading) {
+  if (!hasMounted || isLoading) {
     return <div className="p-8 text-center text-slate-500">正在加载教师信息...</div>;
   }
 

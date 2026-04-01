@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createResourceComment, getResourceDetail } from "@/api/detail";
 import CommentComposerForm from "@/components/detail/CommentComposerForm";
 import ComposePageShell from "@/components/detail/ComposePageShell";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildResourceCommentsAnchor, buildResourcePath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
 import type { ResourceDetail } from "@/types/detail";
@@ -12,13 +13,19 @@ import type { ResourceDetail } from "@/types/detail";
 export default function ResourceCommentComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const resourceId = Number(searchParams.get("id"));
-  const isInvalidResourceId = !Number.isFinite(resourceId) || resourceId <= 0;
+  const hasMounted = useHasMounted();
+  const resourceId = Number(hasMounted ? searchParams.get("id") : null);
+  const isInvalidResourceId =
+    hasMounted && (!Number.isFinite(resourceId) || resourceId <= 0);
 
   const [resource, setResource] = useState<ResourceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
     if (isInvalidResourceId) {
       return;
     }
@@ -45,13 +52,13 @@ export default function ResourceCommentComposerPage() {
     return () => {
       active = false;
     };
-  }, [isInvalidResourceId, resourceId]);
+  }, [hasMounted, isInvalidResourceId, resourceId]);
 
   if (isInvalidResourceId) {
     return <div className="p-8 text-center text-slate-500">请提供有效的资源 ID</div>;
   }
 
-  if (isLoading) {
+  if (!hasMounted || isLoading) {
     return <div className="p-8 text-center text-slate-500">正在加载资源信息...</div>;
   }
 

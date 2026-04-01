@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionCard from "@/components/ui/SectionCard";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { getCourseResourceCollection } from "@/api/detail";
 import type { CourseResourceCollection } from "@/types/detail";
 import { buildCourseEvaluationAnchor, buildCoursePath, buildResourcePath } from "@/lib/paths";
@@ -15,14 +16,22 @@ function formatScore(value?: number | null) {
 
 export default function CourseResourceCollectionPage() {
   const searchParams = useSearchParams();
-  const courseId = Number(searchParams.get("courseId") || searchParams.get("course_id"));
-  const isInvalidCourseId = !Number.isFinite(courseId);
+  const hasMounted = useHasMounted();
+  const courseId = Number(
+    hasMounted
+      ? (searchParams.get("courseId") ?? searchParams.get("course_id"))
+      : null,
+  );
+  const isInvalidCourseId = hasMounted && !Number.isFinite(courseId);
   const [detail, setDetail] = useState<CourseResourceCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (isInvalidCourseId) return;
+    if (!hasMounted) return;
+    if (isInvalidCourseId) {
+      return;
+    }
 
     let active = true;
 
@@ -43,7 +52,15 @@ export default function CourseResourceCollectionPage() {
     return () => {
       active = false;
     };
-  }, [courseId, isInvalidCourseId]);
+  }, [courseId, hasMounted, isInvalidCourseId]);
+
+  if (!hasMounted) {
+    return (
+      <div className="container mt-10 mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
+        课程资源合集加载中...
+      </div>
+    );
+  }
 
   if (isInvalidCourseId) {
     return (

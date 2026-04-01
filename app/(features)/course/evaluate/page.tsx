@@ -8,6 +8,7 @@ import {
 } from "@/api/detail";
 import ComposePageShell from "@/components/detail/ComposePageShell";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildCourseEvaluationAnchor, buildCoursePath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
 import type { CourseDetail, CourseEvaluationInput } from "@/types/detail";
@@ -15,13 +16,19 @@ import type { CourseDetail, CourseEvaluationInput } from "@/types/detail";
 export default function CourseEvaluationComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const courseId = Number(searchParams.get("id"));
-  const isInvalidCourseId = !Number.isFinite(courseId) || courseId <= 0;
+  const hasMounted = useHasMounted();
+  const courseId = Number(hasMounted ? searchParams.get("id") : null);
+  const isInvalidCourseId =
+    hasMounted && (!Number.isFinite(courseId) || courseId <= 0);
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!hasMounted) {
+      return;
+    }
+
     if (isInvalidCourseId) {
       return;
     }
@@ -48,7 +55,7 @@ export default function CourseEvaluationComposerPage() {
     return () => {
       active = false;
     };
-  }, [courseId, isInvalidCourseId]);
+  }, [courseId, hasMounted, isInvalidCourseId]);
 
   const relatedTeachers = useMemo(
     () =>
@@ -63,7 +70,7 @@ export default function CourseEvaluationComposerPage() {
     return <div className="p-8 text-center text-slate-500">请提供有效的课程 ID</div>;
   }
 
-  if (isLoading) {
+  if (!hasMounted || isLoading) {
     return <div className="p-8 text-center text-slate-500">正在加载课程信息...</div>;
   }
 

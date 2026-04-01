@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { addLike, removeLike } from "@/api/detail";
 import { submitReport } from "@/api/me";
+import { formatDateTimeZh } from "@/lib/date";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CourseEvaluation,
@@ -68,10 +69,7 @@ const toneMap = {
 } as const;
 
 function formatDate(value?: string) {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("zh-CN", { hour12: false });
+  return formatDateTimeZh(value);
 }
 
 function formatScore(value?: number | null) {

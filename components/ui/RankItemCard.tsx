@@ -12,6 +12,7 @@ import {
   buildResourceCollectionPath,
   buildTeacherPath,
 } from "@/lib/paths";
+import { formatDateZh } from "@/lib/date";
 
 type RankItemCardProps =
   | {
@@ -43,10 +44,7 @@ function formatScore(value?: number | null | string, digits = 1) {
 }
 
 function formatDate(value?: string | null) {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("zh-CN");
+  return formatDateZh(value);
 }
 
 function BarRow({

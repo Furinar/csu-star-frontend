@@ -6,6 +6,7 @@ import {
   removeLike,
 } from "@/api/detail";
 import { submitReport } from "@/api/me";
+import { formatDateTimeZh } from "@/lib/date";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CourseEvaluation,
@@ -56,10 +57,7 @@ const COURSE_DIMENSIONS: RatingDimension[] = [
 ];
 
 function formatDateTime(value?: string) {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("zh-CN", { hour12: false });
+  return formatDateTimeZh(value);
 }
 
 function formatScore(value?: number | null) {

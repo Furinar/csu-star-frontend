@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   dailyCheckin,
   getMeDashboard,
@@ -11,6 +11,7 @@ import {
   getMyInviteCode,
 } from "@/api/me";
 import GlassCard from "@/components/ui/GlassCard";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { feedback } from "@/store/useFeedbackStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { UserProfile } from "@/types/auth";
@@ -43,6 +44,7 @@ import {
   type ContributionCell,
   type ContributionSummary,
   buildFallbackEmailStatus,
+  createEmptyContributionSummary,
   createEmptyPaginated,
   formatDateTime,
   formatNumber,
@@ -51,8 +53,8 @@ import {
   getDateKey,
   getDepartmentName,
   getErrorMessage,
-  startOfDay,
   addDays,
+  startOfDisplayDay,
 } from "./components/shared/helpers";
 
 type TabKey =
@@ -87,6 +89,7 @@ function buildContributionSummary(
   teacherEvaluations: PaginatedData<TeacherEvaluation>,
   courseEvaluations: PaginatedData<CourseEvaluation>,
   points: PaginatedData<PointsRecord>,
+  today: Date,
 ): ContributionSummary {
   const contributionMap = new Map<
     string,
@@ -127,7 +130,6 @@ function buildContributionSummary(
       addContribution(item.created_at, 5, "邀请奖励");
   });
 
-  const today = startOfDay(new Date());
   const currentWeekStart = addDays(today, -today.getDay());
   const start = addDays(currentWeekStart, -25 * 7);
   const weeks: ContributionCell[][] = [];
@@ -174,6 +176,7 @@ function buildContributionSummary(
 }
 
 export default function Me() {
+  const hasMounted = useHasMounted();
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [openPanel, setOpenPanel] = useState<PanelKey | null>(null);
   const [dashboard, setDashboard] = useState<MeDashboardData | null>(null);
@@ -186,6 +189,7 @@ export default function Me() {
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
   const [isLoadingInvite, setIsLoadingInvite] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [clientToday, setClientToday] = useState<Date | null>(null);
 
   const accessToken = useAuthStore((state) => state.access_token);
   const storedUser = useAuthStore((state) => state.user);
@@ -212,17 +216,31 @@ export default function Me() {
     emailStatus,
     profile,
   );
-  const contributionSummary = buildContributionSummary(
-    resources,
-    teacherEvaluations,
-    courseEvaluations,
-    points,
+  useEffect(() => {
+    if (!hasMounted) return;
+    setClientToday(startOfDisplayDay(new Date()));
+  }, [hasMounted]);
+
+  const contributionSummary = useMemo(
+    () =>
+      clientToday
+        ? buildContributionSummary(
+            resources,
+            teacherEvaluations,
+            courseEvaluations,
+            points,
+            clientToday,
+          )
+        : createEmptyContributionSummary(),
+    [clientToday, courseEvaluations, points, resources, teacherEvaluations],
   );
-  const hasCheckedInToday = points.items.some(
-    (item) =>
-      item.reason === "daily_checkin" &&
-      getDateKey(item.created_at) === getDateKey(new Date()),
-  );
+  const hasCheckedInToday = clientToday
+    ? points.items.some(
+        (item) =>
+          item.reason === "daily_checkin" &&
+          getDateKey(item.created_at) === getDateKey(clientToday),
+      )
+    : false;
 
   const loadDashboard = useCallback(
     async (showToast = false) => {

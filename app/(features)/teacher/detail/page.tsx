@@ -14,12 +14,14 @@ import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import { useHasMounted } from "@/hooks/useHasMounted";
 import { feedback } from "@/store/useFeedbackStore";
 import type { TeacherDetail, TeacherEvaluation, TeacherEvaluationInput } from "@/types/detail";
 
 export default function TeacherDetailPage() {
   const searchParams = useSearchParams();
-  const idStr = searchParams.get("id");
+  const hasMounted = useHasMounted();
+  const idStr = hasMounted ? searchParams.get("id") : null;
   const teacherId = idStr ? parseInt(idStr, 10) : null;
 
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
@@ -29,6 +31,7 @@ export default function TeacherDetailPage() {
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
   useEffect(() => {
+    if (!hasMounted) return;
     if (!teacherId) return;
 
     let mounted = true;
@@ -50,7 +53,7 @@ export default function TeacherDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [teacherId]);
+  }, [hasMounted, teacherId]);
 
   const relatedCourses = useMemo(
     () =>
@@ -60,6 +63,17 @@ export default function TeacherDetailPage() {
       })),
     [teacher],
   );
+
+  if (!hasMounted) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-rose-400" />
+          <span className="text-sm text-slate-500">正在加载教师信息...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!teacherId) {
     return (

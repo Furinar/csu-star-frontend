@@ -39,6 +39,26 @@ export const FORM_INPUT_CLASS_NAME =
 export const FORM_TEXTAREA_CLASS_NAME = `${FORM_INPUT_CLASS_NAME} min-h-28 resize-none`;
 
 export const WEEKDAY_LABELS = ["日", "一", "二", "三", "四", "五", "六"];
+const DISPLAY_TIME_ZONE = "Asia/Shanghai";
+const DATE_KEY_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: DISPLAY_TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const DATE_FORMATTER = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: DISPLAY_TIME_ZONE,
+  month: "numeric",
+  day: "numeric",
+});
+const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("zh-CN", {
+  timeZone: DISPLAY_TIME_ZONE,
+  month: "numeric",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
 
 export const CONTRIBUTION_RULES = [
   {
@@ -67,6 +87,16 @@ export function createEmptyPaginated<T>(): PaginatedData<T> {
   return {
     items: [],
     total: 0,
+  };
+}
+
+export function createEmptyContributionSummary(): ContributionSummary {
+  return {
+    weeks: [],
+    totalScore: 0,
+    activeDays: 0,
+    currentStreak: 0,
+    maxDayScore: 0,
   };
 }
 
@@ -108,6 +138,11 @@ export function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+export function startOfDisplayDay(dateLike: Date | string) {
+  const key = getDateKey(dateLike);
+  return key ? new Date(`${key}T00:00:00+08:00`) : new Date(0);
+}
+
 export function addDays(date: Date, amount: number) {
   const copy = new Date(date);
   copy.setDate(copy.getDate() + amount);
@@ -120,9 +155,14 @@ export function getDateKey(dateLike: Date | string) {
     return "";
   }
 
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
+  const parts = DATE_KEY_FORMATTER.formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+
+  if (!year || !month || !day) {
+    return "";
+  }
 
   return `${year}-${month}-${day}`;
 }
@@ -145,10 +185,7 @@ export function formatDate(dateLike?: string | Date | null) {
     return "--";
   }
 
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "numeric",
-    day: "numeric",
-  }).format(date);
+  return DATE_FORMATTER.format(date);
 }
 
 export function formatDateTime(dateLike?: string | Date | null) {
@@ -161,12 +198,7 @@ export function formatDateTime(dateLike?: string | Date | null) {
     return "--";
   }
 
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  return DATE_TIME_FORMATTER.format(date);
 }
 
 export function formatNumber(value: number | undefined | null) {
