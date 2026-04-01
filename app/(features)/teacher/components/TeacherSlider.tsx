@@ -9,7 +9,6 @@ import { getRandomTeacherShowcase } from "@/api/showcase";
 import type { TeacherShowcaseItem } from "@/types/showcase";
 import { buildTeacherPath } from "@/lib/paths";
 
-const POSITION_CLASS = ["is-prev-2", "is-prev-1", "is-current", "is-next-1", "is-next-2"];
 const FALLBACK_AVATAR =
   "https://faculty.csu.edu.cn/_resources/group1/M00/00/69/wKiylWJPi12AAlsZAALJVtHOhL4238.png";
 
@@ -23,20 +22,6 @@ function formatRate(value?: number | null) {
   return value.toFixed(2);
 }
 
-function getVisibleTeachers(items: TeacherShowcaseItem[], activeIndex: number) {
-  if (items.length === 0) return [];
-
-  return POSITION_CLASS.map((position, index) => {
-    const offset = index - 2;
-    const normalizedIndex = (activeIndex + offset + items.length) % items.length;
-
-    return {
-      position,
-      teacher: items[normalizedIndex],
-      key: `${position}-${items[normalizedIndex].id}-${normalizedIndex}`,
-    };
-  });
-}
 
 export default function TeacherSlider() {
   const [teachers, setTeachers] = useState<TeacherShowcaseItem[]>([]);
@@ -85,7 +70,19 @@ export default function TeacherSlider() {
     setActiveIndex((current) => (current + step + teachers.length) % teachers.length);
   };
 
-  const visibleTeachers = getVisibleTeachers(teachers, activeIndex);
+  const getPositionClass = (index: number) => {
+    if (teachers.length === 0) return 'is-hidden';
+    const num = teachers.length;
+    const diff = (index - activeIndex + num) % num;
+    // to handle small arrays
+    if (diff === 0) return 'is-current';
+    if (diff === 1) return 'is-next-1';
+    if (diff === 2 && num >= 5) return 'is-next-2';
+    if (diff === num - 1) return 'is-prev-1';
+    if (diff === num - 2 && num >= 5) return 'is-prev-2';
+    return 'is-hidden';
+  };
+
   const currentTeacher = teachers[activeIndex];
   const currentTeacherPath = currentTeacher ? buildTeacherPath(currentTeacher.id) : null;
   const radarValues = currentTeacher
@@ -106,20 +103,23 @@ export default function TeacherSlider() {
       <div className="teacher-slider-container w-full h-90 md:h-90 grid grid-cols-1 md:grid-cols-[5fr_3fr] ">
         <div className="teacher-slider flex justify-center items-center flex-col">
           <div className="box h-90 md:h-90">
-            {visibleTeachers.length > 0 ? (
-              visibleTeachers.map(({ position, teacher, key }) => (
-                <Link
-                  key={key}
-                  href={buildTeacherPath(teacher.id)}
-                  className={`item ${position}`}
-                  aria-label={`查看教师 ${teacher.name} 详情`}
-                >
-                  <img
-                    src={teacher.avatar_url || FALLBACK_AVATAR}
-                    alt={teacher.name}
-                  />
-                </Link>
-              ))
+            {teachers.length > 0 ? (
+              teachers.map((teacher, index) => {
+                const position = getPositionClass(index);
+                return (
+                  <Link
+                    key={teacher.id}
+                    href={buildTeacherPath(teacher.id)}
+                    className={`item ${position}`}
+                    aria-label={`查看教师 ${teacher.name} 详情`}
+                  >
+                    <img
+                      src={teacher.avatar_url || FALLBACK_AVATAR}
+                      alt={teacher.name}
+                    />
+                  </Link>
+                );
+              })
             ) : (
               <div className="teacher-slider-empty">暂无教师数据</div>
             )}
@@ -134,7 +134,7 @@ export default function TeacherSlider() {
         </div>
 
         <div className="teacher-introduce-container">
-          <div className="inline-flex flex-col justify-evenly h-80 w-full">
+          <div className="inline-flex flex-col justify-evenly h-80">
             <h1 className="text-3xl md:text-3xl font-bold mt-5">
               Teacher Introduction
             </h1>
