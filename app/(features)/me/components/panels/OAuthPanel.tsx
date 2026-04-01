@@ -7,7 +7,7 @@ import type { OAuthBindingStatus } from "@/types/auth";
 import { type AccountMode } from "../shared/helpers";
 import {
   buildAuthUrl,
-  createCodeChallenge,
+  createPkcePair,
   createOAuthState,
   OAUTH_CONTEXT_STORAGE_KEY,
   type AuthPlatform,
@@ -17,12 +17,10 @@ export default function OAuthPanel({
   accountMode,
   bindings,
   onClose,
-  onOAuthBound,
 }: {
   accountMode: AccountMode;
   bindings?: OAuthBindingStatus | null;
   onClose: () => void;
-  onOAuthBound: (provider: OAuthBindProvider) => void;
 }) {
   const [isBinding, setIsBinding] = useState(false);
 
@@ -37,12 +35,13 @@ export default function OAuthPanel({
       setIsBinding(true);
 
       const state = createOAuthState(platform);
-      const challengeResult = await createCodeChallenge();
+      const { codeChallenge, codeVerifier } = await createPkcePair();
 
       const context = {
         state,
         platform,
-        codeChallenge: challengeResult,
+        codeChallenge,
+        codeVerifier,
         action: "bind" as const,
       };
       localStorage.setItem(OAUTH_CONTEXT_STORAGE_KEY, JSON.stringify(context));
@@ -52,7 +51,7 @@ export default function OAuthPanel({
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent,
         );
-      const authUrl = buildAuthUrl(platform, state, challengeResult, isMobile);
+      const authUrl = buildAuthUrl(platform, state, codeChallenge, isMobile);
       window.location.assign(authUrl);
     } catch (error) {
       console.error(`${platform} 绑定初始化失败:`, error);

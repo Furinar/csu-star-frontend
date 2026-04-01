@@ -36,7 +36,13 @@ export type OAuthContext = {
   state: string;
   platform: AuthPlatform;
   codeChallenge: string;
+  codeVerifier: string;
   action?: "login" | "bind";
+};
+
+export type OAuthPkce = {
+  codeChallenge: string;
+  codeVerifier: string;
 };
 
 export const isMobileDevice = () => {
@@ -65,14 +71,24 @@ export const encodeBase64Url = (buffer: ArrayBuffer) => {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 };
 
-export const createCodeChallenge = async () => {
-  const verifier = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+const createCodeVerifier = () => {
+  return (
+    crypto.randomUUID().replace(/-/g, "") +
+    crypto.randomUUID().replace(/-/g, "")
+  );
+};
+
+export const createPkcePair = async (): Promise<OAuthPkce> => {
+  const codeVerifier = createCodeVerifier();
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(verifier),
+    new TextEncoder().encode(codeVerifier),
   );
 
-  return encodeBase64Url(digest);
+  return {
+    codeChallenge: encodeBase64Url(digest),
+    codeVerifier,
+  };
 };
 
 export const buildAuthUrl = (

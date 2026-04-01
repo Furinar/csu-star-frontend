@@ -14,7 +14,7 @@ import {
   type OAuthContext,
   OAUTH_CONTEXT_STORAGE_KEY,
   createOAuthState,
-  createCodeChallenge,
+  createPkcePair,
   buildAuthUrl,
   isMobileDevice,
 } from "@/lib/oauth";
@@ -55,11 +55,12 @@ export default function Login() {
 
   const handleOAuthLogin = async (platform: AuthPlatform) => {
     const state = createOAuthState(platform);
-    const codeChallenge = await createCodeChallenge();
+    const { codeChallenge, codeVerifier } = await createPkcePair();
     const context: OAuthContext = {
       state,
       platform,
       codeChallenge,
+      codeVerifier,
       action: "login",
     };
     localStorage.setItem(OAUTH_CONTEXT_STORAGE_KEY, JSON.stringify(context));

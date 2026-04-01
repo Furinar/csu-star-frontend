@@ -764,9 +764,6 @@ export default function Me() {
           accountMode={accountMode}
           bindings={profile?.oauth_bindings ?? null}
           onClose={() => setOpenPanel(null)}
-          onOAuthBound={() => {
-            void loadDashboard();
-          }}
         />
       </FloatingPanel>
 

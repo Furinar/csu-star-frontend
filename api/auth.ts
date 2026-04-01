@@ -44,7 +44,7 @@ const refreshToken = (refresh_token: string): Promise<ApiResponse<TokenResponse>
 const loginByOAuth = (
   provider: string,
   code: string,
-  meta?: { code_challenge?: string },
+  meta?: { code_challenge?: string; code_verifier?: string },
 ): Promise<ApiResponse<LoginResponse>> => {
   return service.post('/auth/oauth/login', {
     provider,

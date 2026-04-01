@@ -8,7 +8,6 @@ import { bindOAuthAccount } from "@/api/me";
 import { useAuthStore } from "@/store/useAuthStore";
 import {
   type OAuthContext,
-  type AuthPlatform,
   OAUTH_CONTEXT_STORAGE_KEY,
 } from "@/lib/oauth";
 import { type OAuthBindProvider } from "@/types/me";
@@ -51,6 +50,15 @@ export default function CallBack() {
       return;
     }
 
+    if (context.action !== "bind" && !context.codeVerifier) {
+      localStorage.removeItem(OAUTH_CONTEXT_STORAGE_KEY);
+      setErrorMessage("授权信息已过期，请重新发起第三方登录");
+      setLoginType("error");
+      setHasTriedLogin(true);
+      startTimer(3);
+      return;
+    }
+
     localStorage.removeItem(OAUTH_CONTEXT_STORAGE_KEY);
     setHasTriedLogin(true);
 
@@ -65,6 +73,7 @@ export default function CallBack() {
         } else {
           const result = await loginByOAuth(context.platform, code, {
             code_challenge: context.codeChallenge,
+            code_verifier: context.codeVerifier,
           });
           const data = result.data;
           login(
