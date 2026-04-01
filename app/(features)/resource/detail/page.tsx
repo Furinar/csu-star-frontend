@@ -10,6 +10,7 @@ import {
   listResourceComments,
   removeLike,
 } from "@/api/detail";
+import { downloadResourceFile } from "@/api/resource";
 import type { ResourceComment, ResourceDetail } from "@/types/detail";
 import { feedback } from "@/store/useFeedbackStore";
 import CommentComposerForm from "@/components/detail/CommentComposerForm";
@@ -27,6 +28,8 @@ import {
   buildCoursePath,
   buildResourceCollectionPath,
 } from "@/lib/paths";
+import { formatDateTimeZh } from "@/lib/date";
+import { useHasMounted } from "@/hooks/useHasMounted";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -35,10 +38,7 @@ interface ReplyTarget {
 }
 
 function formatDate(value?: string) {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("zh-CN", { hour12: false });
+  return formatDateTimeZh(value);
 }
 
 function formatFileSize(bytes?: number | null) {
@@ -50,7 +50,8 @@ function formatFileSize(bytes?: number | null) {
 
 export default function ResourceDetailPage() {
   const searchParams = useSearchParams();
-  const idStr = searchParams.get("id");
+  const hasMounted = useHasMounted();
+  const idStr = hasMounted ? searchParams.get("id") : null;
   const resourceId = idStr ? parseInt(idStr, 10) : null;
 
   const [resource, setResource] = useState<ResourceDetail | null>(null);
@@ -66,9 +67,31 @@ export default function ResourceDetailPage() {
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
 
+  const handleDownload = async (fileId: string, filename: string) => {
+    if (!resourceId) return;
+    try {
+      feedback.info({ title: "正在获取下载链接..." });
+      const { url } = await downloadResourceFile(resourceId, fileId);
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      feedback.success({ title: "开始下载" });
+    } catch (e: unknown) {
+      console.error(e);
+      const msg = e instanceof Error ? e.message : "无法获取下载链接";
+      feedback.error({ title: "下载失败", description: msg });
+    }
+  };
+
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    if (!hasMounted) return;
     if (!resourceId) return;
     let mounted = true;
     setIsLoading(true);
@@ -93,7 +116,7 @@ export default function ResourceDetailPage() {
     return () => {
       mounted = false;
     };
-  }, [resourceId]);
+  }, [hasMounted, resourceId]);
 
   const hasMore = comments.length < totalComments;
 
@@ -224,6 +247,14 @@ export default function ResourceDetailPage() {
     }
   };
 
+  if (!hasMounted) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-emerald-500" />
+      </div>
+    );
+  }
+
   if (!resourceId) {
     return <div className="p-8 text-center text-slate-500">请提供资源 ID</div>;
   }
@@ -313,12 +344,7 @@ export default function ResourceDetailPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() =>
-                      window.open(
-                        `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/resources/files/${file.id}/download`,
-                        "_blank",
-                      )
-                    }
+                    onClick={() => handleDownload(file.id, file.filename)}
                     className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
                   >
                     下载文件

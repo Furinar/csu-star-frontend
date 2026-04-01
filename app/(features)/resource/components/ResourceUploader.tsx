@@ -111,9 +111,9 @@ export default function ResourceUploader() {
     if (!debouncedCourseQuery.trim()) {
       // 避免在首次渲染时同步触发无意义的 setState
       const timer = setTimeout(() => {
-        // 我们在这里不依赖外面闭包，以防过时闭包判断。直接不管它，直接清空：
-        setCourseOptions([]);
-        setIsSearchingCourse(false);
+         // 我们在这里不依赖外面闭包，以防过时闭包判断。直接不管它，直接清空：
+         setCourseOptions([]);
+         setIsSearchingCourse(false);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -287,7 +287,7 @@ export default function ResourceUploader() {
             您的资源已成功保存，可以前往详情页查看。
           </p>
           <div className="flex gap-4 mt-6">
-            <Link href={`/resource/${uploadedResourceId}`}>
+            <Link href={`/resource/detail?id=${uploadedResourceId}`}>
               <button className="px-6 py-2 bg-star-500 text-white rounded-full hover:bg-star-600 transition-colors shadow-lg">
                 查看详情
               </button>
