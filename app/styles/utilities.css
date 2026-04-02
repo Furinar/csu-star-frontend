@@ -162,3 +162,37 @@
     max-width: 3200px;
   }
 }
+
+/* Neumorphic UI Tools */
+.neo-outset {
+  background: #f7f8f7;
+  border-radius: 14px;
+  box-shadow: 6px 6px 12px #d1d2d1, -6px -6px 12px #ffffff;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.neo-outset:hover {
+  box-shadow: 8px 8px 16px #d1d2d1, -8px -8px 16px #ffffff;
+}
+
+.neo-outset:focus-within {
+  box-shadow: 4px 4px 8px #d1d2d1, -4px -4px 8px #ffffff;
+}
+
+.neo-inset {
+  background: #f7f8f7;
+  border-radius: 14px;
+  box-shadow: inset 4px 4px 8px #d1d2d1, inset -4px -4px 8px #ffffff;
+  border: none;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.neo-inset:focus, .neo-inset:active {
+  box-shadow: inset 6px 6px 12px #d1d2d1, inset -6px -6px 12px #ffffff;
+}
+
+.neo-bg {
+  background-color: #f7f8f7;
+}

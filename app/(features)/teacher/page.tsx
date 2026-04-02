@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
+import SearchLandingSection from "@/app/(features)/search/components/SearchLandingSection";
 import SearchBar from "@/components/ui/SearchBar";
 import { buildTeacherPath } from "@/lib/paths";
 import TeacherSlider from "./components/TeacherSlider";
@@ -122,6 +123,12 @@ export default function Teacher() {
             />
           </div>
         </div>
+
+        <SearchLandingSection
+          type="teacher"
+          title="教师列表"
+          description="页面底部直接展示教师搜索结果，来自搜索接口的空关键词请求。"
+        />
       </div>
     </>
   );

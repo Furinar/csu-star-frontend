@@ -14,6 +14,11 @@ import {
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  AdvancedInput,
+  AdvancedSelect,
+  AdvancedTextarea,
+} from "./AdvancedFormControls";
 
 const RESOURCE_TYPES: { value: ResourceType; label: string }[] = [
   { value: "ppt", label: "PPT" },
@@ -111,9 +116,9 @@ export default function ResourceUploader() {
     if (!debouncedCourseQuery.trim()) {
       // 避免在首次渲染时同步触发无意义的 setState
       const timer = setTimeout(() => {
-         // 我们在这里不依赖外面闭包，以防过时闭包判断。直接不管它，直接清空：
-         setCourseOptions([]);
-         setIsSearchingCourse(false);
+        // 我们在这里不依赖外面闭包，以防过时闭包判断。直接不管它，直接清空：
+        setCourseOptions([]);
+        setIsSearchingCourse(false);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -275,22 +280,20 @@ export default function ResourceUploader() {
 
   return (
     <div className="p-6 md:p-8 mt-6 max-w-4xl mx-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-      <h2 className="text-2xl font-bold text-first mb-6">上传资源</h2>
+      <h2 className="text-2xl font-bold text-black mb-6">上传资源</h2>
 
       {uploadedResourceId ? (
         <div className="flex flex-col items-center justify-center py-10 space-y-4">
           <div className="text-star-500 text-6xl">
             <i className="uil uil-check-circle" />
           </div>
-          <h3 className="text-2xl font-semibold text-first">上传成功！</h3>
+          <h3 className="text-2xl font-semibold text-black">上传成功！</h3>
           <p className="text-second">
             您的资源已成功保存，可以前往详情页查看。
           </p>
           <div className="flex gap-4 mt-6">
             <Link href={`/resource/detail?id=${uploadedResourceId}`}>
-              <button className="hidden">
-                查看详情
-              </button>
+              <button className="hidden">查看详情</button>
             </Link>
             <button
               onClick={() => {
@@ -302,7 +305,7 @@ export default function ResourceUploader() {
                 setCourseQuery("");
                 setTotalProgress(0);
               }}
-              className="px-6 py-2 bg-ice-100 text-first rounded-md hover:bg-ice-200 transition-colors"
+              className="px-6 py-2 bg-ice-100 text-black rounded-md hover:bg-ice-200 transition-colors"
             >
               继续上传
             </button>
@@ -319,63 +322,68 @@ export default function ResourceUploader() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-first mb-1">
-                  资源标题 <span className="text-red-500">*</span>
-                </label>
-                <input
+                <AdvancedInput
+                  label={
+                    <>
+                      资源标题 <span className="text-red-500">*</span>
+                    </>
+                  }
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isUploading}
-                  className="w-full px-4 py-2 rounded-xl border border-ice-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-star-300"
-                  placeholder="请输入资源标题"
+                  placeholder=""
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-first mb-1">
-                  类型
-                </label>
-                <select
+                <AdvancedSelect
+                  label="类型"
                   value={resourceType}
                   onChange={(e) =>
                     setResourceType(e.target.value as ResourceType)
                   }
                   disabled={isUploading}
-                  className="w-full px-4 py-2 rounded-xl border border-ice-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-star-300"
                 >
                   {RESOURCE_TYPES.map((rt) => (
                     <option key={rt.value} value={rt.value}>
                       {rt.label}
                     </option>
                   ))}
-                </select>
+                </AdvancedSelect>
               </div>
 
               <div className="relative">
-                <label className="block text-sm font-medium text-first mb-1">
-                  关联课程 <span className="text-red-500">*</span>
-                </label>
                 {selectedCourse ? (
-                  <div className="flex items-center justify-between px-4 py-2 rounded-xl border border-star-200 bg-star-50 text-star-900">
-                    <span>{selectedCourse.name}</span>
-                    {!isUploading && (
-                      <button
-                        onClick={() => setSelectedCourse(null)}
-                        className="text-star-400 hover:text-star-600"
-                      >
-                        <i className="uil uil-times-circle text-xl" />
-                      </button>
-                    )}
-                  </div>
+                  <>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      关联课程 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center justify-between px-4 py-2 rounded-xl border border-star-200 bg-star-50 text-star-900">
+                      <span>{selectedCourse.name}</span>
+                      {!isUploading && (
+                        <button
+                          onClick={() => setSelectedCourse(null)}
+                          className="text-star-400 hover:text-star-600"
+                        >
+                          <i className="uil uil-times-circle text-xl" />
+                        </button>
+                      )}
+                    </div>
+                  </>
                 ) : (
                   <div>
-                    <input
+                    <AdvancedInput
+                      label={
+                        <>
+                          搜索课程名称...{" "}
+                          <span className="text-red-500">*</span>
+                        </>
+                      }
                       type="text"
                       value={courseQuery}
                       onChange={(e) => setCourseQuery(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-ice-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-star-300"
-                      placeholder="搜索课程名称..."
+                      placeholder=""
                     />
                     {isSearchingCourse && (
                       <div className="text-xs text-second mt-1">搜索中...</div>
@@ -403,21 +411,18 @@ export default function ResourceUploader() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-first mb-1">
-                资源简介 (可选)
-              </label>
-              <textarea
+              <AdvancedTextarea
+                label="资源简介 (可选)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isUploading}
-                className="w-full px-4 py-2 rounded-xl border border-ice-200 bg-white/50 focus:outline-none focus:ring-2 focus:ring-star-300 h-[204px] resize-none"
-                placeholder="简单介绍一下这份资料..."
+                placeholder=""
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-first mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               上传文件 <span className="text-red-500">*</span>
             </label>
             <div
@@ -427,7 +432,7 @@ export default function ResourceUploader() {
               onDrop={handleDrop}
               onClick={() => !isUploading && fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
-                ${dragActive ? "border-star-400 bg-star-50/50" : "border-ice-200 hover:border-star-300 hover:bg-ice-50/50"}
+                ${dragActive ? "border-[#8b5cf6] bg-[#8b5cf6]/5" : "border-gray-300 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/5"}
                 ${isUploading ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
               `}
             >
@@ -441,7 +446,7 @@ export default function ResourceUploader() {
               <div className="text-star-400 text-4xl mb-2">
                 <i className="uil uil-cloud-upload" />
               </div>
-              <p className="text-first font-medium">
+              <p className="text-black font-medium">
                 点击或将文件拖拽到这里上传
               </p>
               <p className="text-sm text-second mt-1">
@@ -452,7 +457,7 @@ export default function ResourceUploader() {
 
           {files.length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-first">
+              <h4 className="text-sm font-medium text-black">
                 待上传文件 ({files.length})
               </h4>
               <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
@@ -474,7 +479,7 @@ export default function ResourceUploader() {
 
                     <div className="flex items-center gap-3 relative z-10 w-full max-w-[85%]">
                       <i className="uil uil-file-alt text-xl text-star-400" />
-                      <div className="truncate text-sm text-first flex-1">
+                      <div className="truncate text-sm text-black flex-1">
                         {f.file.name}
                       </div>
                       <div className="text-xs text-second w-16 text-right shrink-0">
@@ -517,7 +522,7 @@ export default function ResourceUploader() {
 
           {isUploading && (
             <div className="space-y-2 mt-4">
-              <div className="flex justify-between text-sm font-medium text-first">
+              <div className="flex justify-between text-sm font-medium text-black">
                 <span>整组总进度</span>
                 <span>{totalProgress}%</span>
               </div>

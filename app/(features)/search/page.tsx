@@ -1,15 +1,11 @@
 "use client";
 
 import {searchEverything} from "@/api/search";
-import SearchResultCard from "@/app/(features)/search/components/SearchResultCard";
+import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsGrid";
 import SearchBar from "@/components/ui/SearchBar";
 import type {
-  SearchCourseItem,
-  SearchResourceCard,
   SearchResponse,
   SearchScope,
-  SearchTeacherItem,
-  SearchUnifiedItem,
 } from "@/types/search";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useSearchParams} from "next/navigation";
@@ -55,25 +51,6 @@ function createEmptyResults(): SearchResponse {
     teachers: {total: 0, items: []},
     all: {total: 0, items: []},
   };
-}
-
-function renderTypedCard(
-    type: "course" | "teacher" | "resource",
-    item: SearchCourseItem | SearchTeacherItem | SearchResourceCard,
-) {
-  if (type === "course") {
-    return <SearchResultCard type="course" item={item as SearchCourseItem}/>;
-  }
-
-  if (type === "teacher") {
-    return <SearchResultCard type="teacher" item={item as SearchTeacherItem}/>;
-  }
-
-  return <SearchResultCard type="resource" item={item as SearchResourceCard}/>;
-}
-
-function renderUnifiedCard(item: SearchUnifiedItem) {
-  return renderTypedCard(item.type, item.item);
 }
 
 function mergeResults(
@@ -486,15 +463,7 @@ export default function Search() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {displayedItems.map((entry) => (
-                    <div
-                        key={`${entry.type}-${entry.type === "resource" ? entry.item.course_id : entry.item.id}`}
-                    >
-                      {renderUnifiedCard(entry)}
-                    </div>
-                ))}
-              </div>
+              <SearchResultsGrid items={displayedItems} />
 
               {isLoadingMore ? (
                   <div className="flex items-center justify-center py-8 text-gray-500">
