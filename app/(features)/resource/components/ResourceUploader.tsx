@@ -11,7 +11,7 @@ import {
   CourseSuggestionItem,
   UploadFileItem,
 } from "@/types/resource";
-import GlassCard from "@/components/ui/GlassCard";
+import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
 
@@ -274,7 +274,7 @@ export default function ResourceUploader() {
   };
 
   return (
-    <GlassCard className="p-8 mt-6 max-w-4xl mx-auto">
+    <div className="p-6 md:p-8 mt-6 max-w-4xl mx-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <h2 className="text-2xl font-bold text-first mb-6">上传资源</h2>
 
       {uploadedResourceId ? (
@@ -302,7 +302,7 @@ export default function ResourceUploader() {
                 setCourseQuery("");
                 setTotalProgress(0);
               }}
-              className="px-6 py-2 bg-ice-100 text-first rounded-full hover:bg-ice-200 transition-colors"
+              className="px-6 py-2 bg-ice-100 text-first rounded-md hover:bg-ice-200 transition-colors"
             >
               继续上传
             </button>
@@ -426,7 +426,7 @@ export default function ResourceUploader() {
               onDragOver={handleDrag}
               onDrop={handleDrop}
               onClick={() => !isUploading && fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-colors cursor-pointer
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
                 ${dragActive ? "border-star-400 bg-star-50/50" : "border-ice-200 hover:border-star-300 hover:bg-ice-50/50"}
                 ${isUploading ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
               `}
@@ -521,7 +521,7 @@ export default function ResourceUploader() {
                 <span>整组总进度</span>
                 <span>{totalProgress}%</span>
               </div>
-              <div className="h-2 w-full bg-ice-100 rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-ice-100 rounded-md overflow-hidden">
                 <div
                   className="h-full bg-star-500 transition-all duration-300"
                   style={{ width: `${totalProgress}%` }}
@@ -531,28 +531,16 @@ export default function ResourceUploader() {
           )}
 
           <div className="flex justify-end pt-4">
-            <button
+            <ActionSubmitButton
               onClick={startUpload}
               disabled={isUploading || files.length === 0}
-              className={`px-8 py-3 rounded-full font-medium transition-all shadow-md flex items-center gap-2
-                 ${isUploading || files.length === 0 ? "bg-ice-200 text-ice-500 cursor-not-allowed" : "bg-first text-white hover:bg-star-600 hover:shadow-lg"}
-               `}
-            >
-              {isUploading ? (
-                <>
-                  <i className="uil uil-spinner-alt animate-spin" />
-                  上传中...
-                </>
-              ) : (
-                <>
-                  <i className="uil uil-cloud-upload" />
-                  确认上传
-                </>
-              )}
-            </button>
+              isSent={isUploading}
+              defaultText="确认上传"
+              sentText="上传中..."
+            />
           </div>
         </div>
       )}
-    </GlassCard>
+    </div>
   );
 }
