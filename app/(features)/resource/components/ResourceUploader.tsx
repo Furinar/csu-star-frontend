@@ -288,7 +288,7 @@ export default function ResourceUploader() {
           </p>
           <div className="flex gap-4 mt-6">
             <Link href={`/resource/detail?id=${uploadedResourceId}`}>
-              <button className="px-6 py-2 bg-star-500 text-white rounded-full hover:bg-star-600 transition-colors shadow-lg">
+              <button className="hidden">
                 查看详情
               </button>
             </Link>

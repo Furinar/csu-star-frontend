@@ -1,6 +1,10 @@
+import { useState, useMemo } from 'react';
+import RatingStar from '@/components/ui/RatingStar';
+import ModernCheckbox from '@/components/ui/ModernCheckbox';
+import ActionSubmitButton from '@/components/ui/ActionSubmitButton';
 "use client";
 
-import { useMemo, useState } from "react";
+
 
 interface RelatedItem {
   id: number;
@@ -60,18 +64,11 @@ function RatingField({
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
-          <button
+          <RatingStar
             key={star}
-            type="button"
-            onClick={() => onChange(star)}
-            className={`flex h-11 w-11 items-center justify-center rounded-2xl border text-base font-semibold transition ${
-              star <= value
-                ? activeClassName
-                : "border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600"
-            }`}
-          >
-            {star}
-          </button>
+            checked={star <= value}
+            onChange={() => onChange(star)}
+          />
         ))}
       </div>
     </div>
@@ -211,15 +208,11 @@ export default function EvaluationComposerForm({
             <div className="text-sm font-medium text-slate-800">评价内容</div>
             <p className="mt-1 text-sm text-slate-500">更适合写课堂感受、节奏判断、给分体验和避坑建议。</p>
           </div>
-          <label className="inline-flex items-center gap-2 text-sm text-slate-500">
-            <input
-              type="checkbox"
-              checked={anonymous}
-              onChange={(event) => setAnonymous(event.target.checked)}
-              className="h-4 w-4 rounded border-slate-300"
-            />
-            匿名发表
-          </label>
+          <ModernCheckbox
+            checked={anonymous}
+            onChange={setAnonymous}
+            label="匿名发表"
+          />
         </div>
         <textarea
           rows={8}
@@ -231,14 +224,13 @@ export default function EvaluationComposerForm({
       </div>
 
       <div className="flex items-center justify-end gap-3">
-        <button
-          type="button"
+        <ActionSubmitButton
+          label={submitLabel}
+          sentLabel="提交中..."
+          isSent={isSubmitting}
           onClick={handleSubmit}
           disabled={!allRequiredRated || isSubmitting}
-          className={`rounded-full px-6 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:opacity-60 ${tone.solid}`}
-        >
-          {isSubmitting ? "提交中..." : submitLabel}
-        </button>
+        />
       </div>
     </div>
   );

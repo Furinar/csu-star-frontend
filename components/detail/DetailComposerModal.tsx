@@ -5,15 +5,15 @@ import { useEffect } from "react";
 
 const toneMap = {
   course: {
-    shell: "border-sky-100/80 from-sky-50 via-white to-indigo-50",
+    shell: "border-slate-200 bg-white",
     badge: "border-sky-200 bg-white/90 text-sky-700",
   },
   teacher: {
-    shell: "border-rose-100/80 from-rose-50 via-white to-amber-50",
+    shell: "border-slate-200 bg-white",
     badge: "border-rose-200 bg-white/90 text-rose-700",
   },
   resource: {
-    shell: "border-emerald-100/80 from-emerald-50 via-white to-cyan-50",
+    shell: "border-slate-200 bg-white",
     badge: "border-emerald-200 bg-white/90 text-emerald-700",
   },
 } as const;
@@ -57,7 +57,7 @@ export default function DetailComposerModal({
   return (
     <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
       <div
-        className={`relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border bg-gradient-to-br p-6 shadow-[0_30px_100px_rgba(15,23,42,0.18)] md:p-7 ${tone.shell}`}
+        className={`relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[36px] border bg-white p-6 shadow-[0_30px_100px_rgba(15,23,42,0.18)] md:p-7 ${tone.shell}`}
       >
         <div className="absolute inset-[1px] rounded-[35px] border border-white/70" />
         <div className="relative">
