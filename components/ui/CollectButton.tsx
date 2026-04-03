@@ -6,7 +6,7 @@ interface CollectButtonProps {
   size?: "sm" | "md" | "lg";
   isCollected?: boolean;
   onClick?: () => void;
-  targetId?: number;
+  targetId?: number | string;
   targetType?: "resource" | "course" | "teacher";
   initialStatus?: boolean;
   className?: string;
@@ -67,9 +67,9 @@ export default function CollectButton({
     try {
       setLoading(true);
       if (collected) {
-        await removeFavorite(targetType, targetId);
+        await removeFavorite(targetType, String(targetId));
       } else {
-        await addFavorite(targetType, targetId);
+        await addFavorite(targetType, String(targetId));
       }
       setCollected((prev) => !prev);
       feedback.success({

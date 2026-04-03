@@ -12,7 +12,6 @@ import {
   buildResourceCollectionPath,
   buildTeacherPath,
 } from "@/lib/paths";
-import { formatDateZh } from "@/lib/date";
 
 type RankItemCardProps =
   | {
@@ -37,14 +36,11 @@ type RankItemCardProps =
       className?: string;
     };
 
-function formatScore(value?: number | null | string, digits = 1) {
+function formatMetric(value?: number | null | string, digits = 2) {
   if (value === null || typeof value === "undefined") return "--";
   if (typeof value === "string") return value;
+  if (Number.isInteger(value)) return String(value);
   return value.toFixed(digits);
-}
-
-function formatDate(value?: string | null) {
-  return formatDateZh(value);
 }
 
 function BarRow({
@@ -71,7 +67,7 @@ function BarRow({
         ></div>
       </div>
       <span className="w-5 sm:w-7 text-right text-gray-600 font-medium tabular-nums">
-        {formatScore(value)}
+        {formatMetric(value)}
       </span>
     </div>
   );
@@ -81,6 +77,14 @@ function truncateString(str: string, maxLength: number) {
   if (!str) return "";
   if (str.length <= maxLength) return str;
   return `${str.slice(0, maxLength)}...`;
+}
+
+function formatCourseType(courseType?: string | null) {
+  if (courseType === "public") return "公选";
+  if (courseType === "non_public") return "非公选";
+  if (courseType === "公选课") return "公选";
+  if (courseType === "非公选课") return "非公选";
+  return courseType || "未知类型";
 }
 
 export default function RankItemCard(props: RankItemCardProps) {
@@ -105,14 +109,14 @@ export default function RankItemCard(props: RankItemCardProps) {
     const item = props.item;
     href = buildCoursePath(item.id);
     title = item.name;
-    isPublic =
-      item.course_type === "公选课";
+    const courseTypeLabel = formatCourseType(item.course_type);
+    isPublic = courseTypeLabel === "公选";
 
     subtitleIcon = "uil-tag-alt";
     subtitleContent = (
       <div className="flex items-center gap-2 flex-wrap">
         <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
-          {truncateString(item.course_type || "未知类型", 8)}
+          {truncateString(courseTypeLabel, 8)}
         </span>
       </div>
     );
@@ -138,7 +142,7 @@ export default function RankItemCard(props: RankItemCardProps) {
     );
 
     bottomStats = [
-      { icon: "uil-award", label: "综合", value: formatScore(item.score) },
+      { icon: "uil-award", label: "综合", value: formatMetric(item.score) },
       {
         icon: "uil-comment-alt-lines",
         label: "评价",
@@ -184,26 +188,20 @@ export default function RankItemCard(props: RankItemCardProps) {
     );
 
     bottomStats = [
-      { icon: "uil-award", label: "综合", value: formatScore(item.score) },
+      { icon: "uil-award", label: "综合", value: formatMetric(item.score) },
       {
         icon: "uil-comment-alt-lines",
         label: "评价",
         value: item.eval_count ?? 0,
       },
-      { icon: "uil-folder", label: "资源", value: item.resource_count ?? 0 },
+      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
     ];
   } else {
     const item = props.item;
     href = buildResourceCollectionPath(item.course_id);
     title = item.course_name;
     subtitleIcon = "uil-folder-open";
-    subtitleContent = (
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
-          最近更新 {formatDate(item.updated_at)}
-        </span>
-      </div>
-    );
+    subtitleContent = <div className="flex items-center gap-2 flex-wrap" />;
 
     rightDetailsContent = (
       <div className="flex flex-col gap-1 sm:gap-1.5 justify-center h-full">
@@ -229,9 +227,9 @@ export default function RankItemCard(props: RankItemCardProps) {
     );
 
     bottomStats = [
-      { icon: "uil-award", label: "综合", value: formatScore(item.score) },
+      { icon: "uil-award", label: "综合", value: formatMetric(item.score) },
       { icon: "uil-file-alt", label: "资料", value: item.resource_count ?? 0 },
-      { icon: "uil-fire", label: "热度", value: formatScore(item.hot_score) },
+      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
     ];
   }
 
@@ -362,7 +360,7 @@ export default function RankItemCard(props: RankItemCardProps) {
               }
             >
               {typeof filterValue === "number"
-                ? formatScore(filterValue)
+                ? formatMetric(filterValue)
                 : (filterValue ?? "--")}
             </div>
           </div>

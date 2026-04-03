@@ -21,11 +21,11 @@ export default function DetailFloatingActionButton({
 }) {
   const content = (
     <>
-      <span className="pointer-events-none absolute -left-3 -top-3 rounded-full border border-white/80 bg-white/90 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm">
+      <span className="pointer-events-none absolute -left-3 -top-3 z-10 rounded-full border border-white/80 bg-white/90 px-3 py-1 text-xs font-medium text-slate-500 shadow-sm">
         {label}
       </span>
       <span
-        className={`flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-3xl text-white shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition hover:scale-[1.04] ${toneMap[tone]}`}
+        className={`relative z-0 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br text-3xl text-white shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition duration-200 hover:scale-[1.12] ${toneMap[tone]}`}
       >
         +
       </span>
@@ -37,7 +37,7 @@ export default function DetailFloatingActionButton({
       <Link
         href={href}
         aria-label={label}
-        className="fixed bottom-6 right-6 z-[1050] md:bottom-8 md:right-8"
+        className="fixed bottom-6 right-6 z-[1050] isolate cursor-pointer md:bottom-8 md:right-8"
       >
         {content}
       </Link>
@@ -49,7 +49,7 @@ export default function DetailFloatingActionButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="fixed bottom-6 right-6 z-[1050] md:bottom-8 md:right-8"
+      className="fixed bottom-6 right-6 z-[1050] isolate cursor-pointer md:bottom-8 md:right-8"
     >
       {content}
     </button>

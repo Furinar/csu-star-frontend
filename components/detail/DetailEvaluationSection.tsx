@@ -17,9 +17,14 @@ import { DetailSection } from "./DetailScaffold";
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 type EvaluationType = "teacher" | "course";
+type LikeItemType =
+  | "teacher_evaluation"
+  | "course_evaluation"
+  | "teacher_evaluation_reply"
+  | "course_evaluation_reply";
 
 interface ReplyTarget {
-  replyId?: number | null;
+  replyId?: string | null;
   userId?: string | null;
   userName?: string | null;
 }
@@ -38,7 +43,7 @@ export interface DetailEvaluationSectionProps {
   initialTotal: number;
   initialPage?: number;
   listEvaluations: (page: number, size: number) => Promise<PaginatedData<ThreadEvaluation>>;
-  onReply: (evaluationId: number, payload: EvaluationReplyInput) => Promise<EvaluationReply | null>;
+  onReply: (evaluationId: string, payload: EvaluationReplyInput) => Promise<EvaluationReply | null>;
 }
 
 const TEACHER_DIMENSIONS: Dimension[] = [
@@ -74,7 +79,7 @@ function formatDate(value?: string) {
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(1);
+  return value.toFixed(2);
 }
 
 function getDimensions(type: EvaluationType) {
@@ -99,6 +104,10 @@ function getDimensionValue(evaluation: ThreadEvaluation, key: string) {
 function getDisplayName(item: ThreadEvaluation) {
   if (item.is_anonymous) return "匿名用户";
   return item.user?.nickname || "未知用户";
+}
+
+function isReplyLikeType(type: LikeItemType) {
+  return type === "teacher_evaluation_reply" || type === "course_evaluation_reply";
 }
 
 function ScoreChip({
@@ -131,9 +140,9 @@ export default function DetailEvaluationSection({
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(initialPage);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [draftMap, setDraftMap] = useState<Record<number, string>>({});
-  const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
-  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [draftMap, setDraftMap] = useState<Record<string, string>>({});
+  const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [reportingKey, setReportingKey] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -148,6 +157,8 @@ export default function DetailEvaluationSection({
   const secondaryDimensions = useMemo(() => getSecondaryDimensions(evaluationType), [evaluationType]);
   const hasMore = items.length < total;
   const tone = toneMap[evaluationType];
+  const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
+  const replyLikeType = evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
 
   const fetchMore = useCallback(async () => {
     try {
@@ -190,7 +201,7 @@ export default function DetailEvaluationSection({
     return () => observer.disconnect();
   }, [fetchMore, hasMore, isLoadingMore]);
 
-  const handleReplySubmit = async (evaluationId: number) => {
+  const handleReplySubmit = async (evaluationId: string) => {
     const content = draftMap[evaluationId]?.trim();
     if (!content) {
       feedback.warning({ title: "回复内容不能为空" });
@@ -202,8 +213,8 @@ export default function DetailEvaluationSection({
       const target = targetMap[evaluationId] || {};
       const reply = await onReply(evaluationId, {
         content,
-        reply_to_reply_id: target.replyId ?? null,
-        reply_to_user_id: target.userId ?? null,
+        reply_to_reply_id: target.replyId != null ? String(target.replyId) : null,
+        reply_to_user_id: target.userId != null ? String(target.userId) : null,
       });
 
       if (!reply) {
@@ -236,8 +247,8 @@ export default function DetailEvaluationSection({
   };
 
   const handleToggleLike = async (
-    itemType: "teacher_evaluation" | "course_evaluation" | "comment",
-    id: number,
+    itemType: LikeItemType,
+    id: string,
     currentLiked: boolean,
   ) => {
     const key = `${itemType}-${id}`;
@@ -253,7 +264,7 @@ export default function DetailEvaluationSection({
 
       setItems((prev) =>
         prev.map((item) => {
-          if (itemType !== "comment" && item.id === id) {
+          if (!isReplyLikeType(itemType) && item.id === id) {
             return {
               ...item,
               is_liked: !currentLiked,
@@ -261,7 +272,7 @@ export default function DetailEvaluationSection({
             };
           }
 
-          if (itemType === "comment" && item.replies) {
+          if (isReplyLikeType(itemType) && item.replies) {
             return {
               ...item,
               replies: item.replies.map((reply) =>
@@ -290,7 +301,7 @@ export default function DetailEvaluationSection({
   const reportTarget = async (
     key: string,
     targetType: "evaluation" | "comment",
-    targetId: number,
+    targetId: string,
     label: string,
   ) => {
     try {
@@ -383,15 +394,12 @@ export default function DetailEvaluationSection({
                       type="button"
                       onClick={() =>
                         handleToggleLike(
-                          evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation",
+                          evaluationLikeType,
                           item.id,
                           !!item.is_liked,
                         )
                       }
-                      disabled={
-                        likeLoadingKey ===
-                        `${evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation"}-${item.id}`
-                      }
+                      disabled={likeLoadingKey === `${evaluationLikeType}-${item.id}`}
                       className={`inline-flex items-center gap-2 transition ${
                         item.is_liked ? tone.accentText : "hover:text-slate-700"
                       }`}
@@ -480,9 +488,9 @@ export default function DetailEvaluationSection({
                                   type="button"
                                   onClick={(event) => {
                                     event.stopPropagation();
-                                    void handleToggleLike("comment", reply.id, !!reply.is_liked);
+                                    void handleToggleLike(replyLikeType, reply.id, !!reply.is_liked);
                                   }}
-                                  disabled={likeLoadingKey === `comment-${reply.id}`}
+                                  disabled={likeLoadingKey === `${replyLikeType}-${reply.id}`}
                                   className={`inline-flex items-center gap-2 transition ${
                                     reply.is_liked ? tone.accentText : "hover:text-slate-600"
                                   }`}

@@ -13,16 +13,21 @@ interface RankCardProps {
   title: string;
   data: RankItem[];
   onItemClick?: (item: RankItem) => void;
+  onViewAll?: () => void;
 }
 
-export default function RankCard({ title, data, onItemClick }: RankCardProps) {
+export default function RankCard({ title, data, onItemClick, onViewAll }: RankCardProps) {
   return (
     <div className="flex flex-col flex-1 p-6 rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] min-w-[280px]">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
           {title}
         </h3>
-        <button className="text-sm text-gray-500 hover:text-blue-500 transition-colors">
+        <button
+          type="button"
+          onClick={onViewAll}
+          className={`text-sm transition-colors ${onViewAll ? "text-gray-500 hover:text-blue-500 cursor-pointer" : "text-gray-400 cursor-default"}`}
+        >
           查看全部
         </button>
       </div>

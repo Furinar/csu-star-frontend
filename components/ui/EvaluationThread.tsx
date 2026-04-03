@@ -27,14 +27,14 @@ interface EvaluationThreadProps {
   title: string;
   description: string;
   evaluations: ThreadEvaluation[];
-  onReply: (evaluationId: number, payload: EvaluationReplyInput) => Promise<EvaluationReply | undefined>;
+  onReply: (evaluationId: string, payload: EvaluationReplyInput) => Promise<EvaluationReply | undefined>;
   evaluationType?: EvaluationType;
   relatedItems?: RelatedItem[];
   onCreateEvaluation?: (payload: Record<string, unknown>) => Promise<ThreadEvaluation | undefined>;
 }
 
 interface ReplyTarget {
-  replyId?: number | null;
+  replyId?: string | null;
   userId?: string | null;
   userName?: string | null;
 }
@@ -62,7 +62,7 @@ function formatDateTime(value?: string) {
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(1);
+  return value.toFixed(2);
 }
 
 function getPrimaryDimensions(type: EvaluationType) {
@@ -125,10 +125,10 @@ export default function EvaluationThread({
   onCreateEvaluation,
 }: EvaluationThreadProps) {
   const [items, setItems] = useState<ThreadEvaluation[]>(evaluations);
-  const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
-  const [draftMap, setDraftMap] = useState<Record<number, string>>({});
-  const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
-  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  const [draftMap, setDraftMap] = useState<Record<string, string>>({});
+  const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [reportingKey, setReportingKey] = useState<string | null>(null);
 
@@ -147,15 +147,17 @@ export default function EvaluationThread({
   const primaryDimensions = getPrimaryDimensions(evaluationType);
   const relatedDimensions = getRelatedDimensions(evaluationType);
   const currentCreateDimensions = createRelatedId ? [...primaryDimensions, ...relatedDimensions] : primaryDimensions;
+  const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
+  const replyLikeType = evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
 
-  const toggleExpanded = (evaluationId: number) => {
+  const toggleExpanded = (evaluationId: string) => {
     setExpandedMap((prev) => ({
       ...prev,
       [evaluationId]: !prev[evaluationId],
     }));
   };
 
-  const updateEvaluationLike = async (evaluationId: number, targetType: "teacher_evaluation" | "course_evaluation") => {
+  const updateEvaluationLike = async (evaluationId: string, targetType: "teacher_evaluation" | "course_evaluation") => {
     const evaluation = items.find((item) => item.id === evaluationId);
     if (!evaluation) return;
 
@@ -191,7 +193,7 @@ export default function EvaluationThread({
     }
   };
 
-  const updateReplyLike = async (evaluationId: number, replyId: number) => {
+  const updateReplyLike = async (evaluationId: string, replyId: string) => {
     const evaluation = items.find((item) => item.id === evaluationId);
     const reply = evaluation?.replies?.find((item) => item.id === replyId);
     if (!reply) return;
@@ -201,9 +203,9 @@ export default function EvaluationThread({
 
     try {
       if (reply.is_liked) {
-        await removeLike("comment", replyId);
+        await removeLike(replyLikeType, replyId);
       } else {
-        await addLike("comment", replyId);
+        await addLike(replyLikeType, replyId);
       }
 
       setItems((prev) =>
@@ -238,7 +240,7 @@ export default function EvaluationThread({
   const reportTarget = async (
       key: string,
       target_type: "evaluation" | "comment",
-      target_id: number,
+      target_id: string,
       label: string,
   ) => {
     setReportingKey(key);
@@ -265,7 +267,7 @@ export default function EvaluationThread({
     }
   };
 
-  const handleSubmit = async (evaluationId: number) => {
+  const handleSubmit = async (evaluationId: string) => {
     const content = draftMap[evaluationId]?.trim();
     if (!content) return;
 
@@ -275,8 +277,8 @@ export default function EvaluationThread({
     try {
       const reply = await onReply(evaluationId, {
         content,
-        reply_to_reply_id: target.replyId ?? null,
-        reply_to_user_id: target.userId ?? null,
+        reply_to_reply_id: target.replyId != null ? String(target.replyId) : null,
+        reply_to_user_id: target.userId != null ? String(target.userId) : null,
       });
 
       if (!reply) return;
@@ -442,7 +444,6 @@ export default function EvaluationThread({
             const expanded = expandedMap[evaluation.id] ?? replies.length <= 2;
             const target = targetMap[evaluation.id];
             const linked = isLinkedEvaluation(evaluation);
-            const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
             const visibleDimensions = linked ? [...primaryDimensions, ...relatedDimensions] : primaryDimensions;
 
             return (

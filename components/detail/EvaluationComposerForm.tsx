@@ -1,10 +1,9 @@
+"use client";
+
 import { useState, useMemo } from 'react';
 import RatingStar from '@/components/ui/RatingStar';
 import ModernCheckbox from '@/components/ui/ModernCheckbox';
 import ActionSubmitButton from '@/components/ui/ActionSubmitButton';
-"use client";
-
-
 
 interface RelatedItem {
   id: number;
@@ -225,8 +224,8 @@ export default function EvaluationComposerForm({
 
       <div className="flex items-center justify-end gap-3">
         <ActionSubmitButton
-          label={submitLabel}
-          sentLabel="提交中..."
+          defaultText={submitLabel}
+          sentText="提交中..."
           isSent={isSubmitting}
           onClick={handleSubmit}
           disabled={!allRequiredRated || isSubmitting}
