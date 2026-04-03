@@ -1,10 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { addLike, removeLike } from "@/api/detail";
 import { submitReport } from "@/api/me";
-import { formatDateTimeZh } from "@/lib/date";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CourseEvaluation,
@@ -25,6 +24,9 @@ type LikeItemType =
   | "course_evaluation"
   | "teacher_evaluation_reply"
   | "course_evaluation_reply";
+type ReportItemType =
+  | "teacher_evaluation"
+  | "course_evaluation";
 
 interface ReplyTarget {
   replyId?: string | null;
@@ -42,13 +44,6 @@ export interface DetailEvaluationSectionProps {
   initialPage?: number;
   listEvaluations: (page: number, size: number) => Promise<PaginatedData<ThreadEvaluation>>;
   onReply: (evaluationId: string, payload: EvaluationReplyInput) => Promise<EvaluationReply | null>;
-}
-
-function isLinkedEvaluation(evaluation: ThreadEvaluation, evaluationType: EvaluationType) {
-  if (evaluation.mode === "linked") return true;
-  return evaluationType === "teacher"
-    ? Boolean((evaluation as TeacherEvaluation).course_id)
-    : Boolean((evaluation as CourseEvaluation).teacher_id);
 }
 
 export default function DetailEvaluationSection({
@@ -71,7 +66,6 @@ export default function DetailEvaluationSection({
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
-  const [reportingKey, setReportingKey] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -83,6 +77,8 @@ export default function DetailEvaluationSection({
   const hasMore = items.length < total;
   const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
   const replyLikeType = evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
+  const evaluationReportType: ReportItemType =
+    evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
 
   const fetchMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
@@ -221,13 +217,11 @@ export default function DetailEvaluationSection({
   };
 
   const reportTarget = async (
-    targetType: "evaluation" | "comment",
+    targetType: ReportItemType,
     targetId: string,
     label: string,
   ) => {
-    const key = `${targetType}-${targetId}`;
     try {
-      setReportingKey(key);
       await submitReport({
         target_type: targetType,
         target_id: String(targetId),
@@ -241,15 +235,12 @@ export default function DetailEvaluationSection({
     } catch (error) {
       console.error(error);
       feedback.error({ title: "举报失败", description: "请稍后重试。" });
-    } finally {
-      setReportingKey(null);
     }
   };
 
   
   const bilibiliComments = items.map((evaluation) => {
     const replies = evaluation.replies ?? [];
-    const linked = isLinkedEvaluation(evaluation, evaluationType);
     const id = String(evaluation.id);
 
     return {
@@ -266,7 +257,7 @@ export default function DetailEvaluationSection({
         setReplyingToId(id);
         setTargetMap(prev => ({ ...prev, [id]: {} }));
       },
-      onReport: () => reportTarget("evaluation", id, "评价"),
+      onReport: () => reportTarget(evaluationReportType, id, "评价"),
       isReplying: replyingToId === id,
       replyComposer: replyingToId === id ? (
         <div className="mt-3 flex flex-col gap-3">
@@ -297,10 +288,7 @@ export default function DetailEvaluationSection({
       ) : null,
       afterContentSlot: (
         <div className="mb-3 space-y-2">
-          <EvaluationBarChart 
-            evaluation={evaluation as any} 
-            theme={evaluationType} 
-          />
+          <EvaluationBarChart evaluation={evaluation} theme={evaluationType} />
         </div>
       ),
       replies: replies.map((r) => ({

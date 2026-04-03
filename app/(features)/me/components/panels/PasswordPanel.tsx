@@ -3,9 +3,11 @@
 import CryptoJS from "crypto-js";
 import { useState } from "react";
 import { recoverPwd, sendCaptcha } from "@/api/auth";
+import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
 import {
-  FORM_INPUT_CLASS_NAME,
+  PANEL_PRIMARY_BUTTON_CLASS_NAME,
+  PANEL_SECONDARY_BUTTON_CLASS_NAME,
   assertApiResponse,
   getErrorMessage,
   isCampusEmail,
@@ -128,91 +130,84 @@ export default function PasswordPanel({
   return (
     <>
       <div className="space-y-4">
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>校园邮箱</span>
-          <input
-            className={FORM_INPUT_CLASS_NAME}
-            placeholder="填写你的校园邮箱（如 @csu.edu.cn）"
-            autoComplete="email"
-            value={form.email}
+        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
+          当前密码修改流程会通过校园邮箱验证码完成，本质上是一次受控的邮箱校验式重置。
+        </div>
+
+        <AdvancedInput
+          label="校园邮箱"
+          placeholder="填写你的校园邮箱或前缀"
+          autoComplete="email"
+          value={form.email}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              email: event.target.value,
+            }))
+          }
+        />
+
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <AdvancedInput
+            label="验证码"
+            placeholder="请输入 6 位验证码"
+            inputMode="numeric"
+            maxLength={6}
+            value={form.captcha}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
-                email: event.target.value,
+                captcha: event.target.value,
               }))
             }
           />
-        </label>
+          <button
+            type="button"
+            onClick={handleSendCode}
+            disabled={isSendingCode || isResetting}
+            className={`${PANEL_PRIMARY_BUTTON_CLASS_NAME} sm:mt-[3px]`}
+          >
+            {isSendingCode ? "发送中..." : "获取验证码"}
+          </button>
+        </div>
 
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>验证码</span>
-          <div className="flex gap-3">
-            <input
-              className={FORM_INPUT_CLASS_NAME}
-              placeholder="请输入 6 位验证码"
-              inputMode="numeric"
-              maxLength={6}
-              value={form.captcha}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  captcha: event.target.value,
-                }))
-              }
-            />
-            <button
-              type="button"
-              onClick={handleSendCode}
-              disabled={isSendingCode}
-              className="flex-shrink-0 rounded-xl bg-first px-4 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSendingCode ? "发送中..." : "获取验证码"}
-            </button>
-          </div>
-        </label>
+        <AdvancedInput
+          type="password"
+          label="新密码"
+          placeholder="至少 8 位的新密码"
+          minLength={8}
+          autoComplete="new-password"
+          value={form.password}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              password: event.target.value,
+            }))
+          }
+        />
 
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>新密码</span>
-          <input
-            type="password"
-            className={FORM_INPUT_CLASS_NAME}
-            placeholder="至少 8 位的新密码"
-            minLength={8}
-            autoComplete="new-password"
-            value={form.password}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                password: event.target.value,
-              }))
-            }
-          />
-        </label>
-
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>确认新密码</span>
-          <input
-            type="password"
-            className={FORM_INPUT_CLASS_NAME}
-            placeholder="请再次输入新密码"
-            minLength={8}
-            autoComplete="new-password"
-            value={form.confirmPassword}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                confirmPassword: event.target.value,
-              }))
-            }
-          />
-        </label>
+        <AdvancedInput
+          type="password"
+          label="确认新密码"
+          placeholder="请再次输入新密码"
+          minLength={8}
+          autoComplete="new-password"
+          value={form.confirmPassword}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              confirmPassword: event.target.value,
+            }))
+          }
+        />
       </div>
+
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={isSendingCode || isResetting}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-white"
+          className={PANEL_SECONDARY_BUTTON_CLASS_NAME}
         >
           取消
         </button>
@@ -220,7 +215,7 @@ export default function PasswordPanel({
           type="button"
           onClick={handleReset}
           disabled={isResetting || isSendingCode}
-          className="rounded-xl bg-first px-6 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
+          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
         >
           {isResetting ? "正在修改..." : "确认修改"}
         </button>

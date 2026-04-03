@@ -95,7 +95,7 @@ export default function MeOverview({
       desc:
         accountMode === "oauth_pending_email"
           ? "继续补绑其他方式"
-          : "绑定 QQ / 微信",
+          : "绑定 QQ / GitHub / Google",
     },
     {
       key: "points" as PanelKey,

@@ -1,6 +1,7 @@
 import { service } from "@/lib/request";
 import { DEPARTMENTS } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
+import axios from "axios";
 import type {
   CheckinResult,
   ContributionSummary,
@@ -154,9 +155,25 @@ export function getMyContributions() {
 }
 
 export function dailyCheckin() {
-  return unwrap<CheckinResult>(
-    service.post<ApiEnvelope<CheckinResult>>("/me/checkin"),
-  );
+  return unwrap<{ points?: number }>(
+    service.post<ApiEnvelope<{ points?: number }>>("/me/checkin"),
+  )
+    .then((data) => ({
+      balance_after: typeof data?.points === "number" ? data.points : null,
+      points_gained: null,
+      already_checked_in: false,
+    }))
+    .catch((error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        return {
+          balance_after: null,
+          points_gained: null,
+          already_checked_in: true,
+        } satisfies CheckinResult;
+      }
+
+      throw error;
+    });
 }
 
 export function getMyEmailStatus() {
@@ -296,7 +313,13 @@ export function submitFeedback(payload: FeedbackInput) {
 }
 
 export function submitReport(payload: {
-  target_type: "resource" | "evaluation" | "comment" | "user";
+  target_type:
+    | "resource"
+    | "teacher_evaluation"
+    | "course_evaluation"
+    | "teacher_evaluation_reply"
+    | "course_evaluation_reply"
+    | "comment";
   target_id: string;
   reason: "copyright" | "spam" | "inappropriate" | "other";
   description?: string | null;

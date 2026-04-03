@@ -220,34 +220,48 @@ export default function Me() {
     setIsCheckingIn(true);
     try {
       const result = await dailyCheckin();
+      if (result.already_checked_in) {
+        feedback.info({
+          title: "今天已经签到过了",
+          description: "明天再来领取新的签到积分。",
+        });
+        void loadDashboard();
+        return;
+      }
+
+      const currentPoints = profile.points ?? 0;
+      const nextBalance =
+        result.balance_after ?? currentPoints;
+      const gainedPoints =
+        result.points_gained ?? Math.max(0, nextBalance - currentPoints);
+
       setDashboard((current) => {
         if (!current) return current;
         const nextProfile = {
           ...current.profile,
-          points: result.balance_after,
+          points: nextBalance,
         };
         const syntheticRecord: PointsRecord = {
           id: Date.now(),
-          change_amount: result.points_gained,
-          balance_after: result.balance_after,
+          change_amount: gainedPoints,
+          balance_after: nextBalance,
           reason: "daily_checkin",
           created_at: new Date().toISOString(),
         };
-        const nextPoints = result.already_checked_in
-          ? current.points
-          : {
-              total: current.points.total + 1,
-              items: [syntheticRecord, ...current.points.items],
-            };
+        const nextPoints = {
+          total: current.points.total + 1,
+          items: [syntheticRecord, ...current.points.items],
+        };
         return { ...current, profile: nextProfile, points: nextPoints };
       });
-      setUser({ ...profile, points: result.balance_after });
+      setUser({ ...profile, points: nextBalance });
       void loadDashboard();
       feedback.success({
-        title: result.already_checked_in ? "今天已经签到过了" : "签到成功",
-        description: result.already_checked_in
-          ? "明天再来领取新的签到积分。"
-          : `本次获得 ${result.points_gained} 积分，当前余额 ${result.balance_after}。`,
+        title: "签到成功",
+        description:
+          gainedPoints > 0
+            ? `本次获得 ${gainedPoints} 积分，当前余额 ${nextBalance}。`
+            : `当前积分余额 ${nextBalance}。`,
       });
     } catch (error) {
       feedback.error({
@@ -397,7 +411,7 @@ export default function Me() {
                     />
                   </svg>
                   <span>
-                    {profile?.grade ? `${profile.grade}级` : "年级未填写"}
+                    {profile?.grade ? `${profile.grade}级` : "当前版本暂未接入年级资料"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -616,7 +630,6 @@ export default function Me() {
         {profile ? (
           <ProfilePanel
             profile={profile}
-            departments={departments}
             onClose={() => setOpenPanel(null)}
             onProfileUpdated={handleProfileUpdated}
           />
@@ -734,7 +747,6 @@ export default function Me() {
         onClose={() => setOpenPanel(null)}
       >
         <FeedbackPanel
-          initialContact={profile?.email ?? ""}
           mode="feedback"
           onClose={() => setOpenPanel(null)}
         />
@@ -747,7 +759,6 @@ export default function Me() {
         onClose={() => setOpenPanel(null)}
       >
         <FeedbackPanel
-          initialContact={profile?.email ?? ""}
           mode="report"
           onClose={() => setOpenPanel(null)}
         />
@@ -810,8 +821,8 @@ function FloatingPanel({
         aria-label="关闭设置面板"
       />
       <div className="relative mx-auto flex h-full max-w-3xl items-center">
-        <div className="max-h-[88vh] w-full overflow-hidden rounded-3xl border border-gray-300 bg-[#eef2f7] shadow-[6px_6px_14px_rgba(148,163,184,0.3),-4px_-4px_10px_rgba(255,255,255,0.42),inset_0_1px_0_rgba(255,255,255,0.24)]">
-          <div className="flex items-start justify-between gap-4 border-b border-gray-300 bg-[#eef2f7] px-6 py-5 shadow-[inset_0_-1px_0_rgba(148,163,184,0.3)]">
+        <div className="max-h-[88vh] w-full overflow-hidden rounded-[32px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)]">
+          <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 bg-white/85 px-6 py-5">
             <div>
               <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
               <p className="mt-1 text-sm leading-6 text-gray-600">
@@ -823,7 +834,7 @@ function FloatingPanel({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-[#eef2f7] text-gray-500 shadow-[2px_2px_6px_rgba(148,163,184,0.34),-1px_-1px_4px_rgba(255,255,255,0.36)] transition hover:text-gray-800 active:shadow-[inset_2px_2px_4px_rgba(148,163,184,0.34),inset_-1px_-1px_3px_rgba(255,255,255,0.3)]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-gray-500 shadow-sm transition hover:bg-slate-50 hover:text-gray-800"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                   <path
@@ -836,7 +847,7 @@ function FloatingPanel({
               </button>
             </div>
           </div>
-          <div className="max-h-[calc(88vh-5.5rem)] overflow-y-auto bg-[#f3f5f8] px-6 py-5 shadow-[inset_2px_2px_4px_rgba(148,163,184,0.2),inset_-1px_-1px_3px_rgba(255,255,255,0.24)]">
+          <div className="max-h-[calc(88vh-5.5rem)] overflow-y-auto bg-white/80 px-6 py-5">
             {children}
           </div>
         </div>

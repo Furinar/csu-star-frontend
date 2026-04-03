@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { bindCampusEmail, verifyCampusEmail } from "@/api/me";
+import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
 import type { UserProfile } from "@/types/auth";
 import type { EmailStatus, MeDashboardData } from "@/types/me";
 import {
   type AccountMode,
-  FORM_INPUT_CLASS_NAME,
+  PANEL_PRIMARY_BUTTON_CLASS_NAME,
+  PANEL_SECONDARY_BUTTON_CLASS_NAME,
   getAccountPresentation,
   getErrorMessage,
   isCampusEmail,
@@ -42,8 +44,17 @@ export default function EmailPanel({
     emailStatus,
     profile,
   );
+  const isVerified = Boolean(emailStatus.email_verified || profile.email_verified);
 
   const handleSendCode = async () => {
+    if (isVerified) {
+      feedback.info({
+        title: "校园邮箱已认证",
+        description: "当前账号已经完成校园邮箱认证。",
+      });
+      return;
+    }
+
     const email = toCampusEmail(form.email);
     if (!email) {
       feedback.warning({
@@ -83,6 +94,11 @@ export default function EmailPanel({
   };
 
   const handleVerify = async () => {
+    if (isVerified) {
+      onClose();
+      return;
+    }
+
     const email = toCampusEmail(form.email);
     if (!email || !form.captcha.trim()) {
       feedback.warning({
@@ -146,60 +162,55 @@ export default function EmailPanel({
     <>
       <div className="space-y-4">
         <div
-          className={`rounded-2xl border px-4 py-3 text-sm ${accountPresentation.badgeClassName}`}
+          className={`rounded-2xl border px-4 py-3 text-sm leading-6 ${accountPresentation.badgeClassName}`}
         >
           当前状态：{accountPresentation.badge}。{accountPresentation.hint}
         </div>
 
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>校园邮箱</span>
-          <input
-            className={FORM_INPUT_CLASS_NAME}
-            placeholder="填写你的校园邮箱（如 @csu.edu.cn）"
-            autoComplete="email"
-            value={form.email}
+        <AdvancedInput
+          label="校园邮箱"
+          placeholder="填写你的校园邮箱或前缀"
+          autoComplete="email"
+          value={form.email}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              email: event.target.value,
+            }))
+          }
+        />
+
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <AdvancedInput
+            label="验证码"
+            placeholder="请输入 6 位验证码"
+            inputMode="numeric"
+            maxLength={6}
+            value={form.captcha}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
-                email: event.target.value,
+                captcha: event.target.value,
               }))
             }
           />
-        </label>
-
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>验证码</span>
-          <div className="flex gap-3">
-            <input
-              className={FORM_INPUT_CLASS_NAME}
-              placeholder="请输入 6 位验证码"
-              inputMode="numeric"
-              maxLength={6}
-              value={form.captcha}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  captcha: event.target.value,
-                }))
-              }
-            />
-            <button
-              type="button"
-              onClick={handleSendCode}
-              disabled={isSendingCode}
-              className="flex-shrink-0 rounded-xl bg-first px-4 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isSendingCode ? "发送中..." : "获取验证码"}
-            </button>
-          </div>
-        </label>
+          <button
+            type="button"
+            onClick={handleSendCode}
+            disabled={isSendingCode || isVerifying || isVerified}
+            className={`${PANEL_PRIMARY_BUTTON_CLASS_NAME} sm:mt-[3px]`}
+          >
+            {isVerified ? "已完成认证" : isSendingCode ? "发送中..." : "获取验证码"}
+          </button>
+        </div>
       </div>
+
       <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={isSendingCode || isVerifying}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-white"
+          className={PANEL_SECONDARY_BUTTON_CLASS_NAME}
         >
           取消
         </button>
@@ -207,9 +218,9 @@ export default function EmailPanel({
           type="button"
           onClick={handleVerify}
           disabled={isVerifying || isSendingCode}
-          className="rounded-xl bg-first px-6 py-2.5 text-sm font-medium text-white shadow-md transition disabled:cursor-not-allowed disabled:opacity-60"
+          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
         >
-          {isVerifying ? "正在认证..." : "完成认证"}
+          {isVerified ? "完成" : isVerifying ? "正在认证..." : "完成认证"}
         </button>
       </div>
     </>

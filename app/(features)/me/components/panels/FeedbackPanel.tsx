@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { submitCorrection, submitFeedback, submitReport } from "@/api/me";
+import {
+  AdvancedInput,
+  AdvancedSelect,
+  AdvancedTextarea,
+} from "@/app/(features)/resource/components/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CorrectionInput,
@@ -10,39 +15,57 @@ import type {
   ReportTargetType,
 } from "@/types/me";
 import {
-  FORM_INPUT_CLASS_NAME,
-  FORM_TEXTAREA_CLASS_NAME,
+  PANEL_PRIMARY_BUTTON_CLASS_NAME,
+  PANEL_SECONDARY_BUTTON_CLASS_NAME,
   getErrorMessage,
 } from "../shared/helpers";
 
+const REPORT_TARGET_OPTIONS: Array<{
+  value: ReportTargetType;
+  label: string;
+}> = [
+  { value: "resource", label: "资源" },
+  { value: "teacher_evaluation", label: "教师评价" },
+  { value: "course_evaluation", label: "课程评价" },
+  { value: "teacher_evaluation_reply", label: "教师评价回复" },
+  { value: "course_evaluation_reply", label: "课程评价回复" },
+  { value: "comment", label: "资源评论" },
+];
+
+const REPORT_REASON_OPTIONS: Array<{ value: ReportReason; label: string }> = [
+  { value: "copyright", label: "侵权" },
+  { value: "spam", label: "垃圾内容" },
+  { value: "inappropriate", label: "不当内容" },
+  { value: "other", label: "其他" },
+];
+
+const CORRECTION_TARGET_OPTIONS: Array<{
+  value: CorrectionInput["target_type"];
+  label: string;
+}> = [
+  { value: "course", label: "课程" },
+  { value: "teacher", label: "教师" },
+];
+
 export default function FeedbackPanel({
-  initialContact,
   mode,
   onClose,
 }: {
-  initialContact: string;
   mode: "feedback" | "report";
   onClose: () => void;
 }) {
   if (mode === "feedback") {
-    return <FeedbackForm initialContact={initialContact} onClose={onClose} />;
+    return <FeedbackForm onClose={onClose} />;
   }
 
   return <ReportForm onClose={onClose} />;
 }
 
-function FeedbackForm({
-  initialContact,
-  onClose,
-}: {
-  initialContact: string;
-  onClose: () => void;
-}) {
+function FeedbackForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<FeedbackInput>({
     type: "suggestion",
     title: "",
     content: "",
-    contact: initialContact,
     screenshots: [],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,7 +85,6 @@ function FeedbackForm({
         ...form,
         title: form.title.trim(),
         content: form.content.trim(),
-        contact: form.contact?.trim() || null,
       });
       onClose();
       feedback.success({
@@ -82,70 +104,56 @@ function FeedbackForm({
   return (
     <>
       <div className="space-y-4">
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>反馈类型</span>
-          <select
-            className={FORM_INPUT_CLASS_NAME}
-            value={form.type}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                type: event.target.value as FeedbackInput["type"],
-              }))
-            }
-          >
-            <option value="suggestion">建议</option>
-            <option value="bug">问题反馈</option>
-            <option value="complaint">投诉</option>
-            <option value="other">其他</option>
-          </select>
-        </label>
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>标题</span>
-          <input
-            className={FORM_INPUT_CLASS_NAME}
-            value={form.title}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                title: event.target.value,
-              }))
-            }
-          />
-        </label>
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>内容</span>
-          <textarea
-            className={FORM_TEXTAREA_CLASS_NAME}
-            value={form.content}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                content: event.target.value,
-              }))
-            }
-          />
-        </label>
-        <label className="block space-y-2 text-sm text-gray-600">
-          <span>联系方式</span>
-          <input
-            className={FORM_INPUT_CLASS_NAME}
-            value={form.contact ?? ""}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                contact: event.target.value,
-              }))
-            }
-          />
-        </label>
+        <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
+          当前反馈系统只会提交真正被后端接收的字段：类型、标题和内容。截图上传与独立联系方式暂未开放。
+        </div>
+
+        <AdvancedSelect
+          label="反馈类型"
+          value={form.type}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              type: event.target.value as FeedbackInput["type"],
+            }))
+          }
+        >
+          <option value="suggestion">建议</option>
+          <option value="bug">问题反馈</option>
+          <option value="complaint">投诉</option>
+          <option value="other">其他</option>
+        </AdvancedSelect>
+
+        <AdvancedInput
+          label="标题"
+          value={form.title}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              title: event.target.value,
+            }))
+          }
+        />
+
+        <AdvancedTextarea
+          label="内容"
+          rows={8}
+          value={form.content}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              content: event.target.value,
+            }))
+          }
+        />
       </div>
+
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
+          className={PANEL_SECONDARY_BUTTON_CLASS_NAME}
         >
           取消
         </button>
@@ -153,7 +161,7 @@ function FeedbackForm({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
         >
           {isSubmitting ? "提交中..." : "提交反馈"}
         </button>
@@ -173,22 +181,20 @@ function ReportForm({ onClose }: { onClose: () => void }) {
     description: "",
   });
   const [correctionForm, setCorrectionForm] = useState<CorrectionInput>({
-    target_type: "resource",
+    target_type: "course",
     target_id: "",
-    field_name: "",
-    original_value: "",
-    correct_value: "",
-    description: "",
+    field: "",
+    suggested_value: "",
   });
-  const [correctionTargetIdInput, setCorrectionTargetIdInput] = useState("");
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [isSubmittingCorrection, setIsSubmittingCorrection] = useState(false);
 
   const handleSubmitReport = async () => {
-    if (!reportForm.target_id.trim()) {
+    const targetId = reportForm.target_id.trim();
+    if (!/^\d+$/.test(targetId) || targetId === "0") {
       feedback.warning({
-        title: "请填写目标 ID",
-        description: "举报需要明确的对象编号。",
+        title: "目标 ID 无效",
+        description: "举报需要明确且有效的数字 ID。",
       });
       return;
     }
@@ -205,7 +211,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
     try {
       await submitReport({
         target_type: reportForm.target_type,
-        target_id: reportForm.target_id.trim(),
+        target_id: targetId,
         reason: reportForm.reason,
         description: reportForm.description.trim() || null,
       });
@@ -225,23 +231,19 @@ function ReportForm({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmitCorrection = async () => {
-    const targetId = correctionTargetIdInput.trim();
-
+    const targetId = correctionForm.target_id.trim();
     if (!/^\d+$/.test(targetId) || targetId === "0") {
       feedback.warning({
         title: "目标 ID 无效",
-        description: "纠错需要有效的字符串 ID。",
+        description: "纠错需要有效的数字 ID。",
       });
       return;
     }
 
-    if (
-      !correctionForm.correct_value?.trim() &&
-      !correctionForm.description?.trim()
-    ) {
+    if (!correctionForm.field.trim() || !correctionForm.suggested_value.trim()) {
       feedback.warning({
         title: "纠错信息不完整",
-        description: "请至少填写正确值或补充说明。",
+        description: "字段名和建议值都不能为空。",
       });
       return;
     }
@@ -249,12 +251,10 @@ function ReportForm({ onClose }: { onClose: () => void }) {
     setIsSubmittingCorrection(true);
     try {
       await submitCorrection({
-        ...correctionForm,
+        target_type: correctionForm.target_type,
         target_id: targetId,
-        field_name: correctionForm.field_name?.trim() || null,
-        original_value: correctionForm.original_value?.trim() || null,
-        correct_value: correctionForm.correct_value?.trim() || null,
-        description: correctionForm.description?.trim() || null,
+        field: correctionForm.field.trim(),
+        suggested_value: correctionForm.suggested_value.trim(),
       });
       onClose();
       feedback.success({
@@ -282,10 +282,10 @@ function ReportForm({ onClose }: { onClose: () => void }) {
             key={item.key}
             type="button"
             onClick={() => setReportMode(item.key)}
-            className={`rounded-full px-3 py-1.5 text-sm transition ${
+            className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
               reportMode === item.key
-                ? "bg-first text-white"
-                : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
+                ? "border-first bg-first text-white shadow-md"
+                : "border-gray-200/80 bg-white text-gray-600 hover:border-gray-300"
             }`}
           >
             {item.label}
@@ -295,76 +295,76 @@ function ReportForm({ onClose }: { onClose: () => void }) {
 
       {reportMode === "report" ? (
         <>
-          <div className="space-y-4 md:grid-cols-2">
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>目标类型</span>
-              <select
-                className={FORM_INPUT_CLASS_NAME}
-                value={reportForm.target_type}
-                onChange={(event) =>
-                  setReportForm((current) => ({
-                    ...current,
-                    target_type: event.target.value as ReportTargetType,
-                  }))
-                }
-              >
-                <option value="resource">资源</option>
-                <option value="evaluation">评价</option>
-                <option value="comment">评论</option>
-                <option value="user">用户</option>
-              </select>
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>原因</span>
-              <select
-                className={FORM_INPUT_CLASS_NAME}
-                value={reportForm.reason}
-                onChange={(event) =>
-                  setReportForm((current) => ({
-                    ...current,
-                    reason: event.target.value as ReportReason,
-                  }))
-                }
-              >
-                <option value="copyright">侵权</option>
-                <option value="spam">垃圾内容</option>
-                <option value="inappropriate">不当内容</option>
-                <option value="other">其他</option>
-              </select>
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
-              <span>目标 ID</span>
-              <input
-                className={FORM_INPUT_CLASS_NAME}
-                value={reportForm.target_id}
-                onChange={(event) =>
-                  setReportForm((current) => ({
-                    ...current,
-                    target_id: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
-              <span>补充说明</span>
-              <textarea
-                className={FORM_TEXTAREA_CLASS_NAME}
-                value={reportForm.description}
-                onChange={(event) =>
-                  setReportForm((current) => ({
-                    ...current,
-                    description: event.target.value,
-                  }))
-                }
-              />
-            </label>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-rose-100 bg-rose-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
+              举报目标类型已按后端真实约束收敛，避免再出现前端可选但提交必失败的假选项。
+            </div>
+
+            <AdvancedSelect
+              label="目标类型"
+              value={reportForm.target_type}
+              onChange={(event) =>
+                setReportForm((current) => ({
+                  ...current,
+                  target_type: event.target.value as ReportTargetType,
+                }))
+              }
+            >
+              {REPORT_TARGET_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </AdvancedSelect>
+
+            <AdvancedSelect
+              label="原因"
+              value={reportForm.reason}
+              onChange={(event) =>
+                setReportForm((current) => ({
+                  ...current,
+                  reason: event.target.value as ReportReason,
+                }))
+              }
+            >
+              {REPORT_REASON_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </AdvancedSelect>
+
+            <AdvancedInput
+              label="目标 ID"
+              inputMode="numeric"
+              value={reportForm.target_id}
+              onChange={(event) =>
+                setReportForm((current) => ({
+                  ...current,
+                  target_id: event.target.value,
+                }))
+              }
+            />
+
+            <AdvancedTextarea
+              label="补充说明"
+              rows={6}
+              value={reportForm.description}
+              onChange={(event) =>
+                setReportForm((current) => ({
+                  ...current,
+                  description: event.target.value,
+                }))
+              }
+            />
           </div>
+
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmittingReport}
-              className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
+              className={PANEL_SECONDARY_BUTTON_CLASS_NAME}
             >
               取消
             </button>
@@ -372,7 +372,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={handleSubmitReport}
               disabled={isSubmittingReport}
-              className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
             >
               {isSubmittingReport ? "提交中..." : "提交举报"}
             </button>
@@ -380,96 +380,71 @@ function ReportForm({ onClose }: { onClose: () => void }) {
         </>
       ) : (
         <>
-          <div className="space-y-4 md:grid-cols-2">
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>目标类型</span>
-              <select
-                className={FORM_INPUT_CLASS_NAME}
-                value={correctionForm.target_type}
-                onChange={(event) =>
-                  setCorrectionForm((current) => ({
-                    ...current,
-                    target_type: event.target
-                      .value as CorrectionInput["target_type"],
-                  }))
-                }
-              >
-                <option value="resource">资源</option>
-                <option value="course">课程</option>
-                <option value="teacher">教师</option>
-              </select>
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>目标 ID</span>
-              <input
-                type="number"
-                min={1}
-                className={FORM_INPUT_CLASS_NAME}
-                value={correctionTargetIdInput}
-                onChange={(event) =>
-                  setCorrectionTargetIdInput(event.target.value)
-                }
-              />
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>字段名</span>
-              <input
-                className={FORM_INPUT_CLASS_NAME}
-                value={correctionForm.field_name ?? ""}
-                onChange={(event) =>
-                  setCorrectionForm((current) => ({
-                    ...current,
-                    field_name: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>原始值</span>
-              <input
-                className={FORM_INPUT_CLASS_NAME}
-                value={correctionForm.original_value ?? ""}
-                onChange={(event) =>
-                  setCorrectionForm((current) => ({
-                    ...current,
-                    original_value: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600">
-              <span>正确值</span>
-              <input
-                className={FORM_INPUT_CLASS_NAME}
-                value={correctionForm.correct_value ?? ""}
-                onChange={(event) =>
-                  setCorrectionForm((current) => ({
-                    ...current,
-                    correct_value: event.target.value,
-                  }))
-                }
-              />
-            </label>
-            <label className="block space-y-2 text-sm text-gray-600 md:col-span-2">
-              <span>补充说明</span>
-              <textarea
-                className={FORM_TEXTAREA_CLASS_NAME}
-                value={correctionForm.description ?? ""}
-                onChange={(event) =>
-                  setCorrectionForm((current) => ({
-                    ...current,
-                    description: event.target.value,
-                  }))
-                }
-              />
-            </label>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
+              纠错当前仅支持课程和教师两个目标，且必须提交字段名与建议值，和后端约束完全一致。
+            </div>
+
+            <AdvancedSelect
+              label="目标类型"
+              value={correctionForm.target_type}
+              onChange={(event) =>
+                setCorrectionForm((current) => ({
+                  ...current,
+                  target_type: event.target.value as CorrectionInput["target_type"],
+                }))
+              }
+            >
+              {CORRECTION_TARGET_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </AdvancedSelect>
+
+            <AdvancedInput
+              label="目标 ID"
+              inputMode="numeric"
+              value={correctionForm.target_id}
+              onChange={(event) =>
+                setCorrectionForm((current) => ({
+                  ...current,
+                  target_id: event.target.value,
+                }))
+              }
+            />
+
+            <AdvancedInput
+              label="字段名"
+              placeholder="例如：name / title / department_name"
+              value={correctionForm.field}
+              onChange={(event) =>
+                setCorrectionForm((current) => ({
+                  ...current,
+                  field: event.target.value,
+                }))
+              }
+            />
+
+            <AdvancedTextarea
+              label="建议值"
+              rows={6}
+              value={correctionForm.suggested_value}
+              onChange={(event) =>
+                setCorrectionForm((current) => ({
+                  ...current,
+                  suggested_value: event.target.value,
+                }))
+              }
+            />
           </div>
+
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmittingCorrection}
-              className="rounded-xl border border-gray-200/70 bg-white/70 px-6 py-2.5 shadow-sm hover:bg-white text-sm font-medium text-gray-700"
+              className={PANEL_SECONDARY_BUTTON_CLASS_NAME}
             >
               取消
             </button>
@@ -477,7 +452,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
               type="button"
               onClick={handleSubmitCorrection}
               disabled={isSubmittingCorrection}
-              className="rounded-xl bg-first px-6 py-2.5 shadow-md text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+              className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
             >
               {isSubmittingCorrection ? "提交中..." : "提交纠错"}
             </button>

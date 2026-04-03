@@ -17,6 +17,11 @@ import type {
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 type EvaluationType = "teacher" | "course";
+type ReportItemType =
+  | "teacher_evaluation"
+  | "course_evaluation"
+  | "teacher_evaluation_reply"
+  | "course_evaluation_reply";
 
 interface RelatedItem {
   id: number;
@@ -149,6 +154,10 @@ export default function EvaluationThread({
   const currentCreateDimensions = createRelatedId ? [...primaryDimensions, ...relatedDimensions] : primaryDimensions;
   const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
   const replyLikeType = evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
+  const evaluationReportType: ReportItemType =
+    evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
+  const replyReportType: ReportItemType =
+    evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
 
   const toggleExpanded = (evaluationId: string) => {
     setExpandedMap((prev) => ({
@@ -239,7 +248,7 @@ export default function EvaluationThread({
 
   const reportTarget = async (
       key: string,
-      target_type: "evaluation" | "comment",
+      target_type: ReportItemType,
       target_id: string,
       label: string,
   ) => {
@@ -514,7 +523,7 @@ export default function EvaluationThread({
                   </button>
                   <button
                     type="button"
-                    onClick={() => reportTarget(`evaluation-${evaluation.id}`, "evaluation", evaluation.id, "评价")}
+                    onClick={() => reportTarget(`evaluation-${evaluation.id}`, evaluationReportType, evaluation.id, "评价")}
                     disabled={reportingKey === `evaluation-${evaluation.id}`}
                     className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
                   >
@@ -592,7 +601,7 @@ export default function EvaluationThread({
                             </button>
                             <button
                               type="button"
-                              onClick={() => reportTarget(`reply-${reply.id}`, "comment", reply.id, "回复")}
+                              onClick={() => reportTarget(`reply-${reply.id}`, replyReportType, reply.id, "回复")}
                               disabled={reportingKey === `reply-${reply.id}`}
                               className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
                             >

@@ -13,8 +13,14 @@ export type PointsReason =
   | "admin_adjust";
 export type FeedbackType = "bug" | "suggestion" | "complaint" | "other";
 export type ReportReason = "copyright" | "spam" | "inappropriate" | "other";
-export type ReportTargetType = "resource" | "evaluation" | "comment" | "user";
-export type CorrectionTargetType = "resource" | "course" | "teacher";
+export type ReportTargetType =
+  | "resource"
+  | "teacher_evaluation"
+  | "course_evaluation"
+  | "teacher_evaluation_reply"
+  | "course_evaluation_reply"
+  | "comment";
+export type CorrectionTargetType = "course" | "teacher";
 export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
 export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other";
 export type ContributionActionType =
@@ -177,8 +183,8 @@ export interface InviteCodeInfo {
 }
 
 export interface CheckinResult {
-  points_gained: number;
-  balance_after: number;
+  points_gained?: number | null;
+  balance_after?: number | null;
   already_checked_in: boolean;
 }
 
@@ -206,8 +212,6 @@ export interface NotificationUnreadCount {
 export interface MyProfileUpdateInput {
   nickname?: string;
   avatar_url?: string;
-  department_id?: number;
-  grade?: number;
 }
 
 export interface EmailBindInput {
@@ -242,10 +246,8 @@ export interface ReportInput {
 export interface CorrectionInput {
   target_type: CorrectionTargetType;
   target_id: string;
-  field_name?: string | null;
-  original_value?: string | null;
-  correct_value?: string | null;
-  description?: string | null;
+  field: string;
+  suggested_value: string;
 }
 
 export interface MeDashboardData {
