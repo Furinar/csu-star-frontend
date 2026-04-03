@@ -29,34 +29,38 @@ export default function CourseGlobalEvaluationModal({
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
-      setOptions([]);
-      setIsSearching(false);
-      return;
+      const timer = setTimeout(() => {
+        setOptions([]);
+        setIsSearching(false);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     let isActive = true;
-    setIsSearching(true);
-
-    searchCourseSuggestions(debouncedQuery)
-      .then((res) => {
-        if (isActive) {
-          setOptions(res);
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        if (isActive) {
-          setOptions([]);
-        }
-      })
-      .finally(() => {
-        if (isActive) {
-          setIsSearching(false);
-        }
-      });
+    const timer = setTimeout(() => {
+      setIsSearching(true);
+      searchCourseSuggestions(debouncedQuery)
+        .then((res) => {
+          if (isActive) {
+            setOptions(res);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          if (isActive) {
+            setOptions([]);
+          }
+        })
+        .finally(() => {
+          if (isActive) {
+            setIsSearching(false);
+          }
+        });
+    }, 0);
 
     return () => {
       isActive = false;
+      clearTimeout(timer);
     };
   }, [debouncedQuery]);
 
@@ -94,63 +98,72 @@ export default function CourseGlobalEvaluationModal({
           : "写一条课程评价"
       }
       description={
-        selectedCourse ? "您的评价将帮助更多同学" : "搜索并选择你想评价的课程"
+        selectedCourse ? "你的评价会直接展示在课程详情页，帮助后来的同学更快判断课程体验。" : "先搜索并选择想评价的课程，再填写更完整的课堂体验。"
       }
     >
       {!selectedCourse ? (
-        <div className="relative mt-4 h-64">
-          <AdvancedInput
-            label={
-              <>
-                搜索课程 <span className="text-red-500">*</span>
-              </>
-            }
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="输入课程名称..."
-          />
-          {isSearching && (
-            <div className="text-sm text-slate-500 mt-2 px-2">搜索中...</div>
-          )}
-          {!isSearching && options.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto">
-              {options.map((course) => (
-                <div
-                  key={course.id}
-                  onClick={() => {
-                    setSelectedCourse(course);
-                    setOptions([]);
-                    setQuery("");
-                  }}
-                  className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-sm transition-colors border-b border-slate-100 last:border-none"
-                >
-                  <div className="font-medium text-slate-700">
-                    {course.name}
-                  </div>
-                  {course.course_type && (
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      {course.course_type}
-                    </div>
-                  )}
+        <div className="mx-auto max-w-2xl">
+          <div className="rounded-[26px] border border-sky-100 bg-sky-50/70 p-5">
+            <div className="text-sm font-medium text-sky-700">选择课程</div>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              搜索后选择一门课程，再进入统一的评价表单。
+            </p>
+            <div className="relative mt-4">
+              <AdvancedInput
+                label={
+                  <>
+                    搜索课程 <span className="text-red-500">*</span>
+                  </>
+                }
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="输入课程名称"
+              />
+              {isSearching ? (
+                <div className="mt-3 text-sm text-slate-500">搜索中...</div>
+              ) : null}
+              {!isSearching && options.length > 0 ? (
+                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                  {options.map((course) => (
+                    <button
+                      key={course.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCourse(course);
+                        setOptions([]);
+                        setQuery("");
+                      }}
+                      className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
+                    >
+                      <div>
+                        <div className="font-medium text-slate-800">{course.name}</div>
+                        {course.course_type ? (
+                          <div className="mt-1 text-xs text-slate-400">{course.course_type}</div>
+                        ) : null}
+                      </div>
+                      <span className="text-xs text-slate-400">选择</span>
+                    </button>
+                  ))}
                 </div>
-              ))}
+              ) : null}
             </div>
-          )}
-          {!isSearching && query.trim() && options.length === 0 && (
-            <div className="text-sm text-slate-500 mt-2 px-2">
-              未找到相关课程
-            </div>
-          )}
+            {!isSearching && query.trim() && options.length === 0 ? (
+              <div className="mt-3 text-sm text-slate-500">
+                未找到相关课程
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : (
-        <div className="mt-6 flex flex-col gap-6">
-          <div className="flex items-center justify-between bg-sky-50 px-4 py-3 rounded-xl border border-sky-100">
-            <span className="font-medium text-sky-800">
-              已选课程：{selectedCourse.name}
-            </span>
+        <div className="mt-2 flex flex-col gap-5">
+          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-sky-100 bg-sky-50 px-5 py-4">
+            <div>
+              <div className="text-xs font-medium uppercase tracking-[0.2em] text-sky-500">Selected</div>
+              <div className="mt-1 font-medium text-sky-900">{selectedCourse.name}</div>
+            </div>
             <button
               type="button"
-              className="text-sm text-sky-600 hover:text-sky-700"
+              className="rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-medium text-sky-700 transition hover:border-sky-300"
               onClick={() => setSelectedCourse(null)}
             >
               重新选择

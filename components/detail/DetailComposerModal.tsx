@@ -5,16 +5,19 @@ import { useEffect } from "react";
 
 const toneMap = {
   course: {
-    shell: "neo-outset",
-    badge: "border-sky-200 neo-bg text-sky-700",
+    glow: "from-sky-100/90 via-white to-cyan-50/90",
+    badge: "border-sky-200 bg-sky-50 text-sky-700",
+    ring: "shadow-[0_32px_120px_rgba(14,116,144,0.14)]",
   },
   teacher: {
-    shell: "neo-outset",
-    badge: "border-rose-200 neo-bg text-rose-700",
+    glow: "from-rose-100/90 via-white to-orange-50/80",
+    badge: "border-rose-200 bg-rose-50 text-rose-700",
+    ring: "shadow-[0_32px_120px_rgba(190,24,93,0.14)]",
   },
   resource: {
-    shell: "neo-outset",
-    badge: "border-emerald-200 neo-bg text-emerald-700",
+    glow: "from-emerald-100/90 via-white to-teal-50/90",
+    badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    ring: "shadow-[0_32px_120px_rgba(5,150,105,0.14)]",
   },
 } as const;
 
@@ -55,9 +58,9 @@ export default function DetailComposerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-md">
       <div
-        className={`relative max-h-[90vh] w-full max-w-4xl overflow-y-auto neo-outset p-6 ${tone.shell}`}
+        className={`relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[32px] border border-white/70 bg-gradient-to-br ${tone.glow} p-6 md:p-8 ${tone.ring}`}
       >
         <div className="relative">
           <div className="flex items-start justify-between gap-4">
@@ -68,10 +71,10 @@ export default function DetailComposerModal({
                 {badge}
               </div>
               <div className="space-y-2">
-                <h3 className="text-3xl font-semibold tracking-[-0.04em] text-slate-950">
+                <h3 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950 md:text-3xl">
                   {title}
                 </h3>
-                <p className="max-w-2xl text-sm leading-7 text-slate-600">
+                <p className="max-w-xl text-sm leading-7 text-slate-600">
                   {description}
                 </p>
               </div>
@@ -79,13 +82,15 @@ export default function DetailComposerModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-11 w-11 items-center justify-center neo-outset text-lg text-slate-500 transition hover:text-slate-800"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/75 text-lg text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800"
             >
               ×
             </button>
           </div>
 
-          <div className="mt-8 neo-outset p-5 md:p-6 mb-2">{children}</div>
+          <div className="mt-8 rounded-[28px] border border-white/80 bg-white/85 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] md:p-6">
+            {children}
+          </div>
         </div>
       </div>
     </div>
