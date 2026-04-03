@@ -5,8 +5,12 @@ import { useSearchParams } from "next/navigation";
 import {
   createCourseEvaluation,
   createCourseEvaluationReply,
+  deleteCourseEvaluation,
   getCourseDetail,
   listCourseEvaluations,
+  updateCourseEvaluation,
+  updateCourseEvaluationReply,
+  deleteCourseEvaluationReply,
 } from "@/api/detail";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import DetailBookHero from "@/components/detail/DetailBookHero";
@@ -112,12 +116,18 @@ export default function CourseDetailPage() {
             title="课程评价"
             description="看看大家对这门课的真实反馈。"
             evaluationType="course"
+            relatedItems={relatedTeachers}
             initialItems={evaluations}
             initialTotal={evaluationTotal}
             initialPage={1}
-            listEvaluations={(page, size) => listCourseEvaluations(courseId, page, size)}
+            listEvaluations={(page, size, sort) => listCourseEvaluations(courseId, page, size, sort)}
             onReply={createCourseEvaluationReply}
-            
+            onUpdateEvaluation={(evaluationId, payload) =>
+              updateCourseEvaluation(evaluationId, payload as CourseEvaluationInput)
+            }
+            onDeleteEvaluation={deleteCourseEvaluation}
+            onUpdateReply={updateCourseEvaluationReply}
+            onDeleteReply={deleteCourseEvaluationReply}
           />
         </div>
       </DetailPageShell>

@@ -7,6 +7,8 @@ import { formatDateTimeZh } from "@/lib/date";
 import BilibiliReplyItem from "./BilibiliReplyItem";
 import ActionSubmitButton from "./ActionSubmitButton";
 import { avatarOptions } from "@/data/avatar";
+import type { ItemActionMenuItem } from "./ItemActionMenu";
+import ItemActionMenu from "./ItemActionMenu";
 
 const DEFAULT_AVATAR = avatarOptions[0].url;
 
@@ -26,7 +28,7 @@ export interface BilibiliCommentItemProps {
 
   replies?: Array<{
     id: string | number;
-    user: UserBrief;
+    user?: UserBrief | null;
     replyToUser?: UserBrief | null;
     content: string;
     createdAt: string;
@@ -34,13 +36,13 @@ export interface BilibiliCommentItemProps {
     isLiked?: boolean | null;
     onLike?: (isLiked: boolean) => void;
     onReplyClick?: () => void;
+    actions?: ItemActionMenuItem[];
   }>;
 
   // Actions
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
-  onDelete?: () => void;
-  onReport?: () => void;
+  actions?: ItemActionMenuItem[];
 
   // Reply Composer
   isReplying?: boolean;
@@ -61,8 +63,7 @@ export default function BilibiliCommentItem({
   replies = [],
   onLike,
   onReplyClick,
-  onDelete,
-  onReport,
+  actions = [],
   isReplying,
   replyComposer,
 }: BilibiliCommentItemProps) {
@@ -133,23 +134,7 @@ export default function BilibiliCommentItem({
             <span>回复</span>
           </button>
 
-          {onDelete && (
-            <button
-              className="hover:text-red-500 transition-colors ml-auto group relative"
-              onClick={onDelete}
-            >
-              <i className="uil uil-trash-alt"></i>
-            </button>
-          )}
-
-          {onReport && !onDelete && (
-            <button
-              className="hover:text-amber-500 transition-colors ml-auto group relative"
-              onClick={onReport}
-            >
-              <i className="uil uil-exclamation-octagon"></i>
-            </button>
-          )}
+          {actions.length > 0 ? <div className="ml-auto"><ItemActionMenu items={actions} /></div> : null}
         </div>
 
         {/* Replies Section - Bilibili Style Box */}
@@ -168,6 +153,7 @@ export default function BilibiliCommentItem({
                   isLiked={reply.isLiked}
                   onLike={reply.onLike}
                   onReplyClick={reply.onReplyClick}
+                  actions={reply.actions}
                 />
               ))}
             </div>

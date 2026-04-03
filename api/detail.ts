@@ -4,12 +4,14 @@ import type {
   CourseEvaluation,
   CourseEvaluationInput,
   CourseResourceCollection,
+  EvaluationSort,
   EvaluationReply,
   EvaluationReplyInput,
   PaginatedData,
   ResourceComment,
   ResourceCommentInput,
   ResourceDetail,
+  ResourceUpdateInput,
   TeacherDetail,
   TeacherEvaluation,
   TeacherEvaluationInput,
@@ -150,13 +152,9 @@ const normalizeEvaluationReplies = (raw: unknown): EvaluationReply[] => {
     return [
       {
         id: toStringId(item.id) ?? "",
-        user: normalizeUserBrief(item.user) ?? {
-          id: "",
-          nickname: "匿名用户",
-          avatar_url: null,
-          role: null,
-        },
+        user: normalizeUserBrief(item.user),
         content: toStringSafe(item.content) ?? "",
+        is_anonymous: toBoolean(item.is_anonymous) ?? false,
         reply_to_user: normalizeUserBrief(item.reply_to_user),
         reply_to_reply_id: toStringId(item.reply_to_reply_id),
         likes: toNumber(item.likes),
@@ -335,6 +333,7 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
   return {
     id: toNumber(data.id) ?? 0,
     title: toStringSafe(data.title) ?? "未命名资料",
+    uploader_id: toStringId(data.uploader_id),
     course_id: toNumber(data.course_id) ?? 0,
     course: course
         ? {
@@ -392,18 +391,28 @@ export async function getResourceDetail(id: number) {
   return normalizeResourceDetail(unwrapResponseData(response));
 }
 
-export async function listTeacherEvaluations(teacherId: number, page = 1, size = 20) {
+export async function listTeacherEvaluations(
+  teacherId: number,
+  page = 1,
+  size = 20,
+  sort: EvaluationSort = "created_at",
+) {
   const response = await service.get<ApiEnvelope<unknown>>(`/teachers/evaluations/${teacherId}`, {
-    params: {page, size, sort: "created_at"},
+    params: {page, size, sort},
   });
 
   const raw = unwrapResponseData(response);
   return normalizePaginated(raw, normalizeTeacherEvaluations);
 }
 
-export async function listCourseEvaluations(courseId: number, page = 1, size = 20) {
+export async function listCourseEvaluations(
+  courseId: number,
+  page = 1,
+  size = 20,
+  sort: EvaluationSort = "created_at",
+) {
   const response = await service.get<ApiEnvelope<unknown>>(`/courses/evaluations/${courseId}`, {
-    params: {page, size, sort: "created_at"},
+    params: {page, size, sort},
   });
 
   const raw = unwrapResponseData(response);
@@ -450,9 +459,56 @@ export async function createCourseEvaluation(courseId: number, payload: CourseEv
   return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
 }
 
-export async function listResourceComments(resourceId: number, page = 1, size = 20) {
+export async function updateTeacherEvaluation(evaluationId: string, payload: TeacherEvaluationInput) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/teacher-evaluations/${evaluationId}`, payload);
+  return normalizeTeacherEvaluations([unwrapResponseData(response)])[0];
+}
+
+export async function deleteTeacherEvaluation(evaluationId: string) {
+  await service.delete<ApiEnvelope<unknown>>(`/teacher-evaluations/${evaluationId}`);
+}
+
+export async function updateCourseEvaluation(evaluationId: string, payload: CourseEvaluationInput) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/course-evaluations/${evaluationId}`, payload);
+  return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
+}
+
+export async function deleteCourseEvaluation(evaluationId: string) {
+  await service.delete<ApiEnvelope<unknown>>(`/course-evaluations/${evaluationId}`);
+}
+
+export async function updateTeacherEvaluationReply(
+  replyId: string,
+  payload: Pick<EvaluationReplyInput, "content" | "is_anonymous">,
+) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/teacher-evaluation-replies/${replyId}`, payload);
+  return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
+}
+
+export async function deleteTeacherEvaluationReply(replyId: string) {
+  await service.delete<ApiEnvelope<unknown>>(`/teacher-evaluation-replies/${replyId}`);
+}
+
+export async function updateCourseEvaluationReply(
+  replyId: string,
+  payload: Pick<EvaluationReplyInput, "content" | "is_anonymous">,
+) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/course-evaluation-replies/${replyId}`, payload);
+  return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
+}
+
+export async function deleteCourseEvaluationReply(replyId: string) {
+  await service.delete<ApiEnvelope<unknown>>(`/course-evaluation-replies/${replyId}`);
+}
+
+export async function listResourceComments(
+  resourceId: number,
+  page = 1,
+  size = 20,
+  sort: EvaluationSort = "created_at",
+) {
   const response = await service.get<ApiEnvelope<unknown>>(`/resources/${resourceId}/comments`, {
-    params: {page, size, sort: "created_at"},
+    params: {page, size, sort},
   });
 
   const raw = unwrapResponseData(response);
@@ -465,6 +521,20 @@ export async function createResourceComment(resourceId: number, payload: Resourc
       payload,
   );
   return normalizeResourceComments([unwrapResponseData(response)])[0];
+}
+
+export async function updateResourceComment(commentId: number, payload: Pick<ResourceCommentInput, "content">) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/comments/${commentId}`, payload);
+  return normalizeResourceComments([unwrapResponseData(response)])[0];
+}
+
+export async function deleteResourceComment(commentId: number) {
+  await service.delete<ApiEnvelope<unknown>>(`/comments/${commentId}`);
+}
+
+export async function updateResource(resourceId: number, payload: ResourceUpdateInput) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/resources/${resourceId}`, payload);
+  return normalizeResourceDetail(unwrapResponseData(response));
 }
 
 export async function addFavorite(target_type: string, target_id: string) {

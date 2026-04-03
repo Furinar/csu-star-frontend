@@ -1,21 +1,29 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { addLike, removeLike } from "@/api/detail";
-import { submitReport } from "@/api/me";
-import { feedback } from "@/store/useFeedbackStore";
+import DetailComposerModal from "@/components/detail/DetailComposerModal";
+import EvaluationBarChart from "@/components/detail/EvaluationBarChart";
+import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
+import type { ItemActionMenuItem } from "@/components/ui/ItemActionMenu";
+import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { DetailSection } from "./DetailScaffold";
+import { Role } from "@/types/auth";
 import type {
   CourseEvaluation,
+  CourseEvaluationInput,
   EvaluationReply,
   EvaluationReplyInput,
+  EvaluationSort,
   PaginatedData,
   TeacherEvaluation,
+  TeacherEvaluationInput,
 } from "@/types/detail";
-import { DetailSection } from "./DetailScaffold";
-import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
-import EvaluationBarChart from "./EvaluationBarChart";
-import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { submitReport } from "@/api/me";
+import { useAuthStore } from "@/store/useAuthStore";
+import { feedback } from "@/store/useFeedbackStore";
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 type EvaluationType = "teacher" | "course";
@@ -26,7 +34,9 @@ type LikeItemType =
   | "course_evaluation_reply";
 type ReportItemType =
   | "teacher_evaluation"
-  | "course_evaluation";
+  | "course_evaluation"
+  | "teacher_evaluation_reply"
+  | "course_evaluation_reply";
 
 interface ReplyTarget {
   replyId?: string | null;
@@ -34,16 +44,75 @@ interface ReplyTarget {
   userName?: string | null;
 }
 
+interface RelatedItem {
+  id: number;
+  name: string;
+}
+
 export interface DetailEvaluationSectionProps {
   title: React.ReactNode;
   description: React.ReactNode;
   sectionAction?: ReactNode;
   evaluationType: EvaluationType;
+  relatedItems?: RelatedItem[];
   initialItems: ThreadEvaluation[];
   initialTotal: number;
   initialPage?: number;
-  listEvaluations: (page: number, size: number) => Promise<PaginatedData<ThreadEvaluation>>;
+  listEvaluations: (
+    page: number,
+    size: number,
+    sort: EvaluationSort,
+  ) => Promise<PaginatedData<ThreadEvaluation>>;
   onReply: (evaluationId: string, payload: EvaluationReplyInput) => Promise<EvaluationReply | null>;
+  onUpdateEvaluation: (
+    evaluationId: string,
+    payload: TeacherEvaluationInput | CourseEvaluationInput,
+  ) => Promise<ThreadEvaluation | null>;
+  onDeleteEvaluation: (evaluationId: string) => Promise<void>;
+  onUpdateReply: (
+    replyId: string,
+    payload: Pick<EvaluationReplyInput, "content" | "is_anonymous">,
+  ) => Promise<EvaluationReply | null>;
+  onDeleteReply: (replyId: string) => Promise<void>;
+}
+
+function sortLabel(sort: EvaluationSort) {
+  return sort === "likes" ? "按热度" : "按时间";
+}
+
+function buildEvaluationInitialValues(evaluation: ThreadEvaluation) {
+  const relatedId =
+    "teacher_id" in evaluation
+      ? evaluation.teacher_id
+        ? Number(evaluation.teacher_id)
+        : null
+      : evaluation.course_id
+        ? Number(evaluation.course_id)
+        : null;
+
+  return {
+    relatedId,
+    comment: evaluation.comment ?? "",
+    anonymous: evaluation.is_anonymous ?? false,
+    ratings:
+      "teacher_id" in evaluation
+        ? {
+            rating_homework: evaluation.rating_homework,
+            rating_gain: evaluation.rating_gain,
+            rating_exam_difficulty: evaluation.rating_exam_difficulty,
+            rating_quality: evaluation.rating_quality,
+            rating_grading: evaluation.rating_grading,
+            rating_attendance: evaluation.rating_attendance,
+          }
+        : {
+            rating_quality: evaluation.rating_quality,
+            rating_grading: evaluation.rating_grading,
+            rating_attendance: evaluation.rating_attendance,
+            rating_homework: evaluation.rating_homework,
+            rating_gain: evaluation.rating_gain,
+            rating_exam_difficulty: evaluation.rating_exam_difficulty,
+          },
+  };
 }
 
 export default function DetailEvaluationSection({
@@ -51,22 +120,40 @@ export default function DetailEvaluationSection({
   description,
   sectionAction,
   evaluationType,
+  relatedItems = [],
   initialItems,
   initialTotal,
   initialPage = 1,
   listEvaluations,
   onReply,
+  onUpdateEvaluation,
+  onDeleteEvaluation,
+  onUpdateReply,
+  onDeleteReply,
 }: DetailEvaluationSectionProps) {
+  const authUser = useAuthStore((state) => state.user);
+  const viewerId = authUser?.id ?? null;
+  const viewerRole = authUser?.role ?? null;
   const [items, setItems] = useState<ThreadEvaluation[]>(initialItems);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(initialPage);
+  const [sort, setSort] = useState<EvaluationSort>("created_at");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
   const [draftMap, setDraftMap] = useState<Record<string, string>>({});
+  const [replyAnonymousMap, setReplyAnonymousMap] = useState<Record<string, boolean>>({});
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
+  const [editingEvaluation, setEditingEvaluation] = useState<ThreadEvaluation | null>(null);
+  const [editingReply, setEditingReply] = useState<{ evaluationId: string; reply: EvaluationReply } | null>(null);
+  const [editingReplyDraft, setEditingReplyDraft] = useState("");
+  const [editingReplyAnonymous, setEditingReplyAnonymous] = useState(false);
+  const [isUpdatingReply, setIsUpdatingReply] = useState(false);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const didMountRef = useRef(false);
 
   useEffect(() => {
     setItems(initialItems);
@@ -74,18 +161,52 @@ export default function DetailEvaluationSection({
     setPage(initialPage);
   }, [initialItems, initialPage, initialTotal]);
 
+  useEffect(() => {
+    if (!editingReply) return;
+    setEditingReplyDraft(editingReply.reply.content);
+    setEditingReplyAnonymous(Boolean(editingReply.reply.is_anonymous));
+  }, [editingReply]);
+
   const hasMore = items.length < total;
   const evaluationLikeType = evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
   const replyLikeType = evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
   const evaluationReportType: ReportItemType =
     evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
+  const replyReportType: ReportItemType =
+    evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
+
+  const reloadEvaluations = useCallback(
+    async (nextSort: EvaluationSort) => {
+      try {
+        setIsReloading(true);
+        const result = await listEvaluations(1, 10, nextSort);
+        setItems(result.items);
+        setTotal(result.total);
+        setPage(1);
+      } catch (error) {
+        console.error(error);
+        feedback.error({ title: "加载评价失败", description: "请稍后重试。" });
+      } finally {
+        setIsReloading(false);
+      }
+    },
+    [listEvaluations],
+  );
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    void reloadEvaluations(sort);
+  }, [sort, reloadEvaluations]);
 
   const fetchMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
     try {
       setIsLoadingMore(true);
       const nextPage = page + 1;
-      const result = await listEvaluations(nextPage, 10);
+      const result = await listEvaluations(nextPage, 10, sort);
       setItems((prev) => {
         const existingIds = new Set(prev.map((item) => item.id));
         return [...prev, ...result.items.filter((item) => !existingIds.has(item.id))];
@@ -101,7 +222,7 @@ export default function DetailEvaluationSection({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [listEvaluations, page, hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, listEvaluations, page, sort]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -132,6 +253,7 @@ export default function DetailEvaluationSection({
       const target = targetMap[evaluationId] || {};
       const reply = await onReply(evaluationId, {
         content,
+        is_anonymous: Boolean(replyAnonymousMap[evaluationId]),
         reply_to_reply_id: target.replyId != null ? String(target.replyId) : null,
         reply_to_user_id: target.userId != null ? String(target.userId) : null,
       });
@@ -150,6 +272,7 @@ export default function DetailEvaluationSection({
         ),
       );
       setDraftMap((prev) => ({ ...prev, [evaluationId]: "" }));
+      setReplyAnonymousMap((prev) => ({ ...prev, [evaluationId]: false }));
       setTargetMap((prev) => ({ ...prev, [evaluationId]: {} }));
       setReplyingToId(null);
       feedback.success({ title: "回复成功" });
@@ -238,7 +361,144 @@ export default function DetailEvaluationSection({
     }
   };
 
-  
+  const handleDeleteEvaluation = async (evaluationId: string) => {
+    if (!window.confirm("确认删除这条评价吗？")) return;
+    try {
+      setDeletingKey(`evaluation-${evaluationId}`);
+      await onDeleteEvaluation(evaluationId);
+      setItems((prev) => prev.filter((item) => String(item.id) !== evaluationId));
+      setTotal((prev) => Math.max(0, prev - 1));
+      feedback.success({ title: "评价已删除" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "删除失败", description: "请稍后重试。" });
+    } finally {
+      setDeletingKey(null);
+    }
+  };
+
+  const handleDeleteReply = async (evaluationId: string, replyId: string) => {
+    if (!window.confirm("确认删除这条回复吗？")) return;
+    try {
+      setDeletingKey(`reply-${replyId}`);
+      await onDeleteReply(replyId);
+      setItems((prev) =>
+        prev.map((item) =>
+          String(item.id) === evaluationId
+            ? {
+                ...item,
+                replies: (item.replies || []).filter((reply) => String(reply.id) !== replyId),
+                reply_count: Math.max(0, (item.reply_count || item.replies?.length || 1) - 1),
+              }
+            : item,
+        ),
+      );
+      feedback.success({ title: "回复已删除" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "删除失败", description: "请稍后重试。" });
+    } finally {
+      setDeletingKey(null);
+    }
+  };
+
+  const handleUpdateReply = async () => {
+    if (!editingReply) return;
+    const content = editingReplyDraft.trim();
+    if (!content) {
+      feedback.warning({ title: "回复内容不能为空" });
+      return;
+    }
+    try {
+      setIsUpdatingReply(true);
+      const updated = await onUpdateReply(editingReply.reply.id, {
+        content,
+        is_anonymous: editingReplyAnonymous,
+      });
+      if (!updated) return;
+      setItems((prev) =>
+        prev.map((item) =>
+          String(item.id) === editingReply.evaluationId
+            ? {
+                ...item,
+                replies: (item.replies || []).map((reply) =>
+                  reply.id === editingReply.reply.id ? updated : reply,
+                ),
+              }
+            : item,
+        ),
+      );
+      setEditingReply(null);
+      feedback.success({ title: "回复已更新" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "更新失败", description: "请稍后重试。" });
+    } finally {
+      setIsUpdatingReply(false);
+    }
+  };
+
+  const buildEvaluationActions = (evaluation: ThreadEvaluation): ItemActionMenuItem[] => {
+    const actions: ItemActionMenuItem[] = [];
+    const authorId = evaluation.user?.id ?? null;
+    const isAuthor = viewerId != null && authorId === viewerId;
+    const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
+
+    if (isAuthor) {
+      actions.push({
+        key: "edit",
+        label: "修改",
+        onClick: () => setEditingEvaluation(evaluation),
+      });
+    }
+    if (isAuthor || isPrivileged) {
+      actions.push({
+        key: "delete",
+        label: deletingKey === `evaluation-${evaluation.id}` ? "删除中..." : "删除",
+        destructive: true,
+        onClick: () => handleDeleteEvaluation(String(evaluation.id)),
+      });
+    }
+    if (!isAuthor) {
+      actions.push({
+        key: "report",
+        label: "举报",
+        onClick: () => reportTarget(evaluationReportType, String(evaluation.id), "评价"),
+      });
+    }
+    return actions;
+  };
+
+  const buildReplyActions = (evaluationId: string, reply: EvaluationReply): ItemActionMenuItem[] => {
+    const actions: ItemActionMenuItem[] = [];
+    const isAuthor = viewerId != null && reply.user?.id === viewerId;
+    const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
+
+    if (isAuthor) {
+      actions.push({
+        key: "edit",
+        label: "修改",
+        onClick: () => setEditingReply({ evaluationId, reply }),
+      });
+    }
+    if (isAuthor || isPrivileged) {
+      actions.push({
+        key: "delete",
+        label: deletingKey === `reply-${reply.id}` ? "删除中..." : "删除",
+        destructive: true,
+        onClick: () => handleDeleteReply(evaluationId, String(reply.id)),
+      });
+    }
+    if (!isAuthor) {
+      actions.push({
+        key: "report",
+        label: "举报",
+        onClick: () => reportTarget(replyReportType, String(reply.id), "回复"),
+      });
+    }
+    return actions;
+  };
+
   const bilibiliComments = items.map((evaluation) => {
     const replies = evaluation.replies ?? [];
     const id = String(evaluation.id);
@@ -255,94 +515,206 @@ export default function DetailEvaluationSection({
       onLike: (liked: boolean) => handleToggleLike(evaluationLikeType, id, liked),
       onReplyClick: () => {
         setReplyingToId(id);
-        setTargetMap(prev => ({ ...prev, [id]: {} }));
+        setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
+        setTargetMap((prev) => ({ ...prev, [id]: {} }));
       },
-      onReport: () => reportTarget(evaluationReportType, id, "评价"),
+      actions: buildEvaluationActions(evaluation),
       isReplying: replyingToId === id,
-      replyComposer: replyingToId === id ? (
-        <div className="mt-3 flex flex-col gap-3">
-          <textarea
-            value={draftMap[id] || ""}
-            onChange={(e) => setDraftMap(prev => ({ ...prev, [id]: e.target.value }))}
-            placeholder={targetMap[id]?.userName ? `回复 @${targetMap[id].userName}...` : "写下你的回复..."}
-            className="w-full min-h-[100px] rounded-2xl border border-slate-200 p-4 text-sm focus:border-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-50 transition-all resize-none"
-          />
-          <div className="flex justify-end gap-2">
-            <button 
-              onClick={() => {
-                  setReplyingToId(null);
-                  setTargetMap(prev => ({ ...prev, [id]: {} }));
-              }}
-              className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
-            >
-              取消
-            </button>
-            <ActionSubmitButton
-              defaultText="提交回复"
-              isSent={submittingId === id}
-              onClick={() => handleReplySubmit(id)}
-              disabled={submittingId === id || !draftMap[id]?.trim()}
+      replyComposer:
+        replyingToId === id ? (
+          <div className="mt-3 flex flex-col gap-3">
+            <textarea
+              value={draftMap[id] || ""}
+              onChange={(e) => setDraftMap((prev) => ({ ...prev, [id]: e.target.value }))}
+              placeholder={targetMap[id]?.userName ? `回复 @${targetMap[id].userName}...` : "写下你的回复..."}
+              className="w-full min-h-[100px] rounded-2xl border border-slate-200 p-4 text-sm focus:border-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-50 transition-all resize-none"
             />
+            <label className="flex items-center gap-2 text-sm text-slate-500">
+              <input
+                type="checkbox"
+                checked={Boolean(replyAnonymousMap[id])}
+                onChange={(event) =>
+                  setReplyAnonymousMap((prev) => ({ ...prev, [id]: event.target.checked }))
+                }
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              匿名回复
+            </label>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setReplyingToId(null);
+                  setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
+                  setTargetMap((prev) => ({ ...prev, [id]: {} }));
+                }}
+                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+              >
+                取消
+              </button>
+              <ActionSubmitButton
+                defaultText="提交回复"
+                isSent={submittingId === id}
+                onClick={() => handleReplySubmit(id)}
+                disabled={submittingId === id || !draftMap[id]?.trim()}
+              />
+            </div>
           </div>
-        </div>
-      ) : null,
+        ) : null,
       afterContentSlot: (
         <div className="mb-3 space-y-2">
           <EvaluationBarChart evaluation={evaluation} theme={evaluationType} />
         </div>
       ),
-      replies: replies.map((r) => ({
-        id: String(r.id),
-        user: r.user,
-        replyToUser: r.reply_to_user,
-        content: r.content,
-        createdAt: r.created_at,
-        likes: r.likes,
-        isLiked: r.is_liked,
-        onLike: (liked: boolean) => handleToggleLike(replyLikeType, String(r.id), liked),
+      replies: replies.map((reply) => ({
+        id: String(reply.id),
+        user: reply.user,
+        replyToUser: reply.reply_to_user,
+        content: reply.content,
+        createdAt: reply.created_at,
+        likes: reply.likes,
+        isLiked: reply.is_liked,
+        onLike: (liked: boolean) => handleToggleLike(replyLikeType, String(reply.id), liked),
         onReplyClick: () => {
           setReplyingToId(id);
-          setTargetMap(prev => ({ 
-            ...prev, 
-            [id]: { 
-              replyId: String(r.id), 
-              userId: r.user?.id, 
-              userName: r.user?.nickname 
-            } 
+          setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
+          setTargetMap((prev) => ({
+            ...prev,
+            [id]: {
+              replyId: String(reply.id),
+              userId: reply.user?.id ?? reply.reply_to_user?.id ?? null,
+              userName: reply.user?.nickname ?? reply.reply_to_user?.nickname ?? null,
+            },
           }));
         },
+        actions: buildReplyActions(id, reply),
       })),
     };
   });
 
   return (
+    <>
+      <DetailSection
+        title={
+          <div className="flex items-center gap-2">
+            <span>{title}</span>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium text-gray-500">{total}</span>
+          </div>
+        }
+        description={description}
+        action={
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
+              {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setSort(item)}
+                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                    sort === item
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  {sortLabel(item)}
+                </button>
+              ))}
+            </div>
+            {sectionAction}
+          </div>
+        }
+      >
+        {isReloading ? (
+          <div className="flex justify-center py-12">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+          </div>
+        ) : (
+          <div className="mt-6 flex flex-col gap-6">
+            <BilibiliCommentThread comments={bilibiliComments} />
+          </div>
+        )}
 
-    <DetailSection
-       title={
-         <div className="flex items-center gap-2">
-           <span>{title}</span>
-           <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{total}</span>
-         </div>
-       }
-       description={description}
-       action={sectionAction}
-    >
-      <div className="mt-6 flex flex-col gap-6">
-         <BilibiliCommentThread 
-            comments={bilibiliComments} 
-         />
-      </div>
-      
-      {hasMore && (
-        <div ref={loadMoreRef} className="py-10 flex justify-center">
-            {isLoadingMore && (
+        {hasMore && !isReloading ? (
+          <div ref={loadMoreRef} className="py-10 flex justify-center">
+            {isLoadingMore ? (
               <div className="flex items-center gap-2 text-slate-400">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
                 <span className="text-sm">加载更多评价中...</span>
               </div>
-            )}
-        </div>
-      )}
-    </DetailSection>
+            ) : null}
+          </div>
+        ) : null}
+      </DetailSection>
+
+      <DetailComposerModal
+        isOpen={editingEvaluation !== null}
+        onClose={() => setEditingEvaluation(null)}
+        accent={evaluationType}
+        badge={evaluationType === "teacher" ? "修改教师评价" : "修改课程评价"}
+        title="编辑评价"
+        description="修改评分、关联项、文字内容或匿名设置。"
+      >
+        {editingEvaluation ? (
+          <EvaluationComposerForm
+            evaluationType={evaluationType}
+            relatedItems={relatedItems}
+            submitLabel="保存修改"
+            initialValues={buildEvaluationInitialValues(editingEvaluation)}
+            onSubmit={async (payload) => {
+              const updated = await onUpdateEvaluation(
+                editingEvaluation.id,
+                payload as unknown as TeacherEvaluationInput | CourseEvaluationInput,
+              );
+              if (!updated) return;
+              setItems((prev) => prev.map((item) => (item.id === editingEvaluation.id ? updated : item)));
+              setEditingEvaluation(null);
+              feedback.success({ title: "评价已更新" });
+            }}
+          />
+        ) : null}
+      </DetailComposerModal>
+
+      <DetailComposerModal
+        isOpen={editingReply !== null}
+        onClose={() => setEditingReply(null)}
+        accent={evaluationType}
+        badge="修改回复"
+        title="编辑回复"
+        description="可以修改回复内容，并重新选择是否匿名。"
+      >
+        {editingReply ? (
+          <div className="space-y-4">
+            <textarea
+              value={editingReplyDraft}
+              onChange={(event) => setEditingReplyDraft(event.target.value)}
+              className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm focus:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100"
+            />
+            <label className="flex items-center gap-2 text-sm text-slate-500">
+              <input
+                type="checkbox"
+                checked={editingReplyAnonymous}
+                onChange={(event) => setEditingReplyAnonymous(event.target.checked)}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              匿名回复
+            </label>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingReply(null)}
+                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+              >
+                取消
+              </button>
+              <ActionSubmitButton
+                defaultText="保存修改"
+                isSent={isUpdatingReply}
+                onClick={handleUpdateReply}
+                disabled={isUpdatingReply || !editingReplyDraft.trim()}
+              />
+            </div>
+          </div>
+        ) : null}
+      </DetailComposerModal>
+    </>
   );
 }

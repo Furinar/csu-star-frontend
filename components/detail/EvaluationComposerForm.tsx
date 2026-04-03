@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
@@ -94,11 +94,18 @@ export default function EvaluationComposerForm({
   evaluationType,
   relatedItems = [],
   submitLabel = "提交评价",
+  initialValues,
   onSubmit,
 }: {
   evaluationType: "teacher" | "course";
   relatedItems?: RelatedItem[];
   submitLabel?: string;
+  initialValues?: {
+    relatedId?: number | null;
+    comment?: string | null;
+    anonymous?: boolean;
+    ratings?: Record<string, number | null | undefined>;
+  };
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
 }) {
   const [ratings, setRatings] = useState<Record<string, number>>({});
@@ -116,6 +123,19 @@ export default function EvaluationComposerForm({
     () => (relatedId ? [...primaryDimensions, ...linkedDimensions] : primaryDimensions),
     [linkedDimensions, primaryDimensions, relatedId],
   );
+
+  useEffect(() => {
+    setRatings(
+      Object.fromEntries(
+        Object.entries(initialValues?.ratings || {}).flatMap(([key, value]) =>
+          typeof value === "number" && value > 0 ? [[key, value]] : [],
+        ),
+      ),
+    );
+    setRelatedId(initialValues?.relatedId ?? null);
+    setComment(initialValues?.comment ?? "");
+    setAnonymous(initialValues?.anonymous ?? false);
+  }, [initialValues]);
 
   const allRequiredRated = requiredDimensions.every((dimension) => (ratings[dimension.key] ?? 0) > 0);
 

@@ -35,8 +35,9 @@ export interface UserBrief {
 
 export interface EvaluationReply {
   id: string;
-  user: UserBrief;
+  user?: UserBrief | null;
   content: string;
+  is_anonymous?: boolean;
   reply_to_user?: UserBrief | null;
   reply_to_reply_id?: string | null;
   likes?: number | null;
@@ -46,6 +47,7 @@ export interface EvaluationReply {
 
 export interface EvaluationReplyInput {
   content: string;
+  is_anonymous?: boolean;
   reply_to_reply_id?: string | null;
   reply_to_user_id?: string | null;
 }
@@ -202,6 +204,7 @@ export interface ResourceComment {
 export interface ResourceDetail {
   id: number;
   title: string;
+  uploader_id?: string | null;
   course_id: number;
   course?: CourseBrief | null;
   resource_type?: string | null;
@@ -216,4 +219,13 @@ export interface ResourceDetail {
   tags?: string[];
   files?: ResourceFile[];
   is_favorited?: boolean | null;
+}
+
+export type EvaluationSort = "created_at" | "likes";
+
+export interface ResourceUpdateInput {
+  title: string;
+  description?: string;
+  course_id: number;
+  resource_type: string;
 }

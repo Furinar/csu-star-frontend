@@ -3,11 +3,15 @@
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import GlassCard from "@/components/ui/GlassCard";
+import { getResourceDetail, updateResource } from "@/api/detail";
 import type {PaginatedData, ResourceItem} from "@/types/me";
 import {buildCoursePath, buildResourcePath} from "@/lib/paths";
 import {deleteResource} from "@/api/resource";
 import {formatDateTime, formatNumber, getResourceTypeLabel,} from "./shared/helpers";
 import {useState} from "react";
+import ItemActionMenu from "@/components/ui/ItemActionMenu";
+import ResourceEditModal from "@/components/detail/ResourceEditModal";
+import type { ResourceDetail } from "@/types/detail";
 
 interface MeResourcesProps {
   resources: PaginatedData<ResourceItem>;
@@ -17,6 +21,7 @@ export default function MeResources({resources}: MeResourcesProps) {
   const router = useRouter();
   const [items, setItems] = useState(resources.items ?? []);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<ResourceDetail | null>(null);
 
   const handleDelete = async (item: ResourceItem) => {
     const confirmed = window.confirm(`确认删除资源《${item.title}》吗？\n文件会从 COS 中物理删除，记录会在数据库中标记为已删除。`);
@@ -41,10 +46,11 @@ export default function MeResources({resources}: MeResourcesProps) {
   };
 
   return (
-      <div className="space-y-4">
-        {items.length > 0 ? (
-            <div className="space-y-4">
-              {items.map((item) => {
+      <>
+        <div className="space-y-4">
+          {items.length > 0 ? (
+              <div className="space-y-4">
+                {items.map((item) => {
                 const courseName = item.course?.name || `课程 #${item.course_id}`;
                 const isDeleted = item.status === "deleted";
                 const cardContent = (
@@ -109,18 +115,31 @@ export default function MeResources({resources}: MeResourcesProps) {
                         查看关联课程
                       </span>
                           {!isDeleted ? (
-                              <button
-                                  type="button"
+                              <div
                                   onClick={(event) => {
                                     event.preventDefault();
                                     event.stopPropagation();
-                                    void handleDelete(item);
                                   }}
-                                  disabled={deletingId === item.id}
-                                  className="font-medium text-rose-600 hover:underline disabled:opacity-60"
                               >
-                                {deletingId === item.id ? "删除中..." : "删除资源"}
-                              </button>
+                                <ItemActionMenu
+                                    items={[
+                                      {
+                                        key: "edit",
+                                        label: "修改资源",
+                                        onClick: async () => {
+                                          const detail = await getResourceDetail(item.id);
+                                          setEditingItem(detail);
+                                        },
+                                      },
+                                      {
+                                        key: "delete",
+                                        label: deletingId === item.id ? "删除中..." : "删除资源",
+                                        destructive: true,
+                                        onClick: () => handleDelete(item),
+                                      },
+                                    ]}
+                                />
+                              </div>
                           ) : null}
                         </div>
                       </div>
@@ -134,14 +153,42 @@ export default function MeResources({resources}: MeResourcesProps) {
                     </Link>
                 );
               })}
-            </div>
-        ) : (
-            <SectionEmptyState
-                title="暂无上传资源"
-                description="你上传的资源会显示在这里。"
-            />
-        )}
-      </div>
+              </div>
+          ) : (
+              <SectionEmptyState
+                  title="暂无上传资源"
+                  description="你上传的资源会显示在这里。"
+              />
+          )}
+        </div>
+        <ResourceEditModal
+            resource={editingItem}
+            open={editingItem !== null}
+            onClose={() => setEditingItem(null)}
+            onSubmit={async (payload) => {
+              if (!editingItem) return;
+              const updated = await updateResource(editingItem.id, payload);
+              const nextCourseName = updated?.course?.name || editingItem.course?.name || `课程 #${editingItem.course_id}`;
+              setItems((prev) =>
+                  prev.map((item) =>
+                      item.id === editingItem.id
+                          ? {
+                              ...item,
+                              title: updated?.title ?? item.title,
+                              resource_type: (updated?.resource_type as ResourceItem["resource_type"]) ?? item.resource_type,
+                              course_id: updated?.course_id ?? item.course_id,
+                              course: {
+                                id: updated?.course?.id ?? item.course_id,
+                                name: nextCourseName,
+                              },
+                            }
+                          : item,
+                  ),
+              );
+              setEditingItem(null);
+            }}
+        />
+      </>
   );
 }
 
@@ -153,6 +200,7 @@ function StatPill({label, value}: { label: string; value: string }) {
       </div>
   );
 }
+
 
 function SectionEmptyState({
                              title,

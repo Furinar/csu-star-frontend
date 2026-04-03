@@ -158,6 +158,8 @@ export default function EvaluationThread({
     evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
   const replyReportType: ReportItemType =
     evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
+  const getReplyDisplayUser = (reply: EvaluationReply) =>
+    reply.user || { id: "", nickname: "匿名用户", avatar_url: null, role: null };
 
   const toggleExpanded = (evaluationId: string) => {
     setExpandedMap((prev) => ({
@@ -564,7 +566,7 @@ export default function EvaluationThread({
                           <div className="flex items-center justify-between gap-3">
                             <div className="flex flex-wrap items-center gap-2 text-sm">
                               <span className="font-medium text-gray-800">
-                                {reply.user.nickname}
+                                {getReplyDisplayUser(reply).nickname}
                               </span>
                               {reply.reply_to_user ? (
                                 <span className="text-gray-400">
@@ -585,8 +587,8 @@ export default function EvaluationThread({
                                   ...prev,
                                   [evaluation.id]: {
                                     replyId: reply.id,
-                                    userId: reply.user.id,
-                                    userName: reply.user.nickname,
+                                    userId: getReplyDisplayUser(reply).id,
+                                    userName: getReplyDisplayUser(reply).nickname,
                                   },
                                 }))
                               }

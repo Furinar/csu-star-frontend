@@ -1,5 +1,6 @@
 import axios, { AxiosProgressEvent } from "axios";
 import { service } from "@/lib/request";
+import type { ResourceUpdateInput } from "@/types/detail";
 import type {
   CourseSuggestionItem,
   TeacherSuggestionItem,
@@ -171,6 +172,11 @@ export async function downloadResourceFile(resourceId: number, fileId?: string) 
 
 export async function deleteResource(resourceId: number) {
   const response = await service.delete<ApiEnvelope<unknown>>(`/resources/${resourceId}`);
+  return unwrapResponseData(response);
+}
+
+export async function updateResource(resourceId: number, payload: ResourceUpdateInput) {
+  const response = await service.put<ApiEnvelope<unknown>>(`/resources/${resourceId}`, payload);
   return unwrapResponseData(response);
 }
 

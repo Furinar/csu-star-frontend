@@ -5,17 +5,24 @@ import { useSearchParams } from "next/navigation";
 import {
   addLike,
   createResourceComment,
+  deleteResourceComment,
   getResourceDetail,
   listResourceComments,
   removeLike,
+  updateResource,
+  updateResourceComment,
 } from "@/api/detail";
-import { downloadResourceFile } from "@/api/resource";
-import type { ResourceComment, ResourceDetail } from "@/types/detail";
+import { deleteResource, downloadResourceFile } from "@/api/resource";
+import type { EvaluationSort, ResourceComment, ResourceDetail } from "@/types/detail";
+import { Role } from "@/types/auth";
+import { submitReport } from "@/api/me";
 import { feedback } from "@/store/useFeedbackStore";
 import CommentComposerForm from "@/components/detail/CommentComposerForm";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
+import ResourceEditModal from "@/components/detail/ResourceEditModal";
 import CollectButton from "@/components/ui/CollectButton";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import ItemActionMenu, { ItemActionMenuItem } from "@/components/ui/ItemActionMenu";
 import {
   DetailHero,
   DetailPageShell,
@@ -28,6 +35,8 @@ import { formatDateTimeZh } from "@/lib/date";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
+import { useAuthStore } from "@/store/useAuthStore";
+import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -52,19 +61,31 @@ export default function ResourceDetailPage() {
   const idStr = hasMounted ? searchParams.get("id") : null;
   const resourceId = idStr ? parseInt(idStr, 10) : null;
 
+  const authUser = useAuthStore((state) => state.user);
+  const viewerId = authUser?.id ?? null;
+  const viewerRole = authUser?.role ?? null;
   const [resource, setResource] = useState<ResourceDetail | null>(null);
   const [comments, setComments] = useState<ResourceComment[]>([]);
   const [totalComments, setTotalComments] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const [page, setPage] = useState(1);
+  const [commentSort, setCommentSort] = useState<EvaluationSort>("created_at");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isRefreshingComments, setIsRefreshingComments] = useState(false);
   const [draftMap, setDraftMap] = useState<Record<number, string>>({});
   const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<number | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
+  const [editingComment, setEditingComment] = useState<{ id: number; parentId?: number | null; content: string } | null>(null);
+  const [editingCommentDraft, setEditingCommentDraft] = useState("");
+  const [isUpdatingComment, setIsUpdatingComment] = useState(false);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const isDeleted = resource?.status === "deleted";
+  const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
+  const isUploader = Boolean(resource?.uploader_id && viewerId && resource.uploader_id === viewerId);
 
   const handleDownload = async (fileId: string, filename: string) => {
     if (!resourceId) return;
@@ -100,11 +121,16 @@ export default function ResourceDetailPage() {
     if (!hasMounted) return;
     if (!resourceId) return;
     let mounted = true;
-    setIsLoading(true);
+    const shouldShowPageLoading = resource == null;
+    if (shouldShowPageLoading) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshingComments(true);
+    }
 
     Promise.all([
       getResourceDetail(resourceId),
-      listResourceComments(resourceId, 1, 10),
+      listResourceComments(resourceId, 1, 10, commentSort),
     ])
       .then(([resourceData, commentData]) => {
         if (!mounted) return;
@@ -119,13 +145,17 @@ export default function ResourceDetailPage() {
         console.error("加载资源详情失败", error);
       })
       .finally(() => {
-        if (mounted) setIsLoading(false);
+        if (!mounted) return;
+        if (shouldShowPageLoading) {
+          setIsLoading(false);
+        }
+        setIsRefreshingComments(false);
       });
 
     return () => {
       mounted = false;
     };
-  }, [hasMounted, resourceId]);
+  }, [commentSort, hasMounted, resourceId]);
 
   const hasMore = comments.length < totalComments;
 
@@ -135,7 +165,7 @@ export default function ResourceDetailPage() {
     try {
       setIsLoadingMore(true);
       const nextPage = page + 1;
-      const result = await listResourceComments(resourceId, nextPage, 10);
+      const result = await listResourceComments(resourceId, nextPage, 10, commentSort);
       setComments((prev) => {
         const existing = new Set(prev.map((comment) => comment.id));
         return [
@@ -151,7 +181,7 @@ export default function ResourceDetailPage() {
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, resourceId]);
+  }, [commentSort, page, resourceId]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -291,6 +321,151 @@ export default function ResourceDetailPage() {
     }
   };
 
+  const handleUpdateComment = async () => {
+    if (!editingComment) return;
+    const content = editingCommentDraft.trim();
+    if (!content) {
+      feedback.warning({ title: "评论内容不能为空" });
+      return;
+    }
+    try {
+      setIsUpdatingComment(true);
+      const updated = await updateResourceComment(editingComment.id, { content });
+      setComments((prev) =>
+        prev.map((comment) => {
+          if (comment.id === editingComment.id) {
+            return updated;
+          }
+          if (editingComment.parentId && comment.id === editingComment.parentId) {
+            return {
+              ...comment,
+              children: (comment.children || []).map((child) =>
+                child.id === editingComment.id ? updated : child,
+              ),
+            };
+          }
+          return comment;
+        }),
+      );
+      setEditingComment(null);
+      feedback.success({ title: "评论已更新" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "更新失败", description: "请稍后重试。" });
+    } finally {
+      setIsUpdatingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: number, parentId?: number) => {
+    if (!window.confirm("确认删除这条评论吗？")) return;
+    try {
+      setDeletingKey(`comment-${commentId}`);
+      await deleteResourceComment(commentId);
+      setComments((prev) =>
+        prev
+          .filter((comment) => !(!parentId && comment.id === commentId))
+          .map((comment) =>
+            parentId && comment.id === parentId
+              ? {
+                  ...comment,
+                  children: (comment.children || []).filter((child) => child.id !== commentId),
+                }
+              : comment,
+          ),
+      );
+      if (!parentId) {
+        setTotalComments((prev) => Math.max(0, prev - 1));
+      }
+      feedback.success({ title: "评论已删除" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "删除失败", description: "请稍后重试。" });
+    } finally {
+      setDeletingKey(null);
+    }
+  };
+
+  const reportTarget = async (targetType: "resource" | "comment", targetId: string, label: string) => {
+    try {
+      await submitReport({
+        target_type: targetType,
+        target_id: targetId,
+        reason: "other",
+        description: `${label}举报`,
+      });
+      feedback.success({ title: "举报已提交", description: "管理员会尽快处理。" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "举报失败", description: "请稍后重试。" });
+    }
+  };
+
+  const buildResourceActions = (): ItemActionMenuItem[] => {
+    if (!resource) return [];
+    const actions: ItemActionMenuItem[] = [];
+    if (isUploader || isPrivileged) {
+      if (!isDeleted) {
+        actions.push({
+          key: "edit",
+          label: "修改资源",
+          onClick: () => setIsEditResourceOpen(true),
+        });
+        actions.push({
+          key: "delete",
+          label: "删除资源",
+          destructive: true,
+          onClick: async () => {
+            const confirmed = window.confirm(`确认删除资源《${resource.title}》吗？`);
+            if (!confirmed) return;
+            await deleteResource(resource.id);
+            setResource((prev) => (prev ? { ...prev, status: "deleted" } : prev));
+            feedback.success({ title: "资源已删除" });
+          },
+        });
+      }
+    } else if (!isDeleted) {
+      actions.push({
+        key: "report",
+        label: "举报",
+        onClick: () => reportTarget("resource", String(resource.id), "资源"),
+      });
+    }
+    return actions;
+  };
+
+  const buildCommentActions = (comment: ResourceComment, parentId?: number): ItemActionMenuItem[] => {
+    const actions: ItemActionMenuItem[] = [];
+    const isAuthor = viewerId != null && comment.user?.id === viewerId;
+    const canDelete = isAuthor || isPrivileged || isUploader;
+    if (isAuthor) {
+      actions.push({
+        key: "edit",
+        label: "修改",
+        onClick: () => {
+          setEditingComment({ id: comment.id, parentId, content: comment.content });
+          setEditingCommentDraft(comment.content);
+        },
+      });
+    }
+    if (canDelete) {
+      actions.push({
+        key: "delete",
+        label: deletingKey === `comment-${comment.id}` ? "删除中..." : "删除",
+        destructive: true,
+        onClick: () => handleDeleteComment(comment.id, parentId),
+      });
+    }
+    if (!isAuthor) {
+      actions.push({
+        key: "report",
+        label: "举报",
+        onClick: () => reportTarget("comment", String(comment.id), "评论"),
+      });
+    }
+    return actions;
+  };
+
   if (!hasMounted) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -336,8 +511,11 @@ export default function ResourceDetailPage() {
           aside={
             <div className="space-y-4 rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
               <div>
-                <div className="text-sm font-medium text-slate-500">
-                  快速动作
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-medium text-slate-500">
+                    快速动作
+                  </div>
+                  <ItemActionMenu items={buildResourceActions()} />
                 </div>
                 <div className="mt-4">
                   {isDeleted ? (
@@ -503,16 +681,37 @@ export default function ResourceDetailPage() {
             }
             description="看看大家的使用反馈，也可以留下你的评论。"
           >
-            <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
               <span>
                 {isDeleted
                   ? "已删除资源仅保留历史评论展示"
                   : "点击回复可继续讨论"}
               </span>
+              <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
+                {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setCommentSort(item)}
+                    className={`rounded-full px-4 py-1.5 text-sm transition ${
+                      commentSort === item
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-500 hover:text-slate-700"
+                    }`}
+                  >
+                    {item === "likes" ? "按热度" : "按时间"}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <BilibiliCommentThread
-              comments={comments.map((comment) => {
+            {isRefreshingComments ? (
+              <div className="flex justify-center py-12">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-500" />
+              </div>
+            ) : (
+              <BilibiliCommentThread
+                comments={comments.map((comment) => {
                 const isActive = !!targetMap[comment.id];
                 const activeTarget = targetMap[comment.id] || {};
 
@@ -523,18 +722,16 @@ export default function ResourceDetailPage() {
                   createdAt: comment.created_at || "",
                   likes: comment.likes,
                   isLiked: comment.is_liked,
+                  actions: buildCommentActions(comment),
                   replies: (comment.children || []).map((reply) => ({
                     id: reply.id,
-                    user: reply.user || {
-                      id: "",
-                      nickname: "未知用户",
-                      avatar_url: null,
-                    },
+                    user: reply.user,
                     replyToUser: reply.reply_to_user,
                     content: reply.content,
                     createdAt: reply.created_at || "",
                     likes: reply.likes,
                     isLiked: reply.is_liked,
+                    actions: buildCommentActions(reply, comment.id),
                     onLike: (liked: boolean) =>
                       handleToggleLike(reply.id, !liked),
                     onReplyClick: () => {
@@ -578,7 +775,6 @@ export default function ResourceDetailPage() {
                                   : item,
                               ),
                             );
-                            setTotalComments((prev) => prev + 1);
                             setTargetMap((prev) => {
                               const next = { ...prev };
                               delete next[comment.id];
@@ -601,10 +797,18 @@ export default function ResourceDetailPage() {
                   ),
                   onLike: (liked) => handleToggleLike(comment.id, !liked),
                   onReplyClick: () =>
-                    setTargetMap((prev) => ({ ...prev, [comment.id]: {} })),
+                    setTargetMap((prev) => ({
+                      ...prev,
+                      [comment.id]: {
+                        replyId: comment.id,
+                        userId: comment.user?.id,
+                        userName: comment.user?.nickname,
+                      },
+                    })),
                 };
-              })}
-            />
+                })}
+              />
+            )}
 
             {hasMore ? (
               <div ref={loadMoreRef} className="mt-8 flex justify-center py-4">
@@ -657,6 +861,58 @@ export default function ResourceDetailPage() {
           }}
         />
       </DetailComposerModal>
+
+      <DetailComposerModal
+        isOpen={editingComment !== null}
+        onClose={() => setEditingComment(null)}
+        title="编辑评论"
+        accent="resource"
+        badge="修改评论"
+        description="修改评论正文，保存后会立即更新当前列表。"
+      >
+        {editingComment ? (
+          <div className="space-y-4">
+            <textarea
+              value={editingCommentDraft}
+              onChange={(event) => setEditingCommentDraft(event.target.value)}
+              className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm focus:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingComment(null)}
+                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+              >
+                取消
+              </button>
+              <ActionSubmitButton
+                defaultText="保存修改"
+                isSent={isUpdatingComment}
+                disabled={isUpdatingComment || !editingCommentDraft.trim()}
+                onClick={handleUpdateComment}
+              />
+            </div>
+          </div>
+        ) : null}
+      </DetailComposerModal>
+
+      <ResourceEditModal
+        resource={resource}
+        open={isEditResourceOpen}
+        onClose={() => setIsEditResourceOpen(false)}
+        onSubmit={async (payload) => {
+          if (!resource) return;
+          try {
+            const next = await updateResource(resource.id, payload);
+            setResource(next);
+            setIsEditResourceOpen(false);
+            feedback.success({ title: "资源已更新" });
+          } catch (error) {
+            console.error(error);
+            feedback.error({ title: "更新失败", description: "请稍后重试。" });
+          }
+        }}
+      />
     </>
   );
 }

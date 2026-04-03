@@ -5,12 +5,13 @@ import Image from "next/image";
 import { UserBrief } from "@/types/detail";
 import { formatDateTimeZh } from "@/lib/date";
 import { avatarOptions } from "@/data/avatar";
+import ItemActionMenu, { ItemActionMenuItem } from "./ItemActionMenu";
 
 const DEFAULT_AVATAR = avatarOptions[0].url;
 
 export interface BilibiliReplyItemProps {
   id: string | number;
-  user: UserBrief;
+  user?: UserBrief | null;
   replyToUser?: UserBrief | null;
   content: string;
   createdAt: string;
@@ -18,6 +19,7 @@ export interface BilibiliReplyItemProps {
   isLiked?: boolean | null;
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
+  actions?: ItemActionMenuItem[];
 }
 
 export default function BilibiliReplyItem({
@@ -30,15 +32,17 @@ export default function BilibiliReplyItem({
   isLiked = false,
   onLike,
   onReplyClick,
+  actions = [],
 }: BilibiliReplyItemProps) {
+  const displayUser = user || { nickname: "匿名用户", avatar_url: DEFAULT_AVATAR };
   return (
     <div className="flex gap-3 py-2 group/reply">
       {/* Avatar */}
       <div className="shrink-0 flex-none self-start mt-0.5">
         <div className="relative h-6 w-6 rounded-full overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer">
           <Image
-            src={user.avatar_url || DEFAULT_AVATAR}
-            alt={user.nickname}
+            src={displayUser.avatar_url || DEFAULT_AVATAR}
+            alt={displayUser.nickname}
             fill
             className="object-cover"
             sizes="24px"
@@ -52,7 +56,7 @@ export default function BilibiliReplyItem({
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center text-[12.5px] leading-normal mb-0.5">
             <span className="font-medium text-gray-500 cursor-pointer hover:text-emerald-600 transition-colors mr-1.5">
-              {user.nickname}
+              {displayUser.nickname}
             </span>
             {replyToUser && (
               <span className="text-gray-400 text-[12px] mr-1.5">
@@ -85,6 +89,7 @@ export default function BilibiliReplyItem({
           >
             回复
           </button>
+          {actions.length > 0 ? <ItemActionMenu items={actions} /> : null}
         </div>
       </div>
     </div>
