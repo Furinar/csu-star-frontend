@@ -180,13 +180,20 @@ export default function TeacherSlider() {
             )}
 
             <div className="teacher-links flex mb-2 justify-end">
-              <Link
-                href="/search?type=teacher"
-                className="flex justify-center button button--flex shadow-lg group w-full "
-              >
-                查看全部教师
-                <i className="uil uil-message button__icon ml-1 transition-transform duration-300 group-hover:translate-x-3" />
-              </Link>
+              {currentTeacherPath ? (
+                <Link
+                  href={currentTeacherPath}
+                  className="flex justify-center button button--flex shadow-lg group w-full "
+                >
+                  查看当前教师
+                  <i className="uil uil-message button__icon ml-1 transition-transform duration-300 group-hover:translate-x-3" />
+                </Link>
+              ) : (
+                <div className="flex justify-center button button--flex shadow-lg w-full cursor-not-allowed opacity-60">
+                  查看当前教师
+                  <i className="uil uil-message button__icon ml-1" />
+                </div>
+              )}
 
             </div>
           </div>
