@@ -1,4 +1,0 @@
-);
-
-fs.writeFileSync('app/(features)/resource/detail/page.tsx', code);
-"
