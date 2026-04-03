@@ -2,10 +2,18 @@
 
 import { useState } from "react";
 import { updateMyProfile } from "@/api/me";
-import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
+import {
+  AdvancedInput,
+  AdvancedSelect,
+} from "@/app/(features)/resource/components/AdvancedFormControls";
+import { DEPARTMENTS } from "@/data/departments";
 import { feedback } from "@/store/useFeedbackStore";
 import type { UserProfile } from "@/types/auth";
-import type { MeDashboardData, MyProfileUpdateInput } from "@/types/me";
+import type {
+  Department,
+  MeDashboardData,
+  MyProfileUpdateInput,
+} from "@/types/me";
 import {
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
@@ -14,10 +22,12 @@ import {
 
 export default function ProfilePanel({
   profile,
+  departments,
   onClose,
   onProfileUpdated,
 }: {
   profile: UserProfile;
+  departments: Department[];
   onClose: () => void;
   onProfileUpdated: (
     nextProfile: UserProfile,
@@ -27,12 +37,17 @@ export default function ProfilePanel({
   const [form, setForm] = useState({
     nickname: profile.nickname ?? "",
     avatar_url: profile.avatar_url ?? "",
+    department_id: profile.department_id ? `${profile.department_id}` : "",
+    grade: profile.grade ? `${profile.grade}` : "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const resolvedDepartments = departments.length > 0 ? departments : DEPARTMENTS;
 
   const handleSave = async () => {
     const nickname = form.nickname.trim();
     const avatarUrl = form.avatar_url.trim();
+    const currentYear = new Date().getFullYear();
+    const parsedGrade = form.grade.trim() ? Number(form.grade) : undefined;
 
     if (!nickname) {
       feedback.warning({
@@ -57,9 +72,26 @@ export default function ProfilePanel({
       }
     }
 
+    if (
+      parsedGrade != null &&
+      (!Number.isInteger(parsedGrade) ||
+        parsedGrade < 2000 ||
+        parsedGrade > currentYear + 1)
+    ) {
+      feedback.warning({
+        title: "入学年份无效",
+        description: `请输入 2000 到 ${currentYear + 1} 之间的年份。`,
+      });
+      return;
+    }
+
     const payload: MyProfileUpdateInput = {
       nickname,
       avatar_url: avatarUrl || undefined,
+      department_id: form.department_id
+        ? Number(form.department_id)
+        : undefined,
+      grade: parsedGrade,
     };
 
     setIsSaving(true);
@@ -91,7 +123,7 @@ export default function ProfilePanel({
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-        当前资料编辑仅支持真正可保存的字段：昵称和头像地址。学院、年级暂未在账号资料接口中开放修改。
+        学院和年级会写入用户资料的 `metadata` 字段，并通过 `/me` 接口同步回个人中心。
       </div>
 
       <AdvancedInput
@@ -116,6 +148,39 @@ export default function ProfilePanel({
           setForm((current) => ({
             ...current,
             avatar_url: event.target.value,
+          }))
+        }
+      />
+
+      <AdvancedSelect
+        label="所属学院"
+        value={form.department_id}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            department_id: event.target.value,
+          }))
+        }
+      >
+        <option value="">点击选择你的学院</option>
+        {resolvedDepartments.map((department) => (
+          <option key={department.id} value={department.id}>
+            {department.name}
+          </option>
+        ))}
+      </AdvancedSelect>
+
+      <AdvancedInput
+        label="入学年份"
+        type="number"
+        min={2000}
+        max={new Date().getFullYear() + 1}
+        placeholder="例如 2022"
+        value={form.grade}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            grade: event.target.value,
           }))
         }
       />

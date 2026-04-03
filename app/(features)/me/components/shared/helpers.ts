@@ -190,13 +190,13 @@ export function formatNumber(value: number | undefined | null) {
 
 export function getDepartmentName(departments: Department[], departmentId?: number) {
   if (!departmentId) {
-    return "当前版本暂未接入学院资料";
+    return "学院未填写";
   }
 
   return (
     departments.find((item) => item.id === departmentId)?.name ??
     getDepartmentNameById(departmentId) ??
-    "当前版本暂未接入学院资料"
+    "学院未填写"
   );
 }
 

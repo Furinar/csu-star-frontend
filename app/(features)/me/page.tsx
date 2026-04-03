@@ -411,7 +411,7 @@ export default function Me() {
                     />
                   </svg>
                   <span>
-                    {profile?.grade ? `${profile.grade}级` : "当前版本暂未接入年级资料"}
+                    {profile?.grade ? `${profile.grade}级` : "年级未填写"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -630,6 +630,7 @@ export default function Me() {
         {profile ? (
           <ProfilePanel
             profile={profile}
+            departments={departments}
             onClose={() => setOpenPanel(null)}
             onProfileUpdated={handleProfileUpdated}
           />

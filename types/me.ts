@@ -212,6 +212,8 @@ export interface NotificationUnreadCount {
 export interface MyProfileUpdateInput {
   nickname?: string;
   avatar_url?: string;
+  department_id?: number;
+  grade?: number;
 }
 
 export interface EmailBindInput {
