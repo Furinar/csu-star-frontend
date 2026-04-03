@@ -99,12 +99,14 @@ service.interceptors.response.use(
         }
       );
 
-      if (data.code !== 200 || !data.data?.access_token) {
+      if ((data.code !== 0 && data.code !== 200) || !data.data?.access_token) {
         throw new Error(data.message || 'Refresh token failed');
       }
 
       const tokenData = data.data;
-      useAuthStore.getState().setToken(tokenData.access_token);
+      useAuthStore
+        .getState()
+        .setTokens(tokenData.access_token, tokenData.refresh_token ?? refresh_token);
       processQueue(null, tokenData.access_token);
       originalRequest.headers!.Authorization = `Bearer ${tokenData.access_token}`;
       return service(originalRequest);

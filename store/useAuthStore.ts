@@ -10,6 +10,7 @@ interface AuthState {
   _hasHydrated: boolean;
 
   setToken: (access_token: string) => void;
+  setTokens: (access_token: string, refresh_token?: string | null) => void;
   setUser: (user: UserProfile | null) => void;
   login: (
     access_token: string,
@@ -30,6 +31,14 @@ export const useAuthStore = create<AuthState>()(
       _hasHydrated: false,
 
       setToken: (access_token) => set({ access_token }),
+      setTokens: (access_token, refresh_token) =>
+        set((state) => ({
+          access_token,
+          refresh_token:
+            typeof refresh_token === "undefined"
+              ? state.refresh_token
+              : refresh_token,
+        })),
       setUser: (user) => set({ user }),
       login: (access_token, refresh_token, user = null) =>
         set({ access_token, refresh_token, user }),
