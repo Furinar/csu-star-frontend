@@ -188,11 +188,6 @@ export default function SearchLandingSection({
             <p className="text-sm text-gray-500">{description}</p>
           ) : null}
         </div>
-        {!isLoading && !error ? (
-          <div className="text-sm text-gray-400">
-            已展示 {items.length} / {total}
-          </div>
-        ) : null}
       </div>
 
       {isLoading ? (
