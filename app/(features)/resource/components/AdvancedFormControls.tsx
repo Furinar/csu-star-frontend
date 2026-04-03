@@ -61,8 +61,17 @@ const StyledWrapper = styled.div`
 
   /* 下拉选单离右侧更远 */
   select.input {
-    padding-right: 2.5rem;
+    appearance: none;
+    padding-right: 3.75rem;
     cursor: pointer;
+    background-image: url('data:image/svg+xml;utf8,<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.75L9 11.25L13.5 6.75" fill="none" stroke="%236b7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 1.15rem center;
+    background-size: 1rem 1rem;
+  }
+
+  select.input:focus {
+    background-image: url('data:image/svg+xml;utf8,<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.75L9 11.25L13.5 6.75" fill="none" stroke="%238b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
   }
   textarea.input {
     min-height: 120px;
