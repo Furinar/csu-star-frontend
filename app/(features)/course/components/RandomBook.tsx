@@ -6,6 +6,7 @@ import RatingBar from "@/components/ui/RatingBar";
 import Link from "next/link";
 import CollectButton from "@/components/ui/CollectButton";
 import {useEffect, useState} from "react";
+import {useRouter} from "next/navigation";
 import {getRandomCourseShowcase} from "@/api/showcase";
 import type {CourseShowcaseItem} from "@/types/showcase";
 import {
@@ -40,6 +41,7 @@ const EMPTY_COURSE: CourseShowcaseItem = {
 };
 
 export default function RandomBook() {
+  const router = useRouter();
   const [courses, setCourses] = useState<CourseShowcaseItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -102,9 +104,21 @@ export default function RandomBook() {
   const evaluationPath = course.id ? buildCourseEvaluationAnchor(course.id) : null;
   const courseTypeChars = course.course_type?.includes("公") ? ["公", "选"] : ["非", "公", "选"];
 
+  const handleBackgroundNavigate = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!coursePath) return;
+    const target = event.target as HTMLElement;
+    if (target.closest("a, button, input, select, textarea, label, [role='button']")) {
+      return;
+    }
+    router.push(coursePath);
+  };
+
   return (
       <>
-        <div className={`random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative ${isAnimating ? "is-switching" : ""}`}>
+        <div
+            className={`random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative ${coursePath ? "cursor-pointer" : ""} ${isAnimating ? "is-switching" : ""}`}
+            onClick={handleBackgroundNavigate}
+        >
           <div
               className="absolute top-0 left-7 py-1 px-1.5 bg-first flex flex-col rounded-b-sm text-white font-bold shadow-lg user-invalid:">
             {courseTypeChars.map((char, index) => (
