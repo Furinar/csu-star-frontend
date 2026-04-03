@@ -35,14 +35,16 @@ export default function ResourceUploaderModal({
       onClick={onClose}
     >
       <div
-        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[32px] border border-white/70 bg-white p-6 md:p-8 shadow-[0_30px_100px_rgba(15,23,42,0.18)]"
+        className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-[32px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.18)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <ResourceUploader
-          isModal
-          onClose={onClose}
-          initialCourse={initialCourse}
-        />
+        <div className="modal-scrollbar max-h-[90vh] overflow-y-auto p-6 md:p-8">
+          <ResourceUploader
+            isModal
+            onClose={onClose}
+            initialCourse={initialCourse}
+          />
+        </div>
       </div>
     </div>
   );

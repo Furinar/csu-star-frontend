@@ -60,9 +60,9 @@ export default function DetailComposerModal({
   return (
     <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-md">
       <div
-        className={`relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-[32px] border border-white/70 bg-gradient-to-br ${tone.glow} p-6 md:p-8 ${tone.ring}`}
+        className={`relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[32px] border border-white/70 bg-gradient-to-br ${tone.glow} ${tone.ring}`}
       >
-        <div className="relative">
+        <div className="modal-scrollbar max-h-[90vh] overflow-y-auto p-6 md:p-8">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div

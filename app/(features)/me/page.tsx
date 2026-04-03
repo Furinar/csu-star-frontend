@@ -790,6 +790,33 @@ export default function Me() {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
+
+        .modal-scrollbar {
+          scrollbar-gutter: stable;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(148, 163, 184, 0.78) transparent;
+        }
+
+        .modal-scrollbar::-webkit-scrollbar {
+          width: 12px;
+          height: 12px;
+        }
+
+        .modal-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+          border-radius: 999px;
+        }
+
+        .modal-scrollbar::-webkit-scrollbar-thumb {
+          border: 3px solid transparent;
+          border-radius: 999px;
+          background-clip: content-box;
+          background-color: rgba(148, 163, 184, 0.78);
+        }
+
+        .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(100, 116, 139, 0.92);
+        }
       `}</style>
     </div>
   );
@@ -847,7 +874,7 @@ function FloatingPanel({
               </button>
             </div>
           </div>
-          <div className="max-h-[calc(88vh-5.5rem)] overflow-y-auto bg-white/80 px-6 py-5">
+          <div className="modal-scrollbar max-h-[calc(88vh-5.5rem)] overflow-y-auto bg-white/80 px-6 py-5">
             {children}
           </div>
         </div>
