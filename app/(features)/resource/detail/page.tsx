@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import {
   addLike,
   createResourceComment,
-  createResourceCommentReply,
   getResourceDetail,
   listResourceComments,
   removeLike,
@@ -30,6 +29,7 @@ import {
 } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -66,9 +66,14 @@ export default function ResourceDetailPage() {
   const [submittingId, setSubmittingId] = useState<number | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const isDeleted = resource?.status === "deleted";
 
   const handleDownload = async (fileId: string, filename: string) => {
     if (!resourceId) return;
+    if (isDeleted) {
+      feedback.warning({ title: "资源已删除", description: "已删除资源仅保留记录，不支持下载。" });
+      return;
+    }
     try {
       feedback.info({ title: "正在获取下载链接..." });
       const { url } = await downloadResourceFile(resourceId, fileId);
@@ -159,6 +164,15 @@ export default function ResourceDetailPage() {
   }, [fetchMore, hasMore, isLoadingMore, resourceId]);
 
   const handleReplySubmit = async (parentId: number) => {
+    if (!resourceId) {
+      feedback.error({ title: "资源信息缺失", description: "请刷新页面后重试。" });
+      return;
+    }
+    if (isDeleted) {
+      feedback.warning({ title: "资源已删除", description: "已删除资源不支持继续评论。" });
+      return;
+    }
+
     const content = draftMap[parentId]?.trim();
     if (!content) {
       feedback.warning({ title: "回复内容不能为空" });
@@ -168,10 +182,10 @@ export default function ResourceDetailPage() {
     try {
       setSubmittingId(parentId);
       const target = targetMap[parentId] || {};
-      const result = await createResourceCommentReply(parentId, {
+      const result = await createResourceComment(resourceId, {
         content,
+        parent_id: parentId,
         reply_to_comment_id: target.replyId ?? null,
-        reply_to_user_id: target.userId ?? null,
       });
 
       if (!result) {
@@ -200,15 +214,19 @@ export default function ResourceDetailPage() {
   };
 
   const handleToggleLike = async (id: number, currentLiked: boolean, parentId?: number) => {
+    if (isDeleted) {
+      feedback.warning({ title: "资源已删除", description: "已删除资源不支持点赞互动。" });
+      return;
+    }
     const key = parentId ? `reply-${id}` : `comment-${id}`;
     if (likeLoadingKey) return;
 
     try {
       setLikeLoadingKey(key);
       if (currentLiked) {
-        await removeLike("comment", id);
+        await removeLike("comment", String(id));
       } else {
-        await addLike("comment", id);
+        await addLike("comment", String(id));
       }
 
       setComments((prev) =>
@@ -278,7 +296,8 @@ export default function ResourceDetailPage() {
           accent="resource"
           eyebrow={
             <>
-              <DetailRibbonTag text={resource.resource_type || "资料"} tone="resource" />
+              <DetailRibbonTag text={getResourceTypeLabel(resource.resource_type || undefined)} tone="resource" />
+              {isDeleted ? <DetailRibbonTag text="已删除" tone="resource" /> : null}
             </>
           }
           title={resource.title}
@@ -288,20 +307,36 @@ export default function ResourceDetailPage() {
               <div>
                 <div className="text-sm font-medium text-slate-500">快速动作</div>
                 <div className="mt-4">
-                  <CollectButton
-                    size="md"
-                    targetId={resource.id}
-                    targetType="resource"
-                    initialStatus={resource.is_favorited ?? false}
-                  />
+                  {isDeleted ? (
+                    <div className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
+                      已删除资源禁止收藏
+                    </div>
+                  ) : (
+                    <CollectButton
+                      size="md"
+                      targetId={resource.id}
+                      targetType="resource"
+                      initialStatus={resource.is_favorited ?? false}
+                    />
+                  )}
                 </div>
               </div>
-              <div className="rounded-[24px] border border-emerald-100 bg-emerald-50/70 p-4 text-sm leading-7 text-slate-600">
-                收藏后可以稍后再看。
+              <div className={`rounded-[24px] p-4 text-sm leading-7 ${
+                isDeleted
+                  ? "border border-rose-100 bg-rose-50/80 text-rose-700"
+                  : "border border-emerald-100 bg-emerald-50/70 text-slate-600"
+              }`}>
+                {isDeleted ? "该资源已删除，仅上传者或管理员可见，下载与互动能力已关闭。" : "收藏后可以稍后再看。"}
               </div>
             </div>
           }
         />
+
+        {isDeleted ? (
+          <div className="mb-8 rounded-[32px] border border-rose-200 bg-rose-50/80 px-6 py-5 text-sm leading-7 text-rose-700 shadow-sm">
+            该资源已被删除。当前页面仅用于保留上传记录和基础信息展示，不再提供下载、收藏、评论或点赞。
+          </div>
+        ) : null}
 
         <DetailSection
           title="文件列表"
@@ -342,13 +377,19 @@ export default function ResourceDetailPage() {
                       </div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDownload(file.id, file.filename)}
-                    className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
-                  >
-                    下载文件
-                  </button>
+                  {isDeleted ? (
+                    <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-medium text-rose-700">
+                      已删除，禁止下载
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(file.id, file.filename)}
+                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                    >
+                      下载文件
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -414,7 +455,7 @@ export default function ResourceDetailPage() {
             }
           >
             <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-              <span>点击回复可继续讨论</span>
+              <span>{isDeleted ? "已删除资源仅保留历史评论展示" : "点击回复可继续讨论"}</span>
             </div>
 
             <div className="space-y-5">
@@ -453,7 +494,7 @@ export default function ResourceDetailPage() {
                           <button
                             type="button"
                             onClick={() => handleToggleLike(comment.id, !!comment.is_liked)}
-                            disabled={likeLoadingKey === `comment-${comment.id}`}
+                            disabled={isDeleted || likeLoadingKey === `comment-${comment.id}`}
                             className={`inline-flex items-center gap-2 transition ${
                               comment.is_liked ? "text-emerald-700" : "hover:text-slate-700"
                             }`}
@@ -463,6 +504,7 @@ export default function ResourceDetailPage() {
                           </button>
                           <button
                             type="button"
+                            disabled={isDeleted}
                             onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
                             className="inline-flex items-center gap-2 transition hover:text-slate-700"
                           >
@@ -530,7 +572,7 @@ export default function ResourceDetailPage() {
                                           event.stopPropagation();
                                           void handleToggleLike(child.id, !!child.is_liked, comment.id);
                                         }}
-                                        disabled={likeLoadingKey === `reply-${child.id}`}
+                                        disabled={isDeleted || likeLoadingKey === `reply-${child.id}`}
                                         className={`inline-flex items-center gap-2 transition ${
                                           child.is_liked ? "text-emerald-700" : "hover:text-slate-600"
                                         }`}
@@ -563,6 +605,7 @@ export default function ResourceDetailPage() {
                               </div>
                               <button
                                 type="button"
+                                disabled={isDeleted}
                                 onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
                                 className="text-sm text-slate-400 transition hover:text-slate-600"
                               >
@@ -578,14 +621,15 @@ export default function ResourceDetailPage() {
                                   [comment.id]: event.target.value,
                                 }))
                               }
-                              placeholder="写下你的回复..."
+                              placeholder={isDeleted ? "资源已删除，回复功能已关闭" : "写下你的回复..."}
+                              disabled={isDeleted}
                               className="mt-3 w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition focus:border-emerald-300"
                             />
                             <div className="mt-3 flex items-center justify-end">
                               <button
                                 type="button"
                                 onClick={() => handleReplySubmit(comment.id)}
-                                disabled={submittingId === comment.id}
+                                disabled={isDeleted || submittingId === comment.id}
                                 className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
                               >
                                 {submittingId === comment.id ? "发送中..." : "发送回复"}
@@ -614,10 +658,10 @@ export default function ResourceDetailPage() {
         </div>
       </DetailPageShell>
 
-      <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评论" tone="resource" />
+      {!isDeleted ? <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评论" tone="resource" /> : null}
 
       <DetailComposerModal
-        isOpen={isComposerOpen}
+        isOpen={!isDeleted && isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
         accent="resource"
         badge="资源评论"
@@ -627,6 +671,10 @@ export default function ResourceDetailPage() {
         <CommentComposerForm
           placeholder="这份资源适合考前速刷、平时补笔记还是查漏补缺？文件是否完整、清晰、好下载？"
           onSubmit={async (content) => {
+            if (isDeleted) {
+              feedback.warning({ title: "资源已删除", description: "已删除资源不支持继续评论。" });
+              return;
+            }
             try {
               const result = await createResourceComment(resource.id, { content });
               if (!result) return;

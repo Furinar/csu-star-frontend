@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import RankItemCard from "@/components/ui/RankItemCard";
 import {
   getCourseRankings,
@@ -24,10 +25,9 @@ const rankConfig = [
     filters: [
       { type: "comprehensive", label: "综合", icon: "award" },
       { type: "downloads", label: "下载量", icon: "import" },
-      { type: "resource_count", label: "资源数", icon: "files-landscapes" },
-      { type: "updated_at", label: "更新", icon: "history" },
-      { type: "hot_score", label: "热度", icon: "fire" },
       { type: "likes", label: "点赞", icon: "thumbs-up" },
+      { type: "resource_count", label: "资源数", icon: "files-landscapes" },
+      { type: "favorite_count", label: "收藏数", icon: "bookmark" },
     ],
   },
   {
@@ -40,7 +40,7 @@ const rankConfig = [
       { type: "avg_gain", label: "收获", icon: "brain" },
       { type: "avg_exam_diff", label: "考试", icon: "brackets-curly" },
       { type: "resource_count", label: "资源数", icon: "file-alt" },
-      { type: "hot_score", label: "热度", icon: "fire" },
+      { type: "favorite_count", label: "收藏数", icon: "bookmark" },
     ],
   },
   {
@@ -52,8 +52,8 @@ const rankConfig = [
       { type: "avg_quality", label: "教学", icon: "book-open" },
       { type: "avg_grading", label: "给分", icon: "chart-bar" },
       { type: "avg_attendance", label: "考勤", icon: "bell-school" },
-      { type: "hot_score", label: "热度", icon: "fire" },
       { type: "eval_count", label: "评价数", icon: "comment-alt-lines" },
+      { type: "favorite_count", label: "收藏数", icon: "bookmark" },
     ],
   },
 ] as const;
@@ -64,6 +64,7 @@ type FilterType = (typeof rankConfig)[number]["filters"][number]["type"];
 const PAGE_SIZE = 20;
 
 export default function Rank() {
+  const searchParams = useSearchParams();
   const [rankCategory, setRankCategory] = useState<RankCategory>("resource");
   const [filterType, setFilterType] = useState<FilterType>("comprehensive");
   const [sortType, setSortType] = useState<"desc" | "asc">("desc");
@@ -74,6 +75,7 @@ export default function Rank() {
   const [courseItems, setCourseItems] = useState<CourseRankingItem[]>([]);
   const [teacherItems, setTeacherItems] = useState<TeacherRankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
+  const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
 
   const currentCategory = useMemo(
     () =>
@@ -83,8 +85,28 @@ export default function Rank() {
   );
 
   useEffect(() => {
-    setFilterType(currentCategory.filters[0].type as FilterType);
-  }, [currentCategory]);
+    const categoryParam = searchParams.get("category");
+    const filterParam = searchParams.get("filter");
+    const sortParam = searchParams.get("sort");
+
+    const nextCategory = rankConfig.find((item) => item.category === categoryParam)?.category;
+    if (!nextCategory) {
+      setShouldAutoFetch(false);
+      return;
+    }
+
+    const nextCategoryConfig =
+      rankConfig.find((item) => item.category === nextCategory) ?? rankConfig[0];
+    const nextFilter =
+      nextCategoryConfig.filters.find((item) => item.type === filterParam)?.type ??
+      nextCategoryConfig.filters[0].type;
+    const nextSort = sortParam === "asc" ? "asc" : "desc";
+
+    setRankCategory(nextCategory);
+    setFilterType(nextFilter as FilterType);
+    setSortType(nextSort);
+    setShouldAutoFetch(true);
+  }, [searchParams]);
 
   const fetchRankings = useCallback(async () => {
     setHasRequested(true);
@@ -144,6 +166,11 @@ export default function Rank() {
     setErrorMessage("");
   }, [rankCategory, filterType, sortType]);
 
+  useEffect(() => {
+    if (!shouldAutoFetch) return;
+    void fetchRankings();
+  }, [fetchRankings, shouldAutoFetch]);
+
   const currentItemsEmpty =
     rankCategory === "resource"
       ? resourceItems.length === 0
@@ -157,10 +184,8 @@ export default function Rank() {
         return item.download_total;
       case "likes":
         return item.like_total;
-      case "hot_score":
-        return item.hot_score;
-      case "updated_at":
-        return item.updated_at;
+      case "favorite_count":
+        return item.favorite_count;
       case "resource_count":
         return item.resource_count;
       default:
@@ -190,7 +215,10 @@ export default function Rank() {
             {rankConfig.map((item) => (
               <span
                 key={item.category}
-                onClick={() => setRankCategory(item.category)}
+                onClick={() => {
+                  setRankCategory(item.category);
+                  setFilterType(item.filters[0].type as FilterType);
+                }}
                 className={`relative z-10 w-28 flex justify-center items-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
                   rankCategory === item.category
                     ? "text-first-alt font-medium"

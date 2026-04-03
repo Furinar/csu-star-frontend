@@ -11,7 +11,7 @@ import { buildCourseEvaluationAnchor, buildCoursePath, buildResourcePath } from 
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(1);
+  return value.toFixed(2);
 }
 
 export default function CourseResourceCollectionPage() {

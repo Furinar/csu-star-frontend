@@ -10,7 +10,6 @@ import {
   buildResourceCollectionPath,
   buildTeacherPath,
 } from "@/lib/paths";
-import { formatDateZh } from "@/lib/date";
 
 type SearchResultCardProps =
   | {
@@ -44,13 +43,9 @@ function clampScore(value?: number | null) {
   return Math.min(Math.max(value, 0), 5);
 }
 
-function formatScore(value?: number | null, digits = 1) {
+function formatScore(value?: number | null, digits = 2) {
   if (value === null || typeof value === "undefined") return "--";
   return value.toFixed(digits);
-}
-
-function formatDate(value?: string | null) {
-  return formatDateZh(value);
 }
 
 function StarRating({ value }: { value?: number | null }) {
@@ -163,7 +158,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     );
     bottomStats = [
       { icon: "uil-comment-alt-lines", label: "评价", value: item.eval_count ?? 0 },
-      { icon: "uil-folder", label: "资源", value: item.resource_count ?? 0 },
+      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
     ];
   } else if (type === "teacher") {
     const item = props.item;
@@ -179,7 +174,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
         <span className="text-xs text-gray-300">|</span>
         {courses.length > 0 ? (
           <>
-            {courses.slice(0, 3).map((course) => (
+            {courses.slice(0, 1).map((course) => (
               <span
                 key={course.id}
                 className="bg-gray-100 px-2 py-0.5 rounded-full text-xs text-gray-600"
@@ -219,7 +214,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     subtitleIcon = "uil-folder-open";
     subtitleContent = (
       <span className="text-xs text-gray-600">
-        课程资源合集 · 最近更新 {formatDate(item.updated_at)}
+        课程资源合集
       </span>
     );
     leftScoreTitle = "课程评分";

@@ -1,8 +1,8 @@
 "use client";
 
 import SearchBar from "@/components/ui/SearchBar";
-import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
-import { useRouter } from "next/navigation";
+import {buildSearchPageHref} from "@/app/(features)/search/searchNavigation";
+import {useRouter} from "next/navigation";
 
 // SSG：纯静态页面，构建时生成
 export const dynamic = "force-static";
@@ -28,18 +28,20 @@ export default function Home() {
 
           <div>
             <SearchBar
-              placeholder="搜索资源、课程或教师..."
-              onSearch={(value) => {
-                const searchHref = buildSearchPageHref(value, "all");
+                placeholder="搜索资源、课程或教师..."
+                onSearch={(value) => {
+                  const searchHref = buildSearchPageHref(value, "all");
 
-                if (!searchHref) return;
+                  if (!searchHref) return;
 
-                router.push(searchHref);
-              }}
+                  router.push(searchHref);
+                }}
             />
           </div>
 
-
+          <div className="flex items-center justify-center gap-2 mt-10">
+            <img src="/undraw_route-planning_2psv.svg" alt=""/>
+          </div>
         </div>
       </>
   );

@@ -8,6 +8,8 @@ import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
 import { useRouter } from "next/navigation";
 import { getTeacherRankings } from "@/api/ranking";
+import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import TeacherGlobalEvaluationModal from "./components/TeacherGlobalEvaluationModal";
 
 type RankCardItem = {
   id: string;
@@ -28,8 +30,7 @@ export default function Teacher() {
   const router = useRouter();
   const [qualityRanks, setQualityRanks] = useState<RankCardItem[]>([]);
   const [gradingRanks, setGradingRanks] = useState<RankCardItem[]>([]);
-  const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);
-
+  const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);  const [isComposerOpen, setIsComposerOpen] = useState(false);
   useEffect(() => {
     let active = true;
 
@@ -130,6 +131,21 @@ export default function Teacher() {
           description="页面底部直接展示教师搜索结果，来自搜索接口的空关键词请求。"
         />
       </div>
+
+      <div className="pointer-events-none fixed bottom-0 left-0 right-0 top-0 z-[100] overflow-hidden">
+        <div className="absolute bottom-8 right-8 pointer-events-auto">
+          <DetailFloatingActionButton
+            label="写评价"
+            tone="teacher"
+            onClick={() => setIsComposerOpen(true)}
+          />
+        </div>
+      </div>
+
+      <TeacherGlobalEvaluationModal
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
+      />
     </>
   );
 }

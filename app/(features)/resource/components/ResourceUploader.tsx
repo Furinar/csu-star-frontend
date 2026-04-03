@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import axios from "axios";
 import {
   createResource,
   uploadResourceFileToCos,
@@ -30,6 +31,26 @@ const RESOURCE_TYPES: { value: ResourceType; label: string }[] = [
   { value: "txt", label: "文本" },
   { value: "other", label: "其他" },
 ];
+
+function getUploadErrorMessage(error: unknown) {
+  if (!axios.isAxiosError(error)) {
+    return error instanceof Error ? error.message : "上传过程中出错，请重试";
+  }
+
+  const status = error.response?.status;
+  const code = error.code;
+
+  // Browser blocks CORS failures as network errors, so response is often empty.
+  if (!status && (code === "ERR_NETWORK" || error.message === "Network Error")) {
+    return "上传失败：COS 跨域（CORS）未放行当前来源或 PUT/OPTIONS 请求。请检查存储桶 CORS 配置。";
+  }
+
+  if (status === 403) {
+    return "上传失败：COS 返回 403（可能是签名过期或 CORS 拒绝）。";
+  }
+
+  return error.message || "上传过程中出错，请重试";
+}
 
 export default function ResourceUploader() {
   const [dragActive, setDragActive] = useState(false);
@@ -196,6 +217,7 @@ export default function ResourceUploader() {
         try {
           await uploadResourceFileToCos({
             url: urlItem.url,
+            method: urlItem.method,
             file: fileItem.file,
             contentType: fileItem.file.type || "application/octet-stream",
             headers: urlItem.headers,
@@ -272,14 +294,13 @@ export default function ResourceUploader() {
       setIsUploading(false);
     } catch (e: unknown) {
       console.error(e);
-      const msg = e instanceof Error ? e.message : "上传过程中出错，请重试";
-      setErrorMsg(msg);
+      setErrorMsg(getUploadErrorMessage(e));
       setIsUploading(false);
     }
   };
 
   return (
-    <div className="p-6 md:p-8 mt-6 max-w-4xl mx-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="p-6 md:p-8 mt-6 w-full mx-auto rounded-xl border border-slate-200 bg-white shadow-sm">
       <h2 className="text-2xl font-bold text-black mb-6">上传资源</h2>
 
       {uploadedResourceId ? (

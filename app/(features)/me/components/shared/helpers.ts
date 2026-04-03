@@ -273,6 +273,10 @@ export function getAccountPresentation(
 export function getResourceTypeLabel(
   type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"],
 ) {
+  if (!type) {
+    return "其他";
+  }
+
   if (type === "ppt") {
     return "课件";
   }
@@ -293,7 +297,15 @@ export function getResourceTypeLabel(
     return "实验";
   }
 
-  return "其他";
+  if (type === "md") {
+    return "Markdown";
+  }
+
+  if (type === "txt") {
+    return "文本";
+  }
+
+  return type;
 }
 
 export function getPointsReasonLabel(reason: PointsRecord["reason"]) {

@@ -8,6 +8,8 @@ import RandomBook from "@/app/(features)/course/components/RandomBook";
 import { buildCoursePath } from "@/lib/paths";
 import { useRouter } from "next/navigation";
 import { getCourseRankings } from "@/api/ranking";
+import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import CourseGlobalEvaluationModal from "./components/CourseGlobalEvaluationModal";
 
 type RankCardItem = {
   id: string;
@@ -31,6 +33,7 @@ export default function Course() {
   const [homeworkRanks, setHomeworkRanks] = useState<RankCardItem[]>([]);
   const [gainRanks, setGainRanks] = useState<RankCardItem[]>([]);
   const [examRanks, setExamRanks] = useState<RankCardItem[]>([]);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -132,6 +135,21 @@ export default function Course() {
           description="页面底部直接展示课程搜索结果，来自搜索接口的空关键词请求。"
         />
       </div>
+
+      <div className="pointer-events-none fixed bottom-0 left-0 right-0 top-0 z-[100] overflow-hidden">
+        <div className="absolute bottom-8 right-8 pointer-events-auto">
+          <DetailFloatingActionButton
+            label="写评价"
+            tone="course"
+            onClick={() => setIsComposerOpen(true)}
+          />
+        </div>
+      </div>
+
+      <CourseGlobalEvaluationModal
+        isOpen={isComposerOpen}
+        onClose={() => setIsComposerOpen(false)}
+      />
     </>
   );
 }

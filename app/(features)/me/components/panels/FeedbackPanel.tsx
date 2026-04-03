@@ -174,7 +174,7 @@ function ReportForm({ onClose }: { onClose: () => void }) {
   });
   const [correctionForm, setCorrectionForm] = useState<CorrectionInput>({
     target_type: "resource",
-    target_id: 0,
+    target_id: "",
     field_name: "",
     original_value: "",
     correct_value: "",
@@ -225,16 +225,12 @@ function ReportForm({ onClose }: { onClose: () => void }) {
   };
 
   const handleSubmitCorrection = async () => {
-    const targetId = Number(correctionTargetIdInput);
+    const targetId = correctionTargetIdInput.trim();
 
-    if (
-      !correctionTargetIdInput.trim() ||
-      Number.isNaN(targetId) ||
-      targetId <= 0
-    ) {
+    if (!/^\d+$/.test(targetId) || targetId === "0") {
       feedback.warning({
         title: "目标 ID 无效",
-        description: "纠错需要数字类型的对象 ID。",
+        description: "纠错需要有效的字符串 ID。",
       });
       return;
     }

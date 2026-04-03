@@ -33,6 +33,7 @@ export default function Resource() {
               type="resource"
               title="资源列表"
               description="页面底部直接展示资源搜索结果，来自搜索接口的空关键词请求。"
+              size={24}
           />
         </div>
       </>
