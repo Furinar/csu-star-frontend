@@ -520,7 +520,9 @@ export default function DetailEvaluationSection({
           ...prev,
           [id]: {
             userId: evaluation.user?.id ?? null,
-            userName: evaluation.user?.nickname ?? null,
+            userName: evaluation.is_anonymous
+              ? "匿名用户"
+              : evaluation.user?.nickname ?? null,
           },
         }));
       },
