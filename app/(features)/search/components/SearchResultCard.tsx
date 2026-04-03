@@ -167,27 +167,27 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const courses = item.courses ?? [];
     subtitleIcon = "uil-bag";
     subtitleContent = (
-      <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="text-xs text-gray-600">
+      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
+        <span className="shrink-0 text-xs text-gray-600">
           {item.department_name || item.title || "未录入职称"}
         </span>
-        <span className="text-xs text-gray-300">|</span>
+        <span className="shrink-0 text-xs text-gray-300">|</span>
         {courses.length > 0 ? (
           <>
             {courses.slice(0, 1).map((course) => (
               <span
                 key={course.id}
-                className="bg-gray-100 px-2 py-0.5 rounded-full text-xs text-gray-600"
+                className="min-w-0 truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
               >
                 {course.name}
               </span>
             ))}
-            <span className="text-xs text-gray-400">
+            <span className="shrink-0 text-xs text-gray-400">
               共{courses.length}门课程
             </span>
           </>
         ) : (
-          <span className="text-xs text-gray-400">暂无关联课程</span>
+          <span className="shrink-0 text-xs text-gray-400">暂无关联课程</span>
         )}
       </div>
     );
