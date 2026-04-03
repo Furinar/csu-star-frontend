@@ -37,6 +37,8 @@ interface PaginatedEnvelope<T> {
   total: number;
 }
 
+type AnyRecord = Record<string, unknown>;
+
 const EMPTY_CONTRIBUTION_SUMMARY: ContributionSummary = {
   weeks: [],
   total_score: 0,
@@ -44,6 +46,21 @@ const EMPTY_CONTRIBUTION_SUMMARY: ContributionSummary = {
   current_streak: 0,
   max_day_score: 0,
 };
+
+const isRecord = (value: unknown): value is AnyRecord =>
+  typeof value === "object" && value !== null;
+
+const toNumber = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+};
+
+const toStringSafe = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
 const unwrap = async <T>(
   request: Promise<ApiEnvelope<T> | AxiosResponse<ApiEnvelope<T>>>,
@@ -65,6 +82,41 @@ const normalizePaginated = <T>(
   items: Array.isArray(data?.items) ? data.items : [],
   total: typeof data?.total === "number" ? data.total : 0,
 });
+
+const normalizeDownloadRecords = (
+  data: PaginatedData<unknown> | PaginatedEnvelope<unknown> | null | undefined,
+): PaginatedData<DownloadRecord> => {
+  const items = Array.isArray(data?.items) ? data.items : [];
+
+  return {
+    items: items.flatMap((item) => {
+      if (!isRecord(item)) return [];
+
+      const resourceRecord = isRecord(item.resource) ? item.resource : null;
+      const resourceId =
+        toNumber(resourceRecord?.id) ?? toNumber(item.resource_id) ?? 0;
+      const resourceTitle =
+        toStringSafe(resourceRecord?.title) ??
+        toStringSafe(item.title) ??
+        "未知资源";
+      const resourceType =
+        toStringSafe(resourceRecord?.resource_type) ?? "other";
+
+      return [
+        {
+          id: toNumber(item.id) ?? 0,
+          created_at: toStringSafe(item.created_at) ?? "",
+          resource: {
+            id: resourceId,
+            title: resourceTitle,
+            resource_type: resourceType as DownloadRecord["resource"]["resource_type"],
+          },
+        },
+      ];
+    }),
+    total: typeof data?.total === "number" ? data.total : 0,
+  };
+};
 
 export function listDepartments() {
   return Promise.resolve(DEPARTMENTS);
@@ -93,13 +145,13 @@ export function getMyResources(params?: {
 
 export function getMyDownloads(params?: { page?: number; size?: number }) {
   return unwrap<
-    PaginatedData<DownloadRecord> | PaginatedEnvelope<DownloadRecord>
+    PaginatedData<unknown> | PaginatedEnvelope<unknown>
   >(
-    service.get<ApiEnvelope<PaginatedEnvelope<DownloadRecord>>>(
+    service.get<ApiEnvelope<PaginatedEnvelope<unknown>>>(
       "/me/downloads",
       { params },
     ),
-  ).then(normalizePaginated);
+  ).then(normalizeDownloadRecords);
 }
 
 export function getMyTeacherEvaluations(params?: { page?: number; size?: number }) {

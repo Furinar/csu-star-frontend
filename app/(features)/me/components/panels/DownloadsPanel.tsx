@@ -48,24 +48,28 @@ export default function DownloadsPanel({
 
   return (
     <div className="space-y-3">
-      {downloads.map((item) => (
+      {downloads.map((item) => {
+        const resourceTitle = item.resource?.title ?? "未知资源";
+        const resourceType = item.resource?.resource_type;
+
+        return (
         <GlassCard key={item.id} className="border border-white/50 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="break-words font-medium text-gray-900">
-                {item.resource.title}
+                {resourceTitle}
               </p>
               <p className="mt-1 text-sm text-gray-500">
                 {formatDateTime(item.created_at)}
               </p>
             </div>
             <div className="text-sm text-gray-600 sm:text-right">
-              <p>{getResourceTypeLabel(item.resource.resource_type)}</p>
+              <p>{getResourceTypeLabel(resourceType)}</p>
               <p>消耗 1 积分</p>
             </div>
           </div>
         </GlassCard>
-      ))}
+      )})}
     </div>
   );
 }
