@@ -130,10 +130,6 @@ export default function PasswordPanel({
   return (
     <>
       <div className="space-y-4">
-        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-          当前密码修改流程会通过校园邮箱验证码完成，本质上是一次受控的邮箱校验式重置。
-        </div>
-
         <AdvancedInput
           label="校园邮箱"
           placeholder="填写你的校园邮箱或前缀"

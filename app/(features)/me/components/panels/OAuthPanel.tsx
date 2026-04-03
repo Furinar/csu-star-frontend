@@ -67,11 +67,9 @@ export default function OAuthPanel({
     <>
       <div className="space-y-6">
         <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-sm text-gray-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.02),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
-          <p>
-            {accountMode === "oauth_pending_email"
-              ? "绑定更多第三方账号，以便在不同设备上快捷登录南极星。"
-              : "将你的账号与第三方平台绑定，下次可以直接使用快捷登录。"}
-          </p>
+          {accountMode === "oauth_pending_email" ? (
+            <p>绑定更多第三方账号，以便在不同设备上快捷登录南极星。</p>
+          ) : null}
           {providers.length > 0 ? (
             <p className="mt-2 font-medium text-first">
               已成功绑定：
