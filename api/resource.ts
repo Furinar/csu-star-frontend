@@ -2,6 +2,7 @@ import axios, { AxiosProgressEvent } from "axios";
 import { service } from "@/lib/request";
 import type {
   CourseSuggestionItem,
+  TeacherSuggestionItem,
   ResourceCreateInput,
   ResourceDownloadResponse,
   ResourceUploadResponse,
@@ -42,6 +43,21 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const FORBIDDEN_BROWSER_HEADERS = new Set([
+  "host",
+  "content-length",
+  "connection",
+  "origin",
+  "referer",
+]);
+
+const sanitizeUploadHeaders = (headers?: Record<string, string> | null) => {
+  if (!headers) return {};
+  return Object.fromEntries(
+    Object.entries(headers).filter(([key]) => !FORBIDDEN_BROWSER_HEADERS.has(key.toLowerCase())),
+  );
+};
+
 const normalizeCourseSuggestionItems = (raw: unknown): CourseSuggestionItem[] => {
   if (!Array.isArray(raw)) return [];
 
@@ -53,6 +69,22 @@ const normalizeCourseSuggestionItems = (raw: unknown): CourseSuggestionItem[] =>
         id: toNumber(item.id) ?? 0,
         name: toStringSafe(item.name) ?? "未命名课程",
         course_type: (toStringSafe(item.course_type) as CourseSuggestionItem["course_type"]) ?? null,
+      },
+    ];
+  });
+};
+
+const normalizeTeacherSuggestionItems = (raw: unknown): TeacherSuggestionItem[] => {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.flatMap((item) => {
+    if (!isRecord(item)) return [];
+
+    return [
+      {
+        id: toNumber(item.id) ?? 0,
+        name: toStringSafe(item.name) ?? "未知教师",
+        department: toStringSafe(item.department) ?? null,
       },
     ];
   });
@@ -116,6 +148,19 @@ export async function searchCourseSuggestions(query: string) {
   return normalizeCourseSuggestionItems(raw);
 }
 
+export async function searchTeacherSuggestions(query: string) {
+  const response = await service.get<ApiEnvelope<unknown>>("/teachers/simple", {
+    params: { q: query },
+  });
+
+  const raw = unwrapResponseData(response);
+  if (isRecord(raw) && Array.isArray(raw.items)) {
+    return normalizeTeacherSuggestionItems(raw.items);
+  }
+
+  return normalizeTeacherSuggestionItems(raw);
+}
+
 export async function downloadResourceFile(resourceId: number, fileId?: string) {
   const response = await service.get<ApiEnvelope<unknown>>(`/resources/${resourceId}/download`, {
     params: fileId ? { file_id: fileId } : undefined,
@@ -127,20 +172,26 @@ export async function downloadResourceFile(resourceId: number, fileId?: string) 
 export async function uploadResourceFileToCos({
   url,
   file,
+  method = "PUT",
   contentType,
   headers,
   onProgress,
 }: {
   url: string;
   file: Blob;
+  method?: string;
   contentType: string;
   headers?: Record<string, string> | null;
   onProgress?: (progress: number, event: AxiosProgressEvent) => void;
 }) {
-  return axios.put(url, file, {
+  const sanitizedHeaders = sanitizeUploadHeaders(headers);
+  return axios.request({
+    url,
+    method,
+    data: file,
     headers: {
       "Content-Type": contentType,
-      ...(headers ?? {}),
+      ...sanitizedHeaders,
     },
     onUploadProgress: (event) => {
       const total = event.total ?? file.size ?? 0;

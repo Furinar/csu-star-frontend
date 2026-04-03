@@ -49,12 +49,18 @@ export interface ResourceItem {
   title: string;
   uploader_id?: string;
   course_id: number;
+  course?: {
+    id: number;
+    name: string;
+    detail_path?: string | null;
+    resource_collection_path?: string | null;
+  };
   resource_type: ResourceType;
-  size_bytes?: number;
   downloads?: number;
   views?: number;
   likes?: number;
   hot_score?: number;
+  status?: string | null;
   created_at?: string;
   is_liked?: boolean | null;
   is_favorited?: boolean | null;
@@ -67,11 +73,11 @@ export interface DownloadRecord {
 }
 
 export interface TeacherEvaluation {
-  id: number;
+  id: string;
   user?: UserBrief | null;
   teacher_id: number;
   mode?: "standalone" | "linked" | null;
-  course_id?: number | null;
+  course_id?: string | null;
   course_name?: string | null;
   rating_quality?: number;
   rating_grading?: number;
@@ -88,11 +94,11 @@ export interface TeacherEvaluation {
 }
 
 export interface CourseEvaluation {
-  id: number;
+  id: string;
   user?: UserBrief | null;
   course_id: number;
   mode?: "standalone" | "linked" | null;
-  teacher_id?: number | null;
+  teacher_id?: string | null;
   teacher_name?: string | null;
   rating_homework?: number;
   rating_gain?: number;
@@ -207,7 +213,7 @@ export interface ReportInput {
 
 export interface CorrectionInput {
   target_type: CorrectionTargetType;
-  target_id: number;
+  target_id: string;
   field_name?: string | null;
   original_value?: string | null;
   correct_value?: string | null;

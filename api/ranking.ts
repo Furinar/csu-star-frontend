@@ -80,7 +80,7 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
         avg_exam_diff: toNumber(raw.avg_exam_diff),
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
-        hot_score: toNumber(raw.hot_score),
+        favorite_count: toNumber(raw.favorite_count),
         teachers: Array.isArray(raw.teachers) ? (raw.teachers as Record<string, unknown>[]).flatMap((t) => {
           if (typeof t !== "object" || t === null) return [];
           return [{ id: toNumber(t.id) ?? 0, name: toStringSafe(t.name) ?? "", title: toStringSafe(t.title), avatar_url: toStringSafe(t.avatar_url) }];
@@ -101,6 +101,7 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
         title: toStringSafe(raw.title),
         department_id: toNumber(raw.department_id),
         department_name: toStringSafe(raw.department_name),
+        avatar_url: toStringSafe(raw.avatar_url),
         score: toNumber(raw.score) ?? 0,
         avg_score: toNumber(raw.avg_score),
         avg_quality: toNumber(raw.avg_quality),
@@ -108,7 +109,7 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
         avg_attendance: toNumber(raw.avg_attendance),
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
-        hot_score: toNumber(raw.hot_score),
+        favorite_count: toNumber(raw.favorite_count),
         courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
           if (typeof c !== "object" || c === null) return [];
           return [{ id: toNumber(c.id) ?? 0, name: toStringSafe(c.name) ?? "" }];
@@ -151,8 +152,7 @@ const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] 
         resource_count: toNumber(raw.resource_count),
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
         like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
-        hot_score: toNumber(raw.hot_score),
-        updated_at: toStringSafe(raw.updated_at),
+        favorite_count: toNumber(raw.favorite_count),
         score: toNumber(raw.score),
         resources_preview: normalizeResourcePreview(raw.resources_preview),
       },

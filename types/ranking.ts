@@ -2,8 +2,7 @@ export type ResourceRankType =
   | "comprehensive"
   | "downloads"
   | "likes"
-  | "hot_score"
-  | "updated_at"
+  | "favorite_count"
   | "resource_count";
 
 export type CourseRankType =
@@ -12,14 +11,14 @@ export type CourseRankType =
   | "avg_gain"
   | "avg_exam_diff"
   | "resource_count"
-  | "hot_score";
+  | "favorite_count";
 
 export type TeacherRankType =
   | "avg_score"
   | "avg_quality"
   | "avg_grading"
   | "avg_attendance"
-  | "hot_score"
+  | "favorite_count"
   | "eval_count";
 
 interface RankQueryBase {
@@ -64,7 +63,7 @@ export interface CourseRankingItem extends RankingItem {
   avg_exam_diff?: number | null;
   eval_count?: number | null;
   resource_count?: number | null;
-  hot_score?: number | null;
+  favorite_count?: number | null;
   teachers?: Array<{ id: number; name: string; title?: string | null; avatar_url?: string | null }>;
 }
 
@@ -77,7 +76,7 @@ export interface TeacherRankingItem extends RankingItem {
   avg_attendance?: number | null;
   eval_count?: number | null;
   resource_count?: number | null;
-  hot_score?: number | null;
+  favorite_count?: number | null;
   avatar_url?: string | null;
   courses?: Array<{ id: number; name: string }>;
 }
@@ -98,8 +97,7 @@ export interface ResourceRankingItem {
   resource_count?: number | null;
   download_total?: number | null;
   like_total?: number | null;
-  hot_score?: number | null;
-  updated_at?: string | null;
+  favorite_count?: number | null;
   score?: number | null;
   resources_preview?: ResourcePreviewItem[];
 }

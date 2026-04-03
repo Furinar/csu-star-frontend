@@ -31,7 +31,7 @@ export interface SearchCourseItem {
   avg_exam_diff?: number | null;
   eval_count?: number | null;
   resource_count?: number | null;
-  hot_score?: number | null;
+  favorite_count?: number | null;
   teachers?: SearchTeacherBrief[];
   teacher_count?: number | null;
 }
@@ -50,7 +50,7 @@ export interface SearchTeacherItem {
   good_rate?: number | null;
   eval_count?: number | null;
   resource_count?: number | null;
-  hot_score?: number | null;
+  favorite_count?: number | null;
   courses?: Array<{ id: number; name: string }>;
 }
 
@@ -69,7 +69,7 @@ export interface SearchResourceCard {
   download_total?: number | null;
   like_total?: number | null;
   hot_score?: number | null;
-  updated_at?: string | null;
+  favorite_count?: number | null;
   resources_preview?: SearchResourcePreview[];
 }
 

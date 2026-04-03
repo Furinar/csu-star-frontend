@@ -50,6 +50,12 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
     typeof value === "string" ? value : null;
 
+const toStringId = (value: unknown): string | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
+
 const toBoolean = (value: unknown): boolean | null => {
   if (typeof value === "boolean") return value;
   return null;
@@ -143,7 +149,7 @@ const normalizeEvaluationReplies = (raw: unknown): EvaluationReply[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         user: normalizeUserBrief(item.user) ?? {
           id: "",
           nickname: "匿名用户",
@@ -152,7 +158,7 @@ const normalizeEvaluationReplies = (raw: unknown): EvaluationReply[] => {
         },
         content: toStringSafe(item.content) ?? "",
         reply_to_user: normalizeUserBrief(item.reply_to_user),
-        reply_to_reply_id: toNumber(item.reply_to_reply_id),
+        reply_to_reply_id: toStringId(item.reply_to_reply_id),
         likes: toNumber(item.likes),
         is_liked: toBoolean(item.is_liked),
         created_at: toStringSafe(item.created_at) ?? "",
@@ -169,10 +175,10 @@ const normalizeTeacherEvaluations = (raw: unknown): TeacherEvaluation[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         teacher_id: toNumber(item.teacher_id) ?? 0,
         mode: (toStringSafe(item.mode) as TeacherEvaluation["mode"]) ?? null,
-        course_id: toNumber(item.course_id),
+        course_id: toStringId(item.course_id),
         course_name: toStringSafe(item.course_name),
         user: normalizeUserBrief(item.user),
         rating_quality: toNumber(item.rating_quality),
@@ -202,10 +208,10 @@ const normalizeCourseEvaluations = (raw: unknown): CourseEvaluation[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         course_id: toNumber(item.course_id) ?? 0,
         mode: (toStringSafe(item.mode) as CourseEvaluation["mode"]) ?? null,
-        teacher_id: toNumber(item.teacher_id),
+        teacher_id: toStringId(item.teacher_id),
         teacher_name: toStringSafe(item.teacher_name),
         user: normalizeUserBrief(item.user),
         rating_homework: toNumber(item.rating_homework),
@@ -337,10 +343,11 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
         }
         : null,
     resource_type: toStringSafe(data.resource_type),
-    size_bytes: toNumber(data.size_bytes),
+    status: toStringSafe(data.status),
     downloads: toNumber(data.downloads),
     views: toNumber(data.views),
     likes: toNumber(data.likes),
+    is_liked: toBoolean(data.is_liked),
     hot_score: toNumber(data.hot_score),
     created_at: toStringSafe(data.created_at),
     description: toStringSafe(data.description),
@@ -404,7 +411,7 @@ export async function listCourseEvaluations(courseId: number, page = 1, size = 2
 }
 
 export async function createTeacherEvaluationReply(
-    evaluationId: number,
+    evaluationId: string,
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
@@ -416,7 +423,7 @@ export async function createTeacherEvaluationReply(
 }
 
 export async function createCourseEvaluationReply(
-    evaluationId: number,
+    evaluationId: string,
     payload: EvaluationReplyInput,
 ) {
   const response = await service.post<ApiEnvelope<unknown>>(
@@ -460,30 +467,28 @@ export async function createResourceComment(resourceId: number, payload: Resourc
   return normalizeResourceComments([unwrapResponseData(response)])[0];
 }
 
-export async function createResourceCommentReply(commentId: number, payload: ResourceCommentInput) {
-  const response = await service.post<ApiEnvelope<unknown>>(
-      `/resources/comments/${commentId}/replies`,
-      payload,
-  );
-  return normalizeResourceComments([unwrapResponseData(response)])[0];
-}
-
-export async function addFavorite(target_type: string, target_id: number) {
+export async function addFavorite(target_type: string, target_id: string) {
   await service.post<ApiEnvelope<unknown>>("/favorites", {
     target_type,
     target_id,
   });
 }
 
-export async function removeFavorite(target_type: string, target_id: number) {
+export async function removeFavorite(target_type: string, target_id: string) {
   await service.delete<ApiEnvelope<unknown>>("/favorites", {
-    params: { target_type, target_id },
+    data: { target_type, target_id },
   });
 }
 
 export async function addLike(
-    target_type: "resource" | "teacher_evaluation" | "course_evaluation" | "comment",
-    target_id: number,
+    target_type:
+      | "resource"
+      | "teacher_evaluation"
+      | "course_evaluation"
+      | "teacher_evaluation_reply"
+      | "course_evaluation_reply"
+      | "comment",
+    target_id: string,
 ) {
   await service.post<ApiEnvelope<unknown>>("/likes", {
     target_type,
@@ -492,8 +497,14 @@ export async function addLike(
 }
 
 export async function removeLike(
-    target_type: "resource" | "teacher_evaluation" | "course_evaluation" | "comment",
-    target_id: number,
+    target_type:
+      | "resource"
+      | "teacher_evaluation"
+      | "course_evaluation"
+      | "teacher_evaluation_reply"
+      | "course_evaluation_reply"
+      | "comment",
+    target_id: string,
 ) {
   await service.delete<ApiEnvelope<unknown>>("/likes", {
     data: {

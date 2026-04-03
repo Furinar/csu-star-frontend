@@ -135,7 +135,7 @@ const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
         avg_exam_diff: toNumber(raw.avg_exam_diff),
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
-        hot_score: toNumber(raw.hot_score),
+        favorite_count: toNumber(raw.favorite_count),
         teachers,
         teacher_count: toNumber(raw.teacher_count) ?? teachers.length,
       },
@@ -164,7 +164,7 @@ const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
         good_rate: toNumber(raw.good_rate),
         eval_count: toNumber(raw.eval_count),
         resource_count: toNumber(raw.resource_count),
-        hot_score: toNumber(raw.hot_score),
+        favorite_count: toNumber(raw.favorite_count),
         courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
           if (typeof c !== "object" || c === null) return [];
           return [{ id: toNumber(c.id) ?? 0, name: toStringSafe(c.name) ?? "" }];
@@ -211,7 +211,7 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
         like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
         hot_score: toNumber(raw.hot_score),
-        updated_at: toStringSafe(raw.updated_at),
+        favorite_count: toNumber(raw.favorite_count),
         resources_preview: normalizeResourcePreview(raw.resources_preview),
       },
     ];

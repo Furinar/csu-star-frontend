@@ -39,6 +39,12 @@ export interface CourseSuggestionItem {
   course_type?: "公选课" | "非公选课" | null;
 }
 
+export interface TeacherSuggestionItem {
+  id: number;
+  name: string;
+  department?: string | null;
+}
+
 export type UploadFileStatus = "queued" | "uploading" | "success" | "failed";
 
 export interface UploadFileItem {

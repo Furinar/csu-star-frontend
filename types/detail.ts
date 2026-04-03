@@ -34,11 +34,11 @@ export interface UserBrief {
 }
 
 export interface EvaluationReply {
-  id: number;
+  id: string;
   user: UserBrief;
   content: string;
   reply_to_user?: UserBrief | null;
-  reply_to_reply_id?: number | null;
+  reply_to_reply_id?: string | null;
   likes?: number | null;
   is_liked?: boolean | null;
   created_at: string;
@@ -46,15 +46,15 @@ export interface EvaluationReply {
 
 export interface EvaluationReplyInput {
   content: string;
-  reply_to_reply_id?: number | null;
+  reply_to_reply_id?: string | null;
   reply_to_user_id?: string | null;
 }
 
 export interface TeacherEvaluation {
-  id: number;
+  id: string;
   teacher_id: number;
   mode?: "standalone" | "linked" | null;
-  course_id?: number | null;
+  course_id?: string | null;
   course_name?: string | null;
   user?: UserBrief | null;
   rating_quality?: number | null;
@@ -74,10 +74,10 @@ export interface TeacherEvaluation {
 }
 
 export interface CourseEvaluation {
-  id: number;
+  id: string;
   course_id: number;
   mode?: "standalone" | "linked" | null;
-  teacher_id?: number | null;
+  teacher_id?: string | null;
   teacher_name?: string | null;
   user?: UserBrief | null;
   rating_homework?: number | null;
@@ -124,7 +124,6 @@ export interface ResourceCommentInput {
   content: string;
   parent_id?: number | null;
   reply_to_comment_id?: number | null;
-  reply_to_user_id?: string | null;
 }
 
 export interface TeacherDetail {
@@ -206,10 +205,11 @@ export interface ResourceDetail {
   course_id: number;
   course?: CourseBrief | null;
   resource_type?: string | null;
-  size_bytes?: number | null;
+  status?: string | null;
   downloads?: number | null;
   views?: number | null;
   likes?: number | null;
+  is_liked?: boolean | null;
   hot_score?: number | null;
   created_at?: string | null;
   description?: string | null;
