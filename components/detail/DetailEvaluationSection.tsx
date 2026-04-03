@@ -516,7 +516,13 @@ export default function DetailEvaluationSection({
       onReplyClick: () => {
         setReplyingToId(id);
         setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
-        setTargetMap((prev) => ({ ...prev, [id]: {} }));
+        setTargetMap((prev) => ({
+          ...prev,
+          [id]: {
+            userId: evaluation.user?.id ?? null,
+            userName: evaluation.user?.nickname ?? null,
+          },
+        }));
       },
       actions: buildEvaluationActions(evaluation),
       isReplying: replyingToId === id,
