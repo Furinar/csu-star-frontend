@@ -458,9 +458,6 @@ export default function Search() {
                 找到相关的{" "}
                 <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
                 条结果
-                <div className="ml-auto text-gray-400">
-                  已加载 {summary.loaded} / {summary.total}
-                </div>
               </div>
 
               <SearchResultsGrid items={displayedItems} />
