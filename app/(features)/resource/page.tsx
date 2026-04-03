@@ -33,7 +33,7 @@ export default function Resource() {
         <SearchLandingSection
           type="resource"
           title="资源列表"
-          description="页面底部直接展示资源搜索结果，来自搜索接口的空关键词请求。"
+          description="继续往下看，按课程查找大家上传的学习资料和文件。"
           size={24}
         />
       </div>

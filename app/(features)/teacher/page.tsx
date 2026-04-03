@@ -137,7 +137,7 @@ export default function Teacher() {
         <SearchLandingSection
           type="teacher"
           title="教师列表"
-          description="页面底部直接展示教师搜索结果，来自搜索接口的空关键词请求。"
+          description="继续浏览教师信息，结合评价和风格找到更适合你的课堂。"
         />
       </div>
 

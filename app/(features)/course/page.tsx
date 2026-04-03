@@ -138,7 +138,7 @@ export default function Course() {
         <SearchLandingSection
           type="course"
           title="课程列表"
-          description="页面底部直接展示课程搜索结果，来自搜索接口的空关键词请求。"
+          description="在这里浏览更多课程，看看不同同学留下的真实反馈。"
         />
       </div>
 

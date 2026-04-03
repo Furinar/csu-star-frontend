@@ -123,7 +123,7 @@ export default function ProfilePanel({
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-        学院和年级会写入用户资料的 `metadata` 字段，并通过 `/me` 接口同步回个人中心。
+        完善学院和年级后，个人中心会同步显示更完整的资料信息。
       </div>
 
       <AdvancedInput
