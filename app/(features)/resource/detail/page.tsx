@@ -23,13 +23,11 @@ import {
   DetailSection,
   EntityPillLink,
 } from "@/components/detail/DetailScaffold";
-import {
-  buildCoursePath,
-  buildResourceCollectionPath,
-} from "@/lib/paths";
+import { buildCoursePath, buildResourceCollectionPath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
+import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -71,20 +69,23 @@ export default function ResourceDetailPage() {
   const handleDownload = async (fileId: string, filename: string) => {
     if (!resourceId) return;
     if (isDeleted) {
-      feedback.warning({ title: "资源已删除", description: "已删除资源仅保留记录，不支持下载。" });
+      feedback.warning({
+        title: "资源已删除",
+        description: "已删除资源仅保留记录，不支持下载。",
+      });
       return;
     }
     try {
       feedback.info({ title: "正在获取下载链接..." });
       const { url } = await downloadResourceFile(resourceId, fileId);
-      
+
       const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       feedback.success({ title: "开始下载" });
     } catch (e: unknown) {
       console.error(e);
@@ -101,7 +102,10 @@ export default function ResourceDetailPage() {
     let mounted = true;
     setIsLoading(true);
 
-    Promise.all([getResourceDetail(resourceId), listResourceComments(resourceId, 1, 10)])
+    Promise.all([
+      getResourceDetail(resourceId),
+      listResourceComments(resourceId, 1, 10),
+    ])
       .then(([resourceData, commentData]) => {
         if (!mounted) return;
         setResource(resourceData);
@@ -134,7 +138,10 @@ export default function ResourceDetailPage() {
       const result = await listResourceComments(resourceId, nextPage, 10);
       setComments((prev) => {
         const existing = new Set(prev.map((comment) => comment.id));
-        return [...prev, ...result.items.filter((comment) => !existing.has(comment.id))];
+        return [
+          ...prev,
+          ...result.items.filter((comment) => !existing.has(comment.id)),
+        ];
       });
       setTotalComments(result.total);
       setPage(nextPage);
@@ -165,11 +172,17 @@ export default function ResourceDetailPage() {
 
   const handleReplySubmit = async (parentId: number) => {
     if (!resourceId) {
-      feedback.error({ title: "资源信息缺失", description: "请刷新页面后重试。" });
+      feedback.error({
+        title: "资源信息缺失",
+        description: "请刷新页面后重试。",
+      });
       return;
     }
     if (isDeleted) {
-      feedback.warning({ title: "资源已删除", description: "已删除资源不支持继续评论。" });
+      feedback.warning({
+        title: "资源已删除",
+        description: "已删除资源不支持继续评论。",
+      });
       return;
     }
 
@@ -213,9 +226,16 @@ export default function ResourceDetailPage() {
     }
   };
 
-  const handleToggleLike = async (id: number, currentLiked: boolean, parentId?: number) => {
+  const handleToggleLike = async (
+    id: number,
+    currentLiked: boolean,
+    parentId?: number,
+  ) => {
     if (isDeleted) {
-      feedback.warning({ title: "资源已删除", description: "已删除资源不支持点赞互动。" });
+      feedback.warning({
+        title: "资源已删除",
+        description: "已删除资源不支持点赞互动。",
+      });
       return;
     }
     const key = parentId ? `reply-${id}` : `comment-${id}`;
@@ -235,7 +255,10 @@ export default function ResourceDetailPage() {
             return {
               ...comment,
               is_liked: !currentLiked,
-              likes: Math.max(0, (comment.likes || 0) + (currentLiked ? -1 : 1)),
+              likes: Math.max(
+                0,
+                (comment.likes || 0) + (currentLiked ? -1 : 1),
+              ),
             };
           }
 
@@ -247,7 +270,10 @@ export default function ResourceDetailPage() {
                   ? {
                       ...child,
                       is_liked: !currentLiked,
-                      likes: Math.max(0, (child.likes || 0) + (currentLiked ? -1 : 1)),
+                      likes: Math.max(
+                        0,
+                        (child.likes || 0) + (currentLiked ? -1 : 1),
+                      ),
                     }
                   : child,
               ),
@@ -296,8 +322,13 @@ export default function ResourceDetailPage() {
           accent="resource"
           eyebrow={
             <>
-              <DetailRibbonTag text={getResourceTypeLabel(resource.resource_type || undefined)} tone="resource" />
-              {isDeleted ? <DetailRibbonTag text="已删除" tone="resource" /> : null}
+              <DetailRibbonTag
+                text={getResourceTypeLabel(resource.resource_type || undefined)}
+                tone="resource"
+              />
+              {isDeleted ? (
+                <DetailRibbonTag text="已删除" tone="resource" />
+              ) : null}
             </>
           }
           title={resource.title}
@@ -305,7 +336,9 @@ export default function ResourceDetailPage() {
           aside={
             <div className="space-y-4 rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
               <div>
-                <div className="text-sm font-medium text-slate-500">快速动作</div>
+                <div className="text-sm font-medium text-slate-500">
+                  快速动作
+                </div>
                 <div className="mt-4">
                   {isDeleted ? (
                     <div className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
@@ -321,12 +354,16 @@ export default function ResourceDetailPage() {
                   )}
                 </div>
               </div>
-              <div className={`rounded-[24px] p-4 text-sm leading-7 ${
-                isDeleted
-                  ? "border border-rose-100 bg-rose-50/80 text-rose-700"
-                  : "border border-emerald-100 bg-emerald-50/70 text-slate-600"
-              }`}>
-                {isDeleted ? "该资源已删除，仅上传者或管理员可见，下载与互动能力已关闭。" : "收藏后可以稍后再看。"}
+              <div
+                className={`rounded-[24px] p-4 text-sm leading-7 ${
+                  isDeleted
+                    ? "border border-rose-100 bg-rose-50/80 text-rose-700"
+                    : "border border-emerald-100 bg-emerald-50/70 text-slate-600"
+                }`}
+              >
+                {isDeleted
+                  ? "该资源已删除，仅上传者或管理员可见，下载与互动能力已关闭。"
+                  : "收藏后可以稍后再看。"}
               </div>
             </div>
           }
@@ -370,7 +407,9 @@ export default function ResourceDetailPage() {
                       <div className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
                         文件 {index + 1}
                       </div>
-                      <div className="mt-2 break-all text-lg font-semibold text-slate-950">{file.filename}</div>
+                      <div className="mt-2 break-all text-lg font-semibold text-slate-950">
+                        {file.filename}
+                      </div>
                       <div className="mt-2 flex flex-wrap gap-3 text-sm text-slate-500">
                         <span>{formatFileSize(file.size_bytes)}</span>
                         <span>{file.mime || "未知格式"}</span>
@@ -415,10 +454,16 @@ export default function ResourceDetailPage() {
               <div className="mt-4 flex flex-wrap gap-2">
                 {resource.course ? (
                   <>
-                    <EntityPillLink href={buildCoursePath(resource.course.id)} tone="resource">
+                    <EntityPillLink
+                      href={buildCoursePath(resource.course.id)}
+                      tone="resource"
+                    >
                       {resource.course.name}
                     </EntityPillLink>
-                    <EntityPillLink href={buildResourceCollectionPath(resource.course.id)} tone="resource">
+                    <EntityPillLink
+                      href={buildResourceCollectionPath(resource.course.id)}
+                      tone="resource"
+                    >
                       课程资源合集
                     </EntityPillLink>
                   </>
@@ -431,7 +476,9 @@ export default function ResourceDetailPage() {
             <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
               <div className="text-sm font-medium text-slate-700">标签</div>
               <div className="mt-4 text-sm leading-7 text-slate-600">
-                {resource.tags && resource.tags.length > 0 ? resource.tags.join(" / ") : "暂无标签"}
+                {resource.tags && resource.tags.length > 0
+                  ? resource.tags.join(" / ")
+                  : "暂无标签"}
               </div>
             </div>
           </div>
@@ -439,253 +486,173 @@ export default function ResourceDetailPage() {
           {resource.description ? (
             <div className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
               <div className="text-sm font-medium text-slate-700">资源说明</div>
-              <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">{resource.description}</div>
+              <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">
+                {resource.description}
+              </div>
             </div>
           ) : null}
         </DetailSection>
 
         <div id="comments">
           <DetailSection
-            title="资源评论"
-            description="看看大家的使用反馈，也可以留下你的评论。"
-            action={
-              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-                {totalComments} 条评论
+            title={
+              <div className="flex items-center gap-2">
+                <span>资源评论</span>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{totalComments}</span>
               </div>
             }
+            description="看看大家的使用反馈，也可以留下你的评论。"
           >
             <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-slate-500">
-              <span>{isDeleted ? "已删除资源仅保留历史评论展示" : "点击回复可继续讨论"}</span>
+              <span>
+                {isDeleted
+                  ? "已删除资源仅保留历史评论展示"
+                  : "点击回复可继续讨论"}
+              </span>
             </div>
 
-            <div className="space-y-5">
-              {comments.map((comment) => {
-                const children = comment.children || [];
-                const activeReplyTarget = targetMap[comment.id];
+            <BilibiliCommentThread
+              comments={comments.map((comment) => {
+                const isActive = !!targetMap[comment.id];
+                const activeTarget = targetMap[comment.id] || {};
 
-                return (
-                  <article
-                    key={comment.id}
-                    className="rounded-[32px] border border-slate-200 bg-gradient-to-b from-white to-slate-50/75 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)]"
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 text-sm font-semibold text-slate-400">
-                        {comment.user?.avatar_url ? (
-                          <img src={comment.user.avatar_url} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <span>{(comment.user?.nickname || "?").slice(0, 1)}</span>
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1 space-y-4">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <div className="font-medium text-slate-900">{comment.user?.nickname || "未知用户"}</div>
-                            <div className="mt-1 text-xs text-slate-400">{formatDate(comment.created_at)}</div>
-                          </div>
-                          <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
-                            点赞 {comment.likes || 0}
-                          </div>
-                        </div>
-
-                        <div className="whitespace-pre-wrap text-sm leading-7 text-slate-700">{comment.content}</div>
-
-                        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleLike(comment.id, !!comment.is_liked)}
-                            disabled={isDeleted || likeLoadingKey === `comment-${comment.id}`}
-                            className={`inline-flex items-center gap-2 transition ${
-                              comment.is_liked ? "text-emerald-700" : "hover:text-slate-700"
-                            }`}
-                          >
-                            <i className="uil uil-thumbs-up text-base" />
-                            <span>赞 {comment.likes || 0}</span>
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isDeleted}
-                            onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
-                            className="inline-flex items-center gap-2 transition hover:text-slate-700"
-                          >
-                            <i className="uil uil-comment-message text-base" />
-                            <span>回复 {children.length}</span>
-                          </button>
-                        </div>
-
-                        <div className="rounded-[28px] border border-slate-200 bg-white/80 p-4">
-                          {children.length > 0 ? (
-                            <div className="space-y-3 border-l-2 border-slate-100 pl-4">
-                              {children.map((child) => {
-                                const isTarget = activeReplyTarget?.replyId === child.id;
-
-                                return (
-                                  <div
-                                    key={child.id}
-                                    role="button"
-                                    tabIndex={0}
-                                    onClick={() =>
-                                      setTargetMap((prev) => ({
-                                        ...prev,
-                                        [comment.id]: {
-                                          replyId: child.id,
-                                          userId: child.user?.id || null,
-                                          userName: child.user?.nickname || null,
-                                        },
-                                      }))
+                return {
+                  id: comment.id,
+                  user: comment.user,
+                  content: comment.content,
+                  createdAt: comment.created_at || "",
+                  likes: comment.likes,
+                  isLiked: comment.is_liked,
+                  replies: (comment.children || []).map((reply) => ({
+                    id: reply.id,
+                    user: reply.user || {
+                      id: "",
+                      nickname: "未知用户",
+                      avatar_url: null,
+                    },
+                    replyToUser: reply.reply_to_user,
+                    content: reply.content,
+                    createdAt: reply.created_at || "",
+                    likes: reply.likes,
+                    isLiked: reply.is_liked,
+                    onLike: (liked: boolean) =>
+                      handleToggleLike(reply.id, !liked),
+                    onReplyClick: () => {
+                      setTargetMap((prev) => ({
+                        ...prev,
+                        [comment.id]: {
+                          replyId: reply.id,
+                          userId: reply.user?.id,
+                          userName: reply.user?.nickname,
+                        },
+                      }));
+                    },
+                  })),
+                  isReplying: isActive,
+                  replyComposer: (
+                    <div className="mt-4">
+                      <CommentComposerForm
+                        onSubmit={async (content) => {
+                          const target = targetMap[comment.id] || {};
+                          setSubmittingId(comment.id);
+                          try {
+                            const reply = await createResourceComment(
+                              resourceId || 0,
+                              {
+                                content,
+                                parent_id: comment.id,
+                                reply_to_comment_id:
+                                  target.replyId || undefined,
+                              },
+                            );
+                            setComments((prev) =>
+                              prev.map((item) =>
+                                item.id === comment.id
+                                  ? {
+                                      ...item,
+                                      children: [
+                                        ...(item.children || []),
+                                        reply,
+                                      ],
                                     }
-                                    onKeyDown={(event) => {
-                                      if (event.key === "Enter" || event.key === " ") {
-                                        event.preventDefault();
-                                        setTargetMap((prev) => ({
-                                          ...prev,
-                                          [comment.id]: {
-                                            replyId: child.id,
-                                            userId: child.user?.id || null,
-                                            userName: child.user?.nickname || null,
-                                          },
-                                        }));
-                                      }
-                                    }}
-                                    className={`rounded-[22px] border p-4 text-left shadow-sm transition ${
-                                      isTarget
-                                        ? "border-emerald-200 bg-emerald-50/80"
-                                        : "border-white bg-slate-50/80 hover:border-slate-200 hover:bg-white"
-                                    }`}
-                                  >
-                                    <div className="flex flex-wrap items-center justify-between gap-3">
-                                      <div className="text-sm text-slate-700">
-                                        <span className="font-medium text-slate-900">{child.user?.nickname || "未知用户"}</span>
-                                        {child.reply_to_user ? (
-                                          <span className="ml-2 text-slate-400">回复 @{child.reply_to_user.nickname}</span>
-                                        ) : null}
-                                      </div>
-                                      <div className="text-xs text-slate-400">{formatDate(child.created_at)}</div>
-                                    </div>
-                                    <div className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-700">
-                                      {child.content}
-                                    </div>
-                                    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-400">
-                                      <button
-                                        type="button"
-                                        onClick={(event) => {
-                                          event.stopPropagation();
-                                          void handleToggleLike(child.id, !!child.is_liked, comment.id);
-                                        }}
-                                        disabled={isDeleted || likeLoadingKey === `reply-${child.id}`}
-                                        className={`inline-flex items-center gap-2 transition ${
-                                          child.is_liked ? "text-emerald-700" : "hover:text-slate-600"
-                                        }`}
-                                      >
-                                        <i className="uil uil-thumbs-up text-sm" />
-                                        <span>{child.likes || 0}</span>
-                                      </button>
-                                      <span>点击继续回复</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          ) : (
-                            <div className="rounded-[22px] bg-slate-50 px-4 py-5 text-sm text-slate-400">
-                              还没有回复，来留下第一句吧。
-                            </div>
-                          )}
-
-                          <div className="mt-4 rounded-[24px] border border-dashed border-emerald-200 bg-slate-50/90 p-4">
-                            <div className="flex flex-wrap items-center justify-between gap-3">
-                              <div className="text-sm text-slate-500">
-                                {activeReplyTarget?.userName ? (
-                                  <span>
-                                    当前回复 <span className="text-emerald-700">@{activeReplyTarget.userName}</span>
-                                  </span>
-                                ) : (
-                                  "当前回复主贴"
-                                )}
-                              </div>
-                              <button
-                                type="button"
-                                disabled={isDeleted}
-                                onClick={() => setTargetMap((prev) => ({ ...prev, [comment.id]: {} }))}
-                                className="text-sm text-slate-400 transition hover:text-slate-600"
-                              >
-                                切回回复主贴
-                              </button>
-                            </div>
-                            <textarea
-                              rows={3}
-                              value={draftMap[comment.id] || ""}
-                              onChange={(event) =>
-                                setDraftMap((prev) => ({
-                                  ...prev,
-                                  [comment.id]: event.target.value,
-                                }))
-                              }
-                              placeholder={isDeleted ? "资源已删除，回复功能已关闭" : "写下你的回复..."}
-                              disabled={isDeleted}
-                              className="mt-3 w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition focus:border-emerald-300"
-                            />
-                            <div className="mt-3 flex items-center justify-end">
-                              <button
-                                type="button"
-                                onClick={() => handleReplySubmit(comment.id)}
-                                disabled={isDeleted || submittingId === comment.id}
-                                className="rounded-full bg-emerald-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:opacity-60"
-                              >
-                                {submittingId === comment.id ? "发送中..." : "发送回复"}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                                  : item,
+                              ),
+                            );
+                            setTotalComments((prev) => prev + 1);
+                            setTargetMap((prev) => {
+                              const next = { ...prev };
+                              delete next[comment.id];
+                              return next;
+                            });
+                            feedback.success({ title: "回复成功" });
+                          } catch (err) {
+                            feedback.error({ title: "回复失败" });
+                          } finally {
+                            setSubmittingId(null);
+                          }
+                        }}
+                        placeholder={
+                          activeTarget.userName
+                            ? `回复 @${activeTarget.userName}...`
+                            : "说点什么吧..."
+                        }
+                      />
                     </div>
-                  </article>
-                );
+                  ),
+                  onLike: (liked) => handleToggleLike(comment.id, !liked),
+                  onReplyClick: () =>
+                    setTargetMap((prev) => ({ ...prev, [comment.id]: {} })),
+                };
               })}
+            />
 
-              {!isLoadingMore && comments.length === 0 ? (
-                <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50/70 px-6 py-16 text-center text-slate-500">
-                  还没有人发表资源评论，欢迎留下第一条反馈。
-                </div>
-              ) : null}
-
-              <div ref={loadMoreRef} className="py-4 text-center text-sm text-slate-500">
-                {isLoadingMore ? "正在加载更多评论..." : null}
-                {!hasMore && comments.length > 0 ? "没有更多评论了" : null}
+            {hasMore ? (
+              <div ref={loadMoreRef} className="mt-8 flex justify-center py-4">
+                {isLoadingMore ? (
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-emerald-500" />
+                ) : (
+                  <div className="h-6 w-6" />
+                )}
               </div>
-            </div>
+            ) : comments.length > 0 ? (
+              <div className="mt-8 py-8 text-center text-sm text-slate-400">
+                已显示全部评论
+              </div>
+            ) : null}
           </DetailSection>
         </div>
       </DetailPageShell>
 
-      {!isDeleted ? <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评论" tone="resource" /> : null}
+      <DetailFloatingActionButton
+        onClick={() => (isDeleted ? null : setIsComposerOpen(true))}
+        label="发布评价"
+        tone="resource"
+      />
 
       <DetailComposerModal
-        isOpen={!isDeleted && isComposerOpen}
+        isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
+        title="发布评价"
         accent="resource"
-        badge="资源评论"
-        title={`聊聊 ${resource.title}`}
-        description="不用跳页，直接在当前详情里补一句使用反馈、问题说明或适用场景。"
+        badge="评论"
+        description="谈谈你的看法"
       >
         <CommentComposerForm
-          placeholder="这份资源适合考前速刷、平时补笔记还是查漏补缺？文件是否完整、清晰、好下载？"
+          placeholder="你觉得这份资源怎么样？"
           onSubmit={async (content) => {
-            if (isDeleted) {
-              feedback.warning({ title: "资源已删除", description: "已删除资源不支持继续评论。" });
-              return;
-            }
+            if (!resourceId) return;
             try {
-              const result = await createResourceComment(resource.id, { content });
-              if (!result) return;
-              setComments((prev) => [result, ...prev]);
+              const res = await createResourceComment(resourceId, { content });
+              setComments((prev) => [res, ...prev]);
               setTotalComments((prev) => prev + 1);
               setIsComposerOpen(false);
-              feedback.success({ title: "评论已发布" });
-            } catch (error) {
-              console.error(error);
-              feedback.error({ title: "发布失败", description: "请稍后重试。" });
-              throw error;
+              feedback.success({ title: "评论成功" });
+            } catch (err) {
+              console.error(err);
+              feedback.error({
+                title: "评论失败",
+                description: "由于某些原因，评论无法发布。",
+              });
             }
           }}
         />

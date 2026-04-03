@@ -7,7 +7,13 @@ import SectionCard from "@/components/ui/SectionCard";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getCourseResourceCollection } from "@/api/detail";
 import type { CourseResourceCollection } from "@/types/detail";
-import { buildCourseEvaluationAnchor, buildCoursePath, buildResourcePath } from "@/lib/paths";
+import {
+  buildCourseEvaluationAnchor,
+  buildCoursePath,
+  buildResourcePath,
+} from "@/lib/paths";
+import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import ResourceUploaderModal from "../components/ResourceUploaderModal";
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
@@ -26,6 +32,7 @@ export default function CourseResourceCollectionPage() {
   const [detail, setDetail] = useState<CourseResourceCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   useEffect(() => {
     if (!hasMounted) return;
@@ -103,7 +110,9 @@ export default function CourseResourceCollectionPage() {
             </div>
             <div>
               <div className="text-sm text-gray-400">{"课程信息"}</div>
-              <h1 className="mt-2 text-4xl font-bold text-gray-900">{detail.course.name}</h1>
+              <h1 className="mt-2 text-4xl font-bold text-gray-900">
+                {detail.course.name}
+              </h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
                 这门课收录的资料都集中在这里，课程详情和评价入口保留在顶部，不再单独重复展开。
               </p>
@@ -126,28 +135,33 @@ export default function CourseResourceCollectionPage() {
           <div className="grid min-w-full grid-cols-2 gap-3 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-sm lg:min-w-[420px]">
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
               <div className="text-xs text-gray-400">资源总数</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.resource_count}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {detail.resource_count}
+              </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
               <div className="text-xs text-gray-400">累计下载</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.download_total ?? 0}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {detail.download_total ?? 0}
+              </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
               <div className="text-xs text-gray-400">累计点赞</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{detail.like_total ?? 0}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {detail.like_total ?? 0}
+              </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
               <div className="text-xs text-gray-400">热度</div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">{formatScore(detail.hot_score)}</div>
+              <div className="mt-1 text-lg font-semibold text-gray-900">
+                {formatScore(detail.hot_score)}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      <SectionCard
-        title="课程资料"
-        subtitle="按资源卡片继续进入单个资料详情。"
-      >
+      <SectionCard title="课程资料" subtitle="按资源卡片继续进入单个资料详情。">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {detail.items.items.map((resource) => (
             <Link
@@ -159,14 +173,36 @@ export default function CourseResourceCollectionPage() {
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
                   {resource.resource_type || "资料"}
                 </span>
-                <span className="text-xs text-gray-400">下载 {resource.downloads ?? 0}</span>
+                <span className="text-xs text-gray-400">
+                  下载 {resource.downloads ?? 0}
+                </span>
               </div>
-              <div className="mt-3 text-lg font-semibold text-gray-900">{resource.title}</div>
-              <div className="mt-4 text-sm text-[var(--first-color)]">查看资源详情</div>
+              <div className="mt-3 text-lg font-semibold text-gray-900">
+                {resource.title}
+              </div>
+              <div className="mt-4 text-sm text-[var(--first-color)]">
+                查看资源详情
+              </div>
             </Link>
           ))}
         </div>
       </SectionCard>
+
+      <DetailFloatingActionButton
+        label="上传资源"
+        tone="resource"
+        onClick={() => setIsUploadModalOpen(true)}
+      />
+
+      <ResourceUploaderModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        initialCourse={
+          detail?.course
+            ? { id: detail.course.id, name: detail.course.name }
+            : undefined
+        }
+      />
     </div>
   );
 }

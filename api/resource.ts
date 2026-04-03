@@ -169,6 +169,11 @@ export async function downloadResourceFile(resourceId: number, fileId?: string) 
   return normalizeDownloadResponse(unwrapResponseData(response));
 }
 
+export async function deleteResource(resourceId: number) {
+  const response = await service.delete<ApiEnvelope<unknown>>(`/resources/${resourceId}`);
+  return unwrapResponseData(response);
+}
+
 export async function uploadResourceFileToCos({
   url,
   file,

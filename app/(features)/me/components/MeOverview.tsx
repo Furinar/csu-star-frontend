@@ -4,10 +4,9 @@ import GlassCard from "@/components/ui/GlassCard";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { UserProfile } from "@/types/auth";
+import type { ContributionCell, ContributionSummary } from "@/types/me";
 import {
   type AccountMode,
-  type ContributionCell,
-  type ContributionSummary,
   formatDate,
   formatNumber,
   WEEKDAY_LABELS,
@@ -34,7 +33,7 @@ interface MeOverviewProps {
 }
 
 function getContributionClassName(cell: ContributionCell) {
-  if (cell.isFuture) {
+  if (cell.is_future) {
     return "bg-white/30 border border-white/30";
   }
 
@@ -148,21 +147,21 @@ export default function MeOverview({
               <h4 className="mt-1 text-xl font-semibold text-gray-900">
                 {accountMode === "guest"
                   ? "登录后开始累计你的社区贡献"
-                  : `累计 ${formatNumber(contributionData.totalScore)} 分贡献`}
+                  : `累计 ${formatNumber(contributionData.total_score)} 分贡献`}
               </h4>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-gray-600">
               <StatPill
                 label="活跃天数"
-                value={`${formatNumber(contributionData.activeDays)} 天`}
+                value={`${formatNumber(contributionData.active_days)} 天`}
               />
               <StatPill
                 label="连续活跃"
-                value={`${formatNumber(contributionData.currentStreak)} 天`}
+                value={`${formatNumber(contributionData.current_streak)} 天`}
               />
               <StatPill
                 label="最高单日"
-                value={`${formatNumber(contributionData.maxDayScore)} 分`}
+                value={`${formatNumber(contributionData.max_day_score)} 分`}
               />
             </div>
           </div>
@@ -180,12 +179,12 @@ export default function MeOverview({
                 <div key={`week-${weekIndex}`} className="flex flex-col gap-1">
                   {week.map((cell) => (
                     <div
-                      key={cell.key}
+                      key={cell.date}
                       className={`h-3 w-3 rounded-[2px] ${getContributionClassName(
                         cell,
                       )}`}
                       title={`${formatDate(cell.date)}${
-                        cell.isFuture
+                        cell.is_future
                           ? "\n未来日期"
                           : cell.score > 0
                             ? `\n${cell.score} 分贡献\n${cell.actions

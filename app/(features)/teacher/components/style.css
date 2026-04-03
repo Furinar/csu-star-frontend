@@ -28,7 +28,7 @@
         transform: translateY(-50%);
         width: 200px;
         height: auto;
-        background: transparent;
+        background: white;
         transition: transform 0.55s ease, opacity 0.55s ease, box-shadow 0.55s ease, filter 0.55s ease;
         box-shadow: 0 0 30px rgba(0, 0, 0, 0.35);
         transform-style: preserve-3d;
@@ -55,7 +55,7 @@
       .item.is-prev-1 {
         transform: translate3d(-100px, -50%, 0) scale(0.8) rotateY(15deg);
         z-index: 4;
-        opacity: 0.85;
+        opacity: 1;
       }
 
       .item.is-current {
@@ -66,7 +66,7 @@
       .item.is-next-1 {
         transform: translate3d(100px, -50%, 0) scale(0.8) rotateY(-15deg);
         z-index: 4;
-        opacity: 0.85;
+        opacity: 1;
       }
 
       .item.is-next-2 {

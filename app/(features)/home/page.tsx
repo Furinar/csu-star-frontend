@@ -4,7 +4,6 @@ import SearchBar from "@/components/ui/SearchBar";
 import {buildSearchPageHref} from "@/app/(features)/search/searchNavigation";
 import {useRouter} from "next/navigation";
 
-// SSG：纯静态页面，构建时生成
 export const dynamic = "force-static";
 
 export default function Home() {

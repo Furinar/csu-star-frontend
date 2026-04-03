@@ -1,6 +1,7 @@
 import { getDepartmentNameById } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
 import type {
+  ContributionSummary,
   Department,
   EmailStatus,
   FavoriteItem,
@@ -11,28 +12,6 @@ import type {
 } from "@/types/me";
 
 export type AccountMode = "guest" | "verified" | "oauth_pending_email";
-
-export type ContributionAction = {
-  label: string;
-  score: number;
-};
-
-export type ContributionCell = {
-  key: string;
-  date: Date;
-  score: number;
-  level: 0 | 1 | 2 | 3 | 4;
-  isFuture: boolean;
-  actions: ContributionAction[];
-};
-
-export type ContributionSummary = {
-  weeks: ContributionCell[][];
-  totalScore: number;
-  activeDays: number;
-  currentStreak: number;
-  maxDayScore: number;
-};
 
 export const FORM_INPUT_CLASS_NAME =
   "w-full rounded-xl border-none bg-gray-50 px-4 py-2.5 text-sm text-gray-800 outline-none shadow-[inset_2px_2px_5px_rgba(148,163,184,0.25),inset_-2px_-2px_5px_rgba(255,255,255,0.8)] transition focus:ring-2 focus:ring-first/50 focus:bg-white";
@@ -93,10 +72,10 @@ export function createEmptyPaginated<T>(): PaginatedData<T> {
 export function createEmptyContributionSummary(): ContributionSummary {
   return {
     weeks: [],
-    totalScore: 0,
-    activeDays: 0,
-    currentStreak: 0,
-    maxDayScore: 0,
+    total_score: 0,
+    active_days: 0,
+    current_streak: 0,
+    max_day_score: 0,
   };
 }
 

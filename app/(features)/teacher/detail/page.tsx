@@ -117,11 +117,7 @@ export default function TeacherDetailPage() {
             initialPage={1}
             listEvaluations={(page, size) => listTeacherEvaluations(teacherId, page, size)}
             onReply={createTeacherEvaluationReply}
-            sectionAction={
-              <div className="rounded-full border border-rose-100 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
-                {evaluationTotal} 条评价
-              </div>
-            }
+            
           />
         </div>
       </DetailPageShell>

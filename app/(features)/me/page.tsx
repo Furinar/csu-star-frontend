@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   dailyCheckin,
   getMeDashboard,
@@ -40,9 +40,6 @@ import PasswordPanel from "./components/panels/PasswordPanel";
 import PointsPanel from "./components/panels/PointsPanel";
 import ProfilePanel from "./components/panels/ProfilePanel";
 import {
-  type ContributionAction,
-  type ContributionCell,
-  type ContributionSummary,
   buildFallbackEmailStatus,
   createEmptyContributionSummary,
   createEmptyPaginated,
@@ -53,8 +50,6 @@ import {
   getDateKey,
   getDepartmentName,
   getErrorMessage,
-  addDays,
-  startOfDisplayDay,
 } from "./components/shared/helpers";
 
 type TabKey =
@@ -76,105 +71,6 @@ type PanelKey =
   | "report"
   | "contribution";
 
-function getContributionLevel(score: number): 0 | 1 | 2 | 3 | 4 {
-  if (score <= 0) return 0;
-  if (score < 3) return 1;
-  if (score < 6) return 2;
-  if (score < 9) return 3;
-  return 4;
-}
-
-function buildContributionSummary(
-  resources: PaginatedData<ResourceItem>,
-  teacherEvaluations: PaginatedData<TeacherEvaluation>,
-  courseEvaluations: PaginatedData<CourseEvaluation>,
-  points: PaginatedData<PointsRecord>,
-  today: Date,
-): ContributionSummary {
-  const contributionMap = new Map<
-    string,
-    { score: number; actions: ContributionAction[] }
-  >();
-
-  const addContribution = (
-    createdAt: string | undefined,
-    score: number,
-    label: string,
-  ) => {
-    if (!createdAt || score <= 0) return;
-    const key = getDateKey(createdAt);
-    if (!key) return;
-    const current = contributionMap.get(key) ?? { score: 0, actions: [] };
-    contributionMap.set(key, {
-      score: current.score + score,
-      actions: [...current.actions, { label, score }],
-    });
-  };
-
-  if (resources.items)
-    resources.items.forEach((item) =>
-      addContribution(item.created_at, 5, "资源上传"),
-    );
-  if (teacherEvaluations.items)
-    teacherEvaluations.items.forEach((item) =>
-      addContribution(item.created_at, 3, "发布教师评价"),
-    );
-  if (courseEvaluations.items)
-    courseEvaluations.items.forEach((item) =>
-      addContribution(item.created_at, 3, "发布课程评价"),
-    );
-  points.items.forEach((item) => {
-    if (item.reason === "daily_checkin")
-      addContribution(item.created_at, 1, "每日签到");
-    if (item.reason === "invite_reward")
-      addContribution(item.created_at, 5, "邀请奖励");
-  });
-
-  const currentWeekStart = addDays(today, -today.getDay());
-  const start = addDays(currentWeekStart, -25 * 7);
-  const weeks: ContributionCell[][] = [];
-  let totalScore = 0;
-  let activeDays = 0;
-  let maxDayScore = 0;
-
-  for (let weekIndex = 0; weekIndex < 26; weekIndex += 1) {
-    const cells: ContributionCell[] = [];
-    for (let dayIndex = 0; dayIndex < 7; dayIndex += 1) {
-      const date = addDays(start, weekIndex * 7 + dayIndex);
-      const key = getDateKey(date);
-      const entry = contributionMap.get(key);
-      const isFuture = date.getTime() > today.getTime();
-      const score = isFuture ? 0 : (entry?.score ?? 0);
-      if (!isFuture && score > 0) {
-        totalScore += score;
-        activeDays += 1;
-        maxDayScore = Math.max(maxDayScore, score);
-      }
-      cells.push({
-        key,
-        date,
-        score,
-        level: getContributionLevel(score),
-        isFuture,
-        actions: entry?.actions ?? [],
-      });
-    }
-    weeks.push(cells);
-  }
-
-  let currentStreak = 0;
-  let cursor = today;
-  while (true) {
-    const key = getDateKey(cursor);
-    const entry = contributionMap.get(key);
-    if (!entry || entry.score <= 0) break;
-    currentStreak += 1;
-    cursor = addDays(cursor, -1);
-  }
-
-  return { weeks, totalScore, activeDays, currentStreak, maxDayScore };
-}
-
 export default function Me() {
   const hasMounted = useHasMounted();
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
@@ -189,7 +85,6 @@ export default function Me() {
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
   const [isLoadingInvite, setIsLoadingInvite] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
-  const [clientToday, setClientToday] = useState<Date | null>(null);
 
   const accessToken = useAuthStore((state) => state.access_token);
   const storedUser = useAuthStore((state) => state.user);
@@ -209,6 +104,8 @@ export default function Me() {
   const courseEvaluations =
     dashboard?.courseEvaluations ?? createEmptyPaginated<CourseEvaluation>();
   const points = dashboard?.points ?? createEmptyPaginated<PointsRecord>();
+  const contributionSummary =
+    dashboard?.contributions ?? createEmptyContributionSummary();
   const unreadCount = dashboard?.unreadCount ?? 0;
   const accountMode = getAccountMode(profile, emailStatus);
   const accountPresentation = getAccountPresentation(
@@ -216,30 +113,12 @@ export default function Me() {
     emailStatus,
     profile,
   );
-  useEffect(() => {
-    if (!hasMounted) return;
-    setClientToday(startOfDisplayDay(new Date()));
-  }, [hasMounted]);
-
-  const contributionSummary = useMemo(
-    () =>
-      clientToday
-        ? buildContributionSummary(
-            resources,
-            teacherEvaluations,
-            courseEvaluations,
-            points,
-            clientToday,
-          )
-        : createEmptyContributionSummary(),
-    [clientToday, courseEvaluations, points, resources, teacherEvaluations],
-  );
-  const hasCheckedInToday = clientToday
-    ? points.items.some(
-        (item) =>
-          item.reason === "daily_checkin" &&
-          getDateKey(item.created_at) === getDateKey(clientToday),
-      )
+  const todayKey = hasMounted ? getDateKey(new Date()) : "";
+  const hasCheckedInToday = todayKey
+    ? contributionSummary.weeks
+        .flat()
+        .find((item) => item.date === todayKey)
+        ?.actions.some((item) => item.type === "daily_checkin") ?? false
     : false;
 
   const loadDashboard = useCallback(
@@ -363,6 +242,7 @@ export default function Me() {
         return { ...current, profile: nextProfile, points: nextPoints };
       });
       setUser({ ...profile, points: result.balance_after });
+      void loadDashboard();
       feedback.success({
         title: result.already_checked_in ? "今天已经签到过了" : "签到成功",
         description: result.already_checked_in

@@ -3,6 +3,7 @@ import { DEPARTMENTS } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
 import type {
   CheckinResult,
+  ContributionSummary,
   CorrectionInput,
   CourseEvaluation,
   DownloadRecord,
@@ -34,6 +35,14 @@ interface PaginatedEnvelope<T> {
   items: T[] | null;
   total: number;
 }
+
+const EMPTY_CONTRIBUTION_SUMMARY: ContributionSummary = {
+  weeks: [],
+  total_score: 0,
+  active_days: 0,
+  current_streak: 0,
+  max_day_score: 0,
+};
 
 const unwrap = async <T>(
   request: Promise<ApiEnvelope<T> | AxiosResponse<ApiEnvelope<T>>>,
@@ -138,6 +147,12 @@ export function getMyPoints(params?: {
   ).then(normalizePaginated);
 }
 
+export function getMyContributions() {
+  return unwrap<ContributionSummary>(
+    service.get<ApiEnvelope<ContributionSummary>>("/me/contributions"),
+  );
+}
+
 export function dailyCheckin() {
   return unwrap<CheckinResult>(
     service.post<ApiEnvelope<CheckinResult>>("/me/checkin"),
@@ -221,6 +236,7 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
     teacherEvaluationsResult,
     courseEvaluationsResult,
     pointsResult,
+    contributionsResult,
     unreadCountResult,
   ] = await Promise.allSettled([
     getMyProfile(),
@@ -230,6 +246,7 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
     getMyTeacherEvaluations({ page: 1, size: 100 }),
     getMyCourseEvaluations({ page: 1, size: 100 }),
     getMyPoints({ page: 1, size: 100 }),
+    getMyContributions(),
     getUnreadNotificationCount(),
   ]);
 
@@ -247,6 +264,10 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
     departments: DEPARTMENTS,
     unreadCount:
       unreadCountResult.status === "fulfilled" ? unreadCountResult.value : 0,
+    contributions:
+      contributionsResult.status === "fulfilled"
+        ? contributionsResult.value
+        : EMPTY_CONTRIBUTION_SUMMARY,
     resources:
       resourcesResult.status === "fulfilled"
         ? normalizePaginated(resourcesResult.value)

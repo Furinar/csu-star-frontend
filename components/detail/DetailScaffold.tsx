@@ -164,8 +164,8 @@ export function DetailSection({
   action,
   children,
 }: {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
   action?: ReactNode;
   children: ReactNode;
 }) {

@@ -1,0 +1,49 @@
+"use client";
+
+import { useEffect } from "react";
+import ResourceUploader, { ResourceUploaderProps } from "./ResourceUploader";
+
+export interface ResourceUploaderModalProps extends ResourceUploaderProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function ResourceUploaderModal({
+  isOpen,
+  onClose,
+  initialCourse,
+}: ResourceUploaderModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      // Prevent closing if we are typing in an input
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/25 p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[32px] border border-white/70 bg-white p-6 md:p-8 shadow-[0_30px_100px_rgba(15,23,42,0.18)]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <ResourceUploader
+          isModal
+          onClose={onClose}
+          initialCourse={initialCourse}
+        />
+      </div>
+    </div>
+  );
+}

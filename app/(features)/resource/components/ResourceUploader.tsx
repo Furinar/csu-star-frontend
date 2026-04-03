@@ -41,7 +41,10 @@ function getUploadErrorMessage(error: unknown) {
   const code = error.code;
 
   // Browser blocks CORS failures as network errors, so response is often empty.
-  if (!status && (code === "ERR_NETWORK" || error.message === "Network Error")) {
+  if (
+    !status &&
+    (code === "ERR_NETWORK" || error.message === "Network Error")
+  ) {
     return "上传失败：COS 跨域（CORS）未放行当前来源或 PUT/OPTIONS 请求。请检查存储桶 CORS 配置。";
   }
 
@@ -52,7 +55,17 @@ function getUploadErrorMessage(error: unknown) {
   return error.message || "上传过程中出错，请重试";
 }
 
-export default function ResourceUploader() {
+export interface ResourceUploaderProps {
+  isModal?: boolean;
+  onClose?: () => void;
+  initialCourse?: { id: number; name: string };
+}
+
+export default function ResourceUploader({
+  isModal,
+  onClose,
+  initialCourse,
+}: ResourceUploaderProps = {}) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<UploadFileItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -67,7 +80,7 @@ export default function ResourceUploader() {
     [],
   );
   const [selectedCourse, setSelectedCourse] =
-    useState<CourseSuggestionItem | null>(null);
+    useState<CourseSuggestionItem | null>(initialCourse || null);
   const [isSearchingCourse, setIsSearchingCourse] = useState(false);
 
   // Upload state
@@ -300,8 +313,24 @@ export default function ResourceUploader() {
   };
 
   return (
-    <div className="p-6 md:p-8 mt-6 w-full mx-auto rounded-xl border border-slate-200 bg-white shadow-sm">
-      <h2 className="text-2xl font-bold text-black mb-6">上传资源</h2>
+    <div
+      className={
+        isModal
+          ? "w-full mx-auto"
+          : "p-6 md:p-8 mt-6 max-w-4xl mx-auto rounded-xl border border-slate-200 bg-white shadow-sm"
+      }
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-black">上传资源</h2>
+        {isModal && onClose && (
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <i className="uil uil-times text-2xl" />
+          </button>
+        )}
+      </div>
 
       {uploadedResourceId ? (
         <div className="flex flex-col items-center justify-center py-10 space-y-4">
@@ -341,7 +370,7 @@ export default function ResourceUploader() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-sm w-full">
               <div>
                 <AdvancedInput
                   label={

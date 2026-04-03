@@ -43,7 +43,7 @@ export default function Course() {
         rank_type: "avg_homework",
         page: 1,
         size: PAGE_SIZE,
-        is_increased: true,
+        is_increased: false,
       }),
       getCourseRankings({
         rank_type: "avg_gain",
@@ -114,17 +114,23 @@ export default function Course() {
             <RankCard
               title="任务轻松榜"
               data={homeworkRanks}
-              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildCoursePath(Number(item.id)))
+              }
             />
             <RankCard
               title="课堂收获榜"
               data={gainRanks}
-              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildCoursePath(Number(item.id)))
+              }
             />
             <RankCard
               title="考试难度榜"
               data={examRanks}
-              onItemClick={(item) => router.push(buildCoursePath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildCoursePath(Number(item.id)))
+              }
             />
           </div>
         </div>

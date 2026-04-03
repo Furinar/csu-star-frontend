@@ -17,10 +17,38 @@ export type ReportTargetType = "resource" | "evaluation" | "comment" | "user";
 export type CorrectionTargetType = "resource" | "course" | "teacher";
 export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
 export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other";
+export type ContributionActionType =
+  | "resource_upload"
+  | "teacher_evaluation"
+  | "course_evaluation"
+  | "daily_checkin"
+  | "invite_reward";
 
 export interface PaginatedData<T> {
   items: T[];
   total: number;
+}
+
+export interface ContributionAction {
+  type: ContributionActionType;
+  label: string;
+  score: number;
+}
+
+export interface ContributionCell {
+  date: string;
+  score: number;
+  level: 0 | 1 | 2 | 3 | 4;
+  is_future: boolean;
+  actions: ContributionAction[];
+}
+
+export interface ContributionSummary {
+  weeks: ContributionCell[][];
+  total_score: number;
+  active_days: number;
+  current_streak: number;
+  max_day_score: number;
 }
 
 export interface UserBrief {
@@ -225,6 +253,7 @@ export interface MeDashboardData {
   emailStatus: EmailStatus;
   departments: Department[];
   unreadCount: number;
+  contributions: ContributionSummary;
   resources: PaginatedData<ResourceItem>;
   favorites: PaginatedData<FavoriteItem>;
   teacherEvaluations: PaginatedData<TeacherEvaluation>;

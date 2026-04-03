@@ -19,7 +19,9 @@ type RankCardItem = {
 
 const PAGE_SIZE = 5;
 
-const mapRankItems = (items: Array<{ id: number; name: string; score: number }>): RankCardItem[] =>
+const mapRankItems = (
+  items: Array<{ id: number; name: string; score: number }>,
+): RankCardItem[] =>
   items.slice(0, PAGE_SIZE).map((item) => ({
     id: String(item.id),
     name: item.name,
@@ -30,7 +32,8 @@ export default function Teacher() {
   const router = useRouter();
   const [qualityRanks, setQualityRanks] = useState<RankCardItem[]>([]);
   const [gradingRanks, setGradingRanks] = useState<RankCardItem[]>([]);
-  const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);  const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);
+  const [isComposerOpen, setIsComposerOpen] = useState(false);
   useEffect(() => {
     let active = true;
 
@@ -110,17 +113,23 @@ export default function Teacher() {
             <RankCard
               title="教学质量排行榜"
               data={qualityRanks}
-              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildTeacherPath(Number(item.id)))
+              }
             />
             <RankCard
               title="给分优异榜"
               data={gradingRanks}
-              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildTeacherPath(Number(item.id)))
+              }
             />
             <RankCard
               title="考勤宽松榜"
               data={attendanceRanks}
-              onItemClick={(item) => router.push(buildTeacherPath(Number(item.id)))}
+              onItemClick={(item) =>
+                router.push(buildTeacherPath(Number(item.id)))
+              }
             />
           </div>
         </div>
