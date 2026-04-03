@@ -20,6 +20,19 @@ const StyledWrapper = styled.div`
     transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  .input::placeholder {
+    color: transparent;
+    transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input:focus::placeholder {
+    color: #9ca3af;
+  }
+
+  .input.has-value::placeholder {
+    color: transparent;
+  }
+
   .user-label {
     position: absolute;
     left: 15px;

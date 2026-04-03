@@ -1,9 +1,19 @@
 "use client";
 
 import React from "react";
-import type { TeacherEvaluation, CourseEvaluation } from "@/types/detail";
-
-type CommonEvaluation = Partial<TeacherEvaluation> & Partial<CourseEvaluation>;
+type CommonEvaluation = {
+  mode?: "standalone" | "linked" | null;
+  course_id?: string | number | null;
+  teacher_id?: string | number | null;
+  course_name?: string | null;
+  teacher_name?: string | null;
+  rating_quality?: number | null;
+  rating_grading?: number | null;
+  rating_attendance?: number | null;
+  rating_gain?: number | null;
+  rating_homework?: number | null;
+  rating_exam_difficulty?: number | null;
+};
 
 interface EvaluationBarChartProps {
   evaluation: CommonEvaluation;
@@ -28,6 +38,15 @@ const DIMENSIONS_COURSE = [
   },
 ] as const;
 
+type DimensionKey =
+  | (typeof DIMENSIONS_TEACHER)[number]["key"]
+  | (typeof DIMENSIONS_COURSE)[number]["key"];
+type DimensionConfig = {
+  key: DimensionKey;
+  label: string;
+  colorClass: string;
+};
+
 function clampScore(value?: number | null) {
   if (value === null || typeof value === "undefined" || Number.isNaN(value))
     return 0;
@@ -37,6 +56,10 @@ function clampScore(value?: number | null) {
 function formatScore(value?: number | null) {
   if (value === null || typeof value === "undefined") return "--";
   return value.toFixed(1);
+}
+
+function getDimensionScore(evaluation: CommonEvaluation, key: DimensionKey) {
+  return evaluation[key];
 }
 
 const BarRow = ({
@@ -78,11 +101,7 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
     (evaluation.course_id && evaluation.teacher_id);
 
   // Decide which dimensions to show
-  let dimensionsToShow: Array<{
-    key: string;
-    label: string;
-    colorClass: string;
-  }> = [];
+  let dimensionsToShow: DimensionConfig[] = [];
 
   if (isLinked) {
     // Show both (6 dimensions)
@@ -97,11 +116,6 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
 
   // If there are 6 dimensions, use a 2-column grid. Otherwise 1-column or 2-column depending on space.
   if (!isLinked) {
-    // Determine which single column to show
-    const label = theme === "teacher" 
-      ? (evaluation.teacher_name || "教师参数")
-      : (evaluation.course_name || "课程参数");
-
     return (
       <div className={`p-3 sm:p-4 rounded-xl bg-gray-50/80 border border-gray-100 ${className}`}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
@@ -109,7 +123,7 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
             <BarRow
               key={dim.key}
               label={dim.label}
-              value={(evaluation as any)[dim.key]}
+              value={getDimensionScore(evaluation, dim.key)}
               colorClass={dim.colorClass}
             />
           ))}
@@ -133,7 +147,7 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
               <BarRow
                 key={dim.key}
                 label={dim.label}
-                value={(evaluation as any)[dim.key]}
+                value={getDimensionScore(evaluation, dim.key)}
                 colorClass={dim.colorClass}
               />
             ))}
@@ -154,7 +168,7 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
               <BarRow
                 key={dim.key}
                 label={dim.label}
-                value={(evaluation as any)[dim.key]}
+                value={getDimensionScore(evaluation, dim.key)}
                 colorClass={dim.colorClass}
               />
             ))}
