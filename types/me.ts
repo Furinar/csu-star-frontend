@@ -24,7 +24,7 @@ export type ReportTargetType =
   | "comment";
 export type CorrectionTargetType = "course" | "teacher";
 export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
-export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other";
+export type ResourceType = string;
 export type ContributionActionType =
   | "resource_upload"
   | "teacher_evaluation"

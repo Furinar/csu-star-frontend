@@ -8,6 +8,7 @@ import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getCourseResourceCollection } from "@/api/detail";
 import type { CourseResourceCollection } from "@/types/detail";
+import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
 import {
   buildCoursePath,
   buildResourcePath,
@@ -175,7 +176,7 @@ export default function CourseResourceCollectionPage() {
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                  {resource.resource_type || "资料"}
+                  {getResourceTypeLabel(resource.resource_type)}
                 </span>
                 <span className="text-xs text-gray-400">
                   下载 {resource.downloads ?? 0}

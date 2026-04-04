@@ -1,4 +1,6 @@
-export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other" | "md" | "txt";
+import type { ResourceCategoryKey } from "@/lib/resourceCategory";
+
+export type ResourceType = ResourceCategoryKey;
 export const MAX_RESOURCE_UPLOAD_SIZE_BYTES = 300 * 1024 * 1024;
 
 export interface ResourceCreateFileInput {

@@ -1,4 +1,5 @@
 import { getDepartmentNameById } from "@/data/departments";
+import { getResourceCategoryLabel } from "@/lib/resourceCategory";
 import type { UserProfile } from "@/types/auth";
 import type {
   ContributionSummary,
@@ -254,41 +255,9 @@ export function getAccountPresentation(
 }
 
 export function getResourceTypeLabel(
-  type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"],
+  type?: ResourceItem["resource_type"] | FavoriteItem["resource_type"] | string | null,
 ) {
-  if (!type) {
-    return "其他";
-  }
-
-  if (type === "ppt") {
-    return "课件";
-  }
-
-  if (type === "pdf") {
-    return "文档";
-  }
-
-  if (type === "notes") {
-    return "笔记";
-  }
-
-  if (type === "exam") {
-    return "试卷";
-  }
-
-  if (type === "lab") {
-    return "实验";
-  }
-
-  if (type === "md") {
-    return "Markdown";
-  }
-
-  if (type === "txt") {
-    return "文本";
-  }
-
-  return type;
+  return getResourceCategoryLabel(type);
 }
 
 export function getPointsReasonLabel(reason: PointsRecord["reason"]) {

@@ -9,6 +9,7 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildResourceCommentsAnchor, buildResourcePath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
 import type { ResourceDetail } from "@/types/detail";
+import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
 
 export default function ResourceCommentComposerPage() {
   const router = useRouter();
@@ -77,7 +78,7 @@ export default function ResourceCommentComposerPage() {
       meta={
         <>
           <div className="rounded-full border border-white/70 bg-white/90 px-4 py-2 text-sm text-slate-600 shadow-sm">
-            资源类型 {resource.resource_type || "资料"}
+            资源类型 {getResourceTypeLabel(resource.resource_type)}
           </div>
           <div className="rounded-full border border-white/70 bg-white/90 px-4 py-2 text-sm text-slate-600 shadow-sm">
             文件数 {resource.files?.length || 0}

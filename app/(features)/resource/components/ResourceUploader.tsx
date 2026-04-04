@@ -15,6 +15,10 @@ import {
   CourseSuggestionItem,
   UploadFileItem,
 } from "@/types/resource";
+import {
+  RESOURCE_CATEGORY_OPTIONS,
+  getResourceCategoryLabel,
+} from "@/lib/resourceCategory";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -23,17 +27,6 @@ import {
   AdvancedSelect,
   AdvancedTextarea,
 } from "./AdvancedFormControls";
-
-const RESOURCE_TYPES: { value: ResourceType; label: string }[] = [
-  { value: "ppt", label: "PPT" },
-  { value: "pdf", label: "PDF" },
-  { value: "notes", label: "课堂笔记" },
-  { value: "exam", label: "考试资料" },
-  { value: "lab", label: "实验/作业" },
-  { value: "md", label: "Markdown文件" },
-  { value: "txt", label: "文本" },
-  { value: "other", label: "其他" },
-];
 
 function getUploadErrorMessage(error: unknown) {
   if (!axios.isAxiosError(error)) {
@@ -75,7 +68,7 @@ export default function ResourceUploader({
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [resourceType, setResourceType] = useState<ResourceType>("other");
+  const [resourceType, setResourceType] = useState<ResourceType>("general");
 
   // Course search state
   const [courseQuery, setCourseQuery] = useState("");
@@ -414,9 +407,9 @@ export default function ResourceUploader({
                   }
                   disabled={isUploading}
                 >
-                  {RESOURCE_TYPES.map((rt) => (
+                  {RESOURCE_CATEGORY_OPTIONS.map((rt) => (
                     <option key={rt.value} value={rt.value}>
-                      {rt.label}
+                      {getResourceCategoryLabel(rt.value)}
                     </option>
                   ))}
                 </AdvancedSelect>

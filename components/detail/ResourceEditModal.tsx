@@ -4,16 +4,12 @@ import { useEffect, useState } from "react";
 import { AdvancedInput, AdvancedSelect, AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
 import DetailComposerModal from "./DetailComposerModal";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import {
+  RESOURCE_CATEGORY_OPTIONS,
+  getResourceCategoryLabel,
+  normalizeResourceType,
+} from "@/lib/resourceCategory";
 import type { ResourceDetail, ResourceUpdateInput } from "@/types/detail";
-
-const RESOURCE_TYPE_OPTIONS = [
-  { value: "ppt", label: "PPT" },
-  { value: "pdf", label: "PDF" },
-  { value: "notes", label: "笔记" },
-  { value: "exam", label: "试卷" },
-  { value: "lab", label: "实验" },
-  { value: "other", label: "其他" },
-] as const;
 
 export default function ResourceEditModal({
   resource,
@@ -28,13 +24,13 @@ export default function ResourceEditModal({
 }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [resourceType, setResourceType] = useState("other");
+  const [resourceType, setResourceType] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setTitle(resource?.title ?? "");
     setDescription(resource?.description ?? "");
-    setResourceType(resource?.resource_type ?? "other");
+    setResourceType(normalizeResourceType(resource?.resource_type));
   }, [resource]);
 
   return (
@@ -58,9 +54,9 @@ export default function ResourceEditModal({
             value={resourceType}
             onChange={(event) => setResourceType(event.target.value)}
           >
-            {RESOURCE_TYPE_OPTIONS.map((item) => (
+            {RESOURCE_CATEGORY_OPTIONS.map((item) => (
               <option key={item.value} value={item.value}>
-                {item.label}
+                {getResourceCategoryLabel(item.value)}
               </option>
             ))}
           </AdvancedSelect>
