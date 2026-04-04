@@ -1,4 +1,5 @@
 export type ResourceType = "ppt" | "pdf" | "notes" | "exam" | "lab" | "other" | "md" | "txt";
+export const MAX_RESOURCE_UPLOAD_SIZE_BYTES = 300 * 1024 * 1024;
 
 export interface ResourceCreateFileInput {
   filename: string;
@@ -22,8 +23,12 @@ export interface ResourceUploadUrlItem {
 }
 
 export interface ResourceUploadResponse {
-  resource_id: number;
+  upload_session_id: string;
   upload_urls: ResourceUploadUrlItem[];
+}
+
+export interface ResourceFinalizeResponse {
+  resource_id: number;
 }
 
 export interface ResourceDownloadResponse {

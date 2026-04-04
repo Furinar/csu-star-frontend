@@ -6,6 +6,7 @@ import type {
   TeacherSuggestionItem,
   ResourceCreateInput,
   ResourceDownloadResponse,
+  ResourceFinalizeResponse,
   ResourceUploadResponse,
 } from "@/types/resource";
 
@@ -96,7 +97,7 @@ const normalizeResourceUploadResponse = (raw: unknown): ResourceUploadResponse =
   const uploadUrls = Array.isArray(data.upload_urls) ? data.upload_urls : [];
 
   return {
-    resource_id: toNumber(data.resource_id) ?? 0,
+    upload_session_id: toStringSafe(data.upload_session_id) ?? "",
     upload_urls: uploadUrls.flatMap((item) => {
       if (!isRecord(item)) return [];
 
@@ -120,6 +121,14 @@ const normalizeResourceUploadResponse = (raw: unknown): ResourceUploadResponse =
   };
 };
 
+const normalizeResourceFinalizeResponse = (raw: unknown): ResourceFinalizeResponse => {
+  const data = isRecord(raw) ? raw : {};
+
+  return {
+    resource_id: toNumber(data.resource_id) ?? 0,
+  };
+};
+
 const normalizeDownloadResponse = (raw: unknown): ResourceDownloadResponse => {
   const data = isRecord(raw) ? raw : {};
 
@@ -134,6 +143,20 @@ const normalizeDownloadResponse = (raw: unknown): ResourceDownloadResponse => {
 export async function createResource(payload: ResourceCreateInput) {
   const response = await service.post<ApiEnvelope<unknown>>("/resources", payload);
   return normalizeResourceUploadResponse(unwrapResponseData(response));
+}
+
+export async function finalizeResourceUpload(uploadSessionId: string) {
+  const response = await service.post<ApiEnvelope<unknown>>("/resources/finalize", {
+    upload_session_id: uploadSessionId,
+  });
+  return normalizeResourceFinalizeResponse(unwrapResponseData(response));
+}
+
+export async function abortResourceUpload(uploadSessionId: string) {
+  const response = await service.post<ApiEnvelope<unknown>>("/resources/abort", {
+    upload_session_id: uploadSessionId,
+  });
+  return unwrapResponseData(response);
 }
 
 export async function searchCourseSuggestions(query: string) {

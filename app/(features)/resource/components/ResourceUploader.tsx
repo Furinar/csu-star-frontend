@@ -3,11 +3,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import axios from "axios";
 import {
+  abortResourceUpload,
   createResource,
+  finalizeResourceUpload,
   uploadResourceFileToCos,
   searchCourseSuggestions,
 } from "@/api/resource";
 import {
+  MAX_RESOURCE_UPLOAD_SIZE_BYTES,
   ResourceType,
   CourseSuggestionItem,
   UploadFileItem,
@@ -191,6 +194,11 @@ export default function ResourceUploader({
       setErrorMsg("请选择关联课程");
       return;
     }
+    const totalSize = files.reduce((acc, file) => acc + file.file.size, 0);
+    if (totalSize > MAX_RESOURCE_UPLOAD_SIZE_BYTES) {
+      setErrorMsg("单个资源上传总大小不能超过 300MB");
+      return;
+    }
 
     setErrorMsg("");
     setIsUploading(true);
@@ -200,6 +208,8 @@ export default function ResourceUploader({
     setFiles((prev) =>
       prev.map((f) => ({ ...f, progress: 0, status: "uploading" })),
     );
+
+    let uploadSessionId = "";
 
     try {
       // 1. Create resource metadata
@@ -215,10 +225,11 @@ export default function ResourceUploader({
         })),
       };
 
-      const { resource_id, upload_urls } = await createResource(createInput);
+      const { upload_session_id, upload_urls } = await createResource(createInput);
+      uploadSessionId = upload_session_id;
 
       // 2. Upload files tracking total bytes
-      const totalBytes = files.reduce((acc, f) => acc + f.file.size, 0);
+      const totalBytes = totalSize;
       const uploadedBytesPerFile: Record<string, number> = {};
 
       const uploadPromises = files.map(async (fileItem, index) => {
@@ -301,12 +312,20 @@ export default function ResourceUploader({
       });
 
       await Promise.all(uploadPromises);
+      const { resource_id } = await finalizeResourceUpload(upload_session_id);
 
       setTotalProgress(100);
       setUploadedResourceId(resource_id);
       setIsUploading(false);
     } catch (e: unknown) {
       console.error(e);
+      if (uploadSessionId) {
+        try {
+          await abortResourceUpload(uploadSessionId);
+        } catch (cleanupError) {
+          console.error("Failed to abort upload session:", cleanupError);
+        }
+      }
       setErrorMsg(getUploadErrorMessage(e));
       setIsUploading(false);
     }
