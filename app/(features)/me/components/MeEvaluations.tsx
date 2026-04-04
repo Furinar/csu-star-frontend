@@ -39,6 +39,7 @@ function mergeTeacherEvaluation(
     ...current,
     id: updated.id,
     teacher_id: updated.teacher_id,
+    teacher_name: current.teacher_name,
     mode: updated.mode,
     course_id: updated.course_id,
     course_name: updated.course_name,
@@ -67,6 +68,7 @@ function mergeCourseEvaluation(
     ...current,
     id: updated.id,
     course_id: updated.course_id,
+    course_name: current.course_name,
     mode: updated.mode,
     teacher_id: updated.teacher_id,
     teacher_name: updated.teacher_name,
@@ -143,21 +145,26 @@ export default function MeEvaluations({
             <div className="space-y-4">
               {filteredTeacherEvaluations.map((item) => {
                 const linkedCourseName = item.course_name || (item.course_id ? `课程 #${item.course_id}` : null);
+                const teacherName = item.teacher_name || `教师 #${item.teacher_id}`;
                 const cardContent = (
                     <GlassCard
                         className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">
+                                {teacherName}
+                              </h4>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
+                                  {item.mode === "linked" || item.course_id ? "关联评价" : "单独评价"}
+                                </span>
+                              </div>
+                            </div>
                             <EntityTypeBadge type="teacher" label="教师评价" />
-                            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
-                              {item.mode === "linked" || item.course_id ? "关联评价" : "单独评价"}
-                            </span>
-                            <span className="text-sm font-medium text-gray-800">
-                              教师 #{item.teacher_id}
-                            </span>
                           </div>
-                          <p className="mt-2 text-sm text-gray-500">
+                          <p className="mt-3 text-sm text-gray-500">
                             发布于 {formatDateTime(item.created_at)}
                           </p>
                           {linkedCourseName ? (
@@ -179,9 +186,9 @@ export default function MeEvaluations({
                           ) : null}
                         </div>
                       </div>
-                      <p className="mb-3 text-sm leading-6 text-gray-700">
+                      <div className="mb-3 rounded-2xl bg-slate-100/90 px-4 py-3 text-sm leading-6 text-gray-700">
                         {item.comment || "未填写文字评价"}
-                      </p>
+                      </div>
                       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
                         <div className="flex items-center gap-1.5 transition-colors">
                           <i className="uil uil-star text-lg text-amber-500"></i>
@@ -274,21 +281,26 @@ export default function MeEvaluations({
 
               {filteredCourseEvaluations.map((item) => {
                 const linkedTeacherName = item.teacher_name || (item.teacher_id ? `教师 #${item.teacher_id}` : null);
+                const courseName = item.course_name || `课程 #${item.course_id}`;
                 const cardContent = (
                     <GlassCard
                         className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">
+                                {courseName}
+                              </h4>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
+                                  {item.mode === "linked" || item.teacher_id ? "关联评价" : "单独评价"}
+                                </span>
+                              </div>
+                            </div>
                             <EntityTypeBadge type="course" label="课程评价" />
-                            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
-                              {item.mode === "linked" || item.teacher_id ? "关联评价" : "单独评价"}
-                            </span>
-                            <span className="text-sm font-medium text-gray-800">
-                              课程 #{item.course_id}
-                            </span>
                           </div>
-                          <p className="mt-2 text-sm text-gray-500">
+                          <p className="mt-3 text-sm text-gray-500">
                             发布于 {formatDateTime(item.created_at)}
                           </p>
                           {linkedTeacherName ? (
@@ -310,9 +322,9 @@ export default function MeEvaluations({
                           ) : null}
                         </div>
                       </div>
-                      <p className="mb-3 text-sm leading-6 text-gray-700">
+                      <div className="mb-3 rounded-2xl bg-slate-100/90 px-4 py-3 text-sm leading-6 text-gray-700">
                         {item.comment || "未填写文字评价"}
-                      </p>
+                      </div>
                       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
                         <div className="flex items-center gap-1.5 transition-colors">
                           <i className="uil uil-star text-lg text-amber-500"></i>

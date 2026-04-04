@@ -112,6 +112,7 @@ export interface TeacherEvaluation {
   id: string;
   user?: UserBrief | null;
   teacher_id: number;
+  teacher_name?: string | null;
   mode?: "standalone" | "linked" | null;
   course_id?: string | null;
   course_name?: string | null;
@@ -133,6 +134,7 @@ export interface CourseEvaluation {
   id: string;
   user?: UserBrief | null;
   course_id: number;
+  course_name?: string | null;
   mode?: "standalone" | "linked" | null;
   teacher_id?: string | null;
   teacher_name?: string | null;
