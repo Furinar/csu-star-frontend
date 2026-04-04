@@ -813,12 +813,7 @@ export default function ResourceDetailPage() {
             }
             description="看看大家的使用反馈，也可以留下你的评论。"
           >
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
-              <span>
-                {isDeleted
-                  ? "已删除资源仅保留历史评论展示"
-                  : "点击回复可继续讨论"}
-              </span>
+            <div className="mb-5 flex flex-wrap items-center justify-end gap-3 text-sm text-slate-500">
               <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
                 {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
                   <button
