@@ -32,6 +32,7 @@ import {
 } from "@/components/detail/DetailScaffold";
 import { buildCoursePath, buildResourceCollectionPath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
+import { getPageTheme } from "@/lib/pageTheme";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
@@ -56,6 +57,7 @@ function formatFileSize(bytes?: number | null) {
 }
 
 export default function ResourceDetailPage() {
+  const resourceTheme = getPageTheme("/resource");
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const idStr = hasMounted ? searchParams.get("id") : null;
@@ -674,9 +676,14 @@ export default function ResourceDetailPage() {
                     onClick={() => setCommentSort(item)}
                     className={`rounded-full px-4 py-1.5 text-sm transition ${
                       commentSort === item
-                        ? "bg-slate-900 text-white"
-                        : "text-slate-500 hover:text-slate-700"
+                        ? "text-white"
+                        : "text-slate-500 hover:text-[var(--page-accent-text)]"
                     }`}
+                    style={
+                      commentSort === item
+                        ? { backgroundImage: resourceTheme.pageAccentGradient }
+                        : undefined
+                    }
                   >
                     {item === "likes" ? "按热度" : "按时间"}
                   </button>

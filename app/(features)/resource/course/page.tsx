@@ -8,7 +8,6 @@ import { useHasMounted } from "@/hooks/useHasMounted";
 import { getCourseResourceCollection } from "@/api/detail";
 import type { CourseResourceCollection } from "@/types/detail";
 import {
-  buildCourseEvaluationAnchor,
   buildCoursePath,
   buildResourcePath,
 } from "@/lib/paths";
@@ -99,12 +98,12 @@ export default function CourseResourceCollectionPage() {
 
   return (
     <div className="container mt-10 mb-20 space-y-8">
-      <section className="relative overflow-hidden rounded-[36px] border border-white/60 bg-gradient-to-br from-white via-[var(--star-50)] to-[var(--ice-50)] p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--first-color)]/10 blur-3xl"></div>
-        <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-sky-200/40 blur-3xl"></div>
+      <section className="relative overflow-hidden rounded-[36px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-200/55 blur-3xl"></div>
+        <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-cyan-200/40 blur-3xl"></div>
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm text-[var(--first-color)] shadow-sm">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/85 px-4 py-2 text-sm text-emerald-700 shadow-sm">
               <i className="uil uil-folder-open"></i>
               课程资源合集
             </div>
@@ -120,15 +119,9 @@ export default function CourseResourceCollectionPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href={buildCoursePath(detail.course.id)}
-                className="rounded-full border border-[var(--first-color)]/20 bg-white px-4 py-2 text-sm font-medium text-[var(--first-color)] transition hover:bg-[var(--first-color)]/5"
+                className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
               >
                 进入课程详情
-              </Link>
-              <Link
-                href={buildCourseEvaluationAnchor(detail.course.id)}
-                className="rounded-full bg-[var(--first-color)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              >
-                跳转课程评价区
               </Link>
             </div>
           </div>
