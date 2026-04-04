@@ -12,6 +12,7 @@ export default function ResourceUploaderModal({
   isOpen,
   onClose,
   initialCourse,
+  onUploadSuccess,
 }: ResourceUploaderModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -43,6 +44,7 @@ export default function ResourceUploaderModal({
             isModal
             onClose={onClose}
             initialCourse={initialCourse}
+            onUploadSuccess={onUploadSuccess}
           />
         </div>
       </div>

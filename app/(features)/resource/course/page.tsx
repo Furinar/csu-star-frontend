@@ -16,11 +16,6 @@ import DetailFloatingActionButton from "@/components/detail/DetailFloatingAction
 import ResourceUploaderModal from "../components/ResourceUploaderModal";
 import { getFileIcon } from "../detail/fileIcons";
 
-function formatScore(value?: number | null) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(2);
-}
-
 function formatFileSize(bytes?: number | null) {
   if (!bytes) return "未知大小";
   if (bytes < 1024) return `${bytes} B`;
@@ -42,6 +37,13 @@ export default function CourseResourceCollectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [shouldRefreshAfterUpload, setShouldRefreshAfterUpload] = useState(false);
+
+  const loadCollectionDetail = async (targetCourseId: number) => {
+    const data = await getCourseResourceCollection(targetCourseId, 1, 24);
+    setDetail(data);
+    setError("");
+  };
 
   useEffect(() => {
     if (!hasMounted) return;
@@ -55,6 +57,7 @@ export default function CourseResourceCollectionPage() {
       .then((data) => {
         if (!active) return;
         setDetail(data);
+        setError("");
       })
       .catch((err) => {
         console.error(err);
@@ -259,12 +262,26 @@ export default function CourseResourceCollectionPage() {
 
       <ResourceUploaderModal
         isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
+        onClose={() => {
+          setIsUploadModalOpen(false);
+          if (!shouldRefreshAfterUpload || !Number.isFinite(courseId)) return;
+          setLoading(true);
+          loadCollectionDetail(courseId)
+            .catch((err) => {
+              console.error(err);
+              setError("课程资源合集加载失败，请稍后重试。");
+            })
+            .finally(() => {
+              setLoading(false);
+              setShouldRefreshAfterUpload(false);
+            });
+        }}
         initialCourse={
           detail?.course
             ? { id: detail.course.id, name: detail.course.name }
             : undefined
         }
+        onUploadSuccess={() => setShouldRefreshAfterUpload(true)}
       />
     </div>
   );

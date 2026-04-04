@@ -55,12 +55,14 @@ export interface ResourceUploaderProps {
   isModal?: boolean;
   onClose?: () => void;
   initialCourse?: { id: number; name: string };
+  onUploadSuccess?: () => void;
 }
 
 export default function ResourceUploader({
   isModal,
   onClose,
   initialCourse,
+  onUploadSuccess,
 }: ResourceUploaderProps = {}) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<UploadFileItem[]>([]);
@@ -309,6 +311,7 @@ export default function ResourceUploader({
 
       setTotalProgress(100);
       setUploadedResourceId(resource_id);
+      onUploadSuccess?.();
       setIsUploading(false);
     } catch (e: unknown) {
       console.error(e);
