@@ -93,6 +93,14 @@ export default function Register() {
     }
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/login");
+  };
+
   if (isVerifying) {
     return (
       <div className="flex min-h-svh items-center justify-center">
@@ -104,6 +112,14 @@ export default function Register() {
   return (
     <>
       <div className="flex min-h-svh flex-col items-center justify-center relative">
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="返回上一页"
+          className="absolute left-5 top-5 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/90 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+        >
+          <i className="uil uil-arrow-left text-base" />
+        </button>
         <Stepper
           initialStep={1}
           backButtonText="Back"

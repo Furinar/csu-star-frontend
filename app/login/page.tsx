@@ -201,8 +201,24 @@ export default function Login() {
     }
   };
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/home");
+  };
+
   return (
     <div className={styles["login-form"]}>
+      <button
+        type="button"
+        onClick={handleBack}
+        aria-label="返回上一页"
+        className="absolute left-5 top-5 z-20 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/75 text-slate-700 shadow-sm backdrop-blur transition hover:bg-white"
+      >
+        <i className="uil uil-arrow-left text-base" />
+      </button>
       <div className={`${styles.container} ${isActive ? styles.active : ""}`}>
         {/* 登录 */}
         <div className={`${styles["form-box"]} ${styles.login}`}>
