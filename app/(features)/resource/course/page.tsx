@@ -235,6 +235,10 @@ export default function CourseResourceCollectionPage() {
                   <span>浏览 {resource.views ?? 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5 transition-colors">
+                  <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                  <span>点赞 {resource.likes ?? 0}</span>
+                </div>
+                <div className="flex items-center gap-1.5 transition-colors">
                   <i className="uil uil-bookmark text-lg text-emerald-500"></i>
                   <span>收藏 {resource.favorite_count ?? 0}</span>
                 </div>
