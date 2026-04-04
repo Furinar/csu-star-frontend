@@ -202,8 +202,16 @@ export default function RankItemCard(props: RankItemCardProps) {
     const item = props.item;
     href = buildResourceCollectionPath(item.course_id);
     title = item.course_name;
+    const courseTypeLabel = formatCourseType(item.course_type);
+    isPublic = courseTypeLabel === "公选";
     subtitleIcon = "uil-folder-open";
-    subtitleContent = <div className="flex items-center gap-2 flex-wrap" />;
+    subtitleContent = (
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
+          {truncateString(courseTypeLabel, 8)}
+        </span>
+      </div>
+    );
 
     rightDetailsContent = (
       <div className="flex flex-col gap-1 sm:gap-1.5 justify-center h-full">

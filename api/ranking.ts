@@ -149,6 +149,7 @@ const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] 
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
           `课程资源合集 ${index + 1}`,
+        course_type: normalizeCourseType(toStringSafe(raw.course_type)) as ResourceRankingItem["course_type"],
         resource_count: toNumber(raw.resource_count),
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
         view_total: toNumber(raw.view_total) ?? toNumber(raw.views),

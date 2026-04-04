@@ -94,6 +94,7 @@ export interface ResourceRankingItem {
   rank: number;
   course_id: number;
   course_name: string;
+  course_type?: "公选课" | "非公选课" | null;
   resource_count?: number | null;
   download_total?: number | null;
   view_total?: number | null;
