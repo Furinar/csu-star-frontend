@@ -1,4 +1,5 @@
 import { service } from "@/lib/request";
+import { normalizeCourseType } from "@/lib/courseType";
 import type {
   CourseRankingItem,
   CourseRankingQuery,
@@ -71,7 +72,7 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
         rank: toNumber(raw.rank) ?? index + 1,
         id: toNumber(raw.id) ?? 0,
         name: toStringSafe(raw.name) ?? `课程 ${index + 1}`,
-        course_type: toStringSafe(raw.course_type) as CourseRankingItem["course_type"],
+        course_type: normalizeCourseType(toStringSafe(raw.course_type)) as CourseRankingItem["course_type"],
         department_name: toStringSafe(raw.department_name),
         score: toNumber(raw.score) ?? 0,
         avg_score: toNumber(raw.avg_score),

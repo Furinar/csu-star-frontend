@@ -1,4 +1,5 @@
 import { service } from "@/lib/request";
+import { normalizeCourseType } from "@/lib/courseType";
 import type {
   PaginatedData,
   SearchCourseItem,
@@ -128,7 +129,7 @@ const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
       {
         id: toNumber(raw.id) ?? 0,
         name: toStringSafe(raw.name) ?? "未命名课程",
-        course_type: toStringSafe(raw.course_type) as SearchCourseItem["course_type"],
+        course_type: normalizeCourseType(toStringSafe(raw.course_type)) as SearchCourseItem["course_type"],
         avg_score: toNumber(raw.avg_score),
         avg_homework: toNumber(raw.avg_homework),
         avg_gain: toNumber(raw.avg_gain),
@@ -204,7 +205,7 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
           `课程 ${courseId}`,
-        course_type: toStringSafe(raw.course_type) as SearchResourceCard["course_type"],
+        course_type: normalizeCourseType(toStringSafe(raw.course_type)) as SearchResourceCard["course_type"],
         avg_score: toNumber(raw.avg_score),
         resource_count: toNumber(raw.resource_count) ?? 0,
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),

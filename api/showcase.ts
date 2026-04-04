@@ -1,4 +1,5 @@
 import { service } from "@/lib/request";
+import { normalizeCourseType } from "@/lib/courseType";
 import type {
   CourseShowcaseItem,
   ShowcaseTeacherBrief,
@@ -68,7 +69,7 @@ const normalizeCourseShowcaseItems = (raw: unknown): CourseShowcaseItem[] => {
       {
         id: toNumber(item.id) ?? 0,
         name: toStringSafe(item.name) ?? "未命名课程",
-        course_type: toStringSafe(item.course_type),
+        course_type: normalizeCourseType(toStringSafe(item.course_type)),
         avg_score: toNumber(item.avg_score),
         avg_homework: toNumber(item.avg_homework),
         avg_gain: toNumber(item.avg_gain),

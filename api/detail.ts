@@ -1,4 +1,5 @@
 import {service} from "@/lib/request";
+import { normalizeCourseType } from "@/lib/courseType";
 import type {
   CourseDetail,
   CourseEvaluation,
@@ -303,7 +304,7 @@ const normalizeCourseDetail = (raw: unknown): CourseDetail => {
   return {
     id: toNumber(data.id) ?? 0,
     name: toStringSafe(data.name) ?? "未命名课程",
-    course_type: toStringSafe(data.course_type) as CourseDetail["course_type"],
+    course_type: normalizeCourseType(toStringSafe(data.course_type)) as CourseDetail["course_type"],
     avg_score: toNumber(data.avg_score),
     avg_homework: toNumber(data.avg_homework),
     avg_gain: toNumber(data.avg_gain),

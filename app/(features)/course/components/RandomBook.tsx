@@ -7,6 +7,7 @@ import RatingBar from "@/components/ui/RatingBar";
 import Link from "next/link";
 import CollectButton from "@/components/ui/CollectButton";
 import { getPageTheme } from "@/lib/pageTheme";
+import { isPublicCourseType } from "@/lib/courseType";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {getRandomCourseShowcase} from "@/api/showcase";
@@ -106,7 +107,7 @@ export default function RandomBook() {
   const coursePath = course.id ? buildCoursePath(course.id) : null;
   const resourcePath = course.id ? buildResourceCollectionPath(course.id) : null;
   const evaluationPath = course.id ? buildCourseEvaluationAnchor(course.id) : null;
-  const courseTypeChars = course.course_type?.includes("公") ? ["公", "选"] : ["非", "公", "选"];
+  const courseTypeChars = isPublicCourseType(course.course_type) ? ["公", "选"] : ["非", "公", "选"];
 
   const handleBackgroundNavigate = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!coursePath) return;

@@ -1,5 +1,6 @@
 import axios, { AxiosProgressEvent } from "axios";
 import { service } from "@/lib/request";
+import { normalizeCourseType } from "@/lib/courseType";
 import type { ResourceUpdateInput } from "@/types/detail";
 import type {
   CourseSuggestionItem,
@@ -70,7 +71,7 @@ const normalizeCourseSuggestionItems = (raw: unknown): CourseSuggestionItem[] =>
       {
         id: toNumber(item.id) ?? 0,
         name: toStringSafe(item.name) ?? "未命名课程",
-        course_type: (toStringSafe(item.course_type) as CourseSuggestionItem["course_type"]) ?? null,
+        course_type: normalizeCourseType(toStringSafe(item.course_type)) as CourseSuggestionItem["course_type"] | null,
       },
     ];
   });

@@ -8,6 +8,7 @@ import CollectButton from "@/components/ui/CollectButton";
 import RatingBar from "@/components/ui/RatingBar";
 import StarRating from "@/components/ui/StarRating";
 import { getPageTheme } from "@/lib/pageTheme";
+import { isPublicCourseType } from "@/lib/courseType";
 import type { CourseDetail, TeacherDetail } from "@/types/detail";
 import { buildCoursePath, buildResourceCollectionPath, buildTeacherPath } from "@/lib/paths";
 
@@ -59,7 +60,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
     const course = props.data;
     const teachers = course.teachers || [];
     const resourcePath = buildResourceCollectionPath(course.id);
-    const courseTypeChars = course.course_type?.includes("公") ? ["公", "选"] : ["非", "公", "选"];
+    const courseTypeChars = isPublicCourseType(course.course_type) ? ["公", "选"] : ["非", "公", "选"];
 
     return (
       <div

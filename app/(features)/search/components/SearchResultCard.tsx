@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import { isPublicCourseType } from "@/lib/courseType";
 import { getEntityTheme } from "@/lib/entityTheme";
 import type {
   SearchCourseItem,
@@ -124,7 +125,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const item = props.item;
     href = buildCoursePath(item.id);
     title = item.name;
-    isPublic = item.course_type === "公选课";
+    isPublic = isPublicCourseType(item.course_type);
     const teachers = item.teachers ?? [];
     const teacherCount = item.teacher_count ?? teachers.length;
     subtitleIcon = "uil-users-alt";
@@ -210,7 +211,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const item = props.item;
     href = buildResourceCollectionPath(item.course_id);
     title = item.course_name;
-    isPublic = item.course_type === "公选课";
+    isPublic = isPublicCourseType(item.course_type);
     subtitleIcon = "uil-folder-open";
     subtitleContent = (
       <span className="text-xs text-gray-600">
