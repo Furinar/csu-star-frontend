@@ -454,10 +454,26 @@ export default function Search() {
 
         {!isLoading && !error && hasSearched && summary.total > 0 ? (
             <div className="flex flex-col gap-10">
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                找到相关的{" "}
-                <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
-                条结果
+              <div className="flex flex-col gap-3 text-sm text-gray-500">
+                <div className="flex items-center gap-4">
+                  找到相关的{" "}
+                  <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
+                  条结果
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-700">
+                    <span className="h-2 w-2 rounded-full bg-sky-500" />
+                    <span>课程 {summary.counts.course}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700">
+                    <span className="h-2 w-2 rounded-full bg-rose-500" />
+                    <span>教师 {summary.counts.teacher}</span>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span>资源 {summary.counts.resource}</span>
+                  </div>
+                </div>
               </div>
 
               <SearchResultsGrid items={displayedItems} />
