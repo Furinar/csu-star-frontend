@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   createCourseEvaluation,
   createCourseEvaluationReply,
@@ -16,16 +16,20 @@ import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import DetailBookHero from "@/components/detail/DetailBookHero";
 import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import RelationLinkModal from "@/components/detail/RelationLinkModal";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type { CourseDetail, CourseEvaluation, CourseEvaluationInput } from "@/types/detail";
 
 export default function CourseDetailPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
+  const authUser = useAuthStore((state) => state.user);
   const idStr = hasMounted ? searchParams.get("id") : null;
   const courseId = idStr ? parseInt(idStr, 10) : null;
 
@@ -34,6 +38,8 @@ export default function CourseDetailPage() {
   const [evaluationTotal, setEvaluationTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [isRelationModalOpen, setIsRelationModalOpen] = useState(false);
+  const [isReloadingCourse, setIsReloadingCourse] = useState(false);
   const [composerVersion, setComposerVersion] = useState(0);
 
   useEffect(() => {
@@ -69,6 +75,32 @@ export default function CourseDetailPage() {
       })),
     [course],
   );
+
+  const reloadCourseDetail = async () => {
+    if (!courseId) return;
+
+    try {
+      setIsReloadingCourse(true);
+      const detail = await getCourseDetail(courseId);
+      setCourse(detail);
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "课程信息刷新失败", description: "请稍后重试。" });
+      throw error;
+    } finally {
+      setIsReloadingCourse(false);
+    }
+  };
+
+  const handleOpenRelationModal = () => {
+    if (!authUser) {
+      feedback.error({ title: "请先登录", description: "登录后才能主动添加授课教师。" });
+      router.push("/login");
+      return;
+    }
+
+    setIsRelationModalOpen(true);
+  };
 
   if (!hasMounted) {
     return (
@@ -120,7 +152,12 @@ export default function CourseDetailPage() {
           ]}
         />
 
-        <DetailBookHero variant="course" data={course} />
+        <DetailBookHero
+          variant="course"
+          data={course}
+          onAddRelation={handleOpenRelationModal}
+          isAddingRelation={isReloadingCourse}
+        />
 
         <div id="evaluations">
           <DetailEvaluationSection
@@ -173,6 +210,15 @@ export default function CourseDetailPage() {
           }}
         />
       </DetailComposerModal>
+
+      <RelationLinkModal
+        variant="course"
+        isOpen={isRelationModalOpen}
+        onClose={() => setIsRelationModalOpen(false)}
+        course={{ id: course.id, name: course.name }}
+        currentTeachers={relatedTeachers}
+        onLinked={reloadCourseDetail}
+      />
     </>
   );
 }

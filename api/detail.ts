@@ -3,6 +3,7 @@ import type {
   CourseDetail,
   CourseEvaluation,
   CourseEvaluationInput,
+  CourseTeacherRelation,
   CourseResourceCollection,
   EvaluationSort,
   EvaluationReply,
@@ -466,6 +467,21 @@ export async function createCourseEvaluation(courseId: number, payload: CourseEv
       payload,
   );
   return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
+}
+
+export async function createCourseTeacherRelation(course_id: number, teacher_id: number) {
+  const response = await service.post<ApiEnvelope<unknown>>("/course-teacher-relations", {
+    course_id,
+    teacher_id,
+  });
+
+  const raw = unwrapResponseData(response);
+  const data = isRecord(raw) ? raw : {};
+
+  return {
+    course_id: toNumber(data.course_id) ?? course_id,
+    teacher_id: toNumber(data.teacher_id) ?? teacher_id,
+  } satisfies CourseTeacherRelation;
 }
 
 export async function updateTeacherEvaluation(evaluationId: string, payload: TeacherEvaluationInput) {

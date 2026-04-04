@@ -130,6 +130,11 @@ export interface CourseEvaluationInput {
   is_anonymous?: boolean;
 }
 
+export interface CourseTeacherRelation {
+  course_id: number;
+  teacher_id: number;
+}
+
 export interface ResourceCommentInput {
   content: string;
   parent_id?: number | null;

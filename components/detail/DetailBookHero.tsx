@@ -44,10 +44,14 @@ type DetailBookHeroProps =
   | {
       variant: "course";
       data: CourseDetail;
+      onAddRelation?: () => void;
+      isAddingRelation?: boolean;
     }
   | {
       variant: "teacher";
       data: TeacherDetail;
+      onAddRelation?: () => void;
+      isAddingRelation?: boolean;
     };
 
 export default function DetailBookHero(props: DetailBookHeroProps) {
@@ -108,11 +112,23 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
             </div>
 
             <div className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}>
-              <div className="mb-3 flex items-center gap-2 text-gray-500">
-                <i className="uil uil-user-circle text-xl text-[var(--first-color)]"></i>
-                <span className="text-sm font-medium text-gray-600">
-                  授课教师 {teachers.length ? `(${teachers.length})` : ""}
-                </span>
+              <div className="mb-3 flex items-center justify-between gap-3 text-gray-500">
+                <div className="flex items-center gap-2">
+                  <i className="uil uil-user-circle text-xl text-[var(--first-color)]"></i>
+                  <span className="text-sm font-medium text-gray-600">
+                    授课教师 {teachers.length ? `(${teachers.length})` : ""}
+                  </span>
+                </div>
+                {props.onAddRelation ? (
+                  <button
+                    type="button"
+                    onClick={props.onAddRelation}
+                    disabled={props.isAddingRelation}
+                    className="rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {props.isAddingRelation ? "处理中..." : "添加教师"}
+                  </button>
+                ) : null}
               </div>
 
               <div className="custom-scrollbar content-start flex w-full flex-wrap gap-2 overflow-y-auto pr-1">
@@ -250,11 +266,23 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
 
         <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4">
           <div className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${TEACHER_CARD_CLASS}`}>
-            <div className="mb-3 flex items-center gap-2 text-gray-500">
-              <i className="uil uil-book-open text-xl text-rose-500"></i>
-              <span className="text-sm font-medium text-gray-600">
-                授课课程 {courses.length ? `(${courses.length})` : ""}
-              </span>
+            <div className="mb-3 flex items-center justify-between gap-3 text-gray-500">
+              <div className="flex items-center gap-2">
+                <i className="uil uil-book-open text-xl text-rose-500"></i>
+                <span className="text-sm font-medium text-gray-600">
+                  授课课程 {courses.length ? `(${courses.length})` : ""}
+                </span>
+              </div>
+              {props.onAddRelation ? (
+                <button
+                  type="button"
+                  onClick={props.onAddRelation}
+                  disabled={props.isAddingRelation}
+                  className="rounded-full border border-rose-200 bg-white px-3 py-1 text-xs font-semibold text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {props.isAddingRelation ? "处理中..." : "添加课程"}
+                </button>
+              ) : null}
             </div>
 
             <div className="custom-scrollbar content-start flex w-full flex-wrap gap-2 overflow-y-auto pr-1">
