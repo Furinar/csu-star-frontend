@@ -4,6 +4,7 @@ import CryptoJS from "crypto-js";
 import { useState } from "react";
 import { recoverPwd, sendCaptcha } from "@/api/auth";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
+import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { feedback } from "@/store/useFeedbackStore";
 import {
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
@@ -210,14 +211,15 @@ export default function PasswordPanel({
         >
           取消
         </button>
-        <button
-          type="button"
-          onClick={handleReset}
+        <ActionSubmitButton
+          defaultText="确认修改"
+          sentText="正在修改..."
+          isSent={isResetting}
+          onClick={() => {
+            handleReset().catch(console.error);
+          }}
           disabled={isResetting || isSendingCode}
-          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
-        >
-          {isResetting ? "正在修改..." : "确认修改"}
-        </button>
+        />
       </div>
     </>
   );

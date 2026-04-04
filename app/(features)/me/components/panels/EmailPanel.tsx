@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { bindCampusEmail, sendCampusEmailCaptcha } from "@/api/me";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
+import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { feedback } from "@/store/useFeedbackStore";
 import type { UserProfile } from "@/types/auth";
 import type { EmailStatus, MeDashboardData } from "@/types/me";
@@ -214,14 +215,15 @@ export default function EmailPanel({
         >
           取消
         </button>
-        <button
-          type="button"
-          onClick={handleVerify}
+        <ActionSubmitButton
+          defaultText={isVerified ? "完成" : "完成认证"}
+          sentText="正在认证..."
+          isSent={isVerifying}
+          onClick={() => {
+            handleVerify().catch(console.error);
+          }}
           disabled={isVerifying || isSendingCode}
-          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
-        >
-          {isVerified ? "完成" : isVerifying ? "正在认证..." : "完成认证"}
-        </button>
+        />
       </div>
     </>
   );
