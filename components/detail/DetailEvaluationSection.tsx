@@ -294,7 +294,6 @@ export default function DetailEvaluationSection({
       setDraftMap((prev) => ({ ...prev, [evaluationId]: "" }));
       setReplyAnonymousMap((prev) => ({ ...prev, [evaluationId]: false }));
       setTargetMap((prev) => ({ ...prev, [evaluationId]: {} }));
-      setReplyingToId(null);
       window.setTimeout(() => {
         setHighlightReplyMap((prev) => ({
           ...prev,

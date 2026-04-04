@@ -24,6 +24,7 @@ export default function CommentComposerForm({
 
     try {
       await onSubmit(trimmed);
+      setContent("");
     } finally {
       setIsSubmitting(false);
     }
