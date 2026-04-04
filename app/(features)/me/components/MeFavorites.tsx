@@ -2,6 +2,8 @@
 
 import {useState} from "react";
 import GlassCard from "@/components/ui/GlassCard";
+import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import type {EntityThemeKey} from "@/lib/entityTheme";
 import type {FavoriteItem, PaginatedData} from "@/types/me";
 import {
   formatDateTime,
@@ -12,7 +14,7 @@ interface MeFavoritesProps {
   favorites: PaginatedData<FavoriteItem>;
 }
 
-function getFavoriteType(item: FavoriteItem) {
+function getFavoriteType(item: FavoriteItem): EntityThemeKey {
   if (item.resource_type) {
     return "resource";
   }
@@ -94,10 +96,10 @@ export default function MeFavorites({favorites}: MeFavoritesProps) {
                           收藏于 {formatDateTime(item.created_at)}
                         </p>
                       </div>
-                      <span
-                          className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                      {getFavoriteTypeLabel(item)}
-                    </span>
+                      <EntityTypeBadge
+                          type={getFavoriteType(item)}
+                          label={getFavoriteTypeLabel(item)}
+                      />
                     </div>
                     <div className="flex flex-wrap gap-3 text-sm text-gray-600">
                       {item.resource_type ? (

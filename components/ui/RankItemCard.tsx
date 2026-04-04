@@ -7,6 +7,7 @@ import type {
   ResourceRankingItem,
   TeacherRankingItem,
 } from "@/types/ranking";
+import { getEntityTheme } from "@/lib/entityTheme";
 import {
   buildCoursePath,
   buildResourceCollectionPath,
@@ -89,6 +90,7 @@ function formatCourseType(courseType?: string | null) {
 
 export default function RankItemCard(props: RankItemCardProps) {
   const { type, filterLabel, filterValue, className = "" } = props;
+  const theme = getEntityTheme(type);
 
   let href = "#";
   let title = "";
@@ -126,17 +128,17 @@ export default function RankItemCard(props: RankItemCardProps) {
         <BarRow
           label="收获感"
           value={item.avg_gain}
-          colorClass="bg-emerald-400"
+          colorClass={theme.dimensionBarClassNames[0]}
         />
         <BarRow
           label="作业量"
           value={item.avg_homework}
-          colorClass="bg-orange-400"
+          colorClass={theme.dimensionBarClassNames[1]}
         />
         <BarRow
           label="考试难度"
           value={item.avg_exam_diff}
-          colorClass="bg-red-400"
+          colorClass={theme.dimensionBarClassNames[2]}
         />
       </>
     );
@@ -172,17 +174,17 @@ export default function RankItemCard(props: RankItemCardProps) {
         <BarRow
           label="教学质量"
           value={item.avg_quality}
-          colorClass="bg-sky-400"
+          colorClass={theme.dimensionBarClassNames[0]}
         />
         <BarRow
           label="给分宽松"
           value={item.avg_grading}
-          colorClass="bg-purple-400"
+          colorClass={theme.dimensionBarClassNames[1]}
         />
         <BarRow
           label="考勤要求"
           value={item.avg_attendance}
-          colorClass="bg-indigo-400"
+          colorClass={theme.dimensionBarClassNames[2]}
         />
       </>
     );
@@ -296,7 +298,9 @@ export default function RankItemCard(props: RankItemCardProps) {
               className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full object-cover border border-gray-200 shadow-sm"
             />
           ) : (
-            <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-sky-50 to-sky-100/50 text-sky-400 border border-sky-100 shadow-sm">
+            <div
+              className={`w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center border shadow-sm ${theme.badgeMutedBackgroundClassName} ${theme.badgeBorderClassName} ${theme.badgeTextClassName}`}
+            >
               <i className="uil uil-user text-xl"></i>
             </div>
           )}
@@ -347,8 +351,12 @@ export default function RankItemCard(props: RankItemCardProps) {
           </div>
         </div>
 
-        <div className="w-[85px] sm:w-[105px] md:w-[115px] shrink-0 flex flex-col items-center justify-center bg-[var(--first-color)]/5 px-2 py-2 relative overflow-hidden">
-          <div className="absolute top-2 left-2 flex items-center gap-1 text-[10px] sm:text-xs font-medium text-[var(--first-color)]/80 truncate w-full">
+        <div
+          className={`w-[85px] sm:w-[105px] md:w-[115px] shrink-0 flex flex-col items-center justify-center px-2 py-2 relative overflow-hidden ${theme.badgeMutedBackgroundClassName}`}
+        >
+          <div
+            className={`absolute top-2 left-2 flex items-center gap-1 text-[10px] sm:text-xs font-medium truncate w-full ${theme.badgeTextClassName}`}
+          >
             <i className="uil uil-filter"></i>
             <span className="truncate">{filterLabel}</span>
           </div>
@@ -356,7 +364,7 @@ export default function RankItemCard(props: RankItemCardProps) {
             <div
               className="text-xl sm:text-2xl md:text-3xl font-black tabular-nums px-1 text-center truncate w-full"
               style={{
-                color: "var(--first-color)",
+                color: type === "teacher" ? "#be185d" : type === "resource" ? "#047857" : "#1d4ed8",
                 textShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
               title={

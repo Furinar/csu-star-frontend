@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import { getEntityTheme } from "@/lib/entityTheme";
 import type {
   SearchCourseItem,
   SearchResourceCard,
@@ -28,16 +30,6 @@ type SearchResultCardProps =
       className?: string;
     };
 
-const TYPE_THEME = {
-  course: { label: "课程", dotClass: "bg-emerald-500", textClass: "text-emerald-700" },
-  teacher: { label: "教师", dotClass: "bg-sky-500", textClass: "text-sky-700" },
-  resource: {
-    label: "资源合集",
-    dotClass: "bg-amber-500",
-    textClass: "text-amber-700",
-  },
-} as const;
-
 function clampScore(value?: number | null) {
   if (value === null || typeof value === "undefined" || Number.isNaN(value)) return 0;
   return Math.min(Math.max(value, 0), 5);
@@ -48,7 +40,15 @@ function formatScore(value?: number | null, digits = 2) {
   return value.toFixed(digits);
 }
 
-function StarRating({ value }: { value?: number | null }) {
+function StarRating({
+  value,
+  fullClassName,
+  halfClassName,
+}: {
+  value?: number | null;
+  fullClassName: string;
+  halfClassName: string;
+}) {
   const score = clampScore(value);
   const fullStars = Math.floor(score);
   const hasHalf = score - fullStars >= 0.5;
@@ -62,7 +62,7 @@ function StarRating({ value }: { value?: number | null }) {
           <span
             key={i}
             className={
-              isFull ? "text-amber-400" : isHalf ? "text-amber-300" : "text-gray-200"
+              isFull ? fullClassName : isHalf ? halfClassName : "text-gray-200"
             }
           >
             <i
@@ -105,7 +105,7 @@ function BarRow({
 
 export default function SearchResultCard(props: SearchResultCardProps) {
   const { type, className = "" } = props;
-  const theme = TYPE_THEME[type];
+  const theme = getEntityTheme(type);
 
   let href = "#";
   let title = "";
@@ -151,9 +151,9 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     rightDetailsIcon = "uil-chart-bar";
     rightDetailsContent = (
       <>
-        <BarRow label="收获感" value={item.avg_gain} colorClass="bg-emerald-400" />
-        <BarRow label="作业量" value={item.avg_homework} colorClass="bg-orange-400" />
-        <BarRow label="考试难度" value={item.avg_exam_diff} colorClass="bg-red-400" />
+        <BarRow label="收获感" value={item.avg_gain} colorClass={theme.dimensionBarClassNames[0]} />
+        <BarRow label="作业量" value={item.avg_homework} colorClass={theme.dimensionBarClassNames[1]} />
+        <BarRow label="考试难度" value={item.avg_exam_diff} colorClass={theme.dimensionBarClassNames[2]} />
       </>
     );
     bottomStats = [
@@ -197,9 +197,9 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     rightDetailsIcon = "uil-chart-bar";
     rightDetailsContent = (
       <>
-        <BarRow label="教学质量" value={item.avg_quality} colorClass="bg-sky-400" />
-        <BarRow label="给分宽松" value={item.avg_grading} colorClass="bg-purple-400" />
-        <BarRow label="考勤要求" value={item.avg_attendance} colorClass="bg-indigo-400" />
+        <BarRow label="教学质量" value={item.avg_quality} colorClass={theme.dimensionBarClassNames[0]} />
+        <BarRow label="给分宽松" value={item.avg_grading} colorClass={theme.dimensionBarClassNames[1]} />
+        <BarRow label="考勤要求" value={item.avg_attendance} colorClass={theme.dimensionBarClassNames[2]} />
       </>
     );
     bottomStats = [
@@ -250,9 +250,8 @@ export default function SearchResultCard(props: SearchResultCardProps) {
       href={href}
       className={`relative flex flex-col h-[260px] max-w-[460px] mx-auto w-full bg-white rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 border border-gray-200 overflow-hidden ${className}`}
     >
-      <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-gray-50/80 px-2 py-1 rounded-md border border-gray-100">
-        <div className={`w-2 h-2 rounded-full ${theme.dotClass}`} />
-        <span className={`text-[11px] font-medium ${theme.textClass}`}>{theme.label}</span>
+      <div className="absolute top-4 right-4">
+        <EntityTypeBadge type={type} />
       </div>
 
       <div className="p-5 flex flex-col h-full">
@@ -285,7 +284,11 @@ export default function SearchResultCard(props: SearchResultCardProps) {
             </div>
             <div className="text-[10px] sm:text-xs text-gray-400 mt-0.5">{leftScoreHint}</div>
             <div className="mt-1.5">
-              <StarRating value={leftScoreValue} />
+              <StarRating
+                value={leftScoreValue}
+                fullClassName={theme.starFillClassName}
+                halfClassName={`${theme.starFillClassName} opacity-60`}
+              />
             </div>
           </div>
 
