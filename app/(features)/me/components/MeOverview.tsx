@@ -64,7 +64,7 @@ export default function MeOverview({
 }: MeOverviewProps) {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
-  const settingsActions: Array<{
+  const baseSettingsActions: Array<{
     key: PanelKey;
     title: string;
     icon: string;
@@ -128,6 +128,16 @@ export default function MeOverview({
       desc: "提交举报或纠错",
     },
   ];
+  const isVerified = accountMode === "verified";
+  const settingsActions = baseSettingsActions.filter((item) => {
+    if (item.key === "password") {
+      return isVerified;
+    }
+    if (item.key === "email") {
+      return !isVerified;
+    }
+    return true;
+  });
 
   const handleLogout = () => {
     logout();

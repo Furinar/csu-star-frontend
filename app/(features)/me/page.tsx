@@ -43,7 +43,6 @@ import {
   buildFallbackEmailStatus,
   createEmptyContributionSummary,
   createEmptyPaginated,
-  formatDateTime,
   formatNumber,
   getAccountMode,
   getAccountPresentation,
@@ -112,6 +111,9 @@ export default function Me() {
     accountMode,
     emailStatus,
     profile,
+  );
+  const isVerifiedCampusEmail = Boolean(
+    emailStatus.email_verified || profile?.email_verified,
   );
   const todayKey = hasMounted ? getDateKey(new Date()) : "";
   const hasCheckedInToday = todayKey
@@ -204,6 +206,12 @@ export default function Me() {
 
     if (!profile || !accessToken) {
       setOpenPanel("guest");
+      return;
+    }
+    if (panel === "password" && !isVerifiedCampusEmail) {
+      return;
+    }
+    if (panel === "email" && isVerifiedCampusEmail) {
       return;
     }
     if (panel === "downloads") void loadDownloadsData();
@@ -639,19 +647,20 @@ export default function Me() {
       </FloatingPanel>
 
       <FloatingPanel
-        open={openPanel === "password"}
+        open={openPanel === "password" && isVerifiedCampusEmail}
         title="修改密码"
         description="通过校园邮箱验证码来重置你的登录密码。"
         onClose={() => setOpenPanel(null)}
       >
         <PasswordPanel
           initialEmail={emailStatus.email ?? profile?.email ?? ""}
+          emailLocked={isVerifiedCampusEmail}
           onClose={() => setOpenPanel(null)}
         />
       </FloatingPanel>
 
       <FloatingPanel
-        open={openPanel === "email"}
+        open={openPanel === "email" && !isVerifiedCampusEmail}
         title="绑定校园邮箱"
         description="绑定校园邮箱以获取在中南星的完整访问权限。"
         onClose={() => setOpenPanel(null)}

@@ -16,9 +16,11 @@ import {
 
 export default function PasswordPanel({
   initialEmail,
+  emailLocked = false,
   onClose,
 }: {
   initialEmail: string;
+  emailLocked?: boolean;
   onClose: () => void;
 }) {
   const [form, setForm] = useState({
@@ -132,9 +134,10 @@ export default function PasswordPanel({
       <div className="space-y-4">
         <AdvancedInput
           label="校园邮箱"
-          placeholder="填写你的校园邮箱或前缀"
+          placeholder={emailLocked ? "校园邮箱已绑定，不可修改" : "填写你的校园邮箱或前缀"}
           autoComplete="email"
           value={form.email}
+          readOnly={emailLocked}
           onChange={(event) =>
             setForm((current) => ({
               ...current,
