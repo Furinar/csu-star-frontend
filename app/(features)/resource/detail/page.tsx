@@ -559,21 +559,32 @@ export default function ResourceDetailPage() {
         >
           <div className="mt-4 flex flex-col gap-3">
             {resource.course ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-400">所属课程:</span>
-                <div className="flex flex-wrap gap-2">
-                  <EntityPillLink
-                    href={buildCoursePath(resource.course.id)}
-                    tone="resource"
-                  >
-                    {resource.course.name}
-                  </EntityPillLink>
-                  <EntityPillLink
-                    href={buildResourceCollectionPath(resource.course.id)}
-                    tone="resource"
-                  >
-                    课程资源合集
-                  </EntityPillLink>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-slate-400">
+                    所属课程:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <EntityPillLink
+                      href={buildCoursePath(resource.course.id)}
+                      tone="resource"
+                    >
+                      {resource.course.name}
+                    </EntityPillLink>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-slate-400">
+                    资源合集:
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <EntityPillLink
+                      href={buildResourceCollectionPath(resource.course.id)}
+                      tone="resource"
+                    >
+                      课程资源合集
+                    </EntityPillLink>
+                  </div>
                 </div>
               </div>
             ) : null}
