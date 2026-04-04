@@ -181,7 +181,6 @@ export interface EmailStatus {
 export interface InviteCodeInfo {
   invite_code: string;
   used_count: number;
-  expires_at?: string | null;
 }
 
 export interface CheckinResult {

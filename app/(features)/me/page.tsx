@@ -709,14 +709,6 @@ export default function Me() {
                   label="成功邀请"
                   value={`${inviteCode.used_count} 人`}
                 />
-                <StatPill
-                  label="有效期"
-                  value={
-                    inviteCode.expires_at
-                      ? formatDateTime(inviteCode.expires_at)
-                      : "永久有效"
-                  }
-                />
               </div>
             </GlassCard>
             <div className="flex justify-end">
