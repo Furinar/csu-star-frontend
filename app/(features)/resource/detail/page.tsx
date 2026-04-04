@@ -712,7 +712,7 @@ export default function ResourceDetailPage() {
                     isLiked: reply.is_liked,
                     actions: buildCommentActions(reply, comment.id),
                     onLike: (liked: boolean) =>
-                      handleToggleLike(reply.id, !liked),
+                      handleToggleLike(reply.id, liked, comment.id),
                     onReplyClick: () => {
                       setTargetMap((prev) => ({
                         ...prev,
@@ -774,7 +774,7 @@ export default function ResourceDetailPage() {
                       />
                     </div>
                   ),
-                  onLike: (liked) => handleToggleLike(comment.id, !liked),
+                  onLike: (liked) => handleToggleLike(comment.id, liked),
                   onReplyClick: () =>
                     setTargetMap((prev) => ({
                       ...prev,
