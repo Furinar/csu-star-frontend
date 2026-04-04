@@ -80,6 +80,7 @@ export default function ResourceDetailPage() {
   const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<number | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
+  const [isResourceLikeLoading, setIsResourceLikeLoading] = useState(false);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<{ id: number; parentId?: number | null; content: string } | null>(null);
@@ -324,6 +325,51 @@ export default function ResourceDetailPage() {
     }
   };
 
+  const handleToggleResourceLike = async () => {
+    if (!resource) return;
+    if (!viewerId) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能点赞资源。",
+      });
+      return;
+    }
+    if (isDeleted) {
+      feedback.warning({
+        title: "资源已删除",
+        description: "已删除资源不支持点赞互动。",
+      });
+      return;
+    }
+    if (isResourceLikeLoading) return;
+
+    const currentLiked = resource.is_liked ?? false;
+
+    try {
+      setIsResourceLikeLoading(true);
+      if (currentLiked) {
+        await removeLike("resource", String(resource.id));
+      } else {
+        await addLike("resource", String(resource.id));
+      }
+
+      setResource((prev) =>
+        prev
+          ? {
+              ...prev,
+              is_liked: !currentLiked,
+              likes: Math.max(0, (prev.likes ?? 0) + (currentLiked ? -1 : 1)),
+            }
+          : prev,
+      );
+    } catch (error) {
+      console.error(error);
+      feedback.error({ title: "点赞失败", description: "请稍后重试。" });
+    } finally {
+      setIsResourceLikeLoading(false);
+    }
+  };
+
   const handleUpdateComment = async () => {
     if (!editingComment) return;
     const content = editingCommentDraft.trim();
@@ -532,8 +578,8 @@ export default function ResourceDetailPage() {
                 <span>浏览 {resource.views || 0}</span>
               </div>
               <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
-                <span>点赞 {resource.likes || 0}</span>
+                <i className="uil uil-bookmark text-lg text-emerald-500"></i>
+                <span>收藏 {resource.favorite_count || 0}</span>
               </div>
             </div>
           }
@@ -542,11 +588,28 @@ export default function ResourceDetailPage() {
               <div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-semibold text-slate-700">
-                    资源收藏
+                    资源互动
                   </div>
                   <ItemActionMenu items={buildResourceActions()} />
                 </div>
-                <div className="mt-4">
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleToggleResourceLike()}
+                    disabled={isDeleted || isResourceLikeLoading}
+                    className={`inline-flex items-center justify-center gap-2 rounded-[14px] border px-4 py-2.5 text-sm font-medium transition ${
+                      resource.is_liked
+                        ? "border-rose-200 bg-rose-50 text-rose-600"
+                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                  >
+                    <i className="uil uil-thumbs-up text-base"></i>
+                    <span>
+                      {isResourceLikeLoading
+                        ? "处理中..."
+                        : `${resource.is_liked ? "已点赞" : "点赞"} ${resource.likes ?? 0}`}
+                    </span>
+                  </button>
                   {isDeleted ? (
                     <div className="rounded-[12px] border border-rose-100 bg-rose-50 px-4 py-2 text-center text-sm font-medium text-rose-700">
                       禁止收藏
@@ -557,6 +620,21 @@ export default function ResourceDetailPage() {
                       targetId={resource.id}
                       targetType="resource"
                       initialStatus={resource.is_favorited ?? false}
+                      className="w-full"
+                      onStatusChange={(nextCollected) =>
+                        setResource((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                is_favorited: nextCollected,
+                                favorite_count: Math.max(
+                                  0,
+                                  (prev.favorite_count ?? 0) + (nextCollected ? 1 : -1),
+                                ),
+                              }
+                            : prev,
+                        )
+                      }
                     />
                   )}
                 </div>
@@ -570,7 +648,7 @@ export default function ResourceDetailPage() {
               >
                 {isDeleted
                   ? "资源已删除，仅供记录展示"
-                  : "收藏后可以稍后再看"}
+                  : "点赞表达认可，收藏方便回看"}
               </div>
             </div>
           }

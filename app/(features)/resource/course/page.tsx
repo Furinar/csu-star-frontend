@@ -227,16 +227,16 @@ export default function CourseResourceCollectionPage() {
 
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
                 <div className="flex items-center gap-1.5 transition-colors">
-                  <i className="uil uil-file-alt text-lg text-emerald-500"></i>
-                  <span>{resource.file_count ?? 0} 个文件</span>
-                </div>
-                <div className="flex items-center gap-1.5 transition-colors">
                   <i className="uil uil-cloud-download text-lg text-blue-500"></i>
                   <span>下载 {resource.downloads ?? 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5 transition-colors">
                   <i className="uil uil-eye text-lg text-amber-500"></i>
                   <span>浏览 {resource.views ?? 0}</span>
+                </div>
+                <div className="flex items-center gap-1.5 transition-colors">
+                  <i className="uil uil-bookmark text-lg text-emerald-500"></i>
+                  <span>收藏 {resource.favorite_count ?? 0}</span>
                 </div>
               </div>
 

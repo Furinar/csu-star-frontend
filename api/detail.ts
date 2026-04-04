@@ -138,6 +138,7 @@ const normalizeResourceBriefs = (raw: unknown) => {
         downloads: toNumber(item.downloads),
         views: toNumber(item.views),
         likes: toNumber(item.likes),
+        favorite_count: toNumber(item.favorite_count),
         created_at: toStringSafe(item.created_at),
         file_count: toNumber(item.file_count),
         first_file: isRecord(item.first_file)
@@ -355,6 +356,7 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
     downloads: toNumber(data.downloads),
     views: toNumber(data.views),
     likes: toNumber(data.likes),
+    favorite_count: toNumber(data.favorite_count),
     is_liked: toBoolean(data.is_liked),
     hot_score: toNumber(data.hot_score),
     created_at: toStringSafe(data.created_at),

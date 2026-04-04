@@ -24,6 +24,7 @@ export interface ResourceBrief {
   downloads?: number | null;
   views?: number | null;
   likes?: number | null;
+  favorite_count?: number | null;
   created_at?: string | null;
   file_count?: number | null;
   first_file?: {
@@ -219,6 +220,7 @@ export interface ResourceDetail {
   downloads?: number | null;
   views?: number | null;
   likes?: number | null;
+  favorite_count?: number | null;
   is_liked?: boolean | null;
   hot_score?: number | null;
   created_at?: string | null;

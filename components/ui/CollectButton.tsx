@@ -6,6 +6,7 @@ interface CollectButtonProps {
   size?: "sm" | "md" | "lg";
   isCollected?: boolean;
   onClick?: () => void;
+  onStatusChange?: (nextCollected: boolean) => void;
   targetId?: number | string;
   targetType?: "resource" | "course" | "teacher";
   initialStatus?: boolean;
@@ -17,6 +18,7 @@ export default function CollectButton({
   size = "md",
   isCollected = true,
   onClick,
+  onStatusChange,
   targetId,
   targetType,
   initialStatus,
@@ -71,7 +73,9 @@ export default function CollectButton({
       } else {
         await addFavorite(targetType, String(targetId));
       }
-      setCollected((prev) => !prev);
+      const nextCollected = !collected;
+      setCollected(nextCollected);
+      onStatusChange?.(nextCollected);
       feedback.success({
         title: collected ? "已取消收藏" : "收藏成功",
       });
