@@ -19,6 +19,10 @@ function getFavoriteType(item: FavoriteItem): EntityThemeKey {
     return "resource";
   }
 
+  if (item.course_type || item.title_label) {
+    return "course";
+  }
+
   if (item.name) {
     return "teacher";
   }
