@@ -103,7 +103,7 @@ export default function CourseGlobalEvaluationModal({
     >
       {!selectedCourse ? (
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-[26px] border border-sky-100 bg-sky-50/70 p-5">
+          <div className="rounded-[26px] border border-sky-100 bg-white p-5">
             <div className="text-sm font-medium text-sky-700">选择课程</div>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               搜索后选择一门课程，再进入统一的评价表单。
@@ -156,7 +156,7 @@ export default function CourseGlobalEvaluationModal({
         </div>
       ) : (
         <div className="mt-2 flex flex-col gap-5">
-          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-sky-100 bg-sky-50 px-5 py-4">
+          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-sky-100 bg-white px-5 py-4">
             <div>
               <div className="text-xs font-medium uppercase tracking-[0.2em] text-sky-500">Selected</div>
               <div className="mt-1 font-medium text-sky-900">{selectedCourse.name}</div>

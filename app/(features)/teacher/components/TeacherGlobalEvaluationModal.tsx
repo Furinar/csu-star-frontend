@@ -103,7 +103,7 @@ export default function TeacherGlobalEvaluationModal({
     >
       {!selectedTeacher ? (
         <div className="mx-auto max-w-2xl">
-          <div className="rounded-[26px] border border-rose-100 bg-rose-50/70 p-5">
+          <div className="rounded-[26px] border border-rose-100 bg-white p-5">
             <div className="text-sm font-medium text-rose-700">选择教师</div>
             <p className="mt-1 text-sm leading-6 text-slate-600">
               搜索并选择教师后，再进入统一的授课体验评价表单。
@@ -156,7 +156,7 @@ export default function TeacherGlobalEvaluationModal({
         </div>
       ) : (
         <div className="mt-2 flex flex-col gap-5">
-          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-rose-100 bg-rose-50 px-5 py-4">
+          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-rose-100 bg-white px-5 py-4">
             <div>
               <div className="text-xs font-medium uppercase tracking-[0.2em] text-rose-500">Selected</div>
               <div className="mt-1 font-medium text-rose-900">{selectedTeacher.name}</div>
