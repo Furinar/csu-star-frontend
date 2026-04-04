@@ -138,6 +138,14 @@ const normalizeResourceBriefs = (raw: unknown) => {
         downloads: toNumber(item.downloads),
         likes: toNumber(item.likes),
         created_at: toStringSafe(item.created_at),
+        file_count: toNumber(item.file_count),
+        first_file: isRecord(item.first_file)
+          ? {
+            filename: toStringSafe(item.first_file.filename) ?? "未命名文件",
+            mime: toStringSafe(item.first_file.mime),
+            size_bytes: toNumber(item.first_file.size_bytes) ?? 0,
+          }
+          : null,
       },
     ];
   });

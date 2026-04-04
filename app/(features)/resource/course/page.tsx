@@ -14,11 +14,20 @@ import {
   buildResourcePath,
 } from "@/lib/paths";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import { formatDateTimeZh } from "@/lib/date";
 import ResourceUploaderModal from "../components/ResourceUploaderModal";
+import { getFileIcon } from "../detail/fileIcons";
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
   return value.toFixed(2);
+}
+
+function formatFileSize(bytes?: number | null) {
+  if (!bytes) return "未知大小";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 export default function CourseResourceCollectionPage() {
@@ -166,26 +175,80 @@ export default function CourseResourceCollectionPage() {
         </div>
       </section>
 
-      <SectionCard title="课程资料" subtitle="按资源卡片继续进入单个资料详情。">
+      <SectionCard title="课程资料" subtitle="展示每组资源的首个文件预览和基础信息。">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {detail.items.items.map((resource) => (
             <Link
               key={resource.id}
               href={buildResourcePath(resource.id)}
-              className="rounded-3xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-lg"
+              className="group rounded-3xl border border-gray-100 bg-gradient-to-br from-white via-white to-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
-                  {getResourceTypeLabel(resource.resource_type)}
-                </span>
-                <span className="text-xs text-gray-400">
-                  下载 {resource.downloads ?? 0}
-                </span>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                    {getResourceTypeLabel(resource.resource_type)}
+                  </span>
+                  <div className="mt-3 text-lg font-semibold text-gray-900 line-clamp-2">
+                    {resource.title}
+                  </div>
+                </div>
+                <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-right">
+                  <div className="text-[11px] text-emerald-600">文件数</div>
+                  <div className="mt-1 text-base font-semibold text-emerald-900">
+                    {resource.file_count ?? 0}
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 text-lg font-semibold text-gray-900">
-                {resource.title}
+
+              <div className="mt-4 rounded-2xl border border-gray-100 bg-white/90 p-4">
+                {resource.first_file ? (
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-12 w-12 shrink-0 rounded-2xl bg-gray-50 bg-contain bg-center bg-no-repeat"
+                      style={{ backgroundImage: `url(${getFileIcon(resource.first_file.filename)})` }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs text-gray-400">首个文件预览</div>
+                      <div
+                        className="mt-1 truncate text-sm font-medium text-gray-800"
+                        title={resource.first_file.filename}
+                      >
+                        {resource.first_file.filename}
+                      </div>
+                      <div className="mt-1 text-xs text-gray-400">
+                        {formatFileSize(resource.first_file.size_bytes)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex min-h-12 items-center text-sm text-gray-400">
+                    暂无文件预览
+                  </div>
+                )}
               </div>
-              <div className="mt-4 text-sm text-[var(--first-color)]">
+
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                  <div className="text-[11px] text-gray-400">下载量</div>
+                  <div className="mt-1 text-sm font-medium text-gray-800">
+                    {resource.downloads ?? 0}
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-gray-50 px-3 py-2">
+                  <div className="text-[11px] text-gray-400">点赞量</div>
+                  <div className="mt-1 text-sm font-medium text-gray-800">
+                    {resource.likes ?? 0}
+                  </div>
+                </div>
+                <div className="col-span-2 rounded-2xl bg-gray-50 px-3 py-2">
+                  <div className="text-[11px] text-gray-400">上传时间</div>
+                  <div className="mt-1 text-sm font-medium text-gray-800">
+                    {formatDateTimeZh(resource.created_at)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 text-sm font-medium text-[var(--first-color)] group-hover:translate-x-0.5 transition">
                 查看资源详情
               </div>
             </Link>

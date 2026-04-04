@@ -24,6 +24,12 @@ export interface ResourceBrief {
   downloads?: number | null;
   likes?: number | null;
   created_at?: string | null;
+  file_count?: number | null;
+  first_file?: {
+    filename: string;
+    mime?: string | null;
+    size_bytes: number;
+  } | null;
 }
 
 export interface UserBrief {
