@@ -19,7 +19,6 @@ import DetailFloatingActionButton from "@/components/detail/DetailFloatingAction
 import RelationLinkModal from "@/components/detail/RelationLinkModal";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
-import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
@@ -143,14 +142,14 @@ export default function TeacherDetailPage() {
   return (
     <>
       <DetailPageShell>
-        <PageBreadcrumbs
-          backHref="/teacher"
-          backLabel="返回教师页"
-          items={[
-            { label: "教师", href: "/teacher" },
-            { label: teacher.name },
-          ]}
-        />
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
+        >
+          <i className="uil uil-arrow-left text-base" />
+          返回上一页
+        </button>
 
         <DetailBookHero
           variant="teacher"

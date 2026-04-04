@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   addLike,
   createResourceComment,
@@ -42,7 +42,6 @@ import { getPageTheme } from "@/lib/pageTheme";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
-import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 
@@ -64,6 +63,7 @@ function formatFileSize(bytes?: number | null) {
 }
 
 export default function ResourceDetailPage() {
+  const router = useRouter();
   const resourceTheme = getPageTheme("/resource");
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
@@ -584,22 +584,14 @@ export default function ResourceDetailPage() {
   return (
     <>
       <DetailPageShell>
-        <PageBreadcrumbs
-          backHref={resource.course ? buildResourceCollectionPath(resource.course.id) : "/resource"}
-          backLabel={resource.course ? "返回课程资源合集" : "返回资源页"}
-          items={[
-            { label: "资源", href: "/resource" },
-            ...(resource.course
-              ? [
-                  {
-                    label: resource.course.name,
-                    href: buildResourceCollectionPath(resource.course.id),
-                  },
-                ]
-              : []),
-            { label: resource.title },
-          ]}
-        />
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
+        >
+          <i className="uil uil-arrow-left text-base" />
+          返回上一页
+        </button>
 
         <DetailHero
           accent="resource"
