@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
-import ResourcePreviewSummary from "@/components/ui/ResourcePreviewSummary";
 import { getEntityTheme } from "@/lib/entityTheme";
 import type {
   SearchCourseItem,
@@ -221,13 +220,23 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     leftScoreTitle = "课程评分";
     leftScoreValue = item.avg_score ?? 0;
     leftScoreHint = "/ 5.0";
-    rightDetailsTitle = "资料预览";
-    rightDetailsIcon = "uil-files-landscapes";
+    rightDetailsTitle = "合集概况";
+    rightDetailsIcon = "uil-analytics";
     rightDetailsContent = (
-      <ResourcePreviewSummary
-        items={item.resources_preview}
-        totalCount={item.resource_count}
-      />
+      <div className="flex flex-col gap-2 justify-center h-full text-xs text-gray-600">
+        <div className="flex items-center justify-between gap-2">
+          <span>资源总数</span>
+          <span className="font-medium text-gray-700">{item.resource_count}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span>累计下载</span>
+          <span className="font-medium text-gray-700">{item.download_total ?? 0}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span>累计点赞</span>
+          <span className="font-medium text-gray-700">{item.like_total ?? 0}</span>
+        </div>
+      </div>
     );
     bottomStats = [
       { icon: "uil-file-alt", label: "资料", value: item.resource_count ?? 0 },
