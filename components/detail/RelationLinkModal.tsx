@@ -164,6 +164,28 @@ export default function RelationLinkModal(props: RelationLinkModalProps) {
           </p>
         </div>
 
+        <div className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50/80 px-5 py-4">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Selected
+            </div>
+            <div className="mt-1 font-semibold text-slate-800">
+              {selectedItem?.name ?? `请选择一个${isCourseVariant ? "教师" : "课程"}`}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!selectedItem || isSubmitting}
+            className={`rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-slate-300 ${
+              isCourseVariant ? "bg-sky-500 hover:bg-sky-600" : "bg-rose-500 hover:bg-rose-600"
+            }`}
+          >
+            {isSubmitting ? "添加中..." : isCourseVariant ? "添加教师" : "添加课程"}
+          </button>
+        </div>
+
         <div className="relative">
           <AdvancedInput
             label={
@@ -219,28 +241,6 @@ export default function RelationLinkModal(props: RelationLinkModalProps) {
               未找到可添加的{isCourseVariant ? "教师" : "课程"}，或搜索结果均已关联。
             </div>
           ) : null}
-        </div>
-
-        <div className="flex items-center justify-between gap-4 rounded-3xl border border-slate-200 bg-slate-50/80 px-5 py-4">
-          <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-              Selected
-            </div>
-            <div className="mt-1 font-semibold text-slate-800">
-              {selectedItem?.name ?? `请选择一个${isCourseVariant ? "教师" : "课程"}`}
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!selectedItem || isSubmitting}
-            className={`rounded-full px-5 py-2 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-slate-300 ${
-              isCourseVariant ? "bg-sky-500 hover:bg-sky-600" : "bg-rose-500 hover:bg-rose-600"
-            }`}
-          >
-            {isSubmitting ? "添加中..." : isCourseVariant ? "添加教师" : "添加课程"}
-          </button>
         </div>
       </div>
     </DetailComposerModal>
