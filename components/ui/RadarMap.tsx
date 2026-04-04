@@ -56,7 +56,7 @@ export default function RadarMap({
         };
 
         const getThemeColor = () => {
-            const styles = getComputedStyle(document.documentElement);
+            const styles = getComputedStyle(chartRef.current ?? document.documentElement);
             const accent = styles.getPropertyValue('--first-color').trim() || '#8b5cf6';
             const axisText = styles.getPropertyValue('--muted-foreground').trim() || '#4a4a4a';
             const axisLine = styles.getPropertyValue('--border').trim() || 'rgba(9, 69, 110, 0.12)';
@@ -168,7 +168,7 @@ export default function RadarMap({
             height,
             display: 'block',
             borderRadius: '12px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.34), rgba(255,255,255,0.08))',
+            background: 'var(--page-accent-gradient-soft)',
         }}
         />
     );

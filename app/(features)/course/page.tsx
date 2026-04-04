@@ -6,6 +6,7 @@ import SearchBar from "@/components/ui/SearchBar";
 import RankCard from "@/components/ui/RankCard";
 import RandomBook from "@/app/(features)/course/components/RandomBook";
 import { buildCoursePath } from "@/lib/paths";
+import { getPageTheme } from "@/lib/pageTheme";
 import { useRouter } from "next/navigation";
 import { getCourseRankings } from "@/api/ranking";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
@@ -18,6 +19,7 @@ type RankCardItem = {
 };
 
 const PAGE_SIZE = 5;
+const courseTheme = getPageTheme("/course");
 
 const mapRankItems = (
   items: Array<{ id: number; name: string; score: number }>,
@@ -95,14 +97,14 @@ export default function Course() {
 
         <RandomBook />
 
-        <div className="flex flex-col gap-6 w-full mt-8 relative z-10 bg-gray-100 rounded-[40px] pb-10 px-10 pt-7">
-          <div className="absolute bottom-10 left-10 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob -z-10"></div>
-          <div className="absolute bottom-0 right-10 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 -z-10"></div>
-          <div className="absolute top-16 left-2/5 w-72 h-72 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000 -z-10"></div>
+        <div className="relative z-10 mt-8 flex w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-10 pt-7">
+          <div className="absolute bottom-10 left-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl -z-10" style={{ backgroundColor: courseTheme.blobColors[0] }}></div>
+          <div className="absolute bottom-0 right-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-2000 -z-10" style={{ backgroundColor: courseTheme.blobColors[1] }}></div>
+          <div className="absolute top-16 left-2/5 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-4000 -z-10" style={{ backgroundColor: courseTheme.blobColors[2] }}></div>
 
           <div className="flex items-center justify-between mb-2 mt-4">
             <div className="head flex w-full">
-              <h2 className="text-3xl font-extrabold text-transparent pl-5 flex-1">
+              <h2 className="hero-gradient-text flex-1 pl-5 text-3xl font-extrabold">
                 课程综合评价榜单
               </h2>
 

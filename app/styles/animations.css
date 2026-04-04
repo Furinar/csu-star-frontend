@@ -99,7 +99,7 @@
 
 /* ---------- Hero 移动端渐变标题 ---------- */
 .hero-gradient-text {
-  background: linear-gradient(135deg, var(--first-color) 0%, var(--glow-400) 100%);
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--hero-gradient-end) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

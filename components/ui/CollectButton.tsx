@@ -21,7 +21,7 @@ export default function CollectButton({
   targetType,
   initialStatus,
   className = "",
-  activeColor = "text-fuchsia-500",
+  activeColor = "text-white",
 }: CollectButtonProps) {
   const [collected, setCollected] = React.useState(initialStatus ?? isCollected);
   const [loading, setLoading] = React.useState(false);
@@ -95,7 +95,7 @@ export default function CollectButton({
       className={`group relative flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${s.button} ${className}`}
     >
       <span
-        className={`absolute left-[4px] z-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-300 ${s.iconCont} ${s.iconContHover} ${collected ? "bg-gradient-to-b from-[#ff88ff] to-[#ac46ff]" : "bg-gray-300"}`}
+        className={`absolute left-[4px] z-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-300 ${s.iconCont} ${s.iconContHover} ${collected ? "bg-[image:var(--page-accent-gradient)] shadow-[0_10px_24px_var(--page-accent-soft-strong)]" : "bg-gray-300"}`}
       >
         <svg
           viewBox="0 0 384 512"

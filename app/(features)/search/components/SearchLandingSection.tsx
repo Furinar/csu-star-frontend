@@ -183,7 +183,12 @@ export default function SearchLandingSection({
     <section className={`flex flex-col gap-6 ${className}`}>
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <h2 className="text-3xl font-bold text-gray-900">{title}</h2>
+          <h2
+            className="bg-clip-text text-3xl font-bold text-transparent"
+            style={{ backgroundImage: "var(--page-accent-gradient)" }}
+          >
+            {title}
+          </h2>
           {description ? (
             <p className="text-sm text-gray-500">{description}</p>
           ) : null}
@@ -191,7 +196,7 @@ export default function SearchLandingSection({
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center rounded-3xl border border-gray-200 bg-white/70 py-10 text-gray-500">
+        <div className="flex items-center justify-center rounded-3xl border border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] py-10 text-[var(--page-accent-text)]">
           正在加载列表...
         </div>
       ) : null}
@@ -203,7 +208,7 @@ export default function SearchLandingSection({
       ) : null}
 
       {!isLoading && !error && items.length === 0 ? (
-        <div className="flex items-center justify-center rounded-3xl border border-gray-200 bg-white/70 py-10 text-gray-500">
+        <div className="flex items-center justify-center rounded-3xl border border-[var(--page-accent-border)] bg-white/80 py-10 text-gray-500">
           暂无可展示内容
         </div>
       ) : null}
@@ -211,7 +216,7 @@ export default function SearchLandingSection({
       {!isLoading && !error && items.length > 0 ? (
         <>
           <SearchResultsGrid items={items} />
-          <div ref={loadMoreRef} className="py-4 text-center text-sm text-gray-500">
+          <div ref={loadMoreRef} className="py-4 text-center text-sm text-[var(--page-accent-text)]/80">
             {isLoadingMore ? "正在加载更多..." : null}
             {!isLoadingMore && !hasMore ? "没有更多内容了" : null}
           </div>

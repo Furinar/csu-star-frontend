@@ -18,15 +18,18 @@ interface RankCardProps {
 
 export default function RankCard({ title, data, onItemClick, onViewAll }: RankCardProps) {
   return (
-    <div className="flex flex-col flex-1 p-6 rounded-3xl bg-white/30 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] min-w-[280px]">
+    <div className="flex min-w-[280px] flex-1 flex-col rounded-3xl border border-white/40 bg-white/40 p-6 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] backdrop-blur-xl transition-all duration-300 hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)]">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <h3
+          className="bg-clip-text text-xl font-bold text-transparent"
+          style={{ backgroundImage: "var(--page-accent-gradient)" }}
+        >
           {title}
         </h3>
         <button
           type="button"
           onClick={onViewAll}
-          className={`text-sm transition-colors ${onViewAll ? "text-gray-500 hover:text-blue-500 cursor-pointer" : "text-gray-400 cursor-default"}`}
+          className={`text-sm transition-colors ${onViewAll ? "cursor-pointer text-gray-500 hover:text-[var(--page-accent-text)]" : "cursor-default text-gray-400"}`}
         >
           查看全部
         </button>
@@ -105,7 +108,7 @@ export default function RankCard({ title, data, onItemClick, onViewAll }: RankCa
               </div>
 
               <div className="flex items-center gap-1">
-                <span className="font-bold text-indigo-600 text-center w-10">
+                <span className="w-10 text-center font-bold text-[var(--page-accent-text)]">
                   {item.score.toFixed(2)}
                 </span>
                 {/*<span className="text-xs text-gray-500">*/}

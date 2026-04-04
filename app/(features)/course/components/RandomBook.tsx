@@ -5,6 +5,7 @@ import StarRating from "@/components/ui/StarRating";
 import RatingBar from "@/components/ui/RatingBar";
 import Link from "next/link";
 import CollectButton from "@/components/ui/CollectButton";
+import { getPageTheme } from "@/lib/pageTheme";
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
 import {getRandomCourseShowcase} from "@/api/showcase";
@@ -39,6 +40,8 @@ const EMPTY_COURSE: CourseShowcaseItem = {
   teacher_count: 0,
   teachers: [],
 };
+
+const courseTheme = getPageTheme("/course");
 
 export default function RandomBook() {
   const router = useRouter();
@@ -273,7 +276,7 @@ export default function RandomBook() {
 
                     <div>
                       <div className="mb-1">
-                        <StarRating score={normalizeRating(course.avg_score)} size={"18px"}/>
+                        <StarRating score={normalizeRating(course.avg_score)} size={"18px"} fillClassName="text-[var(--first-color)]"/>
                       </div>
 
                       <div className="text-md text-gray-500">
@@ -287,25 +290,25 @@ export default function RandomBook() {
                         label={"推荐指数"}
                         score={normalizeRating(course.avg_score)}
                         maxScore={5.0}
-                        color={1}
+                        gradient={courseTheme.ratingGradients[0]}
                     />
                     <RatingBar
                         label={"给分情况"}
                         score={normalizeRating(course.avg_homework)}
                         maxScore={5.0}
-                        color={1}
+                        gradient={courseTheme.ratingGradients[1]}
                     />
                     <RatingBar
                         label={"任务量"}
                         score={normalizeRating(course.avg_exam_diff)}
                         maxScore={5.0}
-                        color={2}
+                        gradient={courseTheme.ratingGradients[2]}
                     />
                     <RatingBar
                         label={"课程收获"}
                         score={normalizeRating(course.avg_gain)}
                         maxScore={5.0}
-                        color={2}
+                        gradient={courseTheme.ratingGradients[0]}
                     />
                   </div>
                 </div>
