@@ -55,13 +55,13 @@ export default function BilibiliReplyItem({
       <div className="flex-1 min-w-0 text-[13.5px] leading-relaxed">
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center text-[12.5px] leading-normal mb-0.5">
-            <span className="font-medium text-gray-500 cursor-pointer hover:text-emerald-600 transition-colors mr-1.5">
+            <span className="mr-1.5 cursor-pointer font-medium text-gray-500 transition-colors hover:text-[var(--page-accent-text)]">
               {displayUser.nickname}
             </span>
             {replyToUser && (
               <span className="text-gray-400 text-[12px] mr-1.5">
                 回复{" "}
-                <span className="text-emerald-600 cursor-pointer hover:underline">
+                <span className="cursor-pointer text-[var(--page-at-color)] hover:underline">
                   @{replyToUser.nickname}
                 </span>{" "}
                 :
@@ -76,7 +76,7 @@ export default function BilibiliReplyItem({
           <span>{formatDateTimeZh(createdAt)}</span>
 
           <button
-            className={`flex items-center gap-1 hover:text-emerald-600 transition-colors ${isLiked ? "text-emerald-600" : ""}`}
+            className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
             onClick={() => onLike?.(!isLiked)}
           >
             <i className="uil uil-thumbs-up text-[14px]"></i>
@@ -84,7 +84,7 @@ export default function BilibiliReplyItem({
           </button>
 
           <button
-            className="hover:text-emerald-600 transition-colors"
+            className="transition-colors hover:text-[var(--page-accent-text)]"
             onClick={onReplyClick}
           >
             回复

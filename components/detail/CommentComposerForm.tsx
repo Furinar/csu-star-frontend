@@ -31,8 +31,8 @@ export default function CommentComposerForm({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-[28px] border border-emerald-200 bg-emerald-50/70 p-5">
-        <div className="text-sm font-medium text-emerald-700">说点有用的</div>
+      <div className="rounded-[28px] border border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] p-5">
+        <div className="text-sm font-medium text-[var(--page-accent-text)]">说点有用的</div>
         <p className="mt-1 text-sm text-slate-500">
           推荐写清楚资料质量、适用场景、内容缺失或文件问题。
         </p>
@@ -44,7 +44,7 @@ export default function CommentComposerForm({
           value={content}
           onChange={(event) => setContent(event.target.value)}
           placeholder={placeholder}
-          className="w-full resize-none rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-700 outline-none transition focus:border-emerald-300 focus:bg-white"
+          className="w-full resize-none rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-700 outline-none transition focus:border-[var(--page-accent-border)] focus:bg-white"
         />
       </div>
 
@@ -53,7 +53,7 @@ export default function CommentComposerForm({
           type="button"
           onClick={handleSubmit}
           disabled={!content.trim() || isSubmitting}
-          className="rounded-full bg-emerald-600 px-6 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-full bg-[image:var(--page-accent-gradient)] px-6 py-3 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isSubmitting ? "提交中..." : submitLabel}
         </button>

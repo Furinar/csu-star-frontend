@@ -5,22 +5,16 @@ import Link from "next/link";
 
 const accentMap = {
   course: {
-    shell: "border-sky-100/80 from-sky-50 via-white to-indigo-50",
-    badge: "border-sky-200 bg-white/90 text-sky-700",
-    spotlight: "bg-sky-200/50",
-    button: "text-sky-700 hover:text-sky-900",
+    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    button: "text-[var(--page-accent-text)] hover:opacity-80",
   },
   teacher: {
-    shell: "border-rose-100/80 from-rose-50 via-white to-amber-50",
-    badge: "border-rose-200 bg-white/90 text-rose-700",
-    spotlight: "bg-rose-200/50",
-    button: "text-rose-700 hover:text-rose-900",
+    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    button: "text-[var(--page-accent-text)] hover:opacity-80",
   },
   resource: {
-    shell: "border-emerald-100/80 from-emerald-50 via-white to-cyan-50",
-    badge: "border-emerald-200 bg-white/90 text-emerald-700",
-    spotlight: "bg-emerald-200/50",
-    button: "text-emerald-700 hover:text-emerald-900",
+    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    button: "text-[var(--page-accent-text)] hover:opacity-80",
   },
 } as const;
 
@@ -56,10 +50,10 @@ export default function ComposePageShell({
       </Link>
 
       <section
-        className={`relative overflow-hidden rounded-[36px] border bg-gradient-to-br p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-8 ${tone.shell}`}
+        className="relative overflow-hidden rounded-[36px] border border-[var(--page-accent-border)] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-8"
       >
-        <div className={`absolute -right-10 top-6 h-40 w-40 rounded-full blur-3xl ${tone.spotlight}`} />
-        <div className="absolute left-6 top-0 h-24 w-24 rounded-full bg-white/60 blur-3xl" />
+        <div className="absolute -right-10 top-6 h-40 w-40 rounded-full bg-[var(--page-accent-soft-strong)] blur-3xl" />
+        <div className="absolute left-6 top-0 h-24 w-24 rounded-full bg-[var(--page-accent-soft)] blur-3xl" />
         <div className="relative space-y-5">
           <div className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${tone.badge}`}>
             {badge}
@@ -74,7 +68,7 @@ export default function ComposePageShell({
         </div>
       </section>
 
-      <section className="rounded-[32px] border border-white/70 bg-white/90 p-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] backdrop-blur-xl md:p-7">
+      <section className="rounded-[32px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_50px_rgba(15,23,42,0.06)] md:p-7">
         {children}
       </section>
     </div>

@@ -168,7 +168,7 @@ export default function RadarMap({
             height,
             display: 'block',
             borderRadius: '12px',
-            background: 'var(--page-accent-gradient-soft)',
+            background: 'transparent',
         }}
         />
     );

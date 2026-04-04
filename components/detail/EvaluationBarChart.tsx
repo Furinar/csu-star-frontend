@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { getEntityTheme } from "@/lib/entityTheme";
+import React, { type CSSProperties } from "react";
+import { getPageTheme } from "@/lib/pageTheme";
 type CommonEvaluation = {
   mode?: "standalone" | "linked" | null;
   course_id?: string | number | null;
@@ -23,24 +23,24 @@ interface EvaluationBarChartProps {
   className?: string;
 }
 
-const teacherTheme = getEntityTheme("teacher");
-const courseTheme = getEntityTheme("course");
+const teacherTheme = getPageTheme("/teacher");
+const courseTheme = getPageTheme("/course");
 
 const DIMENSIONS_TEACHER = [
   {
     key: "rating_quality",
     label: "教学质量",
-    colorClass: teacherTheme.dimensionBarClassNames[0],
+    fillStyle: { background: teacherTheme.ratingGradients[0] },
   },
   {
     key: "rating_grading",
     label: "给分好坏",
-    colorClass: teacherTheme.dimensionBarClassNames[1],
+    fillStyle: { background: teacherTheme.ratingGradients[1] },
   },
   {
     key: "rating_attendance",
     label: "考勤要求",
-    colorClass: teacherTheme.dimensionBarClassNames[2],
+    fillStyle: { background: teacherTheme.ratingGradients[2] },
   },
 ] as const;
 
@@ -48,17 +48,17 @@ const DIMENSIONS_COURSE = [
   {
     key: "rating_gain",
     label: "收获感",
-    colorClass: courseTheme.dimensionBarClassNames[0],
+    fillStyle: { background: courseTheme.ratingGradients[0] },
   },
   {
     key: "rating_homework",
     label: "作业量",
-    colorClass: courseTheme.dimensionBarClassNames[1],
+    fillStyle: { background: courseTheme.ratingGradients[1] },
   },
   {
     key: "rating_exam_difficulty",
     label: "考试难度",
-    colorClass: courseTheme.dimensionBarClassNames[2],
+    fillStyle: { background: courseTheme.ratingGradients[2] },
   },
 ] as const;
 
@@ -68,7 +68,7 @@ type DimensionKey =
 type DimensionConfig = {
   key: DimensionKey;
   label: string;
-  colorClass: string;
+  fillStyle: CSSProperties;
 };
 
 function clampScore(value?: number | null) {
@@ -89,11 +89,11 @@ function getDimensionScore(evaluation: CommonEvaluation, key: DimensionKey) {
 const BarRow = ({
   label,
   value,
-  colorClass,
+  fillStyle,
 }: {
   label: string;
   value?: number | null;
-  colorClass: string;
+  fillStyle: CSSProperties;
 }) => {
   const score = clampScore(value);
   const percentage = (score / 5) * 100;
@@ -103,8 +103,8 @@ const BarRow = ({
       <span className="w-14 sm:w-16 text-gray-500 truncate">{label}</span>
       <div className="flex-1 h-1.5 sm:h-2 bg-gray-100 rounded-full overflow-hidden relative">
         <div
-          className={`h-full rounded-full transition-all duration-500 ease-out ${colorClass}`}
-          style={{ width: `${percentage}%` }}
+          className="h-full rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${percentage}%`, ...fillStyle }}
         />
       </div>
       <span className="w-6 sm:w-8 text-right text-gray-600 font-medium tabular-nums">
@@ -148,7 +148,7 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
               key={dim.key}
               label={dim.label}
               value={getDimensionScore(evaluation, dim.key)}
-              colorClass={dim.colorClass}
+              fillStyle={dim.fillStyle}
             />
           ))}
         </div>
@@ -169,11 +169,11 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
           <div className="space-y-3">
             {DIMENSIONS_TEACHER.map((dim) => (
               <BarRow
-                key={dim.key}
-                label={dim.label}
-                value={getDimensionScore(evaluation, dim.key)}
-                colorClass={dim.colorClass}
-              />
+              key={dim.key}
+              label={dim.label}
+              value={getDimensionScore(evaluation, dim.key)}
+              fillStyle={dim.fillStyle}
+            />
             ))}
           </div>
         </div>
@@ -190,11 +190,11 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
           <div className="space-y-3">
             {DIMENSIONS_COURSE.map((dim) => (
               <BarRow
-                key={dim.key}
-                label={dim.label}
-                value={getDimensionScore(evaluation, dim.key)}
-                colorClass={dim.colorClass}
-              />
+              key={dim.key}
+              label={dim.label}
+              value={getDimensionScore(evaluation, dim.key)}
+              fillStyle={dim.fillStyle}
+            />
             ))}
           </div>
         </div>

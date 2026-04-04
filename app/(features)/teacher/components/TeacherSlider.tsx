@@ -100,7 +100,15 @@ export default function TeacherSlider() {
 
   return (
     <>
-      <div className="teacher-slider-container w-full h-90 md:h-90 grid grid-cols-1 md:grid-cols-[5fr_3fr] ">
+      <div
+        className="teacher-slider-container w-full h-90 md:h-90 grid grid-cols-1 md:grid-cols-[5fr_3fr]"
+        style={{
+          background:
+            "linear-gradient(145deg, rgba(255, 228, 239, 0.94) 0%, rgba(255, 255, 255, 0.97) 42%, rgba(255, 241, 214, 0.94) 100%)",
+          boxShadow:
+            "12px 18px 36px rgba(236, 72, 153, 0.12), -10px -10px 24px rgba(255, 255, 255, 0.92)",
+        }}
+      >
         <div className="teacher-slider flex justify-center items-center flex-col">
           <div className="box h-90 md:h-90">
             {teachers.length > 0 ? (

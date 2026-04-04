@@ -1,6 +1,7 @@
 "use client";
 
 import "./style.css";
+import type { CSSProperties } from "react";
 import StarRating from "@/components/ui/StarRating";
 import RatingBar from "@/components/ui/RatingBar";
 import Link from "next/link";
@@ -121,6 +122,14 @@ export default function RandomBook() {
         <div
             className={`random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative ${coursePath ? "cursor-pointer" : ""} ${isAnimating ? "is-switching" : ""}`}
             onClick={handleBackgroundNavigate}
+            style={
+              {
+                "--container-bg":
+                  "linear-gradient(145deg, rgba(219, 234, 254, 0.94) 0%, rgba(255, 255, 255, 0.96) 42%, rgba(224, 231, 255, 0.95) 74%, rgba(237, 233, 254, 0.92) 100%)",
+                "--container-shadow":
+                  "12px 18px 36px rgba(37, 99, 235, 0.14), -10px -10px 26px rgba(255, 255, 255, 0.92)",
+              } as CSSProperties
+            }
         >
           <div
               className="absolute top-0 left-7 py-1 px-1.5 bg-first flex flex-col rounded-b-sm text-white font-bold shadow-lg user-invalid:">

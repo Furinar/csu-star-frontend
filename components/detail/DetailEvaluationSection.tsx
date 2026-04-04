@@ -535,7 +535,7 @@ export default function DetailEvaluationSection({
               value={draftMap[id] || ""}
               onChange={(e) => setDraftMap((prev) => ({ ...prev, [id]: e.target.value }))}
               placeholder={targetMap[id]?.userName ? `回复 @${targetMap[id].userName}...` : "写下你的回复..."}
-              className="w-full min-h-[100px] rounded-2xl border border-slate-200 p-4 text-sm focus:border-rose-300 focus:outline-none focus:ring-4 focus:ring-rose-50 transition-all resize-none"
+              className="w-full min-h-[100px] resize-none rounded-2xl border border-slate-200 p-4 text-sm transition-all focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
             />
             <label className="flex items-center gap-2 text-sm text-slate-500">
               <input
@@ -619,8 +619,8 @@ export default function DetailEvaluationSection({
                   onClick={() => setSort(item)}
                   className={`rounded-full px-4 py-1.5 text-sm transition ${
                     sort === item
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-500 hover:text-slate-700"
+                      ? "bg-[image:var(--page-accent-gradient)] text-white"
+                      : "text-slate-500 hover:text-[var(--page-accent-text)]"
                   }`}
                 >
                   {sortLabel(item)}
@@ -633,7 +633,7 @@ export default function DetailEvaluationSection({
       >
         {isReloading ? (
           <div className="flex justify-center py-12">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-[var(--page-accent-text)]" />
           </div>
         ) : (
           <div className="mt-6 flex flex-col gap-6">
@@ -645,7 +645,7 @@ export default function DetailEvaluationSection({
           <div ref={loadMoreRef} className="py-10 flex justify-center">
             {isLoadingMore ? (
               <div className="flex items-center gap-2 text-slate-400">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-[var(--page-accent-text)]" />
                 <span className="text-sm">加载更多评价中...</span>
               </div>
             ) : null}
@@ -694,7 +694,7 @@ export default function DetailEvaluationSection({
             <textarea
               value={editingReplyDraft}
               onChange={(event) => setEditingReplyDraft(event.target.value)}
-              className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm focus:border-slate-300 focus:outline-none focus:ring-4 focus:ring-slate-100"
+              className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
             />
             <label className="flex items-center gap-2 text-sm text-slate-500">
               <input

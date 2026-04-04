@@ -7,7 +7,7 @@ import Link from "next/link";
 import CollectButton from "@/components/ui/CollectButton";
 import RatingBar from "@/components/ui/RatingBar";
 import StarRating from "@/components/ui/StarRating";
-import { getEntityTheme } from "@/lib/entityTheme";
+import { getPageTheme } from "@/lib/pageTheme";
 import type { CourseDetail, TeacherDetail } from "@/types/detail";
 import { buildCoursePath, buildResourceCollectionPath, buildTeacherPath } from "@/lib/paths";
 
@@ -37,8 +37,8 @@ const COURSE_CARD_CLASS =
 const TEACHER_CARD_CLASS =
   "border border-rose-100/80 bg-white/92 shadow-[10px_10px_22px_rgba(244,114,182,0.14)]";
 
-const courseTheme = getEntityTheme("course");
-const teacherTheme = getEntityTheme("teacher");
+const courseTheme = getPageTheme("/course");
+const teacherTheme = getPageTheme("/teacher");
 
 type DetailBookHeroProps =
   | {
@@ -149,7 +149,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                   <StarRating
                     score={normalizeRating(course.avg_score)}
                     size="18px"
-                    fillClassName={courseTheme.starFillClassName}
+                    fillClassName="text-[var(--first-color)]"
                   />
                 </div>
 
@@ -164,25 +164,25 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 label="推荐指数"
                 score={normalizeRating(course.avg_score)}
                 maxScore={5}
-                gradient={courseTheme.ratingGradient}
+                gradient={courseTheme.ratingGradients[0]}
               />
               <RatingBar
                 label="给分情况"
                 score={normalizeRating(course.avg_homework)}
                 maxScore={5}
-                gradient={courseTheme.ratingGradient}
+                gradient={courseTheme.ratingGradients[1]}
               />
               <RatingBar
                 label="任务量"
                 score={normalizeRating(course.avg_exam_diff)}
                 maxScore={5}
-                gradient={courseTheme.ratingGradient}
+                gradient={courseTheme.ratingGradients[2]}
               />
               <RatingBar
                 label="课程收获"
                 score={normalizeRating(course.avg_gain)}
                 maxScore={5}
-                gradient={courseTheme.ratingGradient}
+                gradient={courseTheme.ratingGradients[0]}
               />
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 <StarRating
                   score={normalizeRating(teacher.avg_score)}
                   size="18px"
-                  fillClassName={teacherTheme.starFillClassName}
+                  fillClassName="text-[var(--first-color)]"
                 />
               </div>
 
@@ -306,19 +306,19 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               label="教学质量"
               score={normalizeRating(teacher.avg_quality)}
               maxScore={5}
-              gradient={teacherTheme.ratingGradient}
+              gradient={teacherTheme.ratingGradients[0]}
             />
             <RatingBar
               label="给分情况"
               score={normalizeRating(teacher.avg_grading)}
               maxScore={5}
-              gradient={teacherTheme.ratingGradient}
+              gradient={teacherTheme.ratingGradients[1]}
             />
             <RatingBar
               label="点名情况"
               score={normalizeRating(teacher.avg_attendance)}
               maxScore={5}
-              gradient={teacherTheme.ratingGradient}
+              gradient={teacherTheme.ratingGradients[2]}
             />
           </div>
         </div>

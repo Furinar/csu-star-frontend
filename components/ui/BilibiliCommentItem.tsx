@@ -98,7 +98,7 @@ export default function BilibiliCommentItem({
           {/* User Info & Date */}
           <div className="flex items-center gap-2 mb-1">
           <span
-              className="font-medium text-[15px] text-gray-800 cursor-pointer hover:text-emerald-600 transition-colors">
+              className="font-medium text-[15px] text-gray-800 cursor-pointer transition-colors hover:text-[var(--page-accent-text)]">
             {displayUser.nickname}
           </span>
             {/* Optional Level or Badge could go here */}
@@ -119,7 +119,7 @@ export default function BilibiliCommentItem({
             <span className="text-gray-400">{formatDateTimeZh(createdAt)}</span>
 
             <button
-                className={`flex items-center gap-1 hover:text-emerald-600 transition-colors ${isLiked ? "text-emerald-600" : ""}`}
+                className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
                 onClick={() => onLike?.(!isLiked)}
             >
               <i
@@ -129,7 +129,7 @@ export default function BilibiliCommentItem({
             </button>
 
             <button
-                className="flex items-center gap-1 hover:text-emerald-600 transition-colors"
+                className="flex items-center gap-1 transition-colors hover:text-[var(--page-accent-text)]"
                 onClick={onReplyClick}
             >
               <i className="uil uil-comment-alt-lines"></i>
@@ -141,7 +141,7 @@ export default function BilibiliCommentItem({
 
           {/* Replies Section - Bilibili Style Box */}
           {(replies.length > 0 || isReplying) && (
-              <div className="mt-3 bg-gray-50 rounded-xl p-3 sm:p-4 text-[14px]">
+              <div className="mt-3 rounded-xl border border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] p-3 text-[14px] sm:p-4">
                 <div className="flex flex-col gap-2">
                   {displayedReplies.map((reply) => (
                       <BilibiliReplyItem
@@ -166,7 +166,7 @@ export default function BilibiliCommentItem({
                   共 {replies.length} 条回复，
                 </span>
                       <button
-                          className="text-emerald-600 hover:text-emerald-700 font-medium"
+                          className="font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
                           onClick={() => setShowAllReplies(true)}
                       >
                         点击查看
