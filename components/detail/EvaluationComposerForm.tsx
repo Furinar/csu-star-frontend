@@ -168,7 +168,7 @@ export default function EvaluationComposerForm({
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-5">
+    <div className="mx-auto max-w-3xl space-y-6">
       <div className={`rounded-[26px] border p-5 ${tone.panel}`}>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -267,7 +267,7 @@ export default function EvaluationComposerForm({
         </div>
         <AdvancedTextarea
           className="mt-4"
-          rows={7}
+          rows={9}
           label="输入评价正文"
           value={comment}
           onChange={(event) => setComment(event.target.value)}

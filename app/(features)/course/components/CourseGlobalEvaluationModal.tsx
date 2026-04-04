@@ -126,7 +126,7 @@ export default function CourseGlobalEvaluationModal({
                 <div className="mt-3 text-sm text-slate-500">搜索中...</div>
               ) : null}
               {!isSearching && options.length > 0 ? (
-                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                <div className="absolute z-10 mt-2 max-h-72 w-full overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
                   {options.map((course) => (
                     <button
                       key={course.id}

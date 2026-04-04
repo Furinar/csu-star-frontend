@@ -96,35 +96,37 @@ export default function TeacherGlobalEvaluationModal({
       title={
         selectedTeacher
           ? `为 ${selectedTeacher.name} 写一条评价`
-          : "写一条教师评价"
+          : "先选择教师"
       }
       description={
-        selectedTeacher ? "你的评价会直接展示在教师详情页，帮助同学快速判断授课体验和风格。" : "先搜索并选择想评价的教师，再填写统一的评价表单。"
+        selectedTeacher
+          ? "你的评价会直接展示在教师详情页，帮助同学快速判断授课体验和风格。"
+          : "选定教师后即可填写评价表单。"
       }
     >
       {!selectedTeacher ? (
         <div className="mx-auto max-w-2xl">
           <div className="rounded-[26px] border border-rose-100 bg-white p-5">
-            <div className="text-sm font-medium text-rose-700">选择教师</div>
+            <div className="text-sm font-medium text-rose-700">教师检索</div>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              搜索并选择教师后，再进入统一的授课体验评价表单。
+              输入教师姓名并从结果中选择一位教师。
             </p>
             <div className="relative mt-4">
               <AdvancedInput
                 label={
                   <>
-                    搜索教师 <span className="text-red-500">*</span>
+                    教师姓名 <span className="text-red-500">*</span>
                   </>
                 }
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="输入教师名称"
+                placeholder="搜索教师姓名"
               />
               {isSearching ? (
                 <div className="mt-3 text-sm text-slate-500">搜索中...</div>
               ) : null}
               {!isSearching && options.length > 0 ? (
-                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                <div className="absolute z-10 mt-2 max-h-72 w-full overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
                   {options.map((teacher) => (
                     <button
                       key={teacher.id}
