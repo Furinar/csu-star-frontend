@@ -327,16 +327,23 @@ export function markAllNotificationsRead() {
 }
 
 export async function bindCampusEmail(payload: EmailBindInput) {
-  const data = await unwrap<{ message?: string }>(
-    service.post<ApiEnvelope<{ message?: string }>>("/auth/email/bind", payload),
+  return unwrap<null>(
+    service.post<ApiEnvelope<null>>("/auth/email/bind", payload),
   );
-  return data.message ?? "验证码已发送，请查收";
 }
 
-export function verifyCampusEmail(payload: { email: string; captcha: string }) {
-  return unwrap<null>(
-    service.post<ApiEnvelope<null>>("/auth/email/verify", payload),
-  );
+export async function sendCampusEmailCaptcha(email: string) {
+  const response = await service.post<ApiEnvelope<null>>("/auth/email/captcha", {
+    email,
+  });
+  const payload =
+    "status" in response && "headers" in response ? response.data : response;
+
+  if (payload.code !== 0 && payload.code !== 200) {
+    throw new Error(payload.msg || payload.message || "验证码发送失败");
+  }
+
+  return payload.msg || payload.message || "验证码已发送，请查收";
 }
 
 export function bindOAuthAccount(payload: OAuthBindInput) {

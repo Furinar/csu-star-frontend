@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { bindCampusEmail, verifyCampusEmail } from "@/api/me";
+import { bindCampusEmail, sendCampusEmailCaptcha } from "@/api/me";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
 import type { UserProfile } from "@/types/auth";
@@ -74,7 +74,7 @@ export default function EmailPanel({
 
     setIsSendingCode(true);
     try {
-      const message = await bindCampusEmail({ email });
+      const message = await sendCampusEmailCaptcha(email);
       setForm((current) => ({
         ...current,
         email,
@@ -118,7 +118,7 @@ export default function EmailPanel({
 
     setIsVerifying(true);
     try {
-      await verifyCampusEmail({
+      await bindCampusEmail({
         email,
         captcha: form.captcha.trim(),
       });

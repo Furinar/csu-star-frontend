@@ -219,6 +219,7 @@ export interface MyProfileUpdateInput {
 
 export interface EmailBindInput {
   email: string;
+  captcha: string;
 }
 
 export interface OAuthBindInput {
