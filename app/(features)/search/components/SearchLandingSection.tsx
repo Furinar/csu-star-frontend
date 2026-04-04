@@ -3,6 +3,7 @@
 import { searchEverything } from "@/api/search";
 import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsGrid";
 import type { SearchResponse, SearchScope, SearchUnifiedItem } from "@/types/search";
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type LandingScope = Exclude<SearchScope, "all">;
@@ -88,12 +89,14 @@ export default function SearchLandingSection({
   type,
   title,
   description,
+  action,
   size = DEFAULT_PAGE_SIZE,
   className = "",
 }: {
   type: LandingScope;
   title: string;
   description?: string;
+  action?: ReactNode;
   size?: number;
   className?: string;
 }) {
@@ -193,6 +196,8 @@ export default function SearchLandingSection({
             <p className="text-sm text-gray-500">{description}</p>
           ) : null}
         </div>
+
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
 
       {isLoading ? (

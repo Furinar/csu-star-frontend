@@ -2,12 +2,18 @@
 
 import {searchEverything} from "@/api/search";
 import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsGrid";
+import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
+import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import SearchBar from "@/components/ui/SearchBar";
+import {useAuthStore} from "@/store/useAuthStore";
+import {feedback} from "@/store/useFeedbackStore";
 import type {
   SearchResponse,
   SearchScope,
 } from "@/types/search";
+import type {SupplementRequestType} from "@/types/supplement";
 import {useEffect, useMemo, useRef, useState} from "react";
+import {useRouter} from "next/navigation";
 import {useSearchParams} from "next/navigation";
 
 const PAGE_SIZE = 24;
@@ -98,7 +104,9 @@ function mergeResults(
 }
 
 export default function Search() {
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const authUser = useAuthStore((state) => state.user);
   const [searchType, setSearchType] = useState<SearchScope>("all");
   const [keyword, setKeyword] = useState("");
   const [, setSubmittedQuery] = useState("");
@@ -113,8 +121,12 @@ export default function Search() {
     course: 0,
     teacher: 0,
   });
+  const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
   const requestIdRef = useRef(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  const supplementInitialType: SupplementRequestType =
+      searchType === "teacher" ? "teacher" : "course";
 
   const currentSearchType = useMemo(() => {
     return (
@@ -390,6 +402,19 @@ export default function Search() {
     searchType,
   ]);
 
+  const handleOpenSupplementModal = () => {
+    if (!authUser) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交补录申请。",
+      });
+      router.push("/login");
+      return;
+    }
+
+    setIsSupplementModalOpen(true);
+  };
+
   return (
       <div className="container flex flex-col gap-10 mt-10 mb-20">
         {/* Retained your original Hero and Searchbar UI unchanged */}
@@ -473,7 +498,7 @@ export default function Search() {
         ) : null}
 
         {showNoResults ? (
-            <div className="flex flex-col gap-5 items-center justify-center mt-15">
+            <div className="flex flex-col gap-6 items-center justify-center mt-15">
               <div className="text-8xl text-gray-300">
                 <i className="uil uil-tear"></i>
               </div>
@@ -483,6 +508,14 @@ export default function Search() {
               </div>
               <div className="text-lg text-gray-500">
                 可以尝试换一个简短的关键词重新搜索看看~
+              </div>
+
+              <div className="w-full max-w-2xl">
+                <SupplementRequestPrompt
+                    onClick={handleOpenSupplementModal}
+                    align="center"
+                    className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                />
               </div>
             </div>
         ) : null}
@@ -522,14 +555,28 @@ export default function Search() {
               ) : null}
 
               {!isLoadingMore && !hasMore ? (
-                  <div className="flex items-center justify-center py-6 text-sm text-gray-400">
-                    已经到底了
+                  <div className="flex flex-col items-center justify-center gap-4 py-6">
+                    <div className="text-sm text-gray-400">已经到底了</div>
+                    <div className="w-full max-w-3xl">
+                      <SupplementRequestPrompt
+                          onClick={handleOpenSupplementModal}
+                          align="center"
+                          className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                      />
+                    </div>
                   </div>
               ) : null}
 
               <div ref={loadMoreRef} className="h-1"/>
             </div>
         ) : null}
+
+        <SupplementRequestModal
+            isOpen={isSupplementModalOpen}
+            onClose={() => setIsSupplementModalOpen(false)}
+            initialRequestType={supplementInitialType}
+            allowTypeSwitch={searchType === "all"}
+        />
       </div>
   );
 }

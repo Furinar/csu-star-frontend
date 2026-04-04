@@ -4,6 +4,7 @@ export type FavoriteTargetType = "resource" | "course" | "teacher";
 export type NotificationType =
   | "liked"
   | "commented"
+  | "audit"
   | "system";
 export type PointsReason =
   | "daily_checkin"

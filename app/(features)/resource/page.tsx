@@ -7,10 +7,29 @@ import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchBar from "@/components/ui/SearchBar";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
+import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
+import { useAuthStore } from "@/store/useAuthStore";
+import { feedback } from "@/store/useFeedbackStore";
 
 export default function Resource() {
   const router = useRouter();
+  const authUser = useAuthStore((state) => state.user);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
+
+  const handleOpenSupplementModal = () => {
+    if (!authUser) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交课程补录申请。",
+      });
+      router.push("/login");
+      return;
+    }
+
+    setIsSupplementModalOpen(true);
+  };
 
   return (
     <>
@@ -33,6 +52,12 @@ export default function Resource() {
           title="资源列表"
           description="按课程查找大家上传的学习资料和文件。"
           size={24}
+          action={
+            <SupplementRequestPrompt
+              onClick={handleOpenSupplementModal}
+              align="right"
+            />
+          }
         />
       </div>
 
@@ -45,6 +70,12 @@ export default function Resource() {
       <ResourceUploaderModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
+      />
+
+      <SupplementRequestModal
+        isOpen={isSupplementModalOpen}
+        onClose={() => setIsSupplementModalOpen(false)}
+        initialRequestType="course"
       />
     </>
   );

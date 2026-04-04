@@ -10,6 +10,10 @@ import RankCard from "../../../components/ui/RankCard";
 import { useRouter } from "next/navigation";
 import { getTeacherRankings } from "@/api/ranking";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
+import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
+import { useAuthStore } from "@/store/useAuthStore";
+import { feedback } from "@/store/useFeedbackStore";
 import TeacherGlobalEvaluationModal from "./components/TeacherGlobalEvaluationModal";
 
 type RankCardItem = {
@@ -32,10 +36,12 @@ const mapRankItems = (
 
 export default function Teacher() {
   const router = useRouter();
+  const authUser = useAuthStore((state) => state.user);
   const [qualityRanks, setQualityRanks] = useState<RankCardItem[]>([]);
   const [gradingRanks, setGradingRanks] = useState<RankCardItem[]>([]);
   const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
   useEffect(() => {
     let active = true;
 
@@ -77,6 +83,19 @@ export default function Teacher() {
       active = false;
     };
   }, []);
+
+  const handleOpenSupplementModal = () => {
+    if (!authUser) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交教师补录申请。",
+      });
+      router.push("/login");
+      return;
+    }
+
+    setIsSupplementModalOpen(true);
+  };
 
   return (
     <>
@@ -140,6 +159,12 @@ export default function Teacher() {
           type="teacher"
           title="教师列表"
           description="继续浏览教师信息，结合评价和风格找到更适合你的课堂。"
+          action={
+            <SupplementRequestPrompt
+              onClick={handleOpenSupplementModal}
+              align="right"
+            />
+          }
         />
       </div>
 
@@ -156,6 +181,12 @@ export default function Teacher() {
       <TeacherGlobalEvaluationModal
         isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
+      />
+
+      <SupplementRequestModal
+        isOpen={isSupplementModalOpen}
+        onClose={() => setIsSupplementModalOpen(false)}
+        initialRequestType="teacher"
       />
     </>
   );

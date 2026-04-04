@@ -10,6 +10,10 @@ import { getPageTheme } from "@/lib/pageTheme";
 import { useRouter } from "next/navigation";
 import { getCourseRankings } from "@/api/ranking";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
+import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
+import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
+import { useAuthStore } from "@/store/useAuthStore";
+import { feedback } from "@/store/useFeedbackStore";
 import CourseGlobalEvaluationModal from "./components/CourseGlobalEvaluationModal";
 
 type RankCardItem = {
@@ -32,10 +36,12 @@ const mapRankItems = (
 
 export default function Course() {
   const router = useRouter();
+  const authUser = useAuthStore((state) => state.user);
   const [homeworkRanks, setHomeworkRanks] = useState<RankCardItem[]>([]);
   const [gainRanks, setGainRanks] = useState<RankCardItem[]>([]);
   const [examRanks, setExamRanks] = useState<RankCardItem[]>([]);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -78,6 +84,19 @@ export default function Course() {
       active = false;
     };
   }, []);
+
+  const handleOpenSupplementModal = () => {
+    if (!authUser) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交课程补录申请。",
+      });
+      router.push("/login");
+      return;
+    }
+
+    setIsSupplementModalOpen(true);
+  };
 
   return (
     <>
@@ -141,6 +160,12 @@ export default function Course() {
           type="course"
           title="课程列表"
           description="在这里浏览更多课程，看看不同同学留下的真实反馈。"
+          action={
+            <SupplementRequestPrompt
+              onClick={handleOpenSupplementModal}
+              align="right"
+            />
+          }
         />
       </div>
 
@@ -157,6 +182,12 @@ export default function Course() {
       <CourseGlobalEvaluationModal
         isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
+      />
+
+      <SupplementRequestModal
+        isOpen={isSupplementModalOpen}
+        onClose={() => setIsSupplementModalOpen(false)}
+        initialRequestType="course"
       />
     </>
   );

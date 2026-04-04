@@ -297,5 +297,9 @@ export function getNotificationTypeLabel(type: NotificationItem["type"]) {
     return "收到评论";
   }
 
+  if (type === "audit") {
+    return "审核通知";
+  }
+
   return "系统通知";
 }
