@@ -5,15 +5,18 @@ import { useEffect } from "react";
 
 const toneMap = {
   course: {
-    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    badge:
+      "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
     ring: "shadow-[0_32px_120px_var(--page-accent-soft-strong)]",
   },
   teacher: {
-    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    badge:
+      "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
     ring: "shadow-[0_32px_120px_var(--page-accent-soft-strong)]",
   },
   resource: {
-    badge: "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
+    badge:
+      "border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] text-[var(--page-accent-text)]",
     ring: "shadow-[0_32px_120px_var(--page-accent-soft-strong)]",
   },
 } as const;
@@ -22,8 +25,11 @@ export default function DetailComposerModal({
   isOpen,
   onClose,
   accent,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   badge,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   title,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   description,
   children,
 }: {
@@ -55,42 +61,27 @@ export default function DetailComposerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-md md:p-6">
-      <div
-        className={`relative w-full max-w-4xl rounded-[24px] border border-slate-200/80 bg-white ${tone.ring}`}
-      >
-        <div className="p-6 md:p-8">
-          <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl" />
-          <div className="relative z-10 flex items-start justify-between gap-4">
-            <div className="space-y-4">
-              <div
-                className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${tone.badge}`}
-              >
-                {badge}
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950 md:text-3xl">
-                  {title}
-                </h3>
-                <p className="max-w-xl text-sm leading-7 text-slate-600">
-                  {description}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/75 text-lg text-slate-500 shadow-sm transition hover:bg-white hover:text-slate-800"
-            >
-              ×
-            </button>
-          </div>
+    <div className="fixed inset-0 z-[1150] overflow-y-auto bg-slate-950/30 backdrop-blur-md">
+      <div className="flex min-h-full items-center justify-center p-4 md:p-6 pb-safe">
+        <div
+          className={`relative w-full max-w-4xl flex flex-col rounded-[24px] border border-slate-200/80 bg-white p-6 md:p-8 ${tone.ring}`}
+        >
+          <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl opacity-50" />
 
-          <div className="relative z-10 mt-8 rounded-[20px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)] md:p-7">
-            {children}
-          </div>
+        
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/75 text-lg text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-800"
+        >
+          ×
+        </button>
+
+        <div className="relative z-10 w-full pt-4">
+          {children}
         </div>
       </div>
+     </div>
     </div>
   );
 }

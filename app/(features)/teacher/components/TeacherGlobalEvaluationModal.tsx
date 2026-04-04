@@ -135,12 +135,12 @@ export default function TeacherGlobalEvaluationModal({
       }
     >
       {!selectedTeacher ? (
-        <div className="mx-auto max-w-2xl rounded-[26px] border border-rose-100 bg-white p-5">
-          <div className="text-sm font-medium text-rose-700">教师检索</div>
-          <p className="mt-1 text-sm leading-6 text-slate-600">
+        <div className="mx-auto max-w-2xl px-2">
+          <div className="text-xl font-bold text-rose-800">教师检索</div>
+          <p className="mt-2 text-sm leading-6 text-slate-500">
             输入教师姓名并从结果中选择一位教师。
           </p>
-          <div className="relative mt-4">
+          <div className="relative mt-6">
             <AdvancedInput
               label={
                 <>
@@ -152,50 +152,52 @@ export default function TeacherGlobalEvaluationModal({
               placeholder="搜索教师姓名"
             />
             {isSearching ? (
-              <div className="mt-3 text-sm text-slate-500">搜索中...</div>
+              <div className="mt-4 text-sm text-slate-400">搜索中...</div>
             ) : null}
             {!isSearching && options.length > 0 ? (
-              <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                {options.map((teacher) => (
-                  <button
-                    key={teacher.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedTeacher(teacher);
-                      setOptions([]);
-                      setQuery("");
-                      setRelatedCourses([]);
-                    }}
-                    className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
-                  >
-                    <div>
-                      <div className="font-medium text-slate-800">{teacher.name}</div>
-                      {teacher.department ? (
-                        <div className="mt-1 text-xs text-slate-400">{teacher.department}</div>
-                      ) : null}
-                    </div>
-                    <span className="text-xs text-slate-400">选择</span>
-                  </button>
-                ))}
+              <div className="mt-4 rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                <div className="h-full">
+                  {options.map((teacher) => (
+                    <button
+                      key={teacher.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTeacher(teacher);
+                        setOptions([]);
+                        setQuery("");
+                        setRelatedCourses([]);
+                      }}
+                      className="flex w-full items-start justify-between border-b border-slate-100 px-5 py-4 text-left transition last:border-none hover:bg-slate-50"
+                    >
+                      <div>
+                        <div className="font-medium text-slate-800">{teacher.name}</div>
+                        {teacher.department ? (
+                          <div className="mt-1 text-xs text-slate-400">{teacher.department}</div>
+                        ) : null}
+                      </div>
+                      <span className="text-xs font-medium text-[var(--first-color)] opacity-80 mt-0.5">选择</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>
           {!isSearching && query.trim() && options.length === 0 ? (
-            <div className="mt-3 text-sm text-slate-500">
+            <div className="mt-4 text-sm text-slate-400">
               未找到相关教师
             </div>
           ) : null}
         </div>
       ) : (
-        <div className="mt-2 flex flex-col gap-5">
-          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 rounded-[24px] border border-rose-100 bg-white px-5 py-4">
+        <div className="flex flex-col gap-4">
+          <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 rounded-3xl bg-slate-50/70 border border-slate-100 px-5 py-3">
             <div>
-              <div className="text-xs font-medium uppercase tracking-[0.2em] text-rose-500">Selected</div>
-              <div className="mt-1 font-medium text-rose-900">{selectedTeacher.name}</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-rose-500/80 mb-0.5">SELECTED TEACHER</div>
+              <div className="font-semibold text-slate-800">{selectedTeacher.name}</div>
             </div>
             <button
               type="button"
-              className="rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:border-rose-300"
+              className="rounded-full bg-white border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:border-slate-300 shadow-sm"
               onClick={() => {
                 setSelectedTeacher(null);
                 setRelatedCourses([]);

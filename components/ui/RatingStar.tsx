@@ -1,73 +1,166 @@
 "use client";
 
-import React from 'react';
-import styled from 'styled-components';
+import React, { useId } from "react";
+import styled from "styled-components";
 
 interface RatingStarProps {
-  checked?: boolean;
-  onChange?: () => void;
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  name?: string;
   className?: string;
+  disabled?: boolean;
 }
 
-const StyledWrapper = styled.div`
-  .container {
-    display: inline-block;
-    position: relative;
-    cursor: pointer;
-    font-size: 20px;
-    user-select: none;
-    transition: transform 0.2s ease;
+const StyledWrapper = styled.div<{ $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  height: 48px;
+
+  opacity: ${(props) => (props.$disabled ? "0.4" : "1")};
+  pointer-events: ${(props) => (props.$disabled ? "none" : "auto")};
+  filter: ${(props) =>
+    props.$disabled ? "grayscale(100%) blur(0.5px)" : "none"};
+
+  .rating {
+    display: flex;
+    flex-direction: row-reverse;
+    gap: 0.3rem;
+    --stroke: #94a3b8;
+    --fill: #ffc73a;
   }
 
-  .container:hover {
-    transform: scale(1.1);
+  .rating input {
+    appearance: unset;
+    display: none;
   }
 
-  .container input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
+  .rating label {
+    cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
   }
 
-  .checkmark {
-    position: relative;
-    top: 0;
-    left: 0;
-    height: 1.3em;
-    width: 1.3em;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  .rating svg {
+    width: 2rem;
+    height: 2rem;
+    overflow: visible;
+    fill: transparent;
+    stroke: var(--stroke);
+    stroke-linejoin: bevel;
+    stroke-dasharray: 12;
+    animation: idle 4s linear infinite;
+    transition:
+      stroke 0.2s,
+      fill 0.5s;
   }
 
-  .container input:checked ~ .checkmark {
-    filter: drop-shadow(0 0 5px rgba(255, 180, 0, 0.3));
+  @keyframes idle {
+    from {
+      stroke-dashoffset: 24;
+    }
   }
 
-  .container .checkmark svg {
-    fill: #e2e8f0;
-    transition: fill 0.3s ease;
+  .rating label:hover svg,
+  .rating label:hover ~ label svg {
+    stroke: var(--fill);
   }
 
-  .container input:checked ~ .checkmark svg {
-    fill: #ffb400;
+  .rating input:checked ~ label svg {
+    transition: 0s;
+    animation:
+      idle 4s linear infinite,
+      yippee 0.75s backwards;
+    fill: var(--fill);
+    stroke: var(--fill);
+    stroke-opacity: 0;
+    stroke-dasharray: 0;
+    stroke-linejoin: miter;
+    stroke-width: 8px;
+  }
+
+  @keyframes yippee {
+    0% {
+      transform: scale(1);
+      fill: var(--fill);
+      fill-opacity: 0;
+      stroke-opacity: 1;
+      stroke: var(--stroke);
+      stroke-dasharray: 10;
+      stroke-width: 1px;
+      stroke-linejoin: bevel;
+    }
+    30% {
+      transform: scale(0);
+      fill: var(--fill);
+      fill-opacity: 0;
+      stroke-opacity: 1;
+      stroke: var(--stroke);
+      stroke-dasharray: 10;
+      stroke-width: 1px;
+      stroke-linejoin: bevel;
+    }
+    30.1% {
+      stroke: var(--fill);
+      stroke-dasharray: 0;
+      stroke-linejoin: miter;
+      stroke-width: 8px;
+    }
+    60% {
+      transform: scale(1.2);
+      fill: var(--fill);
+    }
   }
 `;
 
-const RatingStar: React.FC<RatingStarProps> = ({ checked, onChange, className }) => {
+export default function RatingStar({
+  label,
+  value,
+  onChange,
+  name,
+  className,
+  disabled,
+}: RatingStarProps) {
+  const generatedId = useId();
+  const radioName = name || generatedId;
+
+  // CSS structure heavily relies on siblings combinatorial selectors.
+  // Using 5 down to 1 structure alongside CSS row-reverse lets CSS `~` gracefully target everything "visually to the left".
+  const stars = [5, 4, 3, 2, 1];
+
   return (
-    <StyledWrapper className={className}>
-      <label className="container">
-        <input type="checkbox" checked={checked} onChange={onChange} />
-        <div className="checkmark">
-          <svg viewBox="0 0 256 256">
-            <rect fill="none" height="256" width="256" />
-            <path d="M234.5,114.38l-45.1,39.36,13.51,58.6a16,16,0,0,1-23.84,17.34l-51.07-31.05-51.06,31.05a16,16,0,0,1-23.84-17.34l13.51-58.6L21.5,114.38a16,16,0,0,1,9.11-28.06l59.46-5.15,23.21-55.36a15.95,15.95,0,0,1,29.44,0h0L166,81.17l59.44,5.15a16,16,0,0,1,9.06,28.06Z" />
-          </svg>
-        </div>
-      </label>
+    <StyledWrapper className={className} $disabled={disabled}>
+      <span className="text-sm font-medium text-slate-700">{label}</span>
+      <div className="rating">
+        {stars.map((star) => {
+          const id = `${radioName}-star-${star}`;
+          return (
+            <React.Fragment key={star}>
+              <input
+                type="radio"
+                id={id}
+                name={radioName}
+                value={star}
+                checked={value === star}
+                onChange={() => onChange(star)}
+                disabled={disabled}
+              />
+              <label htmlFor={id}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path
+                    pathLength={360}
+                    d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"
+                  />
+                </svg>
+              </label>
+            </React.Fragment>
+          );
+        })}
+      </div>
     </StyledWrapper>
   );
-};
-
-export default RatingStar;
+}

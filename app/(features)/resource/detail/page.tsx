@@ -13,7 +13,11 @@ import {
   updateResourceComment,
 } from "@/api/detail";
 import { deleteResource, downloadResourceFile } from "@/api/resource";
-import type { EvaluationSort, ResourceComment, ResourceDetail } from "@/types/detail";
+import type {
+  EvaluationSort,
+  ResourceComment,
+  ResourceDetail,
+} from "@/types/detail";
 import { Role } from "@/types/auth";
 import { submitReport } from "@/api/me";
 import { feedback } from "@/store/useFeedbackStore";
@@ -22,7 +26,9 @@ import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import ResourceEditModal from "@/components/detail/ResourceEditModal";
 import CollectButton from "@/components/ui/CollectButton";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
-import ItemActionMenu, { ItemActionMenuItem } from "@/components/ui/ItemActionMenu";
+import ItemActionMenu, {
+  ItemActionMenuItem,
+} from "@/components/ui/ItemActionMenu";
 import {
   DetailHero,
   DetailPageShell,
@@ -83,13 +89,19 @@ export default function ResourceDetailPage() {
   const [isResourceLikeLoading, setIsResourceLikeLoading] = useState(false);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
-  const [editingComment, setEditingComment] = useState<{ id: number; parentId?: number | null; content: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{
+    id: number;
+    parentId?: number | null;
+    content: string;
+  } | null>(null);
   const [editingCommentDraft, setEditingCommentDraft] = useState("");
   const [isUpdatingComment, setIsUpdatingComment] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const isDeleted = resource?.status === "deleted";
   const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
-  const isUploader = Boolean(resource?.uploader_id && viewerId && resource.uploader_id === viewerId);
+  const isUploader = Boolean(
+    resource?.uploader_id && viewerId && resource.uploader_id === viewerId,
+  );
 
   const handleDownload = async (fileId: string, filename: string) => {
     if (!resourceId) return;
@@ -169,7 +181,12 @@ export default function ResourceDetailPage() {
     try {
       setIsLoadingMore(true);
       const nextPage = page + 1;
-      const result = await listResourceComments(resourceId, nextPage, 10, commentSort);
+      const result = await listResourceComments(
+        resourceId,
+        nextPage,
+        10,
+        commentSort,
+      );
       setComments((prev) => {
         const existing = new Set(prev.map((comment) => comment.id));
         return [
@@ -379,13 +396,18 @@ export default function ResourceDetailPage() {
     }
     try {
       setIsUpdatingComment(true);
-      const updated = await updateResourceComment(editingComment.id, { content });
+      const updated = await updateResourceComment(editingComment.id, {
+        content,
+      });
       setComments((prev) =>
         prev.map((comment) => {
           if (comment.id === editingComment.id) {
             return updated;
           }
-          if (editingComment.parentId && comment.id === editingComment.parentId) {
+          if (
+            editingComment.parentId &&
+            comment.id === editingComment.parentId
+          ) {
             return {
               ...comment,
               children: (comment.children || []).map((child) =>
@@ -418,7 +440,9 @@ export default function ResourceDetailPage() {
             parentId && comment.id === parentId
               ? {
                   ...comment,
-                  children: (comment.children || []).filter((child) => child.id !== commentId),
+                  children: (comment.children || []).filter(
+                    (child) => child.id !== commentId,
+                  ),
                 }
               : comment,
           ),
@@ -435,7 +459,11 @@ export default function ResourceDetailPage() {
     }
   };
 
-  const reportTarget = async (targetType: "resource" | "comment", targetId: string, label: string) => {
+  const reportTarget = async (
+    targetType: "resource" | "comment",
+    targetId: string,
+    label: string,
+  ) => {
     try {
       await submitReport({
         target_type: targetType,
@@ -443,7 +471,10 @@ export default function ResourceDetailPage() {
         reason: "other",
         description: `${label}举报`,
       });
-      feedback.success({ title: "举报已提交", description: "管理员会尽快处理。" });
+      feedback.success({
+        title: "举报已提交",
+        description: "管理员会尽快处理。",
+      });
     } catch (error) {
       console.error(error);
       feedback.error({ title: "举报失败", description: "请稍后重试。" });
@@ -465,10 +496,14 @@ export default function ResourceDetailPage() {
           label: "删除资源",
           destructive: true,
           onClick: async () => {
-            const confirmed = window.confirm(`确认删除资源《${resource.title}》吗？`);
+            const confirmed = window.confirm(
+              `确认删除资源《${resource.title}》吗？`,
+            );
             if (!confirmed) return;
             await deleteResource(resource.id);
-            setResource((prev) => (prev ? { ...prev, status: "deleted" } : prev));
+            setResource((prev) =>
+              prev ? { ...prev, status: "deleted" } : prev,
+            );
             feedback.success({ title: "资源已删除" });
           },
         });
@@ -483,7 +518,10 @@ export default function ResourceDetailPage() {
     return actions;
   };
 
-  const buildCommentActions = (comment: ResourceComment, parentId?: number): ItemActionMenuItem[] => {
+  const buildCommentActions = (
+    comment: ResourceComment,
+    parentId?: number,
+  ): ItemActionMenuItem[] => {
     const actions: ItemActionMenuItem[] = [];
     const isAuthor = viewerId != null && comment.user?.id === viewerId;
     const canDelete = isAuthor || isPrivileged || isUploader;
@@ -492,7 +530,11 @@ export default function ResourceDetailPage() {
         key: "edit",
         label: "修改",
         onClick: () => {
-          setEditingComment({ id: comment.id, parentId, content: comment.content });
+          setEditingComment({
+            id: comment.id,
+            parentId,
+            content: comment.content,
+          });
           setEditingCommentDraft(comment.content);
         },
       });
@@ -650,9 +692,7 @@ export default function ResourceDetailPage() {
                     : "bg-slate-50 text-slate-500"
                 }`}
               >
-                {isDeleted
-                  ? "资源已删除，仅供记录展示"
-                  : "点赞表达认可，收藏方便回看"}
+                {isDeleted ? "资源已删除，仅供记录展示" : "点赞表达认可，收藏方便回看"}
               </div>
             </div>
           }
@@ -691,10 +731,15 @@ export default function ResourceDetailPage() {
 
             {resource.tags && resource.tags.length > 0 ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-400">资源标签:</span>
+                <span className="text-sm font-medium text-slate-400">
+                  资源标签:
+                </span>
                 <div className="flex flex-wrap gap-2 text-sm text-slate-600">
                   {resource.tags.map((tag) => (
-                    <span key={tag} className="rounded-lg bg-white/60 px-2 py-0.5 shadow-sm border border-slate-100">
+                    <span
+                      key={tag}
+                      className="rounded-lg bg-white/60 px-2 py-0.5 shadow-sm border border-slate-100"
+                    >
                       {tag}
                     </span>
                   ))}
@@ -704,8 +749,12 @@ export default function ResourceDetailPage() {
 
             {resource.description ? (
               <div className="mt-2 rounded-[20px] bg-white/60 p-4 text-sm leading-relaxed text-slate-600 shadow-sm border border-slate-100">
-                <div className="mb-2 font-semibold text-slate-700">资源说明</div>
-                <div className="whitespace-pre-wrap">{resource.description}</div>
+                <div className="mb-2 font-semibold text-slate-700">
+                  资源说明
+                </div>
+                <div className="whitespace-pre-wrap">
+                  {resource.description}
+                </div>
               </div>
             ) : null}
           </div>
@@ -729,14 +778,24 @@ export default function ResourceDetailPage() {
                   className="flex flex-col gap-4 rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between"
                 >
                   <div className="flex items-center gap-4">
-                    <img src={getFileIcon(file.filename)} alt={file.filename} className="h-10 w-10 shrink-0 object-contain drop-shadow-sm" />
+                    <img
+                      src={getFileIcon(file.filename)}
+                      alt={file.filename}
+                      className="h-10 w-10 shrink-0 object-contain drop-shadow-sm"
+                    />
                     <div className="min-w-0">
                       <div className="truncate text-base font-semibold text-slate-800">
                         {file.filename}
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-slate-500">
-                        <span className="flex items-center gap-1"><i className="uil uil-database text-sky-400"></i> {formatFileSize(file.size_bytes)}</span>
-                        <span className="flex items-center gap-1"><i className="uil uil-tag-alt text-rose-400"></i> {file.mime || "未知格式"}</span>
+                        <span className="flex items-center gap-1">
+                          <i className="uil uil-database text-sky-400"></i>{" "}
+                          {formatFileSize(file.size_bytes)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <i className="uil uil-tag-alt text-rose-400"></i>{" "}
+                          {file.mime || "未知格式"}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -768,7 +827,9 @@ export default function ResourceDetailPage() {
             title={
               <div className="flex items-center gap-2">
                 <span>资源评论</span>
-                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{totalComments}</span>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  {totalComments}
+                </span>
               </div>
             }
             description="看看大家的使用反馈，也可以留下你的评论。"
@@ -809,99 +870,99 @@ export default function ResourceDetailPage() {
             ) : (
               <BilibiliCommentThread
                 comments={comments.map((comment) => {
-                const isActive = !!targetMap[comment.id];
-                const activeTarget = targetMap[comment.id] || {};
+                  const isActive = !!targetMap[comment.id];
+                  const activeTarget = targetMap[comment.id] || {};
 
-                return {
-                  id: comment.id,
-                  user: comment.user,
-                  content: comment.content,
-                  createdAt: comment.created_at || "",
-                  likes: comment.likes,
-                  isLiked: comment.is_liked,
-                  actions: buildCommentActions(comment),
-                  replies: (comment.children || []).map((reply) => ({
-                    id: reply.id,
-                    user: reply.user,
-                    replyToUser: reply.reply_to_user,
-                    content: reply.content,
-                    createdAt: reply.created_at || "",
-                    likes: reply.likes,
-                    isLiked: reply.is_liked,
-                    actions: buildCommentActions(reply, comment.id),
-                    onLike: (liked: boolean) =>
-                      handleToggleLike(reply.id, liked, comment.id),
-                    onReplyClick: () => {
+                  return {
+                    id: comment.id,
+                    user: comment.user,
+                    content: comment.content,
+                    createdAt: comment.created_at || "",
+                    likes: comment.likes,
+                    isLiked: comment.is_liked,
+                    actions: buildCommentActions(comment),
+                    replies: (comment.children || []).map((reply) => ({
+                      id: reply.id,
+                      user: reply.user,
+                      replyToUser: reply.reply_to_user,
+                      content: reply.content,
+                      createdAt: reply.created_at || "",
+                      likes: reply.likes,
+                      isLiked: reply.is_liked,
+                      actions: buildCommentActions(reply, comment.id),
+                      onLike: (liked: boolean) =>
+                        handleToggleLike(reply.id, liked, comment.id),
+                      onReplyClick: () => {
+                        setTargetMap((prev) => ({
+                          ...prev,
+                          [comment.id]: {
+                            replyId: reply.id,
+                            userId: reply.user?.id,
+                            userName: reply.user?.nickname,
+                          },
+                        }));
+                      },
+                    })),
+                    isReplying: isActive,
+                    replyComposer: (
+                      <div className="mt-4">
+                        <CommentComposerForm
+                          onSubmit={async (content) => {
+                            const target = targetMap[comment.id] || {};
+                            setSubmittingId(comment.id);
+                            try {
+                              const reply = await createResourceComment(
+                                resourceId || 0,
+                                {
+                                  content,
+                                  parent_id: comment.id,
+                                  reply_to_comment_id:
+                                    target.replyId || undefined,
+                                },
+                              );
+                              setComments((prev) =>
+                                prev.map((item) =>
+                                  item.id === comment.id
+                                    ? {
+                                        ...item,
+                                        children: [
+                                          ...(item.children || []),
+                                          reply,
+                                        ],
+                                      }
+                                    : item,
+                                ),
+                              );
+                              setTargetMap((prev) => ({
+                                ...prev,
+                                [comment.id]: {},
+                              }));
+                              feedback.success({ title: "回复成功" });
+                            } catch (err) {
+                              feedback.error({ title: "回复失败" });
+                            } finally {
+                              setSubmittingId(null);
+                            }
+                          }}
+                          placeholder={
+                            activeTarget.userName
+                              ? `回复 @${activeTarget.userName}...`
+                              : "说点什么吧..."
+                          }
+                        />
+                      </div>
+                    ),
+                    onLike: (liked) => handleToggleLike(comment.id, liked),
+                    onReplyClick: () =>
                       setTargetMap((prev) => ({
                         ...prev,
                         [comment.id]: {
-                          replyId: reply.id,
-                          userId: reply.user?.id,
-                          userName: reply.user?.nickname,
+                          replyId: comment.id,
+                          userId: comment.user?.id,
+                          userName: comment.user?.nickname,
                         },
-                      }));
-                    },
-                  })),
-                  isReplying: isActive,
-                  replyComposer: (
-                    <div className="mt-4">
-                      <CommentComposerForm
-                        onSubmit={async (content) => {
-                          const target = targetMap[comment.id] || {};
-                          setSubmittingId(comment.id);
-                          try {
-                            const reply = await createResourceComment(
-                              resourceId || 0,
-                              {
-                                content,
-                                parent_id: comment.id,
-                                reply_to_comment_id:
-                                  target.replyId || undefined,
-                              },
-                            );
-                            setComments((prev) =>
-                              prev.map((item) =>
-                                item.id === comment.id
-                                  ? {
-                                      ...item,
-                                      children: [
-                                        ...(item.children || []),
-                                        reply,
-                                      ],
-                                    }
-                                  : item,
-                              ),
-                            );
-                            setTargetMap((prev) => ({
-                              ...prev,
-                              [comment.id]: {},
-                            }));
-                            feedback.success({ title: "回复成功" });
-                          } catch (err) {
-                            feedback.error({ title: "回复失败" });
-                          } finally {
-                            setSubmittingId(null);
-                          }
-                        }}
-                        placeholder={
-                          activeTarget.userName
-                            ? `回复 @${activeTarget.userName}...`
-                            : "说点什么吧..."
-                        }
-                      />
-                    </div>
-                  ),
-                  onLike: (liked) => handleToggleLike(comment.id, liked),
-                  onReplyClick: () =>
-                    setTargetMap((prev) => ({
-                      ...prev,
-                      [comment.id]: {
-                        replyId: comment.id,
-                        userId: comment.user?.id,
-                        userName: comment.user?.nickname,
-                      },
-                    })),
-                };
+                      })),
+                  };
                 })}
               />
             )}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
+import RatingStar from "@/components/ui/RatingStar";
 
 interface RelatedItem {
   id: number;
@@ -30,65 +31,15 @@ const COURSE_DIMENSIONS: Dimension[] = [
 const toneMap = {
   teacher: {
     accent: "text-rose-700",
-    panel: "border-rose-100 bg-rose-50/75",
-    chip: "border-rose-200 bg-rose-50 text-rose-700",
-    chipActive: "border-rose-300 bg-rose-600 text-white shadow-[0_12px_30px_rgba(225,29,72,0.18)]",
-    scoreIdle: "border-rose-100 bg-white text-rose-500 hover:border-rose-200 hover:bg-rose-50",
-    scoreActive: "border-rose-300 bg-rose-600 text-white shadow-sm",
+    chipActive:
+      "border-rose-300 bg-rose-600 text-white shadow-[0_12px_30px_rgba(225,29,72,0.18)]",
   },
   course: {
     accent: "text-sky-700",
-    panel: "border-sky-100 bg-sky-50/75",
-    chip: "border-sky-200 bg-sky-50 text-sky-700",
-    chipActive: "border-sky-300 bg-sky-600 text-white shadow-[0_12px_30px_rgba(2,132,199,0.18)]",
-    scoreIdle: "border-sky-100 bg-white text-sky-500 hover:border-sky-200 hover:bg-sky-50",
-    scoreActive: "border-sky-300 bg-sky-600 text-white shadow-sm",
+    chipActive:
+      "border-sky-300 bg-sky-600 text-white shadow-[0_12px_30px_rgba(2,132,199,0.18)]",
   },
 } as const;
-
-function RatingField({
-  label,
-  value,
-  accentClassName,
-  idleClassName,
-  activeClassName,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  accentClassName: string;
-  idleClassName: string;
-  activeClassName: string;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-[0_12px_34px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-sm font-medium text-slate-800">{label}</div>
-          <p className="mt-1 text-xs leading-5 text-slate-500">请选择 1 到 5 分。</p>
-        </div>
-        <div className={`rounded-full px-3 py-1 text-xs font-semibold ${accentClassName}`}>
-          {value > 0 ? `${value}.0` : "未评分"}
-        </div>
-      </div>
-      <div className="mt-4 grid grid-cols-5 gap-2">
-        {[1, 2, 3, 4, 5].map((score) => (
-          <button
-            key={score}
-            type="button"
-            onClick={() => onChange(score)}
-            className={`rounded-2xl border px-0 py-3 text-sm font-semibold transition ${
-              score === value ? activeClassName : idleClassName
-            }`}
-          >
-            {score}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function EvaluationComposerForm({
   evaluationType,
@@ -114,15 +65,37 @@ export default function EvaluationComposerForm({
   const [anonymous, setAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const primaryDimensions = evaluationType === "teacher" ? TEACHER_DIMENSIONS : COURSE_DIMENSIONS;
-  const linkedDimensions = evaluationType === "teacher" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
-  const relatedLabel = evaluationType === "teacher" ? "关联课程" : "关联教师";
+  const primaryDimensions =
+    evaluationType === "teacher" ? TEACHER_DIMENSIONS : COURSE_DIMENSIONS;
+  const linkedDimensions =
+    evaluationType === "teacher" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
   const tone = toneMap[evaluationType];
 
   const requiredDimensions = useMemo(
-    () => (relatedId ? [...primaryDimensions, ...linkedDimensions] : primaryDimensions),
+    () =>
+      relatedId
+        ? [...primaryDimensions, ...linkedDimensions]
+        : primaryDimensions,
     [linkedDimensions, primaryDimensions, relatedId],
   );
+
+  const [enableRelated, setEnableRelated] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    if (!enableRelated) {
+      setRelatedId(null);
+      // Clear linked ratings
+      setRatings((prev) => {
+        const reset = { ...prev };
+        linkedDimensions.forEach((dim) => delete reset[dim.key]);
+        return reset;
+      });
+    } else if (relatedItems.length > 0 && !relatedId) {
+      // Auto-select first item when enabled if none selected
+      setRelatedId(relatedItems[0].id);
+    }
+  }, [enableRelated, relatedItems, linkedDimensions, relatedId]);
 
   useEffect(() => {
     setRatings(
@@ -133,11 +106,16 @@ export default function EvaluationComposerForm({
       ),
     );
     setRelatedId(initialValues?.relatedId ?? null);
+    if (initialValues?.relatedId) {
+      setEnableRelated(true);
+    }
     setComment(initialValues?.comment ?? "");
     setAnonymous(initialValues?.anonymous ?? false);
   }, [initialValues]);
 
-  const allRequiredRated = requiredDimensions.every((dimension) => (ratings[dimension.key] ?? 0) > 0);
+  const allRequiredRated = requiredDimensions.every(
+    (dimension) => (ratings[dimension.key] ?? 0) > 0,
+  );
 
   const handleSubmit = async () => {
     if (!allRequiredRated || isSubmitting) {
@@ -168,96 +146,150 @@ export default function EvaluationComposerForm({
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className={`rounded-[26px] border p-5 ${tone.panel}`}>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <div className={`text-sm font-medium ${tone.accent}`}>核心评分</div>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
-              先完成当前评价对象的三个核心维度，整体风格与资源上传表单保持同一套简洁输入节奏。
-            </p>
+    <div className="mx-auto max-w-4xl space-y-6 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Side: Primary Item Evaluation */}
+        <div className="flex flex-col h-full">
+          <div className="mb-4 h-10 flex items-center">
+            <h3 className={`text-lg font-semibold ${tone.accent}`}>
+              {evaluationType === "teacher" ? "教师评分" : "课程评分"}
+            </h3>
           </div>
-          <div className="text-xs text-slate-500">必填 3 项</div>
-        </div>
-      </div>
-
-      <div className="grid gap-3">
-        {primaryDimensions.map((dimension) => (
-          <RatingField
-            key={dimension.key}
-            label={dimension.label}
-            value={ratings[dimension.key] ?? 0}
-            accentClassName={tone.chip}
-            idleClassName={tone.scoreIdle}
-            activeClassName={tone.scoreActive}
-            onChange={(value) => setRatings((prev) => ({ ...prev, [dimension.key]: value }))}
-          />
-        ))}
-      </div>
-
-      {relatedItems.length > 0 ? (
-        <div className={`rounded-[26px] border p-5 ${tone.panel}`}>
-          <div className={`text-sm font-medium ${tone.accent}`}>{relatedLabel}</div>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            可选。如果选择关联项，需要补齐另外三个维度后才能发布。
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2.5">
-            <button
-              type="button"
-              onClick={() => setRelatedId(null)}
-              className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                relatedId === null
-                  ? tone.chipActive
-                  : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-              }`}
-            >
-              不关联
-            </button>
-            {relatedItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setRelatedId(item.id)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
-                  relatedId === item.id
-                    ? tone.chipActive
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                }`}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {relatedId ? (
-        <div className="space-y-4 rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)]">
-          <div>
-            <div className={`text-sm font-medium ${tone.accent}`}>补充关联维度</div>
-            <p className="mt-1 text-sm leading-6 text-slate-500">当前已开启关联评价，请补充对应的三个维度评分。</p>
-          </div>
-          <div className="grid gap-3">
-            {linkedDimensions.map((dimension) => (
-              <RatingField
+          <div className="grid gap-3 flex-1">
+            {primaryDimensions.map((dimension) => (
+              <RatingStar
                 key={dimension.key}
                 label={dimension.label}
                 value={ratings[dimension.key] ?? 0}
-                accentClassName={tone.chip}
-                idleClassName={tone.scoreIdle}
-                activeClassName={tone.scoreActive}
-                onChange={(value) => setRatings((prev) => ({ ...prev, [dimension.key]: value }))}
+                onChange={(value) =>
+                  setRatings((prev) => ({ ...prev, [dimension.key]: value }))
+                }
               />
             ))}
           </div>
         </div>
-      ) : null}
 
+        {/* Right Side: Related Item Evaluation */}
+        <div className="flex flex-col h-full pl-0 md:pl-2">
+          <div className="mb-4 h-10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h3
+                className={`text-lg font-semibold ${!enableRelated ? "text-slate-400" : "text-slate-700"}`}
+              >
+                关联{evaluationType === "teacher" ? "课程" : "教师"}
+              </h3>
+              {relatedItems.length > 0 && (
+                <ModernCheckbox
+                  checked={enableRelated}
+                  onChange={(checked) => {
+                    setEnableRelated(checked);
+                    if (!checked) setIsDropdownOpen(false);
+                  }}
+                  label=""
+                />
+              )}
+            </div>
+
+            {enableRelated && relatedItems.length > 0 && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition flex items-center gap-1 min-w-[90px] justify-center ${tone.chipActive}`}
+                >
+                  <span className="max-w-[120px] truncate leading-tight">
+                    {relatedItems.find((i) => i.id === relatedId)?.name ||
+                      "请选择"}
+                  </span>
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {isDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsDropdownOpen(false)}
+                    />
+                    <div className="absolute top-full mt-2 right-0 w-max min-w-[200px] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50">
+                      <div className="flex flex-col gap-1">
+                        {relatedItems.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setRelatedId(item.id);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition ${
+                              relatedId === item.id
+                                ? "bg-slate-50 text-[var(--first-color)] font-semibold"
+                                : "text-slate-600 hover:bg-slate-50"
+                            }`}
+                          >
+                            {item.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 transition-all duration-300">
+            {relatedItems.length > 0 ? (
+              <div
+                className={`h-full ${!enableRelated ? "opacity-40 grayscale blur-[1px] pointer-events-none" : ""}`}
+              >
+                <div className={`grid gap-3 h-full`}>
+                  {linkedDimensions.map((dimension) => (
+                    <RatingStar
+                      key={dimension.key}
+                      disabled={!enableRelated}
+                      label={dimension.label}
+                      value={ratings[dimension.key] ?? 0}
+                      onChange={(value) =>
+                        setRatings((prev) => ({
+                          ...prev,
+                          [dimension.key]: value,
+                        }))
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center py-8 rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50">
+                <span className="text-sm text-slate-400">
+                  暂无{evaluationType === "teacher" ? "课程" : "教师"}可关联
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Comment and Action */}
       <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)]">
         <div className="flex items-center justify-between gap-3">
           <div>
             <div className="text-sm font-medium text-slate-800">评价内容</div>
-            <p className="mt-1 text-sm leading-6 text-slate-500">更适合写课堂感受、节奏判断、给分体验和避坑建议。</p>
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              更适合写课堂感受、节奏判断、给分体验和避坑建议。
+            </p>
           </div>
           <ModernCheckbox
             checked={anonymous}
@@ -267,7 +299,7 @@ export default function EvaluationComposerForm({
         </div>
         <AdvancedTextarea
           className="mt-4"
-          rows={9}
+          rows={5}
           label="输入评价正文"
           value={comment}
           onChange={(event) => setComment(event.target.value)}
@@ -275,12 +307,14 @@ export default function EvaluationComposerForm({
         />
       </div>
 
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-end">
         <ActionSubmitButton
           defaultText={submitLabel}
           sentText="提交中..."
           isSent={isSubmitting}
-          onClick={handleSubmit}
+          onClick={() => {
+            handleSubmit().catch(console.error);
+          }}
           disabled={!allRequiredRated || isSubmitting}
         />
       </div>
