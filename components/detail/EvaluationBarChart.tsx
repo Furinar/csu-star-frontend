@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { getEntityTheme } from "@/lib/entityTheme";
 type CommonEvaluation = {
   mode?: "standalone" | "linked" | null;
   course_id?: string | number | null;
@@ -22,19 +23,42 @@ interface EvaluationBarChartProps {
   className?: string;
 }
 
+const teacherTheme = getEntityTheme("teacher");
+const courseTheme = getEntityTheme("course");
+
 const DIMENSIONS_TEACHER = [
-  { key: "rating_quality", label: "教学质量", colorClass: "bg-sky-400" },
-  { key: "rating_grading", label: "给分好坏", colorClass: "bg-purple-400" },
-  { key: "rating_attendance", label: "考勤要求", colorClass: "bg-indigo-400" },
+  {
+    key: "rating_quality",
+    label: "教学质量",
+    colorClass: teacherTheme.dimensionBarClassNames[0],
+  },
+  {
+    key: "rating_grading",
+    label: "给分好坏",
+    colorClass: teacherTheme.dimensionBarClassNames[1],
+  },
+  {
+    key: "rating_attendance",
+    label: "考勤要求",
+    colorClass: teacherTheme.dimensionBarClassNames[2],
+  },
 ] as const;
 
 const DIMENSIONS_COURSE = [
-  { key: "rating_gain", label: "收获感", colorClass: "bg-emerald-400" },
-  { key: "rating_homework", label: "作业量", colorClass: "bg-orange-400" },
+  {
+    key: "rating_gain",
+    label: "收获感",
+    colorClass: courseTheme.dimensionBarClassNames[0],
+  },
+  {
+    key: "rating_homework",
+    label: "作业量",
+    colorClass: courseTheme.dimensionBarClassNames[1],
+  },
   {
     key: "rating_exam_difficulty",
     label: "考试难度",
-    colorClass: "bg-red-400",
+    colorClass: courseTheme.dimensionBarClassNames[2],
   },
 ] as const;
 
@@ -178,6 +202,5 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
     </div>
   );
 };
-
 
 export default EvaluationBarChart;
