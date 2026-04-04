@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import RankItemCard from "@/components/ui/RankItemCard";
 import {
@@ -64,19 +64,32 @@ type FilterType = (typeof rankConfig)[number]["filters"][number]["type"];
 
 const PAGE_SIZE = 20;
 
+const mergeRankingItems = <T,>(
+  previous: T[],
+  incoming: T[],
+  getKey: (item: T) => number,
+) => {
+  const existingIds = new Set(previous.map(getKey));
+  return [...previous, ...incoming.filter((item) => !existingIds.has(getKey(item)))];
+};
+
 export default function Rank() {
   const searchParams = useSearchParams();
   const [rankCategory, setRankCategory] = useState<RankCategory>("resource");
   const [filterType, setFilterType] = useState<FilterType>("comprehensive");
   const [sortType, setSortType] = useState<"desc" | "asc">("desc");
   const [loading, setLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasRequested, setHasRequested] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [courseItems, setCourseItems] = useState<CourseRankingItem[]>([]);
   const [teacherItems, setTeacherItems] = useState<TeacherRankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
   const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
+  const requestIdRef = useRef(0);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const currentCategory = useMemo(
     () =>
@@ -109,75 +122,153 @@ export default function Rank() {
     setShouldAutoFetch(true);
   }, [searchParams]);
 
-  const fetchRankings = useCallback(async () => {
-    setHasRequested(true);
-    setLoading(true);
-    setErrorMessage("");
-    setCourseItems([]);
-    setTeacherItems([]);
-    setResourceItems([]);
+  const currentItems = useMemo(() => {
+    if (rankCategory === "resource") return resourceItems;
+    if (rankCategory === "course") return courseItems;
+    return teacherItems;
+  }, [courseItems, rankCategory, resourceItems, teacherItems]);
+
+  const hasMore = currentItems.length < total;
+
+  const fetchRankings = useCallback(async ({
+    page: nextPage,
+    append,
+  }: {
+    page: number;
+    append: boolean;
+  }) => {
+    const currentRequestId = append ? requestIdRef.current : requestIdRef.current + 1;
+
+    if (!append) {
+      requestIdRef.current = currentRequestId;
+      setHasRequested(true);
+      setLoading(true);
+      setIsLoadingMore(false);
+      setErrorMessage("");
+      setTotal(0);
+      setPage(1);
+      setCourseItems([]);
+      setTeacherItems([]);
+      setResourceItems([]);
+    } else {
+      setIsLoadingMore(true);
+    }
 
     try {
       if (rankCategory === "resource") {
         const result = await getResourceRankings({
           rank_type: filterType as ResourceRankType,
-          page: 1,
+          page: nextPage,
           size: PAGE_SIZE,
           is_increased: sortType === "asc",
         });
 
-        setResourceItems(result.items);
+        if (requestIdRef.current !== currentRequestId) return;
+
+        setResourceItems((previous) =>
+          append
+            ? mergeRankingItems(previous, result.items, (item) => item.course_id)
+            : result.items,
+        );
         setTotal(result.total);
+        setPage(nextPage);
         return;
       }
 
       if (rankCategory === "course") {
         const result = await getCourseRankings({
           rank_type: filterType as CourseRankType,
-          page: 1,
+          page: nextPage,
           size: PAGE_SIZE,
           is_increased: sortType === "asc",
         });
 
-        setCourseItems(result.items);
+        if (requestIdRef.current !== currentRequestId) return;
+
+        setCourseItems((previous) =>
+          append
+            ? mergeRankingItems(previous, result.items, (item) => item.id)
+            : result.items,
+        );
         setTotal(result.total);
+        setPage(nextPage);
         return;
       }
 
       const result = await getTeacherRankings({
         rank_type: filterType as TeacherRankType,
-        page: 1,
+        page: nextPage,
         size: PAGE_SIZE,
         is_increased: sortType === "asc",
       });
 
-      setTeacherItems(result.items);
+      if (requestIdRef.current !== currentRequestId) return;
+
+      setTeacherItems((previous) =>
+        append
+          ? mergeRankingItems(previous, result.items, (item) => item.id)
+          : result.items,
+      );
       setTotal(result.total);
+      setPage(nextPage);
     } catch (error) {
+      if (requestIdRef.current !== currentRequestId) return;
       console.error(error);
       setErrorMessage("排行榜接口异常，请稍后重试。");
       setTotal(0);
     } finally {
-      setLoading(false);
+      if (requestIdRef.current === currentRequestId) {
+        setLoading(false);
+        setIsLoadingMore(false);
+      }
     }
   }, [filterType, rankCategory, sortType]);
 
   useEffect(() => {
+    requestIdRef.current += 1;
     setHasRequested(false);
+    setLoading(false);
+    setIsLoadingMore(false);
     setErrorMessage("");
+    setTotal(0);
+    setPage(1);
+    setCourseItems([]);
+    setTeacherItems([]);
+    setResourceItems([]);
   }, [rankCategory, filterType, sortType]);
 
   useEffect(() => {
     if (!shouldAutoFetch) return;
-    void fetchRankings();
+    void fetchRankings({ page: 1, append: false });
   }, [fetchRankings, shouldAutoFetch]);
 
-  const currentItemsEmpty =
-    rankCategory === "resource"
-      ? resourceItems.length === 0
-      : rankCategory === "course"
-        ? courseItems.length === 0
-        : teacherItems.length === 0;
+  useEffect(() => {
+    const node = loadMoreRef.current;
+
+    if (
+      !node ||
+      !hasRequested ||
+      loading ||
+      isLoadingMore ||
+      !!errorMessage ||
+      !hasMore
+    ) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        void fetchRankings({ page: page + 1, append: true });
+      },
+      { rootMargin: "280px 0px" },
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [errorMessage, fetchRankings, hasMore, hasRequested, isLoadingMore, loading, page]);
+
+  const currentItemsEmpty = currentItems.length === 0;
 
   const getResourceFilterValue = (item: ResourceRankingItem) => {
     switch (filterType as ResourceRankType) {
@@ -317,11 +408,11 @@ export default function Rank() {
 
         <div className="mt-5">
           <button
-            onClick={fetchRankings}
-            disabled={loading}
+            onClick={() => void fetchRankings({ page: 1, append: false })}
+            disabled={loading || isLoadingMore}
             className="group bg-first text-white font-inherit py-[0.35em] pl-[1.2em] pr-[3.3em] text-[17px] font-medium rounded-[0.9em] border-0 tracking-[0.05em] flex items-center shadow-[inset_0_0_1.6em_-0.6em_#714da6] overflow-hidden relative h-[2.8em] cursor-pointer disabled:opacity-70"
           >
-            {loading ? "更新中..." : "Get Rank"}
+            {loading ? "更新中..." : isLoadingMore ? "加载更多中..." : "Get Rank"}
             <span className="icon bg-white ml-[1em] absolute flex items-center justify-center h-[2.2em] w-[2.2em] rounded-[0.7em] shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] right-[0.3em] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
               <i className="uil uil-arrow-right text-[1.1em] text-[#7b52b9] transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140"></i>
             </span>
@@ -437,6 +528,16 @@ export default function Rank() {
               <div className="text-base text-gray-500">
                 请切换筛选维度或排序方式后重试。
               </div>
+            </div>
+          ) : null}
+
+          {!errorMessage && !loading && !currentItemsEmpty ? (
+            <div
+              ref={loadMoreRef}
+              className="flex justify-center py-6 text-sm text-gray-500"
+            >
+              {isLoadingMore ? "正在加载更多..." : null}
+              {!isLoadingMore && !hasMore ? "没有更多内容了" : null}
             </div>
           ) : null}
         </div>
