@@ -96,29 +96,31 @@ export default function CourseGlobalEvaluationModal({
       title={
         selectedCourse
           ? `为 ${selectedCourse.name} 写一条评价`
-          : "写一条课程评价"
+          : "先选择课程"
       }
       description={
-        selectedCourse ? "你的评价会直接展示在课程详情页，帮助后来的同学更快判断课程体验。" : "先搜索并选择想评价的课程，再填写更完整的课堂体验。"
+        selectedCourse
+          ? "你的评价会直接展示在课程详情页，帮助后来的同学更快判断课程体验。"
+          : "选定课程后即可填写评价表单。"
       }
     >
       {!selectedCourse ? (
         <div className="mx-auto max-w-2xl">
           <div className="rounded-[26px] border border-sky-100 bg-white p-5">
-            <div className="text-sm font-medium text-sky-700">选择课程</div>
+            <div className="text-sm font-medium text-sky-700">课程检索</div>
             <p className="mt-1 text-sm leading-6 text-slate-600">
-              搜索后选择一门课程，再进入统一的评价表单。
+              输入课程名称并从结果中选择一门课程。
             </p>
             <div className="relative mt-4">
               <AdvancedInput
                 label={
                   <>
-                    搜索课程 <span className="text-red-500">*</span>
+                    课程名称 <span className="text-red-500">*</span>
                   </>
                 }
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="输入课程名称"
+                placeholder="搜索课程名称"
               />
               {isSearching ? (
                 <div className="mt-3 text-sm text-slate-500">搜索中...</div>
