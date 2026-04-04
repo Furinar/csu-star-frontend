@@ -195,14 +195,17 @@ export default function EmailPanel({
               }))
             }
           />
-          <button
-            type="button"
-            onClick={handleSendCode}
-            disabled={isSendingCode || isVerifying || isVerified}
-            className={`${PANEL_PRIMARY_BUTTON_CLASS_NAME} sm:mt-[3px]`}
-          >
-            {isVerified ? "已完成认证" : isSendingCode ? "发送中..." : "获取验证码"}
-          </button>
+          <div className="sm:mt-[3px]">
+            <ActionSubmitButton
+              defaultText={isVerified ? "已完成认证" : "获取验证码"}
+              sentText="发送中..."
+              isSent={isSendingCode}
+              onClick={() => {
+                handleSendCode().catch(console.error);
+              }}
+              disabled={isSendingCode || isVerifying || isVerified}
+            />
+          </div>
         </div>
       </div>
 
@@ -215,15 +218,16 @@ export default function EmailPanel({
         >
           取消
         </button>
-        <ActionSubmitButton
-          defaultText={isVerified ? "完成" : "完成认证"}
-          sentText="正在认证..."
-          isSent={isVerifying}
+        <button
+          type="button"
           onClick={() => {
             handleVerify().catch(console.error);
           }}
           disabled={isVerifying || isSendingCode}
-        />
+          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
+        >
+          {isVerified ? "完成" : isVerifying ? "正在认证..." : "完成认证"}
+        </button>
       </div>
     </>
   );

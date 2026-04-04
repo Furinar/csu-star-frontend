@@ -161,14 +161,17 @@ export default function PasswordPanel({
               }))
             }
           />
-          <button
-            type="button"
-            onClick={handleSendCode}
-            disabled={isSendingCode || isResetting}
-            className={`${PANEL_PRIMARY_BUTTON_CLASS_NAME} sm:mt-[3px]`}
-          >
-            {isSendingCode ? "发送中..." : "获取验证码"}
-          </button>
+          <div className="sm:mt-[3px]">
+            <ActionSubmitButton
+              defaultText="获取验证码"
+              sentText="发送中..."
+              isSent={isSendingCode}
+              onClick={() => {
+                handleSendCode().catch(console.error);
+              }}
+              disabled={isSendingCode || isResetting}
+            />
+          </div>
         </div>
 
         <AdvancedInput
@@ -211,15 +214,16 @@ export default function PasswordPanel({
         >
           取消
         </button>
-        <ActionSubmitButton
-          defaultText="确认修改"
-          sentText="正在修改..."
-          isSent={isResetting}
+        <button
+          type="button"
           onClick={() => {
             handleReset().catch(console.error);
           }}
           disabled={isResetting || isSendingCode}
-        />
+          className={PANEL_PRIMARY_BUTTON_CLASS_NAME}
+        >
+          {isResetting ? "正在修改..." : "确认修改"}
+        </button>
       </div>
     </>
   );
