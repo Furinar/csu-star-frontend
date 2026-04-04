@@ -145,6 +145,8 @@ export default function DetailEvaluationSection({
   const [draftMap, setDraftMap] = useState<Record<string, string>>({});
   const [replyAnonymousMap, setReplyAnonymousMap] = useState<Record<string, boolean>>({});
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
+  const [expandedReplyMap, setExpandedReplyMap] = useState<Record<string, boolean>>({});
+  const [highlightReplyMap, setHighlightReplyMap] = useState<Record<string, string | null>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
@@ -262,22 +264,43 @@ export default function DetailEvaluationSection({
 
       if (!reply) return;
 
+      const currentEvaluation = items.find((item) => String(item.id) === evaluationId);
+      const currentReplyCount =
+        currentEvaluation?.reply_count || currentEvaluation?.replies?.length || 0;
+      const nextReplyCount = currentReplyCount + 1;
+
       setItems((prev) =>
         prev.map((item) =>
           item.id === evaluationId
             ? {
                 ...item,
                 replies: [...(item.replies || []), reply],
-                reply_count: (item.reply_count || item.replies?.length || 0) + 1,
+                reply_count: nextReplyCount,
               }
             : item,
         ),
       );
+      if (nextReplyCount > 2) {
+        setExpandedReplyMap((prevExpanded) => ({
+          ...prevExpanded,
+          [evaluationId]: true,
+        }));
+      }
+      setHighlightReplyMap((prevHighlight) => ({
+        ...prevHighlight,
+        [evaluationId]: String(reply.id),
+      }));
       await new Promise((resolve) => window.setTimeout(resolve, SUBMIT_ANIMATION_MS));
       setDraftMap((prev) => ({ ...prev, [evaluationId]: "" }));
       setReplyAnonymousMap((prev) => ({ ...prev, [evaluationId]: false }));
       setTargetMap((prev) => ({ ...prev, [evaluationId]: {} }));
       setReplyingToId(null);
+      window.setTimeout(() => {
+        setHighlightReplyMap((prev) => ({
+          ...prev,
+          [evaluationId]: prev[evaluationId] === String(reply.id) ? null : prev[evaluationId],
+        }));
+      }, 900);
       feedback.success({ title: "回复成功" });
     } catch (error) {
       console.error(error);
@@ -599,6 +622,8 @@ export default function DetailEvaluationSection({
         },
         actions: buildReplyActions(id, reply),
       })),
+      forceShowAllReplies: Boolean(expandedReplyMap[id]),
+      highlightedReplyId: highlightReplyMap[id],
     };
   });
 

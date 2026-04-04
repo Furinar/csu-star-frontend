@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import {UserBrief} from "@/types/detail";
 import {formatDateTimeZh} from "@/lib/date";
@@ -46,6 +46,8 @@ export interface BilibiliCommentItemProps {
   // Reply Composer
   isReplying?: boolean;
   replyComposer?: React.ReactNode;
+  forceShowAllReplies?: boolean;
+  highlightedReplyId?: string | number | null;
 }
 
 export default function BilibiliCommentItem({
@@ -65,6 +67,8 @@ export default function BilibiliCommentItem({
                                               actions = [],
                                               isReplying,
                                               replyComposer,
+                                              forceShowAllReplies = false,
+                                              highlightedReplyId = null,
                                             }: BilibiliCommentItemProps) {
   const [showAllReplies, setShowAllReplies] = useState(false);
 
@@ -73,7 +77,13 @@ export default function BilibiliCommentItem({
       : user || {nickname: "未知用户", avatar_url: DEFAULT_AVATAR};
 
   const displayedReplies = showAllReplies ? replies : replies.slice(0, 2);
-  const hasMoreReplies = replies.length > 2 && !showAllReplies;
+  const hasMoreReplies = replies.length > 2;
+
+  useEffect(() => {
+    if (forceShowAllReplies) {
+      setShowAllReplies(true);
+    }
+  }, [forceShowAllReplies]);
 
   return (
       <div
@@ -156,20 +166,21 @@ export default function BilibiliCommentItem({
                           onLike={reply.onLike}
                           onReplyClick={reply.onReplyClick}
                           actions={reply.actions}
+                          shouldFlash={highlightedReplyId != null && String(highlightedReplyId) === String(reply.id)}
                       />
                   ))}
                 </div>
 
                 {hasMoreReplies && (
                     <div className="mt-2 text-[13px]">
-                <span className="text-gray-500">
-                  共 {replies.length} 条回复，
-                </span>
+                      <span className="text-gray-500">
+                        共 {replies.length} 条回复，
+                      </span>
                       <button
-                          className="font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
-                          onClick={() => setShowAllReplies(true)}
+                        className="font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
+                        onClick={() => setShowAllReplies((prev) => !prev)}
                       >
-                        点击查看
+                        {showAllReplies ? "收起回复" : "点击查看"}
                       </button>
                     </div>
                 )}

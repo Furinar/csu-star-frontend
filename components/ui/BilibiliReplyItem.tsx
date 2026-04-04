@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { UserBrief } from "@/types/detail";
 import { formatDateTimeZh } from "@/lib/date";
@@ -20,6 +20,7 @@ export interface BilibiliReplyItemProps {
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
   actions?: ItemActionMenuItem[];
+  shouldFlash?: boolean;
 }
 
 export default function BilibiliReplyItem({
@@ -33,10 +34,35 @@ export default function BilibiliReplyItem({
   onLike,
   onReplyClick,
   actions = [],
+  shouldFlash = false,
 }: BilibiliReplyItemProps) {
   const displayUser = user || { nickname: "匿名用户", avatar_url: DEFAULT_AVATAR };
+  const [isFlashing, setIsFlashing] = useState(false);
+
+  useEffect(() => {
+    if (!shouldFlash) {
+      setIsFlashing(false);
+      return;
+    }
+
+    const timers = [
+      window.setTimeout(() => setIsFlashing(true), 0),
+      window.setTimeout(() => setIsFlashing(false), 220),
+      window.setTimeout(() => setIsFlashing(true), 440),
+      window.setTimeout(() => setIsFlashing(false), 660),
+    ];
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      setIsFlashing(false);
+    };
+  }, [shouldFlash]);
+
   return (
-    <div className="flex gap-3 py-2 group/reply">
+    <div
+      className="group/reply flex gap-3 rounded-xl px-2 py-2 transition-colors duration-200"
+      style={{ backgroundColor: isFlashing ? "var(--page-accent-soft-strong)" : "transparent" }}
+    >
       {/* Avatar */}
       <div className="shrink-0 flex-none self-start mt-0.5">
         <div className="relative h-6 w-6 rounded-full overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer">
