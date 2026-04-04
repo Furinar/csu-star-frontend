@@ -75,31 +75,27 @@ export default function MeResources({resources}: MeResourcesProps) {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-3 text-sm text-gray-600">
-                        <StatPill
-                            label="类型"
-                            value={getResourceTypeLabel(item.resource_type)}
-                        />
-                        <StatPill
-                            label="课程"
-                            value={courseName}
-                        />
-                        <StatPill
-                            label="下载"
-                            value={formatNumber(item.downloads)}
-                        />
-                        <StatPill
-                            label="浏览"
-                            value={formatNumber(item.views)}
-                        />
-                        <StatPill
-                            label="点赞"
-                            value={formatNumber(item.likes)}
-                        />
-                        <StatPill
-                            label="热度"
-                            value={`${item.hot_score ?? 0}`}
-                        />
+                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
+                        <div className="flex items-center gap-1.5 transition-colors">
+                          <i className="uil uil-file-alt text-lg text-emerald-500"></i>
+                          <span>{getResourceTypeLabel(item.resource_type)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 transition-colors">
+                          <i className="uil uil-cloud-download text-lg text-blue-500"></i>
+                          <span>下载 {formatNumber(item.downloads)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 transition-colors">
+                          <i className="uil uil-eye text-lg text-amber-500"></i>
+                          <span>浏览 {formatNumber(item.views)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 transition-colors">
+                          <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                          <span>点赞 {formatNumber(item.likes)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 transition-colors">
+                          <i className="uil uil-bolt text-lg text-violet-500"></i>
+                          <span>热度 {item.hot_score ?? 0}</span>
+                        </div>
                       </div>
                       <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
                         <span>{isDeleted ? "资源已删除，仅保留记录" : "点击查看资源详情"}</span>
@@ -191,16 +187,6 @@ export default function MeResources({resources}: MeResourcesProps) {
       </>
   );
 }
-
-function StatPill({label, value}: { label: string; value: string }) {
-  return (
-      <div className="rounded-full border border-gray-200/70 bg-white/55 px-3 py-1.5 text-xs text-gray-600">
-        <span className="mr-2 text-gray-400">{label}</span>
-        <span className="font-medium text-gray-800">{value}</span>
-      </div>
-  );
-}
-
 
 function SectionEmptyState({
                              title,
