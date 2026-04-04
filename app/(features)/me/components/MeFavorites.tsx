@@ -15,6 +15,18 @@ interface MeFavoritesProps {
 }
 
 function getFavoriteType(item: FavoriteItem): EntityThemeKey {
+  if (item.target_type === "resource") {
+    return "resource";
+  }
+
+  if (item.target_type === "course") {
+    return "course";
+  }
+
+  if (item.target_type === "teacher") {
+    return "teacher";
+  }
+
   if (item.resource_type) {
     return "resource";
   }

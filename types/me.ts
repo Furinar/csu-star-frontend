@@ -152,6 +152,8 @@ export interface CourseEvaluation {
 
 export interface FavoriteItem {
   id: number;
+  target_type?: FavoriteTargetType;
+  target_id?: number | string;
   title?: string;
   name?: string;
   resource_type?: string;
