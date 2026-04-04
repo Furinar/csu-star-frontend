@@ -108,6 +108,11 @@ export default function Search() {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [globalTypeCounts, setGlobalTypeCounts] = useState({
+    resource: 0,
+    course: 0,
+    teacher: 0,
+  });
   const requestIdRef = useRef(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -119,11 +124,14 @@ export default function Search() {
   }, [searchType]);
 
   const summary = useMemo(() => {
-    const counts = {
-      resource: results.resources.total,
-      course: results.courses.total,
-      teacher: results.teachers.total,
-    };
+    const counts =
+      searchType === "all"
+        ? globalTypeCounts
+        : {
+            resource: results.resources.total,
+            course: results.courses.total,
+            teacher: results.teachers.total,
+          };
 
     if (searchType === "all") {
       return {
@@ -154,7 +162,7 @@ export default function Search() {
       total: results.teachers.total,
       loaded: results.teachers.items.length,
     };
-  }, [results, searchType]);
+  }, [globalTypeCounts, results, searchType]);
 
   const displayedItems = useMemo(() => {
     if (searchType === "all") {
@@ -205,6 +213,7 @@ export default function Search() {
       setSubmittedQuery("");
       setCurrentPage(1);
       setResults(createEmptyResults());
+      setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
       return;
     }
 
@@ -233,6 +242,31 @@ export default function Search() {
       });
 
       if (requestIdRef.current !== currentRequestId) return;
+
+      if (!append) {
+        if (type === "all") {
+          try {
+            const [resourceData, courseData, teacherData] = await Promise.all([
+              searchEverything({ q: trimmedQuery, type: "resource", page: 1, size: 1 }),
+              searchEverything({ q: trimmedQuery, type: "course", page: 1, size: 1 }),
+              searchEverything({ q: trimmedQuery, type: "teacher", page: 1, size: 1 }),
+            ]);
+
+            if (requestIdRef.current !== currentRequestId) return;
+
+            setGlobalTypeCounts({
+              resource: resourceData.resources.total,
+              course: courseData.courses.total,
+              teacher: teacherData.teachers.total,
+            });
+          } catch {
+            if (requestIdRef.current !== currentRequestId) return;
+            setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+          }
+        } else {
+          setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+        }
+      }
 
       setResults((previous) =>
           append ? mergeResults(previous, data, type) : data,
@@ -318,6 +352,7 @@ export default function Search() {
       setError(null);
       setCurrentPage(1);
       setSubmittedQuery("");
+      setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
     }
   }, [searchParams]);
 
@@ -460,20 +495,22 @@ export default function Search() {
                   <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
                   条结果
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-700">
-                    <span className="h-2 w-2 rounded-full bg-sky-500" />
-                    <span>课程 {summary.counts.course}</span>
+                {searchType === "all" ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-700">
+                      <span className="h-2 w-2 rounded-full bg-sky-500" />
+                      <span>课程 {summary.counts.course}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700">
+                      <span className="h-2 w-2 rounded-full bg-rose-500" />
+                      <span>教师 {summary.counts.teacher}</span>
+                    </div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span>资源 {summary.counts.resource}</span>
+                    </div>
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700">
-                    <span className="h-2 w-2 rounded-full bg-rose-500" />
-                    <span>教师 {summary.counts.teacher}</span>
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span>资源 {summary.counts.resource}</span>
-                  </div>
-                </div>
+                ) : null}
               </div>
 
               <SearchResultsGrid items={displayedItems} />
