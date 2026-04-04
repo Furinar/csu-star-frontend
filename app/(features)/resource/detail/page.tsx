@@ -754,11 +754,10 @@ export default function ResourceDetailPage() {
                                   : item,
                               ),
                             );
-                            setTargetMap((prev) => {
-                              const next = { ...prev };
-                              delete next[comment.id];
-                              return next;
-                            });
+                            setTargetMap((prev) => ({
+                              ...prev,
+                              [comment.id]: {},
+                            }));
                             feedback.success({ title: "回复成功" });
                           } catch (err) {
                             feedback.error({ title: "回复失败" });
