@@ -8,6 +8,7 @@ import type {
   TeacherRankingItem,
 } from "@/types/ranking";
 import { getEntityTheme } from "@/lib/entityTheme";
+import ResourcePreviewSummary from "@/components/ui/ResourcePreviewSummary";
 import {
   buildCoursePath,
   buildResourceCollectionPath,
@@ -206,32 +207,10 @@ export default function RankItemCard(props: RankItemCardProps) {
     subtitleContent = <div className="flex items-center gap-2 flex-wrap" />;
 
     rightDetailsContent = (
-      <div className="flex flex-col gap-1 sm:gap-1.5 justify-center h-full">
-        <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-14 sm:w-18">资源总数</span>
-          <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.resource_count ?? 0}
-          </span>
-        </div>
-        <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-14 sm:w-18">总下载</span>
-          <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.download_total ?? 0}
-          </span>
-        </div>
-        <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-14 sm:w-18">总浏览</span>
-          <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.view_total ?? 0}
-          </span>
-        </div>
-        <div className="flex items-center text-[10px] sm:text-xs">
-          <span className="text-gray-500 w-14 sm:w-18">总点赞</span>
-          <span className="font-medium text-gray-700 flex-1 tabular-nums">
-            {item.like_total ?? 0}
-          </span>
-        </div>
-      </div>
+      <ResourcePreviewSummary
+        items={item.resources_preview}
+        totalCount={item.resource_count}
+      />
     );
 
     bottomStats = [
