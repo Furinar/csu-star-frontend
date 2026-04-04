@@ -135,58 +135,56 @@ export default function TeacherGlobalEvaluationModal({
       }
     >
       {!selectedTeacher ? (
-        <div className="mx-auto max-w-2xl">
-          <div className="rounded-[26px] border border-rose-100 bg-white p-5">
-            <div className="text-sm font-medium text-rose-700">教师检索</div>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
-              输入教师姓名并从结果中选择一位教师。
-            </p>
-            <div className="relative mt-4">
-              <AdvancedInput
-                label={
-                  <>
-                    教师姓名 <span className="text-red-500">*</span>
-                  </>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="搜索教师姓名"
-              />
-              {isSearching ? (
-                <div className="mt-3 text-sm text-slate-500">搜索中...</div>
-              ) : null}
-              {!isSearching && options.length > 0 ? (
-                <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                  {options.map((teacher) => (
-                    <button
-                      key={teacher.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedTeacher(teacher);
-                        setOptions([]);
-                        setQuery("");
-                        setRelatedCourses([]);
-                      }}
-                      className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-800">{teacher.name}</div>
-                        {teacher.department ? (
-                          <div className="mt-1 text-xs text-slate-400">{teacher.department}</div>
-                        ) : null}
-                      </div>
-                      <span className="text-xs text-slate-400">选择</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            {!isSearching && query.trim() && options.length === 0 ? (
-              <div className="mt-3 text-sm text-slate-500">
-                未找到相关教师
+        <div className="mx-auto max-w-2xl rounded-[26px] border border-rose-100 bg-white p-5">
+          <div className="text-sm font-medium text-rose-700">教师检索</div>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            输入教师姓名并从结果中选择一位教师。
+          </p>
+          <div className="relative mt-4">
+            <AdvancedInput
+              label={
+                <>
+                  教师姓名 <span className="text-red-500">*</span>
+                </>
+              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="搜索教师姓名"
+            />
+            {isSearching ? (
+              <div className="mt-3 text-sm text-slate-500">搜索中...</div>
+            ) : null}
+            {!isSearching && options.length > 0 ? (
+              <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                {options.map((teacher) => (
+                  <button
+                    key={teacher.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTeacher(teacher);
+                      setOptions([]);
+                      setQuery("");
+                      setRelatedCourses([]);
+                    }}
+                    className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
+                  >
+                    <div>
+                      <div className="font-medium text-slate-800">{teacher.name}</div>
+                      {teacher.department ? (
+                        <div className="mt-1 text-xs text-slate-400">{teacher.department}</div>
+                      ) : null}
+                    </div>
+                    <span className="text-xs text-slate-400">选择</span>
+                  </button>
+                ))}
               </div>
             ) : null}
           </div>
+          {!isSearching && query.trim() && options.length === 0 ? (
+            <div className="mt-3 text-sm text-slate-500">
+              未找到相关教师
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="mt-2 flex flex-col gap-5">

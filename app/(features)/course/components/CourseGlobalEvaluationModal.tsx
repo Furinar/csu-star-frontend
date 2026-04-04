@@ -135,58 +135,56 @@ export default function CourseGlobalEvaluationModal({
       }
     >
       {!selectedCourse ? (
-        <div className="mx-auto max-w-2xl">
-          <div className="rounded-[26px] border border-sky-100 bg-white p-5">
-            <div className="text-sm font-medium text-sky-700">课程检索</div>
-            <p className="mt-1 text-sm leading-6 text-slate-600">
-              输入课程名称并从结果中选择一门课程。
-            </p>
-            <div className="relative mt-4">
-              <AdvancedInput
-                label={
-                  <>
-                    课程名称 <span className="text-red-500">*</span>
-                  </>
-                }
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="搜索课程名称"
-              />
-              {isSearching ? (
-                <div className="mt-3 text-sm text-slate-500">搜索中...</div>
-              ) : null}
-              {!isSearching && options.length > 0 ? (
-                <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                  {options.map((course) => (
-                    <button
-                      key={course.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCourse(course);
-                        setOptions([]);
-                        setQuery("");
-                        setRelatedTeachers([]);
-                      }}
-                      className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
-                    >
-                      <div>
-                        <div className="font-medium text-slate-800">{course.name}</div>
-                        {course.course_type ? (
-                          <div className="mt-1 text-xs text-slate-400">{course.course_type}</div>
-                        ) : null}
-                      </div>
-                      <span className="text-xs text-slate-400">选择</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            {!isSearching && query.trim() && options.length === 0 ? (
-              <div className="mt-3 text-sm text-slate-500">
-                未找到相关课程
+        <div className="mx-auto max-w-2xl rounded-[26px] border border-sky-100 bg-white p-5">
+          <div className="text-sm font-medium text-sky-700">课程检索</div>
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            输入课程名称并从结果中选择一门课程。
+          </p>
+          <div className="relative mt-4">
+            <AdvancedInput
+              label={
+                <>
+                  课程名称 <span className="text-red-500">*</span>
+                </>
+              }
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="搜索课程名称"
+            />
+            {isSearching ? (
+              <div className="mt-3 text-sm text-slate-500">搜索中...</div>
+            ) : null}
+            {!isSearching && options.length > 0 ? (
+              <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                {options.map((course) => (
+                  <button
+                    key={course.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCourse(course);
+                      setOptions([]);
+                      setQuery("");
+                      setRelatedTeachers([]);
+                    }}
+                    className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
+                  >
+                    <div>
+                      <div className="font-medium text-slate-800">{course.name}</div>
+                      {course.course_type ? (
+                        <div className="mt-1 text-xs text-slate-400">{course.course_type}</div>
+                      ) : null}
+                    </div>
+                    <span className="text-xs text-slate-400">选择</span>
+                  </button>
+                ))}
               </div>
             ) : null}
           </div>
+          {!isSearching && query.trim() && options.length === 0 ? (
+            <div className="mt-3 text-sm text-slate-500">
+              未找到相关课程
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="mt-2 flex flex-col gap-5">
