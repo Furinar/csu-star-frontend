@@ -36,7 +36,7 @@ import {
   DetailSection,
   EntityPillLink,
 } from "@/components/detail/DetailScaffold";
-import { buildCoursePath, buildResourceCollectionPath } from "@/lib/paths";
+import { buildCoursePath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
 import { getPageTheme } from "@/lib/pageTheme";
 import { useHasMounted } from "@/hooks/useHasMounted";
@@ -596,7 +596,7 @@ export default function ResourceDetailPage() {
         <DetailHero
           accent="resource"
           title={resource.title}
-          description="查看文件信息、课程归属和使用反馈。"
+          description="资源说明"
           meta={
             <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 mt-4">
               <div className="flex items-center gap-1.5 transition-colors">
@@ -702,19 +702,6 @@ export default function ResourceDetailPage() {
                       tone="resource"
                     >
                       {resource.course.name}
-                    </EntityPillLink>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-400">
-                    资源合集:
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    <EntityPillLink
-                      href={buildResourceCollectionPath(resource.course.id)}
-                      tone="resource"
-                    >
-                      课程资源合集
                     </EntityPillLink>
                   </div>
                 </div>
