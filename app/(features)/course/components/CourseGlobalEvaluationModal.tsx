@@ -20,6 +20,7 @@ export default function CourseGlobalEvaluationModal({
   isOpen,
   onClose,
 }: CourseGlobalEvaluationModalProps) {
+  const [formVersion, setFormVersion] = useState(0);
   const [selectedCourse, setSelectedCourse] =
     useState<CourseSuggestionItem | null>(null);
   const [query, setQuery] = useState("");
@@ -72,7 +73,7 @@ export default function CourseGlobalEvaluationModal({
         payload as unknown as CourseEvaluationInput,
       );
       feedback.success("评价提交成功！");
-      handleClose();
+      setFormVersion((prev) => prev + 1);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "提交失败";
       feedback.error(msg);
@@ -170,6 +171,7 @@ export default function CourseGlobalEvaluationModal({
             </button>
           </div>
           <EvaluationComposerForm
+            key={`course-global-form-${formVersion}-${selectedCourse.id}`}
             evaluationType="course"
             onSubmit={handleSubmit}
           />

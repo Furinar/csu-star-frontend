@@ -25,6 +25,8 @@ import { submitReport } from "@/api/me";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 
+const SUBMIT_ANIMATION_MS = 1200;
+
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 type EvaluationType = "teacher" | "course";
 type LikeItemType =
@@ -271,6 +273,7 @@ export default function DetailEvaluationSection({
             : item,
         ),
       );
+      await new Promise((resolve) => window.setTimeout(resolve, SUBMIT_ANIMATION_MS));
       setDraftMap((prev) => ({ ...prev, [evaluationId]: "" }));
       setReplyAnonymousMap((prev) => ({ ...prev, [evaluationId]: false }));
       setTargetMap((prev) => ({ ...prev, [evaluationId]: {} }));

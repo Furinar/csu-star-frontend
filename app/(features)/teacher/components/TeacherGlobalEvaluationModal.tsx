@@ -20,6 +20,7 @@ export default function TeacherGlobalEvaluationModal({
   isOpen,
   onClose,
 }: TeacherGlobalEvaluationModalProps) {
+  const [formVersion, setFormVersion] = useState(0);
   const [selectedTeacher, setSelectedTeacher] =
     useState<TeacherSuggestionItem | null>(null);
   const [query, setQuery] = useState("");
@@ -72,7 +73,7 @@ export default function TeacherGlobalEvaluationModal({
         payload as unknown as TeacherEvaluationInput,
       );
       feedback.success("评价提交成功！");
-      handleClose();
+      setFormVersion((prev) => prev + 1);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "提交失败";
       feedback.error(msg);
@@ -170,6 +171,7 @@ export default function TeacherGlobalEvaluationModal({
             </button>
           </div>
           <EvaluationComposerForm
+            key={`teacher-global-form-${formVersion}-${selectedTeacher.id}`}
             evaluationType="teacher"
             onSubmit={handleSubmit}
           />

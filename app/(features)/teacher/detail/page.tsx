@@ -33,6 +33,7 @@ export default function TeacherDetailPage() {
   const [evaluationTotal, setEvaluationTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [composerVersion, setComposerVersion] = useState(0);
 
   useEffect(() => {
     if (!hasMounted) return;
@@ -143,6 +144,7 @@ export default function TeacherDetailPage() {
         description="写下你对这位老师的体验和看法。"
       >
         <EvaluationComposerForm
+          key={`teacher-detail-form-${composerVersion}-${teacher.id}`}
           evaluationType="teacher"
           relatedItems={relatedCourses}
           onSubmit={async (payload) => {
@@ -151,7 +153,7 @@ export default function TeacherDetailPage() {
               if (!result) return;
               setEvaluations((prev) => [result, ...prev]);
               setEvaluationTotal((prev) => prev + 1);
-              setIsComposerOpen(false);
+              setComposerVersion((prev) => prev + 1);
               feedback.success({ title: "评价已发布" });
             } catch (error) {
               console.error(error);
