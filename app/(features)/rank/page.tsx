@@ -25,6 +25,7 @@ const rankConfig = [
     filters: [
       { type: "comprehensive", label: "综合", icon: "award" },
       { type: "downloads", label: "下载量", icon: "import" },
+      { type: "views", label: "浏览量", icon: "eye" },
       { type: "likes", label: "点赞", icon: "thumbs-up" },
       { type: "resource_count", label: "资源数", icon: "files-landscapes" },
       { type: "favorite_count", label: "收藏数", icon: "bookmark" },
@@ -182,6 +183,8 @@ export default function Rank() {
     switch (filterType as ResourceRankType) {
       case "downloads":
         return item.download_total;
+      case "views":
+        return item.view_total;
       case "likes":
         return item.like_total;
       case "favorite_count":

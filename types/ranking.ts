@@ -1,6 +1,7 @@
 export type ResourceRankType =
   | "comprehensive"
   | "downloads"
+  | "views"
   | "likes"
   | "favorite_count"
   | "resource_count";
@@ -96,6 +97,7 @@ export interface ResourceRankingItem {
   course_name: string;
   resource_count?: number | null;
   download_total?: number | null;
+  view_total?: number | null;
   like_total?: number | null;
   favorite_count?: number | null;
   score?: number | null;

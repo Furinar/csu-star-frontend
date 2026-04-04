@@ -151,6 +151,7 @@ const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] 
           `课程资源合集 ${index + 1}`,
         resource_count: toNumber(raw.resource_count),
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
+        view_total: toNumber(raw.view_total) ?? toNumber(raw.views),
         like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
         favorite_count: toNumber(raw.favorite_count),
         score: toNumber(raw.score),

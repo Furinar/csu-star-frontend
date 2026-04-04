@@ -218,6 +218,12 @@ export default function RankItemCard(props: RankItemCardProps) {
           </span>
         </div>
         <div className="flex items-center text-[10px] sm:text-xs">
+          <span className="text-gray-500 w-14 sm:w-18">总浏览</span>
+          <span className="font-medium text-gray-700 flex-1 tabular-nums">
+            {item.view_total ?? 0}
+          </span>
+        </div>
+        <div className="flex items-center text-[10px] sm:text-xs">
           <span className="text-gray-500 w-14 sm:w-18">总点赞</span>
           <span className="font-medium text-gray-700 flex-1 tabular-nums">
             {item.like_total ?? 0}
