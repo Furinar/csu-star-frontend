@@ -353,7 +353,7 @@ export default function ResourceUploader({
 
       {uploadedResourceId ? (
         <div className="flex flex-col items-center justify-center py-10 space-y-4">
-          <div className="text-star-500 text-6xl">
+          <div className="text-emerald-500 text-6xl">
             <i className="uil uil-check-circle" />
           </div>
           <h3 className="text-2xl font-semibold text-black">上传成功！</h3>
@@ -428,12 +428,12 @@ export default function ResourceUploader({
                     <label className="block text-sm font-medium text-black mb-1">
                       关联课程 <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center justify-between px-4 py-2 rounded-xl border border-star-200 bg-star-50 text-star-900">
+                    <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-emerald-900">
                       <span>{selectedCourse.name}</span>
                       {!isUploading && (
                         <button
                           onClick={() => setSelectedCourse(null)}
-                          className="text-star-400 hover:text-star-600"
+                          className="text-emerald-400 hover:text-emerald-600"
                         >
                           <i className="uil uil-times-circle text-xl" />
                         </button>
@@ -501,7 +501,7 @@ export default function ResourceUploader({
               onDrop={handleDrop}
               onClick={() => !isUploading && fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer
-                ${dragActive ? "border-[#8b5cf6] bg-[#8b5cf6]/5" : "border-gray-300 hover:border-[#8b5cf6] hover:bg-[#8b5cf6]/5"}
+                ${dragActive ? "border-emerald-400 bg-emerald-50/80" : "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/70"}
                 ${isUploading ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
               `}
             >
@@ -512,7 +512,7 @@ export default function ResourceUploader({
                 className="hidden"
                 onChange={handleChange}
               />
-              <div className="text-star-400 text-4xl mb-2">
+              <div className="text-emerald-400 text-4xl mb-2">
                 <i className="uil uil-cloud-upload" />
               </div>
               <p className="text-black font-medium">
@@ -538,7 +538,7 @@ export default function ResourceUploader({
                     {/* background progress */}
                     {f.status === "uploading" && (
                       <div
-                        className="absolute left-0 top-0 bottom-0 bg-star-100/50 transition-all duration-300 pointer-events-none"
+                        className="absolute left-0 top-0 bottom-0 bg-emerald-100/60 transition-all duration-300 pointer-events-none"
                         style={{ width: `${f.progress}%` }}
                       />
                     )}
@@ -547,7 +547,7 @@ export default function ResourceUploader({
                     )}
 
                     <div className="flex items-center gap-3 relative z-10 w-full max-w-[85%]">
-                      <i className="uil uil-file-alt text-xl text-star-400" />
+                      <i className="uil uil-file-alt text-xl text-emerald-400" />
                       <div className="truncate text-sm text-black flex-1">
                         {f.file.name}
                       </div>
@@ -558,7 +558,7 @@ export default function ResourceUploader({
 
                     <div className="relative z-10 flex items-center gap-2 shrink-0">
                       {f.status === "uploading" && (
-                        <span className="text-xs font-medium text-star-600 w-10 text-right">
+                        <span className="w-10 text-right text-xs font-medium text-emerald-700">
                           {f.progress}%
                         </span>
                       )}
@@ -597,7 +597,7 @@ export default function ResourceUploader({
               </div>
               <div className="h-2 w-full bg-ice-100 rounded-md overflow-hidden">
                 <div
-                  className="h-full bg-star-500 transition-all duration-300"
+                  className="h-full bg-emerald-500 transition-all duration-300"
                   style={{ width: `${totalProgress}%` }}
                 />
               </div>
