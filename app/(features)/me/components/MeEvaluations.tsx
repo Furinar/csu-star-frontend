@@ -151,16 +151,11 @@ export default function MeEvaluations({
                         className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
+                          <div className="flex w-full items-start justify-between gap-3">
+                            <div className="min-w-0">
                               <h4 className="font-semibold text-gray-900">
                                 {teacherName}
                               </h4>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
-                                  {item.mode === "linked" || item.course_id ? "关联评价" : "单独评价"}
-                                </span>
-                              </div>
                             </div>
                             <EntityTypeBadge type="teacher" label="教师评价" />
                           </div>
@@ -287,16 +282,11 @@ export default function MeEvaluations({
                         className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="flex flex-wrap items-start justify-between gap-3">
-                            <div>
+                          <div className="flex w-full items-start justify-between gap-3">
+                            <div className="min-w-0">
                               <h4 className="font-semibold text-gray-900">
                                 {courseName}
                               </h4>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
-                                  {item.mode === "linked" || item.teacher_id ? "关联评价" : "单独评价"}
-                                </span>
-                              </div>
                             </div>
                             <EntityTypeBadge type="course" label="课程评价" />
                           </div>
