@@ -22,6 +22,7 @@ export interface ResourceBrief {
   title: string;
   resource_type?: string | null;
   downloads?: number | null;
+  views?: number | null;
   likes?: number | null;
   created_at?: string | null;
   file_count?: number | null;

@@ -14,7 +14,6 @@ import {
   buildResourcePath,
 } from "@/lib/paths";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
-import { formatDateTimeZh } from "@/lib/date";
 import ResourceUploaderModal from "../components/ResourceUploaderModal";
 import { getFileIcon } from "../detail/fileIcons";
 
@@ -175,7 +174,7 @@ export default function CourseResourceCollectionPage() {
         </div>
       </section>
 
-      <SectionCard title="课程资料" subtitle="展示每组资源的首个文件预览和基础信息。">
+      <SectionCard title="课程资料" subtitle="展示资源文件预览和基础信息。">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {detail.items.items.map((resource) => (
             <Link
@@ -192,9 +191,9 @@ export default function CourseResourceCollectionPage() {
                     {resource.title}
                   </div>
                 </div>
-                <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-right">
+                <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-center min-w-20 flex flex-col items-center justify-center">
                   <div className="text-[11px] text-emerald-600">文件数</div>
-                  <div className="mt-1 text-base font-semibold text-emerald-900">
+                  <div className="mt-1 text-base font-semibold text-emerald-900 leading-none">
                     {resource.file_count ?? 0}
                   </div>
                 </div>
@@ -208,9 +207,8 @@ export default function CourseResourceCollectionPage() {
                       style={{ backgroundImage: `url(${getFileIcon(resource.first_file.filename)})` }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs text-gray-400">首个文件预览</div>
                       <div
-                        className="mt-1 truncate text-sm font-medium text-gray-800"
+                        className="truncate text-sm font-medium text-gray-800"
                         title={resource.first_file.filename}
                       >
                         {resource.first_file.filename}
@@ -227,24 +225,18 @@ export default function CourseResourceCollectionPage() {
                 )}
               </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-gray-50 px-3 py-2">
-                  <div className="text-[11px] text-gray-400">下载量</div>
-                  <div className="mt-1 text-sm font-medium text-gray-800">
-                    {resource.downloads ?? 0}
-                  </div>
+              <div className="mt-4 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+                <div className="flex items-center gap-1.5 transition-colors">
+                  <i className="uil uil-file-alt text-lg text-emerald-500"></i>
+                  <span>{resource.file_count ?? 0} 个文件</span>
                 </div>
-                <div className="rounded-2xl bg-gray-50 px-3 py-2">
-                  <div className="text-[11px] text-gray-400">点赞量</div>
-                  <div className="mt-1 text-sm font-medium text-gray-800">
-                    {resource.likes ?? 0}
-                  </div>
+                <div className="flex items-center gap-1.5 transition-colors">
+                  <i className="uil uil-cloud-download text-lg text-blue-500"></i>
+                  <span>下载 {resource.downloads ?? 0}</span>
                 </div>
-                <div className="col-span-2 rounded-2xl bg-gray-50 px-3 py-2">
-                  <div className="text-[11px] text-gray-400">上传时间</div>
-                  <div className="mt-1 text-sm font-medium text-gray-800">
-                    {formatDateTimeZh(resource.created_at)}
-                  </div>
+                <div className="flex items-center gap-1.5 transition-colors">
+                  <i className="uil uil-eye text-lg text-amber-500"></i>
+                  <span>浏览 {resource.views ?? 0}</span>
                 </div>
               </div>
 
