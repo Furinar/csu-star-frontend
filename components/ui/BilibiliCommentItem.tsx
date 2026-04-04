@@ -130,7 +130,7 @@ export default function BilibiliCommentItem({
 
             <button
                 className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
-                onClick={() => onLike?.(!isLiked)}
+                onClick={() => onLike?.(Boolean(isLiked))}
             >
               <i
                   className={isLiked ? "uil uil-thumbs-up" : "uil uil-thumbs-up"}
