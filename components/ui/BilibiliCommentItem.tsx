@@ -141,7 +141,7 @@ export default function BilibiliCommentItem({
 
           {/* Replies Section - Bilibili Style Box */}
           {(replies.length > 0 || isReplying) && (
-              <div className="mt-3 rounded-xl border border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] p-3 text-[14px] sm:p-4">
+              <div className="mt-3 rounded-xl bg-gray-50 p-3 text-[14px] sm:p-4">
                 <div className="flex flex-col gap-2">
                   {displayedReplies.map((reply) => (
                       <BilibiliReplyItem

@@ -52,8 +52,8 @@ export default function ComposePageShell({
       <section
         className="relative overflow-hidden rounded-[36px] border border-[var(--page-accent-border)] bg-white p-6 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-8"
       >
-        <div className="absolute -right-10 top-6 h-40 w-40 rounded-full bg-[var(--page-accent-soft-strong)] blur-3xl" />
-        <div className="absolute left-6 top-0 h-24 w-24 rounded-full bg-[var(--page-accent-soft)] blur-3xl" />
+        <div className="absolute -right-10 top-6 h-40 w-40 rounded-full bg-white blur-3xl" />
+        <div className="absolute left-6 top-0 h-24 w-24 rounded-full bg-white blur-3xl" />
         <div className="relative space-y-5">
           <div className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${tone.badge}`}>
             {badge}
