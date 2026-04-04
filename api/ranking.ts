@@ -108,7 +108,6 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
         avg_grading: toNumber(raw.avg_grading),
         avg_attendance: toNumber(raw.avg_attendance),
         eval_count: toNumber(raw.eval_count),
-        resource_count: toNumber(raw.resource_count),
         favorite_count: toNumber(raw.favorite_count),
         courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
           if (typeof c !== "object" || c === null) return [];

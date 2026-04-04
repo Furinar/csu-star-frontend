@@ -204,7 +204,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     );
     bottomStats = [
       { icon: "uil-comment-alt-lines", label: "评价", value: item.eval_count ?? 0 },
-      { icon: "uil-folder", label: "资源", value: item.resource_count ?? 0 },
+      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
     ];
   } else {
     const item = props.item;

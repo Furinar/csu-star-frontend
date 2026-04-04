@@ -101,7 +101,7 @@ const normalizeTeacherShowcaseItems = (raw: unknown): TeacherShowcaseItem[] => {
         avg_attendance: toNumber(item.avg_attendance),
         good_rate: toNumber(item.good_rate),
         eval_count: toNumber(item.eval_count) ?? toNumber(item.evaluation_count),
-        resource_count: toNumber(item.resource_count),
+        favorite_count: toNumber(item.favorite_count),
       },
     ];
   });

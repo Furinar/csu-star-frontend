@@ -180,7 +180,7 @@ export default function TeacherSlider() {
                   <p className="position text-gray-600">{currentTeacher?.title || "职称待补充"}</p>
                   <p className="department text-gray-600">{currentTeacher?.department_name || "院系待补充"}</p>
                   <p className="department text-gray-500 text-sm">
-                    {`评价 ${currentTeacher?.eval_count ?? 0} / 资源 ${currentTeacher?.resource_count ?? 0}`}
+                    {`评价 ${currentTeacher?.eval_count ?? 0} / 收藏 ${currentTeacher?.favorite_count ?? 0}`}
                   </p>
                 </div>
               </div>

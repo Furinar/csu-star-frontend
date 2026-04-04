@@ -49,7 +49,6 @@ export interface SearchTeacherItem {
   avg_attendance?: number | null;
   good_rate?: number | null;
   eval_count?: number | null;
-  resource_count?: number | null;
   favorite_count?: number | null;
   courses?: Array<{ id: number; name: string }>;
 }

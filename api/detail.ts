@@ -290,8 +290,7 @@ const normalizeTeacherDetail = (raw: unknown): TeacherDetail => {
     avg_attendance: toNumber(data.avg_attendance),
     good_rate: toNumber(data.good_rate),
     eval_count: toNumber(data.eval_count) ?? toNumber(data.evaluation_count),
-    resource_count: toNumber(data.resource_count),
-    hot_score: toNumber(data.hot_score),
+    favorite_count: toNumber(data.favorite_count),
     courses: normalizeCourseBriefs(data.courses),
     is_favorited: toBoolean(data.is_favorited),
   };

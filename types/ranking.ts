@@ -76,7 +76,6 @@ export interface TeacherRankingItem extends RankingItem {
   avg_grading?: number | null;
   avg_attendance?: number | null;
   eval_count?: number | null;
-  resource_count?: number | null;
   favorite_count?: number | null;
   avatar_url?: string | null;
   courses?: Array<{ id: number; name: string }>;
