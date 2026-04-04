@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import {useState} from "react";
 import GlassCard from "@/components/ui/GlassCard";
 import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
 import type {EntityThemeKey} from "@/lib/entityTheme";
+import { buildCoursePath, buildResourcePath, buildTeacherPath } from "@/lib/paths";
 import type {FavoriteItem, PaginatedData} from "@/types/me";
 import {
   formatDateTime,
@@ -59,6 +61,26 @@ function getFavoriteTitle(item: FavoriteItem) {
   return item.title || item.name || item.title_label || "未命名收藏";
 }
 
+function getFavoriteHref(item: FavoriteItem) {
+  if (typeof item.target_id !== "number" || item.target_id <= 0) {
+    return null;
+  }
+
+  if (item.target_type === "resource") {
+    return buildResourcePath(item.target_id);
+  }
+
+  if (item.target_type === "teacher") {
+    return buildTeacherPath(item.target_id);
+  }
+
+  if (item.target_type === "course") {
+    return buildCoursePath(item.target_id);
+  }
+
+  return null;
+}
+
 export default function MeFavorites({favorites}: MeFavoritesProps) {
   const [favoriteFilter, setFavoriteFilter] = useState<
       "all" | "resource" | "course" | "teacher"
@@ -98,41 +120,61 @@ export default function MeFavorites({favorites}: MeFavoritesProps) {
 
         {filteredFavorites.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {filteredFavorites.map((item) => (
-                  <GlassCard
-                      key={`${getFavoriteType(item)}-${item.id}`}
-                      className="p-5"
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div>
-                        <h4 className="font-semibold text-gray-900">
-                          {getFavoriteTitle(item)}
-                        </h4>
-                        <p className="mt-1 text-sm text-gray-500">
-                          收藏于 {formatDateTime(item.created_at)}
-                        </p>
+              {filteredFavorites.map((item) => {
+                const href = getFavoriteHref(item);
+                const cardContent = (
+                    <GlassCard
+                        className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]"
+                    >
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                          <h4 className="font-semibold text-gray-900">
+                            {getFavoriteTitle(item)}
+                          </h4>
+                          <p className="mt-1 text-sm text-gray-500">
+                            收藏于 {formatDateTime(item.created_at)}
+                          </p>
+                        </div>
+                        <EntityTypeBadge
+                            type={getFavoriteType(item)}
+                            label={getFavoriteTypeLabel(item)}
+                        />
                       </div>
-                      <EntityTypeBadge
-                          type={getFavoriteType(item)}
-                          label={getFavoriteTypeLabel(item)}
-                      />
-                    </div>
-                    <div className="flex flex-wrap gap-3 text-sm text-gray-600">
-                      {item.resource_type ? (
-                          <StatPill
-                              label="资源类型"
-                              value={getResourceTypeLabel(item.resource_type)}
-                          />
-                      ) : null}
-                      {item.avg_score != null ? (
-                          <StatPill
-                              label="评分"
-                              value={`${item.avg_score}`}
-                          />
-                      ) : null}
-                    </div>
-                  </GlassCard>
-              ))}
+                      <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+                        {item.resource_type ? (
+                            <StatPill
+                                label="资源类型"
+                                value={getResourceTypeLabel(item.resource_type)}
+                            />
+                        ) : null}
+                        {item.avg_score != null ? (
+                            <StatPill
+                                label="评分"
+                                value={`${item.avg_score}`}
+                            />
+                        ) : null}
+                      </div>
+                    </GlassCard>
+                );
+
+                if (!href) {
+                  return (
+                      <div key={`${getFavoriteType(item)}-${item.id}`}>
+                        {cardContent}
+                      </div>
+                  );
+                }
+
+                return (
+                    <Link
+                        key={`${getFavoriteType(item)}-${item.id}`}
+                        href={href}
+                        className="block"
+                    >
+                      {cardContent}
+                    </Link>
+                );
+              })}
             </div>
         ) : (
             <SectionEmptyState
