@@ -18,6 +18,7 @@ import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { feedback } from "@/store/useFeedbackStore";
 import type { CourseDetail, CourseEvaluation, CourseEvaluationInput } from "@/types/detail";
@@ -110,6 +111,15 @@ export default function CourseDetailPage() {
   return (
     <>
       <DetailPageShell>
+        <PageBreadcrumbs
+          backHref="/course"
+          backLabel="返回课程页"
+          items={[
+            { label: "课程", href: "/course" },
+            { label: course.name },
+          ]}
+        />
+
         <DetailBookHero variant="course" data={course} />
 
         <div id="evaluations">

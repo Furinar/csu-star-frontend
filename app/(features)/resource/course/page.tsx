@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionCard from "@/components/ui/SectionCard";
+import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getCourseResourceCollection } from "@/api/detail";
 import type { CourseResourceCollection } from "@/types/detail";
@@ -98,6 +99,16 @@ export default function CourseResourceCollectionPage() {
 
   return (
     <div className="container mt-10 mb-20 space-y-8">
+      <PageBreadcrumbs
+        backHref="/resource"
+        backLabel="返回资源页"
+        items={[
+          { label: "资源", href: "/resource" },
+          { label: "课程资源合集", href: "/resource" },
+          { label: detail.course.name },
+        ]}
+      />
+
       <section className="relative overflow-hidden rounded-[36px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-200/55 blur-3xl"></div>
         <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-cyan-200/40 blur-3xl"></div>

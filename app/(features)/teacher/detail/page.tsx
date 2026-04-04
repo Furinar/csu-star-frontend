@@ -18,6 +18,7 @@ import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import PageBreadcrumbs from "@/components/ui/PageBreadcrumbs";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { feedback } from "@/store/useFeedbackStore";
 import type { TeacherDetail, TeacherEvaluation, TeacherEvaluationInput } from "@/types/detail";
@@ -110,6 +111,15 @@ export default function TeacherDetailPage() {
   return (
     <>
       <DetailPageShell>
+        <PageBreadcrumbs
+          backHref="/teacher"
+          backLabel="返回教师页"
+          items={[
+            { label: "教师", href: "/teacher" },
+            { label: teacher.name },
+          ]}
+        />
+
         <DetailBookHero variant="teacher" data={teacher} />
 
         <div id="evaluations">
