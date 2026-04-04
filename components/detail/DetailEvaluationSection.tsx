@@ -79,7 +79,7 @@ export interface DetailEvaluationSectionProps {
 }
 
 function sortLabel(sort: EvaluationSort) {
-  return sort === "likes" ? "按热度" : "按时间";
+  return sort === "likes" ? "按点赞" : "按时间";
 }
 
 function buildEvaluationInitialValues(evaluation: ThreadEvaluation) {

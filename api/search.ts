@@ -209,7 +209,6 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
         resource_count: toNumber(raw.resource_count) ?? 0,
         download_total: toNumber(raw.download_total) ?? toNumber(raw.downloads),
         like_total: toNumber(raw.like_total) ?? toNumber(raw.likes),
-        hot_score: toNumber(raw.hot_score),
         favorite_count: toNumber(raw.favorite_count),
         resources_preview: normalizeResourcePreview(raw.resources_preview),
       },

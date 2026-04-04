@@ -165,9 +165,9 @@ export default function CourseResourceCollectionPage() {
               </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">热度</div>
+              <div className="text-xs text-gray-400">累计收藏</div>
               <div className="mt-1 text-lg font-semibold text-gray-900">
-                {formatScore(detail.hot_score)}
+                {detail.favorite_count ?? 0}
               </div>
             </div>
           </div>

@@ -160,7 +160,6 @@ export interface FavoriteItem {
   course_type?: string;
   title_label?: string;
   avg_score?: number;
-  hot_score?: number;
   created_at?: string;
 }
 

@@ -130,12 +130,6 @@ export default function MeFavorites({favorites}: MeFavoritesProps) {
                               value={`${item.avg_score}`}
                           />
                       ) : null}
-                      {item.hot_score != null ? (
-                          <StatPill
-                              label="热度"
-                              value={`${item.hot_score}`}
-                          />
-                      ) : null}
                     </div>
                   </GlassCard>
               ))}

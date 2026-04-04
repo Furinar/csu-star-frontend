@@ -309,7 +309,6 @@ const normalizeCourseDetail = (raw: unknown): CourseDetail => {
     avg_exam_diff: toNumber(data.avg_exam_diff),
     eval_count: toNumber(data.eval_count) ?? toNumber(data.evaluation_count),
     resource_count: toNumber(data.resource_count),
-    hot_score: toNumber(data.hot_score),
     download_total: toNumber(data.download_total),
     teachers: normalizeTeacherBriefs(data.teachers),
     is_favorited: toBoolean(data.is_favorited),
@@ -328,7 +327,7 @@ const normalizeResourceCollection = (raw: unknown): CourseResourceCollection => 
     resource_count: toNumber(data.resource_count) ?? 0,
     download_total: toNumber(data.download_total),
     like_total: toNumber(data.like_total),
-    hot_score: toNumber(data.hot_score),
+    favorite_count: toNumber(data.favorite_count),
     evaluation_anchor: toStringSafe(data.evaluation_anchor),
     items: normalizePaginated(data.items, normalizeResourceBriefs),
   };

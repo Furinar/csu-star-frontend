@@ -169,7 +169,6 @@ export interface CourseDetail {
   avg_exam_diff?: number | null;
   eval_count?: number | null;
   resource_count?: number | null;
-  hot_score?: number | null;
   download_total?: number | null;
   teachers?: TeacherBrief[];
   is_favorited?: boolean | null;
@@ -180,7 +179,7 @@ export interface CourseResourceCollection {
   resource_count: number;
   download_total?: number | null;
   like_total?: number | null;
-  hot_score?: number | null;
+  favorite_count?: number | null;
   evaluation_anchor?: string | null;
   items: PaginatedData<ResourceBrief>;
 }

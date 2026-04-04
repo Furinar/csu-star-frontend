@@ -67,7 +67,6 @@ export interface SearchResourceCard {
   resource_count: number;
   download_total?: number | null;
   like_total?: number | null;
-  hot_score?: number | null;
   favorite_count?: number | null;
   resources_preview?: SearchResourcePreview[];
 }

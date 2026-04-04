@@ -241,7 +241,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     bottomStats = [
       { icon: "uil-file-alt", label: "资料", value: item.resource_count ?? 0 },
       { icon: "uil-cloud-download", label: "总下载", value: item.download_total ?? 0 },
-      { icon: "uil-fire", label: "热度", value: formatScore(item.hot_score) },
+      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
     ];
   }
 
