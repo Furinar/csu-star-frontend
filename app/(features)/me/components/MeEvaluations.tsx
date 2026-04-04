@@ -3,8 +3,20 @@
 import Link from "next/link";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
+import {
+  deleteCourseEvaluation,
+  deleteTeacherEvaluation,
+  updateCourseEvaluation,
+  updateTeacherEvaluation,
+} from "@/api/detail";
+import DetailComposerModal from "@/components/detail/DetailComposerModal";
+import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import GlassCard from "@/components/ui/GlassCard";
+import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import ItemActionMenu from "@/components/ui/ItemActionMenu";
 import { buildCoursePath, buildTeacherPath } from "@/lib/paths";
+import { feedback } from "@/store/useFeedbackStore";
+import type { CourseEvaluationInput, TeacherEvaluationInput } from "@/types/detail";
 import type {
   CourseEvaluation,
   PaginatedData,
@@ -17,17 +29,77 @@ interface MeEvaluationsProps {
   courseEvaluations: PaginatedData<CourseEvaluation>;
 }
 
+function mergeTeacherEvaluation(
+    current: TeacherEvaluation,
+    updated: Awaited<ReturnType<typeof updateTeacherEvaluation>>,
+): TeacherEvaluation {
+  if (!updated) return current;
+
+  return {
+    ...current,
+    id: updated.id,
+    teacher_id: updated.teacher_id,
+    mode: updated.mode,
+    course_id: updated.course_id,
+    course_name: updated.course_name,
+    rating_quality: updated.rating_quality ?? undefined,
+    rating_grading: updated.rating_grading ?? undefined,
+    rating_attendance: updated.rating_attendance ?? undefined,
+    rating_homework: updated.rating_homework ?? undefined,
+    rating_gain: updated.rating_gain ?? undefined,
+    rating_exam_difficulty: updated.rating_exam_difficulty ?? undefined,
+    avg_rating: updated.avg_rating ?? current.avg_rating,
+    comment: updated.comment,
+    is_anonymous: updated.is_anonymous,
+    likes: updated.likes ?? current.likes,
+    is_liked: updated.is_liked ?? current.is_liked,
+    created_at: updated.created_at || current.created_at,
+  };
+}
+
+function mergeCourseEvaluation(
+    current: CourseEvaluation,
+    updated: Awaited<ReturnType<typeof updateCourseEvaluation>>,
+): CourseEvaluation {
+  if (!updated) return current;
+
+  return {
+    ...current,
+    id: updated.id,
+    course_id: updated.course_id,
+    mode: updated.mode,
+    teacher_id: updated.teacher_id,
+    teacher_name: updated.teacher_name,
+    rating_homework: updated.rating_homework ?? undefined,
+    rating_gain: updated.rating_gain ?? undefined,
+    rating_exam_difficulty: updated.rating_exam_difficulty ?? undefined,
+    rating_quality: updated.rating_quality ?? undefined,
+    rating_grading: updated.rating_grading ?? undefined,
+    rating_attendance: updated.rating_attendance ?? undefined,
+    avg_rating: updated.avg_rating ?? current.avg_rating,
+    comment: updated.comment,
+    is_anonymous: updated.is_anonymous,
+    likes: updated.likes ?? current.likes,
+    is_liked: updated.is_liked ?? current.is_liked,
+    created_at: updated.created_at || current.created_at,
+  };
+}
+
 export default function MeEvaluations({
   teacherEvaluations,
   courseEvaluations,
 }: MeEvaluationsProps) {
   const router = useRouter();
+  const [teacherItems, setTeacherItems] = useState(teacherEvaluations.items ?? []);
+  const [courseItems, setCourseItems] = useState(courseEvaluations.items ?? []);
   const [evaluationFilter, setEvaluationFilter] = useState<
       "all" | "teacher" | "course"
   >("all");
+  const [editingTeacherEvaluation, setEditingTeacherEvaluation] = useState<TeacherEvaluation | null>(null);
+  const [editingCourseEvaluation, setEditingCourseEvaluation] = useState<CourseEvaluation | null>(null);
 
-  const teacherEvaluationItems = teacherEvaluations.items ?? [];
-  const courseEvaluationItems = courseEvaluations.items ?? [];
+  const teacherEvaluationItems = teacherItems;
+  const courseEvaluationItems = courseItems;
 
   const filteredTeacherEvaluations =
       evaluationFilter === "all" || evaluationFilter === "teacher"
@@ -77,9 +149,7 @@ export default function MeEvaluations({
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                              教师评价
-                            </span>
+                            <EntityTypeBadge type="teacher" label="教师评价" />
                             <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
                               {item.mode === "linked" || item.course_id ? "关联评价" : "单独评价"}
                             </span>
@@ -152,8 +222,41 @@ export default function MeEvaluations({
                           <span>点赞 {formatNumber(item.likes)}</span>
                         </div>
                       </div>
-                      <div className="mt-4 text-sm text-gray-500">
-                        点击查看教师详情
+                      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-gray-500">
+                        <span>点击查看教师详情</span>
+                        <div
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                            }}
+                        >
+                          <ItemActionMenu
+                              items={[
+                                {
+                                  key: "edit",
+                                  label: "修改评价",
+                                  onClick: async () => {
+                                    setEditingTeacherEvaluation(item);
+                                  },
+                                },
+                                {
+                                  key: "delete",
+                                  label: "删除评价",
+                                  destructive: true,
+                                  onClick: async () => {
+                                    try {
+                                      await deleteTeacherEvaluation(item.id);
+                                      setTeacherItems((prev) => prev.filter((entry) => entry.id !== item.id));
+                                      feedback.success({ title: "评价已删除" });
+                                    } catch (error) {
+                                      console.error(error);
+                                      feedback.error({ title: "删除失败", description: "请稍后重试。" });
+                                    }
+                                  },
+                                },
+                              ]}
+                          />
+                        </div>
                       </div>
                     </GlassCard>
                 );
@@ -177,9 +280,7 @@ export default function MeEvaluations({
                       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                              课程评价
-                            </span>
+                            <EntityTypeBadge type="course" label="课程评价" />
                             <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-600">
                               {item.mode === "linked" || item.teacher_id ? "关联评价" : "单独评价"}
                             </span>
@@ -252,8 +353,41 @@ export default function MeEvaluations({
                           <span>点赞 {formatNumber(item.likes)}</span>
                         </div>
                       </div>
-                      <div className="mt-4 text-sm text-gray-500">
-                        点击查看课程详情
+                      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-gray-500">
+                        <span>点击查看课程详情</span>
+                        <div
+                            onClick={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                            }}
+                        >
+                          <ItemActionMenu
+                              items={[
+                                {
+                                  key: "edit",
+                                  label: "修改评价",
+                                  onClick: async () => {
+                                    setEditingCourseEvaluation(item);
+                                  },
+                                },
+                                {
+                                  key: "delete",
+                                  label: "删除评价",
+                                  destructive: true,
+                                  onClick: async () => {
+                                    try {
+                                      await deleteCourseEvaluation(item.id);
+                                      setCourseItems((prev) => prev.filter((entry) => entry.id !== item.id));
+                                      feedback.success({ title: "评价已删除" });
+                                    } catch (error) {
+                                      console.error(error);
+                                      feedback.error({ title: "删除失败", description: "请稍后重试。" });
+                                    }
+                                  },
+                                },
+                              ]}
+                          />
+                        </div>
                       </div>
                     </GlassCard>
                 );
@@ -270,6 +404,130 @@ export default function MeEvaluations({
               })}
             </div>
         )}
+
+        <DetailComposerModal
+            isOpen={editingTeacherEvaluation !== null}
+            onClose={() => setEditingTeacherEvaluation(null)}
+            accent="teacher"
+            badge="教师评价"
+            title="修改教师评价"
+            description="更新你的教师评价内容和评分。"
+        >
+          {editingTeacherEvaluation ? (
+              <EvaluationComposerForm
+                  key={`edit-teacher-${editingTeacherEvaluation.id}`}
+                  evaluationType="teacher"
+                  relatedItems={
+                    editingTeacherEvaluation.course_id
+                        ? [
+                          {
+                            id: Number(editingTeacherEvaluation.course_id),
+                            name: editingTeacherEvaluation.course_name || `课程 #${editingTeacherEvaluation.course_id}`,
+                          },
+                        ]
+                        : []
+                  }
+                  submitLabel="保存修改"
+                  initialValues={{
+                    relatedId: editingTeacherEvaluation.course_id ? Number(editingTeacherEvaluation.course_id) : null,
+                    comment: editingTeacherEvaluation.comment ?? "",
+                    anonymous: editingTeacherEvaluation.is_anonymous ?? false,
+                    ratings: {
+                      rating_quality: editingTeacherEvaluation.rating_quality,
+                      rating_grading: editingTeacherEvaluation.rating_grading,
+                      rating_attendance: editingTeacherEvaluation.rating_attendance,
+                      rating_homework: editingTeacherEvaluation.rating_homework,
+                      rating_gain: editingTeacherEvaluation.rating_gain,
+                      rating_exam_difficulty: editingTeacherEvaluation.rating_exam_difficulty,
+                    },
+                  }}
+                  onSubmit={async (payload) => {
+                    try {
+                      const updated = await updateTeacherEvaluation(
+                          editingTeacherEvaluation.id,
+                          payload as unknown as TeacherEvaluationInput,
+                      );
+                      if (!updated) return;
+                      setTeacherItems((prev) =>
+                          prev.map((entry) =>
+                              entry.id === editingTeacherEvaluation.id
+                                  ? mergeTeacherEvaluation(entry, updated)
+                                  : entry,
+                          ),
+                      );
+                      setEditingTeacherEvaluation(null);
+                      feedback.success({ title: "评价已更新" });
+                    } catch (error) {
+                      console.error(error);
+                      feedback.error({ title: "更新失败", description: "请稍后重试。" });
+                      throw error;
+                    }
+                  }}
+              />
+          ) : null}
+        </DetailComposerModal>
+
+        <DetailComposerModal
+            isOpen={editingCourseEvaluation !== null}
+            onClose={() => setEditingCourseEvaluation(null)}
+            accent="course"
+            badge="课程评价"
+            title="修改课程评价"
+            description="更新你的课程评价内容和评分。"
+        >
+          {editingCourseEvaluation ? (
+              <EvaluationComposerForm
+                  key={`edit-course-${editingCourseEvaluation.id}`}
+                  evaluationType="course"
+                  relatedItems={
+                    editingCourseEvaluation.teacher_id
+                        ? [
+                          {
+                            id: Number(editingCourseEvaluation.teacher_id),
+                            name: editingCourseEvaluation.teacher_name || `教师 #${editingCourseEvaluation.teacher_id}`,
+                          },
+                        ]
+                        : []
+                  }
+                  submitLabel="保存修改"
+                  initialValues={{
+                    relatedId: editingCourseEvaluation.teacher_id ? Number(editingCourseEvaluation.teacher_id) : null,
+                    comment: editingCourseEvaluation.comment ?? "",
+                    anonymous: editingCourseEvaluation.is_anonymous ?? false,
+                    ratings: {
+                      rating_homework: editingCourseEvaluation.rating_homework,
+                      rating_gain: editingCourseEvaluation.rating_gain,
+                      rating_exam_difficulty: editingCourseEvaluation.rating_exam_difficulty,
+                      rating_quality: editingCourseEvaluation.rating_quality,
+                      rating_grading: editingCourseEvaluation.rating_grading,
+                      rating_attendance: editingCourseEvaluation.rating_attendance,
+                    },
+                  }}
+                  onSubmit={async (payload) => {
+                    try {
+                      const updated = await updateCourseEvaluation(
+                          editingCourseEvaluation.id,
+                          payload as unknown as CourseEvaluationInput,
+                      );
+                      if (!updated) return;
+                      setCourseItems((prev) =>
+                          prev.map((entry) =>
+                              entry.id === editingCourseEvaluation.id
+                                  ? mergeCourseEvaluation(entry, updated)
+                                  : entry,
+                          ),
+                      );
+                      setEditingCourseEvaluation(null);
+                      feedback.success({ title: "评价已更新" });
+                    } catch (error) {
+                      console.error(error);
+                      feedback.error({ title: "更新失败", description: "请稍后重试。" });
+                      throw error;
+                    }
+                  }}
+              />
+          ) : null}
+        </DetailComposerModal>
       </div>
   );
 }
