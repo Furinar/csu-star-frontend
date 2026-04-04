@@ -39,6 +39,8 @@ export default function Login() {
   const [isSendingCode, setIsSendingCode] = useState(false);
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
   const login = useAuthStore((state) => state.login);
+  const inviteCode = searchParams.get("invite_code")?.trim() ?? "";
+
   useEffect(() => {
     const type = searchParams.get("type");
     if (type === "true") {
@@ -140,7 +142,14 @@ export default function Login() {
         title: "邮箱验证通过",
         description: "继续补充资料后即可完成注册。",
       });
-      router.push(`/login/register`);
+      const registerSearchParams = new URLSearchParams();
+      if (inviteCode) {
+        registerSearchParams.set("invite_code", inviteCode);
+      }
+      const registerUrl = registerSearchParams.size > 0
+        ? `/login/register?${registerSearchParams.toString()}`
+        : "/login/register";
+      router.push(registerUrl);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "验证码校验失败，请重试";

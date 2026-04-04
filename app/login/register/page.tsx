@@ -3,12 +3,13 @@
 import React, { useEffect, useState } from "react";
 import Stepper, { Step } from "@/components/ui/Stepper";
 import { avatarOptions } from "@/data/avatar";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { registerByEmail } from "@/api/auth";
 import { feedback } from "@/store/useFeedbackStore";
 
 export default function Register() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isVerifying, setIsVerifying] = useState(true);
   const [registerPayload, setRegisterPayload] = useState<{
     email: string;
@@ -21,6 +22,7 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    const inviteCodeFromQuery = searchParams.get("invite_code")?.trim() ?? "";
     const payloadStr = sessionStorage.getItem("registerPayload");
     if (!payloadStr) {
       router.replace("/login/illegal");
@@ -34,12 +36,15 @@ export default function Register() {
       }
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setRegisterPayload(payload);
+      if (inviteCodeFromQuery) {
+        setInviteCode(inviteCodeFromQuery);
+      }
     } catch {
       router.replace("/login/illegal");
       return;
     }
     setIsVerifying(false);
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleBeforeStepChange = async (
     currentStep: number,

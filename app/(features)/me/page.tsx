@@ -292,15 +292,16 @@ export default function Me() {
   const handleCopyInviteCode = async () => {
     if (!inviteCode?.invite_code) return;
     try {
-      await navigator.clipboard.writeText(inviteCode.invite_code);
+      const inviteLink = `${window.location.origin}/login?type=true&invite_code=${encodeURIComponent(inviteCode.invite_code)}`;
+      await navigator.clipboard.writeText(inviteLink);
       feedback.success({
-        title: "邀请码已复制",
-        description: `分享给好友即可使用：${inviteCode.invite_code}`,
+        title: "邀请链接已复制",
+        description: "好友打开链接后会自动填充邀请码。",
       });
     } catch {
       feedback.warning({
         title: "复制失败",
-        description: "浏览器未授予剪贴板权限，请手动复制。",
+        description: "浏览器未授予剪贴板权限，请手动复制邀请链接。",
       });
     }
   };
@@ -724,7 +725,7 @@ export default function Me() {
                 onClick={handleCopyInviteCode}
                 className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white"
               >
-                复制邀请码
+                复制邀请链接
               </button>
             </div>
           </div>
