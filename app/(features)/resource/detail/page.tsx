@@ -33,7 +33,7 @@ import {
 import { buildCoursePath, buildResourceCollectionPath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
 import { useHasMounted } from "@/hooks/useHasMounted";
-import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
+import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
@@ -495,32 +495,41 @@ export default function ResourceDetailPage() {
       <DetailPageShell>
         <DetailHero
           accent="resource"
-          eyebrow={
-            <>
-              <DetailRibbonTag
-                text={getResourceTypeLabel(resource.resource_type || undefined)}
-                tone="resource"
-              />
-              {isDeleted ? (
-                <DetailRibbonTag text="已删除" tone="resource" />
-              ) : null}
-            </>
-          }
           title={resource.title}
           description="查看文件信息、课程归属和使用反馈。"
+          meta={
+            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 mt-4">
+              <div className="flex items-center gap-1.5 transition-colors">
+                <i className="uil uil-file-alt text-lg text-emerald-500"></i>
+                <span>{resource.files?.length || 0} 个文件</span>
+              </div>
+              <div className="flex items-center gap-1.5 transition-colors">
+                <i className="uil uil-cloud-download text-lg text-blue-500"></i>
+                <span>下载 {resource.downloads || 0}</span>
+              </div>
+              <div className="flex items-center gap-1.5 transition-colors">
+                <i className="uil uil-eye text-lg text-amber-500"></i>
+                <span>浏览 {resource.views || 0}</span>
+              </div>
+              <div className="flex items-center gap-1.5 transition-colors">
+                <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                <span>点赞 {resource.likes || 0}</span>
+              </div>
+            </div>
+          }
           aside={
-            <div className="space-y-4 rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+            <div className="space-y-4 rounded-[20px] border border-white/80 bg-white/80 p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl">
               <div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-medium text-slate-500">
-                    快速动作
+                  <div className="text-sm font-semibold text-slate-700">
+                    资源收藏
                   </div>
                   <ItemActionMenu items={buildResourceActions()} />
                 </div>
                 <div className="mt-4">
                   {isDeleted ? (
-                    <div className="rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
-                      已删除资源禁止收藏
+                    <div className="rounded-[12px] border border-rose-100 bg-rose-50 px-4 py-2 text-center text-sm font-medium text-rose-700">
+                      禁止收藏
                     </div>
                   ) : (
                     <CollectButton
@@ -533,22 +542,64 @@ export default function ResourceDetailPage() {
                 </div>
               </div>
               <div
-                className={`rounded-[24px] p-4 text-sm leading-7 ${
+                className={`rounded-[12px] p-3 text-xs leading-relaxed ${
                   isDeleted
-                    ? "border border-rose-100 bg-rose-50/80 text-rose-700"
-                    : "border border-emerald-100 bg-emerald-50/70 text-slate-600"
+                    ? "bg-rose-50/50 text-rose-600"
+                    : "bg-slate-50 text-slate-500"
                 }`}
               >
                 {isDeleted
-                  ? "该资源已删除，仅上传者或管理员可见，下载与互动能力已关闭。"
-                  : "收藏后可以稍后再看。"}
+                  ? "资源已删除，仅供记录展示"
+                  : "收藏后可以稍后再看"}
               </div>
             </div>
           }
-        />
+        >
+          <div className="mt-4 flex flex-col gap-3">
+            {resource.course ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-400">所属课程:</span>
+                <div className="flex flex-wrap gap-2">
+                  <EntityPillLink
+                    href={buildCoursePath(resource.course.id)}
+                    tone="resource"
+                  >
+                    {resource.course.name}
+                  </EntityPillLink>
+                  <EntityPillLink
+                    href={buildResourceCollectionPath(resource.course.id)}
+                    tone="resource"
+                  >
+                    课程资源合集
+                  </EntityPillLink>
+                </div>
+              </div>
+            ) : null}
+
+            {resource.tags && resource.tags.length > 0 ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-400">资源标签:</span>
+                <div className="flex flex-wrap gap-2 text-sm text-slate-600">
+                  {resource.tags.map((tag) => (
+                    <span key={tag} className="rounded-lg bg-white/60 px-2 py-0.5 shadow-sm border border-slate-100">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {resource.description ? (
+              <div className="mt-2 rounded-[20px] bg-white/60 p-4 text-sm leading-relaxed text-slate-600 shadow-sm border border-slate-100">
+                <div className="mb-2 font-semibold text-slate-700">资源说明</div>
+                <div className="whitespace-pre-wrap">{resource.description}</div>
+              </div>
+            ) : null}
+          </div>
+        </DetailHero>
 
         {isDeleted ? (
-          <div className="mb-8 rounded-[32px] border border-rose-200 bg-rose-50/80 px-6 py-5 text-sm leading-7 text-rose-700 shadow-sm">
+          <div className="mb-8 rounded-[20px] border border-rose-200 bg-rose-50/80 px-6 py-5 text-sm leading-7 text-rose-700 shadow-sm">
             该资源已被删除。当前页面仅用于保留上传记录和基础信息展示，不再提供下载、收藏、评论或点赞。
           </div>
         ) : null}
@@ -556,53 +607,35 @@ export default function ResourceDetailPage() {
         <DetailSection
           title="文件列表"
           description="下载并查看这份资源包含的文件。"
-          action={
-            <div className="flex flex-wrap gap-3">
-              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-                {resource.files?.length || 0} 个文件
-              </div>
-              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-                下载 {resource.downloads || 0}
-              </div>
-              <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-                浏览 {resource.views || 0}
-              </div>
-            </div>
-          }
         >
           {resource.files && resource.files.length > 0 ? (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {resource.files.map((file, index) => (
                 <div
                   key={file.id}
-                  className="flex flex-col gap-4 rounded-[30px] border border-emerald-100 bg-gradient-to-r from-white to-emerald-50/50 p-5 shadow-sm md:flex-row md:items-center md:justify-between"
+                  className="flex flex-col gap-4 rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[22px] bg-emerald-100 text-emerald-700 shadow-sm">
-                      <i className="uil uil-file-download-alt text-2xl" />
-                    </div>
+                  <div className="flex items-center gap-4">
+                    <img src={getFileIcon(file.filename)} alt={file.filename} className="h-10 w-10 shrink-0 object-contain drop-shadow-sm" />
                     <div className="min-w-0">
-                      <div className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-600">
-                        文件 {index + 1}
-                      </div>
-                      <div className="mt-2 break-all text-lg font-semibold text-slate-950">
+                      <div className="truncate text-base font-semibold text-slate-800">
                         {file.filename}
                       </div>
-                      <div className="mt-2 flex flex-wrap gap-3 text-sm text-slate-500">
-                        <span>{formatFileSize(file.size_bytes)}</span>
-                        <span>{file.mime || "未知格式"}</span>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-slate-500">
+                        <span className="flex items-center gap-1"><i className="uil uil-database text-sky-400"></i> {formatFileSize(file.size_bytes)}</span>
+                        <span className="flex items-center gap-1"><i className="uil uil-tag-alt text-rose-400"></i> {file.mime || "未知格式"}</span>
                       </div>
                     </div>
                   </div>
                   {isDeleted ? (
-                    <div className="inline-flex shrink-0 items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-medium text-rose-700">
+                    <div className="inline-flex shrink-0 items-center justify-center rounded-[12px] border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700">
                       已删除，禁止下载
                     </div>
                   ) : (
                     <button
                       type="button"
                       onClick={() => handleDownload(file.id, file.filename)}
-                      className="inline-flex shrink-0 items-center justify-center rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
+                      className="inline-flex shrink-0 items-center justify-center rounded-[14px] bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 focus:ring-2 focus:ring-slate-900/20"
                     >
                       下载文件
                     </button>
@@ -611,64 +644,10 @@ export default function ResourceDetailPage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50/70 py-16 text-center text-slate-500">
+            <div className="rounded-[20px] border border-dashed border-slate-200 bg-slate-50/70 py-16 text-center text-slate-500">
               该资源暂未包含任何文件
             </div>
           )}
-        </DetailSection>
-
-        <DetailSection
-          title="补充信息"
-          description="资源的课程信息、标签和补充说明。"
-          action={
-            <div className="rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
-              点赞 {resource.likes || 0}
-            </div>
-          }
-        >
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
-              <div className="text-sm font-medium text-slate-700">所属课程</div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {resource.course ? (
-                  <>
-                    <EntityPillLink
-                      href={buildCoursePath(resource.course.id)}
-                      tone="resource"
-                    >
-                      {resource.course.name}
-                    </EntityPillLink>
-                    <EntityPillLink
-                      href={buildResourceCollectionPath(resource.course.id)}
-                      tone="resource"
-                    >
-                      课程资源合集
-                    </EntityPillLink>
-                  </>
-                ) : (
-                  <div className="text-sm text-slate-400">暂无所属课程信息</div>
-                )}
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-slate-200 bg-slate-50/70 p-5">
-              <div className="text-sm font-medium text-slate-700">标签</div>
-              <div className="mt-4 text-sm leading-7 text-slate-600">
-                {resource.tags && resource.tags.length > 0
-                  ? resource.tags.join(" / ")
-                  : "暂无标签"}
-              </div>
-            </div>
-          </div>
-
-          {resource.description ? (
-            <div className="mt-4 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="text-sm font-medium text-slate-700">资源说明</div>
-              <div className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">
-                {resource.description}
-              </div>
-            </div>
-          ) : null}
         </DetailSection>
 
         <div id="comments">
