@@ -45,7 +45,7 @@ const StyledWrapper = styled.div`
 
   .input:focus {
     outline: none;
-    border-color: var(--star-500, #8b5cf6);
+    border-color: var(--first-color, #8b5cf6);
   }
 
   .input:focus ~ .user-label,
@@ -56,7 +56,7 @@ const StyledWrapper = styled.div`
   }
 
   .input:focus ~ .user-label {
-    color: var(--star-500, #8b5cf6);
+    color: var(--first-color, #8b5cf6);
   }
 
   /* 下拉选单离右侧更远 */
@@ -70,9 +70,6 @@ const StyledWrapper = styled.div`
     background-size: 1rem 1rem;
   }
 
-  select.input:focus {
-    background-image: url('data:image/svg+xml;utf8,<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.75L9 11.25L13.5 6.75" fill="none" stroke="%238b5cf6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>');
-  }
   textarea.input {
     min-height: 120px;
     resize: vertical;
@@ -87,9 +84,6 @@ const StyledWrapper = styled.div`
     background-size: 14px 14px;
   }
   
-  textarea.input:focus::-webkit-resizer {
-    background-image: url('data:image/svg+xml;utf8,<svg width="14" height="14" viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><g stroke="%238b5cf6" stroke-width="1.5" stroke-linecap="round"><path d="M10 14L14 10M6 14L14 6" /></g></svg>');
-  }
 `;
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {

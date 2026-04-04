@@ -60,8 +60,8 @@ export default function DetailComposerModal({
         className={`relative max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[32px] border border-slate-200/80 bg-white ${tone.ring}`}
       >
         <div className="modal-scrollbar max-h-[90vh] overflow-y-auto p-6 md:p-8">
-          <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl" />
-          <div className="flex items-start justify-between gap-4">
+          <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl" />
+          <div className="relative z-10 flex items-start justify-between gap-4">
             <div className="space-y-4">
               <div
                 className={`inline-flex rounded-full border px-4 py-2 text-sm font-medium shadow-sm ${tone.badge}`}
@@ -86,7 +86,7 @@ export default function DetailComposerModal({
             </button>
           </div>
 
-          <div className="relative mt-8 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)] md:p-6">
+          <div className="relative z-10 mt-8 rounded-[28px] border border-slate-200/80 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)] md:p-6">
             {children}
           </div>
         </div>
