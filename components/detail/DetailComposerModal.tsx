@@ -55,9 +55,9 @@ export default function DetailComposerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1150] overflow-y-auto bg-slate-950/30 p-4 backdrop-blur-md md:p-6">
+    <div className="fixed inset-0 z-[1150] flex items-center justify-center bg-slate-950/30 p-4 backdrop-blur-md md:p-6">
       <div
-        className={`relative mx-auto my-4 w-full max-w-4xl overflow-visible rounded-[24px] border border-slate-200/80 bg-white ${tone.ring} md:my-8`}
+        className={`relative w-full max-w-4xl rounded-[24px] border border-slate-200/80 bg-white ${tone.ring}`}
       >
         <div className="p-6 md:p-8">
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl" />

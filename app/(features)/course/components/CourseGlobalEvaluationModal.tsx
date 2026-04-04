@@ -6,7 +6,7 @@ import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchCourseSuggestions } from "@/api/resource";
 import type { CourseSuggestionItem } from "@/types/resource";
-import { createCourseEvaluation } from "@/api/detail";
+import { createCourseEvaluation, getCourseDetail } from "@/api/detail";
 import type { CourseEvaluationInput } from "@/types/detail";
 import { feedback } from "@/store/useFeedbackStore";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
@@ -26,6 +26,9 @@ export default function CourseGlobalEvaluationModal({
   const [query, setQuery] = useState("");
   const [options, setOptions] = useState<CourseSuggestionItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [relatedTeachers, setRelatedTeachers] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
@@ -65,6 +68,32 @@ export default function CourseGlobalEvaluationModal({
     };
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    if (!selectedCourse) return;
+
+    let isActive = true;
+
+    getCourseDetail(selectedCourse.id)
+      .then((detail) => {
+        if (!isActive) return;
+        setRelatedTeachers(
+          (detail.teachers || []).map((teacher) => ({
+            id: teacher.id,
+            name: teacher.name,
+          })),
+        );
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!isActive) return;
+        setRelatedTeachers([]);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedCourse]);
+
   const handleSubmit = async (payload: Record<string, unknown>) => {
     if (!selectedCourse) return;
     try {
@@ -82,6 +111,7 @@ export default function CourseGlobalEvaluationModal({
 
   const handleClose = () => {
     setSelectedCourse(null);
+    setRelatedTeachers([]);
     setQuery("");
     setOptions([]);
     onClose();
@@ -126,7 +156,7 @@ export default function CourseGlobalEvaluationModal({
                 <div className="mt-3 text-sm text-slate-500">搜索中...</div>
               ) : null}
               {!isSearching && options.length > 0 ? (
-                <div className="absolute z-10 mt-2 max-h-72 w-full overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                <div className="mt-3 max-h-72 overflow-y-auto rounded-[22px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
                   {options.map((course) => (
                     <button
                       key={course.id}
@@ -135,6 +165,7 @@ export default function CourseGlobalEvaluationModal({
                         setSelectedCourse(course);
                         setOptions([]);
                         setQuery("");
+                        setRelatedTeachers([]);
                       }}
                       className="flex w-full items-start justify-between border-b border-slate-100 px-4 py-3 text-left transition last:border-none hover:bg-slate-50"
                     >
@@ -167,7 +198,10 @@ export default function CourseGlobalEvaluationModal({
             <button
               type="button"
               className="rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-medium text-sky-700 transition hover:border-sky-300"
-              onClick={() => setSelectedCourse(null)}
+              onClick={() => {
+                setSelectedCourse(null);
+                setRelatedTeachers([]);
+              }}
             >
               重新选择
             </button>
@@ -175,6 +209,7 @@ export default function CourseGlobalEvaluationModal({
           <EvaluationComposerForm
             key={`course-global-form-${formVersion}-${selectedCourse.id}`}
             evaluationType="course"
+            relatedItems={relatedTeachers}
             onSubmit={handleSubmit}
           />
         </div>
