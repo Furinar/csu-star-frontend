@@ -10,6 +10,8 @@ export type PointsReason =
   | "upload_reward"
   | "download_cost"
   | "invite_reward"
+  | "invite_signup_reward"
+  | "register_bonus"
   | "admin_adjust";
 export type FeedbackType = "bug" | "suggestion" | "complaint" | "other";
 export type ReportReason = "copyright" | "spam" | "inappropriate" | "other";

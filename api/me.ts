@@ -118,6 +118,55 @@ const normalizeDownloadRecords = (
   };
 };
 
+const normalizePointsReason = (value: unknown): PointsRecord["reason"] => {
+  if (value === "daily_checkin" || value === "每日签到获得积分") {
+    return "daily_checkin";
+  }
+  if (value === "upload_reward") {
+    return "upload_reward";
+  }
+  if (value === "download_cost" || value === "下载资源消耗积分") {
+    return "download_cost";
+  }
+  if (value === "invite_reward" || value === "邀请新用户注册奖励积分") {
+    return "invite_reward";
+  }
+  if (value === "invite_signup_reward" || value === "填写邀请码注册奖励积分") {
+    return "invite_signup_reward";
+  }
+  if (value === "register_bonus" || value === "新用户注册初始积分") {
+    return "register_bonus";
+  }
+  return "admin_adjust";
+};
+
+const normalizePointsRecords = (
+  data: PaginatedData<unknown> | PaginatedEnvelope<unknown> | null | undefined,
+): PaginatedData<PointsRecord> => {
+  const items = Array.isArray(data?.items) ? data.items : [];
+
+  return {
+    items: items.flatMap((item) => {
+      if (!isRecord(item)) return [];
+
+      return [
+        {
+          id: toNumber(item.id) ?? 0,
+          change_amount: toNumber(item.change_amount) ?? toNumber(item.delta) ?? 0,
+          balance_after: toNumber(item.balance_after) ?? toNumber(item.balance) ?? 0,
+          reason: normalizePointsReason(item.reason),
+          reference_type: toStringSafe(item.reference_type),
+          reference_id:
+            toStringSafe(item.reference_id) ??
+            (toNumber(item.related_id) !== null ? String(toNumber(item.related_id)) : null),
+          created_at: toStringSafe(item.created_at) ?? "",
+        },
+      ];
+    }),
+    total: typeof data?.total === "number" ? data.total : 0,
+  };
+};
+
 export function listDepartments() {
   return Promise.resolve(DEPARTMENTS);
 }
@@ -193,11 +242,11 @@ export function getMyPoints(params?: {
   page?: number;
   size?: number;
 }) {
-  return unwrap<PaginatedData<PointsRecord> | PaginatedEnvelope<PointsRecord>>(
-    service.get<ApiEnvelope<PaginatedEnvelope<PointsRecord>>>("/me/points", {
+  return unwrap<PaginatedData<unknown> | PaginatedEnvelope<unknown>>(
+    service.get<ApiEnvelope<PaginatedEnvelope<unknown>>>("/me/points", {
       params,
     }),
-  ).then(normalizePaginated);
+  ).then(normalizePointsRecords);
 }
 
 export function getMyContributions() {

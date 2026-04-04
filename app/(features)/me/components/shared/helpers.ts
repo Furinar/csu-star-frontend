@@ -61,8 +61,8 @@ export const CONTRIBUTION_RULES = [
   },
   {
     title: "邀请奖励",
-    score: 5,
-    detail: "有效拉新会扩大社区供给，因此单次给予高分。",
+    score: 3,
+    detail: "有效邀请注册会为邀请双方各增加 3 积分。",
   },
 ];
 
@@ -306,6 +306,14 @@ export function getPointsReasonLabel(reason: PointsRecord["reason"]) {
 
   if (reason === "invite_reward") {
     return "邀请奖励";
+  }
+
+  if (reason === "invite_signup_reward") {
+    return "邀请码注册奖励";
+  }
+
+  if (reason === "register_bonus") {
+    return "初始积分";
   }
 
   return "管理员调整";

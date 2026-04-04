@@ -710,7 +710,11 @@ export default function Me() {
                 />
                 <StatPill
                   label="有效期"
-                  value={formatDateTime(inviteCode.expires_at)}
+                  value={
+                    inviteCode.expires_at
+                      ? formatDateTime(inviteCode.expires_at)
+                      : "永久有效"
+                  }
                 />
               </div>
             </GlassCard>
