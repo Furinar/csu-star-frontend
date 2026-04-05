@@ -235,10 +235,14 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
       className="random-book relative grid h-auto min-h-[360px] grid-cols-1 gap-5 p-5 lg:grid-cols-[3fr_2fr]"
       style={TEACHER_HERO_STYLE}
     >
-      <div className="absolute top-0 left-7 flex flex-col rounded-b-sm bg-rose-500 px-1.5 py-1 text-white font-bold shadow-lg">
-        <span>{teacher.title?.slice(0, 1) || "教"}</span>
-        <span>{teacher.title?.slice(1, 2) || "师"}</span>
-      </div>
+      {teacher.title ? (
+        <div className="absolute top-0 left-7 flex flex-col rounded-b-sm bg-rose-500 px-1.5 py-1 text-white font-bold shadow-lg">
+          <span>{teacher.title.slice(0, 1)}</span>
+          {teacher.title.slice(1, 2) ? (
+            <span>{teacher.title.slice(1, 2)}</span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="left flex flex-col gap-4">
         <div className="course-info flex flex-wrap items-center justify-between gap-4">
@@ -262,9 +266,11 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               {departmentName ? (
                 <div className="text-sm text-gray-600">{departmentName}</div>
               ) : null}
-              <div className="text-sm text-rose-500">
-                导师类型 {teacher.metadata?.tutor_type || "待补充"}
-              </div>
+              {teacher.metadata?.tutor_type ? (
+                <div className="text-sm text-rose-500">
+                  导师类型 {teacher.metadata.tutor_type}
+                </div>
+              ) : null}
               {teacher.bio ? (
                 <div className="max-h-[4.5rem] overflow-hidden text-sm leading-6 text-gray-600">
                   {teacher.bio}

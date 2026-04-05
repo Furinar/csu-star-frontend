@@ -188,12 +188,16 @@ export default function TeacherSlider() {
                     </p>
                   )}
                   <div className="flex flex-col gap-0.5 items-end ">
-                    <p className="title text-gray-600">
-                      {currentTeacher?.tutor_type || "导师类型待补充"}
-                    </p>
-                    <p className="position text-gray-600">
-                      {currentTeacher?.title || "职称待补充"}
-                    </p>
+                    {currentTeacher?.tutor_type ? (
+                      <p className="title text-gray-600">
+                        {currentTeacher.tutor_type}
+                      </p>
+                    ) : null}
+                    {currentTeacher?.title ? (
+                      <p className="position text-gray-600">
+                        {currentTeacher.title}
+                      </p>
+                    ) : null}
                     <p className="department text-gray-600">
                       {currentTeacher?.department_name || "院系待补充"}
                     </p>
