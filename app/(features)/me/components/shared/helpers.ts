@@ -283,8 +283,8 @@ export function getAccountPresentation(
         "border border-amber-200/70 bg-amber-50/85 text-amber-700",
       hint:
         freeDownloads == null
-          ? "当前账号已通过第三方授权登录，请补充校园邮箱认证。"
-          : `剩余 ${freeDownloads} 次免费下载，完成校园邮箱认证后解除限制。`,
+          ? "当前账号已通过第三方账号登录，请补充校园邮箱认证。"
+          : `当前账号还可免费下载 ${freeDownloads} 次资源，完成校园邮箱认证后可按积分下载。`,
     };
   }
 

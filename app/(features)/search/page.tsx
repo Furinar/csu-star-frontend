@@ -12,6 +12,7 @@ import type {
   SearchScope,
 } from "@/types/search";
 import type {SupplementRequestType} from "@/types/supplement";
+import type { SupplementRequestPromptVariant } from "@/components/supplement/SupplementRequestPrompt";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import {useSearchParams} from "next/navigation";
@@ -127,6 +128,12 @@ export default function Search() {
 
   const supplementInitialType: SupplementRequestType =
       searchType === "teacher" ? "teacher" : "course";
+  const supplementPromptVariant: SupplementRequestPromptVariant =
+    searchType === "teacher"
+      ? "teacher"
+      : searchType === "all"
+        ? "mixed"
+        : "course";
 
   const currentSearchType = useMemo(() => {
     return (
@@ -515,6 +522,7 @@ export default function Search() {
                     onClick={handleOpenSupplementModal}
                     align="center"
                     className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                    variant={supplementPromptVariant}
                 />
               </div>
             </div>
@@ -562,6 +570,7 @@ export default function Search() {
                           onClick={handleOpenSupplementModal}
                           align="center"
                           className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                          variant={supplementPromptVariant}
                       />
                     </div>
                   </div>

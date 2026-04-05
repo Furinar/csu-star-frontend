@@ -56,6 +56,7 @@ export default function Resource() {
             <SupplementRequestPrompt
               onClick={handleOpenSupplementModal}
               align="right"
+              variant="course"
             />
           }
         />

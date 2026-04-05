@@ -21,8 +21,8 @@ export default function IllegalPage() {
   return (
       <div className="flex min-h-svh items-center justify-center bg-gray-50">
         <div className="text-center p-8 bg-white shadow-xl rounded-2xl">
-          <p className="text-3xl font-bold text-red-500 mb-4">非法访问</p>
-          <p className="text-gray-600 mb-6">您未携带合法的表单参数进入此页面。</p>
+          <p className="text-3xl font-bold text-red-500 mb-4">页面访问异常</p>
+          <p className="text-gray-600 mb-6">当前页面链接可能已失效，我们将带你返回首页。</p>
           <p className="text-sm text-gray-400">
             将在{" "}
             <span className="text-(--color-first) font-bold">{countdown}</span>{" "}

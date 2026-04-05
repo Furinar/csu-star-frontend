@@ -76,6 +76,12 @@ export default function SupplementRequestModal({
 
   const currentType = form.request_type;
   const accent = currentType === "teacher" ? "teacher" : "course";
+  const modalTitle =
+    currentType === "teacher" ? "提交老师补录申请" : "提交课程补录申请";
+  const modalDescription =
+    currentType === "teacher"
+      ? "提交后我们会尽快审核，通过后会添加这位老师。"
+      : "提交后我们会尽快审核，通过后会添加这门课程。";
 
   const updateForm = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -166,8 +172,8 @@ export default function SupplementRequestModal({
       }}
       accent={accent}
       badge="补录申请"
-      title="提交补录申请"
-      description="审核通过后才会正式创建老师或课程。"
+      title={modalTitle}
+      description={modalDescription}
     >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-2">
         <div className="space-y-3">
@@ -175,7 +181,7 @@ export default function SupplementRequestModal({
             没有你想找的{currentType === "teacher" ? "老师" : "课程"}？
           </div>
           <div className="rounded-3xl border border-slate-200 bg-slate-50/80 px-5 py-4 text-sm leading-6 text-slate-600">
-            这里提交的是正式补录申请，不是即时创建。提交后会进入审核流程，审核员或管理员通过后才会写入系统。
+            提交后我们会尽快审核，通过后会添加到平台中。你也可以在通知中心查看处理结果。
           </div>
         </div>
 
@@ -298,7 +304,7 @@ export default function SupplementRequestModal({
               rows={6}
               value={form.remark}
               onChange={(event) => updateForm("remark", event.target.value)}
-              placeholder="可补充你知道的背景信息，帮助审核员更快确认。"
+              placeholder="可补充你知道的信息，方便我们更快核实。"
             />
           </div>
         </div>
@@ -322,7 +328,11 @@ export default function SupplementRequestModal({
                 : "bg-sky-500 hover:bg-sky-600"
             }`}
           >
-            {isSubmitting ? "提交中..." : "提交补录申请"}
+            {isSubmitting
+              ? "提交中..."
+              : currentType === "teacher"
+                ? "提交老师补录申请"
+                : "提交课程补录申请"}
           </button>
         </div>
       </div>

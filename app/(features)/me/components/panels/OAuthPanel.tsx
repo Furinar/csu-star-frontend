@@ -57,7 +57,7 @@ export default function OAuthPanel({
       console.error(`${platform} 绑定初始化失败:`, error);
       setIsBinding(false);
       feedback.error({
-        title: "初始化绑定失败",
+        title: "暂时无法发起绑定",
         description: "请稍后重试",
       });
     }
@@ -68,7 +68,7 @@ export default function OAuthPanel({
       <div className="space-y-6">
         <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-sm text-gray-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.02),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
           {accountMode === "oauth_pending_email" ? (
-            <p>绑定更多第三方账号，以便在不同设备上快捷登录南极星。</p>
+            <p>绑定更多第三方账号后，你可以在不同设备上更方便地登录南极星。</p>
           ) : null}
           {providers.length > 0 ? (
             <p className="mt-2 font-medium text-first">

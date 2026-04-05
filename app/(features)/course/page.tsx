@@ -158,6 +158,7 @@ export default function Course() {
             <SupplementRequestPrompt
               onClick={handleOpenSupplementModal}
               align="right"
+              variant="course"
             />
           }
         />

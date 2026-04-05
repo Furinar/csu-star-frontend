@@ -43,7 +43,7 @@ export default function ReportDialog({
 
   const helperText = useMemo(() => {
     if (!target) return "";
-    return `请说明举报${target.label}的具体原因，提交后管理员可以直接看到你的分类和理由。处理结果会通过通知中心告知。`;
+    return `请说明举报${target.label}的具体原因。提交后我们会查看你的分类和说明，处理结果会通过通知中心告知。`;
   }, [target]);
 
   const handleSubmit = async () => {
@@ -53,7 +53,7 @@ export default function ReportDialog({
     if (!trimmedDescription) {
       feedback.warning({
         title: "请填写举报理由",
-        description: "举报时需要提供具体说明，便于管理员核查。",
+        description: "举报时需要提供具体说明，方便我们核实。",
       });
       return;
     }
@@ -97,7 +97,7 @@ export default function ReportDialog({
       accent="resource"
       badge="举报"
       title="提交举报"
-      description="补充举报原因，方便管理员核查。"
+      description="补充举报原因，方便我们核实。"
     >
       <div className="space-y-5">
         <div className="rounded-2xl border border-rose-100 bg-rose-50/80 px-4 py-3 text-sm leading-6 text-slate-700">

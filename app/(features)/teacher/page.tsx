@@ -157,6 +157,7 @@ export default function Teacher() {
             <SupplementRequestPrompt
               onClick={handleOpenSupplementModal}
               align="right"
+              variant="teacher"
             />
           }
         />
