@@ -25,6 +25,13 @@ function renderUnifiedCard(item: SearchUnifiedItem) {
   return renderTypedCard(item.type, item.item);
 }
 
+function getEntryKey(entry: SearchUnifiedItem) {
+  const entityId =
+    entry.type === "resource" ? entry.item.course_id : entry.item.id;
+
+  return `${entry.type}-${entityId}`;
+}
+
 export default function SearchResultsGrid({
   items,
 }: {
@@ -33,9 +40,7 @@ export default function SearchResultsGrid({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map((entry) => (
-        <div
-          key={`${entry.type}-${entry.type === "resource" ? entry.item.course_id : entry.item.id}`}
-        >
+        <div key={getEntryKey(entry)}>
           {renderUnifiedCard(entry)}
         </div>
       ))}

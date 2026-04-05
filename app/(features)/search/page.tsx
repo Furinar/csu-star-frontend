@@ -60,6 +60,49 @@ function createEmptyResults(): SearchResponse {
   };
 }
 
+function dedupeUnifiedItems(items: SearchResponse["all"]["items"]) {
+  const seen = new Set<string>();
+
+  return items.filter((entry) => {
+    const entityId =
+      entry.type === "resource" ? entry.item.course_id : entry.item.id;
+    const key = `${entry.type}-${entityId}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function dedupeEntityItems<T extends { id: string }>(items: T[]) {
+  const seen = new Set<string>();
+
+  return items.filter((item) => {
+    if (seen.has(item.id)) {
+      return false;
+    }
+
+    seen.add(item.id);
+    return true;
+  });
+}
+
+function dedupeResourceItems(items: SearchResponse["resources"]["items"]) {
+  const seen = new Set<string>();
+
+  return items.filter((item) => {
+    if (seen.has(item.course_id)) {
+      return false;
+    }
+
+    seen.add(item.course_id);
+    return true;
+  });
+}
+
 function mergeResults(
     previous: SearchResponse,
     incoming: SearchResponse,
@@ -70,7 +113,7 @@ function mergeResults(
       ...incoming,
       all: {
         ...incoming.all,
-        items: [...previous.all.items, ...incoming.all.items],
+        items: dedupeUnifiedItems([...previous.all.items, ...incoming.all.items]),
       },
     };
   }
@@ -80,7 +123,10 @@ function mergeResults(
       ...incoming,
       resources: {
         ...incoming.resources,
-        items: [...previous.resources.items, ...incoming.resources.items],
+        items: dedupeResourceItems([
+          ...previous.resources.items,
+          ...incoming.resources.items,
+        ]),
       },
     };
   }
@@ -90,7 +136,10 @@ function mergeResults(
       ...incoming,
       courses: {
         ...incoming.courses,
-        items: [...previous.courses.items, ...incoming.courses.items],
+        items: dedupeEntityItems([
+          ...previous.courses.items,
+          ...incoming.courses.items,
+        ]),
       },
     };
   }
@@ -99,7 +148,10 @@ function mergeResults(
     ...incoming,
     teachers: {
       ...incoming.teachers,
-      items: [...previous.teachers.items, ...incoming.teachers.items],
+      items: dedupeEntityItems([
+        ...previous.teachers.items,
+        ...incoming.teachers.items,
+      ]),
     },
   };
 }
