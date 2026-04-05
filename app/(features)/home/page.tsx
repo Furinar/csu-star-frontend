@@ -31,6 +31,10 @@ export default function Home() {
       const isPersistent =
         item.type === "system" &&
         (item.category !== "announcement" || !item.is_pinned);
+      const isApprovedReportResult =
+        item.type === "system" &&
+        item.result === "approved" &&
+        item.category === "report";
       const isRejectedModerationResult =
         item.type === "system" &&
         item.result === "rejected" &&
@@ -41,7 +45,9 @@ export default function Home() {
 
       const showFeedbackToast = isRejectedModerationResult
         ? feedback.error
-        : feedback.info;
+        : isApprovedReportResult
+          ? feedback.success
+          : feedback.info;
 
       showFeedbackToast({
         title: item.title,
