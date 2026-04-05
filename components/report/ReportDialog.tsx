@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { submitReport } from "@/api/me";
 import { AdvancedSelect, AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
+import { requireAuthAction } from "@/lib/requireAuthAction";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type { ReportReason, ReportTargetType } from "@/types/me";
 
@@ -31,6 +34,8 @@ export default function ReportDialog({
   target,
   successDescription = "举报已提交，可在通知中心查看处理结果。",
 }: ReportDialogProps) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const [reason, setReason] = useState<ReportReason>("other");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +53,16 @@ export default function ReportDialog({
 
   const handleSubmit = async () => {
     if (!target) return;
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能提交举报。",
+      })
+    ) {
+      onClose();
+      return;
+    }
 
     const trimmedDescription = description.trim();
     if (!trimmedDescription) {

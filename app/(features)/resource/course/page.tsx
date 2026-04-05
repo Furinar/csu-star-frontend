@@ -15,6 +15,8 @@ import {
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import ResourceUploaderModal from "../components/ResourceUploaderModal";
 import { getFileIcon } from "../detail/fileIcons";
+import { useAuthStore } from "@/store/useAuthStore";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 
 function formatFileSize(bytes?: number | null) {
   if (!bytes) return "未知大小";
@@ -25,6 +27,7 @@ function formatFileSize(bytes?: number | null) {
 
 export default function CourseResourceCollectionPage() {
   const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const courseId = hasMounted
@@ -36,6 +39,20 @@ export default function CourseResourceCollectionPage() {
   const [error, setError] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [shouldRefreshAfterUpload, setShouldRefreshAfterUpload] = useState(false);
+
+  const handleOpenUploadModal = () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能上传资源。",
+      })
+    ) {
+      return;
+    }
+
+    setIsUploadModalOpen(true);
+  };
 
   const loadCollectionDetail = async (targetCourseId: string) => {
     const data = await getCourseResourceCollection(targetCourseId, 1, 24);
@@ -280,7 +297,7 @@ export default function CourseResourceCollectionPage() {
       <DetailFloatingActionButton
         label="上传资源"
         tone="resource"
-        onClick={() => setIsUploadModalOpen(true)}
+        onClick={handleOpenUploadModal}
       />
 
       <ResourceUploaderModal

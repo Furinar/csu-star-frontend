@@ -247,6 +247,7 @@ function FeedbackForm({ onClose }: { onClose: () => void }) {
 }
 
 function CorrectionForm({ onClose }: { onClose: () => void }) {
+  const accessToken = useAuthStore((state) => state.access_token);
   const [correctionForm, setCorrectionForm] = useState<CorrectionInput>({
     target_type: "course",
     target_id: "",
@@ -331,6 +332,15 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
   }, [correctionForm.target_type, debouncedTargetQuery]);
 
   const handleSubmitCorrection = async () => {
+    if (!accessToken) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交信息纠错。",
+      });
+      onClose();
+      return;
+    }
+
     if (!selectedTarget || !correctionForm.target_id) {
       feedback.warning({
         title: "请先选择纠错对象",

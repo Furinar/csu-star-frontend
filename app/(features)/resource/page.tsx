@@ -10,25 +10,40 @@ import { useState } from "react";
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import { useAuthStore } from "@/store/useAuthStore";
-import { feedback } from "@/store/useFeedbackStore";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 
 export default function Resource() {
   const router = useRouter();
-  const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
 
   const handleOpenSupplementModal = () => {
-    if (!authUser) {
-      feedback.warning({
-        title: "请先登录",
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
         description: "登录后才能提交课程补录申请。",
-      });
-      router.push("/login");
+      })
+    ) {
       return;
     }
 
     setIsSupplementModalOpen(true);
+  };
+
+  const handleOpenUploadModal = () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能上传资源。",
+      })
+    ) {
+      return;
+    }
+
+    setIsUploadModalOpen(true);
   };
 
   return (
@@ -65,7 +80,7 @@ export default function Resource() {
       <DetailFloatingActionButton
         label="上传资源"
         tone="resource"
-        onClick={() => setIsUploadModalOpen(true)}
+        onClick={handleOpenUploadModal}
       />
 
       <ResourceUploaderModal

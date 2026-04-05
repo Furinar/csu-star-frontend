@@ -20,16 +20,16 @@ import RelationLinkModal from "@/components/detail/RelationLinkModal";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-import type { EntityId } from "@/types/entity";
 import type { TeacherDetail, TeacherEvaluation, TeacherEvaluationInput } from "@/types/detail";
 
 export default function TeacherDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const teacherId = hasMounted ? searchParams.get("id") : null;
 
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
@@ -92,13 +92,31 @@ export default function TeacherDetailPage() {
   };
 
   const handleOpenRelationModal = () => {
-    if (!authUser) {
-      feedback.error({ title: "请先登录", description: "登录后才能主动添加授课课程。" });
-      router.push("/login");
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能主动添加授课课程。",
+      })
+    ) {
       return;
     }
 
     setIsRelationModalOpen(true);
+  };
+
+  const handleOpenComposer = () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表教师评价。",
+      })
+    ) {
+      return;
+    }
+
+    setIsComposerOpen(true);
   };
 
   if (!hasMounted) {
@@ -179,7 +197,7 @@ export default function TeacherDetailPage() {
         </div>
       </DetailPageShell>
 
-      <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评价" tone="teacher" />
+      <DetailFloatingActionButton onClick={handleOpenComposer} label="写评价" tone="teacher" />
 
       <DetailComposerModal
         isOpen={isComposerOpen}

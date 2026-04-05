@@ -40,6 +40,7 @@ import {
 import { buildCoursePath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
 import { getPageTheme } from "@/lib/pageTheme";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
@@ -73,6 +74,7 @@ export default function ResourceDetailPage() {
   const resourceId = hasMounted ? searchParams.get("id") : null;
 
   const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const viewerId = authUser?.id ?? null;
   const viewerRole = authUser?.role ?? null;
   const [resource, setResource] = useState<ResourceDetail | null>(null);
@@ -110,6 +112,15 @@ export default function ResourceDetailPage() {
   const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
   const isUploader = Boolean(
     resource?.uploader_id && viewerId && resource.uploader_id === viewerId,
+  );
+  const ensureSignedIn = useCallback(
+    (description: string) =>
+      requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description,
+      }),
+    [accessToken, router],
   );
 
   const handleDownload = async (fileId: string, filename: string) => {
@@ -248,6 +259,10 @@ export default function ResourceDetailPage() {
   }, [fetchMore, hasMore, isLoadingMore, resourceId]);
 
   const handleReplySubmit = async (parentId: EntityId) => {
+    if (!ensureSignedIn("登录后才能回复资源评论。")) {
+      return;
+    }
+
     if (!resourceId) {
       feedback.error({
         title: "资源信息缺失",
@@ -308,6 +323,10 @@ export default function ResourceDetailPage() {
     currentLiked: boolean,
     parentId?: EntityId,
   ) => {
+    if (!ensureSignedIn("登录后才能点赞内容。")) {
+      return;
+    }
+
     if (isDeleted) {
       feedback.warning({
         title: "资源已删除",
@@ -370,11 +389,7 @@ export default function ResourceDetailPage() {
 
   const handleToggleResourceLike = async () => {
     if (!resource) return;
-    if (!viewerId) {
-      feedback.warning({
-        title: "请先登录",
-        description: "登录后才能点赞资源。",
-      });
+    if (!ensureSignedIn("登录后才能点赞资源。")) {
       return;
     }
     if (isDeleted) {
@@ -490,6 +505,10 @@ export default function ResourceDetailPage() {
     targetId: string,
     label: string,
   ) => {
+    if (!ensureSignedIn("登录后才能提交举报。")) {
+      return;
+    }
+
     setActiveReportTarget({
       type: targetType,
       id: targetId,
@@ -909,6 +928,10 @@ export default function ResourceDetailPage() {
                       <div className="mt-4">
                         <CommentComposerForm
                           onSubmit={async (content) => {
+                            if (!ensureSignedIn("登录后才能回复资源评论。")) {
+                              return;
+                            }
+
                             const target = targetMap[comment.id] || {};
                             setSubmittingId(comment.id);
                             try {
@@ -954,7 +977,11 @@ export default function ResourceDetailPage() {
                       </div>
                     ),
                     onLike: (liked) => handleToggleLike(comment.id, liked),
-                    onReplyClick: () =>
+                    onReplyClick: () => {
+                      if (!ensureSignedIn("登录后才能回复资源评论。")) {
+                        return;
+                      }
+
                       setTargetMap((prev) => ({
                         ...prev,
                         [comment.id]: {
@@ -962,7 +989,8 @@ export default function ResourceDetailPage() {
                           userId: comment.user?.id,
                           userName: comment.user?.nickname,
                         },
-                      })),
+                      }));
+                    },
                   };
                 })}
               />
@@ -986,7 +1014,13 @@ export default function ResourceDetailPage() {
       </DetailPageShell>
 
       <DetailFloatingActionButton
-        onClick={() => (isDeleted ? null : setIsComposerOpen(true))}
+        onClick={() => {
+          if (isDeleted) return;
+          if (!ensureSignedIn("登录后才能发表评论。")) {
+            return;
+          }
+          setIsComposerOpen(true);
+        }}
         label="发布评价"
         tone="resource"
       />
@@ -1002,6 +1036,10 @@ export default function ResourceDetailPage() {
         <CommentComposerForm
           placeholder="你觉得这份资源怎么样？"
           onSubmit={async (content) => {
+            if (!ensureSignedIn("登录后才能发表评论。")) {
+              return;
+            }
+
             if (!resourceId) return;
             try {
               const res = await createResourceComment(resourceId, { content });

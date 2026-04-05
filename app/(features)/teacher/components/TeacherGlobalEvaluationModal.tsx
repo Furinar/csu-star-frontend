@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -9,6 +10,8 @@ import type { TeacherSuggestionItem } from "@/types/resource";
 import { createTeacherEvaluation, getTeacherDetail } from "@/api/detail";
 import type { TeacherEvaluationInput } from "@/types/detail";
 import type { EntityId } from "@/types/entity";
+import { requireAuthAction } from "@/lib/requireAuthAction";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 
@@ -21,6 +24,8 @@ export default function TeacherGlobalEvaluationModal({
   isOpen,
   onClose,
 }: TeacherGlobalEvaluationModalProps) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const [formVersion, setFormVersion] = useState(0);
   const [selectedTeacher, setSelectedTeacher] =
     useState<TeacherSuggestionItem | null>(null);
@@ -96,6 +101,17 @@ export default function TeacherGlobalEvaluationModal({
   }, [selectedTeacher]);
 
   const handleSubmit = async (payload: Record<string, unknown>) => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表教师评价。",
+      })
+    ) {
+      onClose();
+      return;
+    }
+
     if (!selectedTeacher) return;
     try {
       await createTeacherEvaluation(

@@ -21,16 +21,16 @@ import ReportDialog from "@/components/report/ReportDialog";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-import type { EntityId } from "@/types/entity";
 import type { CourseDetail, CourseEvaluation, CourseEvaluationInput } from "@/types/detail";
 
 export default function CourseDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const courseId = hasMounted ? searchParams.get("id") : null;
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
@@ -98,13 +98,53 @@ export default function CourseDetailPage() {
   };
 
   const handleOpenRelationModal = () => {
-    if (!authUser) {
-      feedback.error({ title: "请先登录", description: "登录后才能主动添加授课教师。" });
-      router.push("/login");
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能主动添加授课教师。",
+      })
+    ) {
       return;
     }
 
     setIsRelationModalOpen(true);
+  };
+
+  const handleOpenComposer = () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表课程评价。",
+      })
+    ) {
+      return;
+    }
+
+    setIsComposerOpen(true);
+  };
+
+  const handleOpenReport = () => {
+    if (!course) {
+      return;
+    }
+
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能举报课程。",
+      })
+    ) {
+      return;
+    }
+
+    setActiveReportTarget({
+      type: "course",
+      id: String(course.id),
+      label: `课程 ${course.name}`,
+    });
   };
 
   if (!hasMounted) {
@@ -165,13 +205,7 @@ export default function CourseDetailPage() {
           headerActions={
             <button
               type="button"
-              onClick={() =>
-                setActiveReportTarget({
-                  type: "course",
-                  id: String(course.id),
-                  label: `课程 ${course.name}`,
-                })
-              }
+              onClick={handleOpenReport}
               className="rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50"
             >
               举报课程
@@ -200,7 +234,7 @@ export default function CourseDetailPage() {
         </div>
       </DetailPageShell>
 
-      <DetailFloatingActionButton onClick={() => setIsComposerOpen(true)} label="写评价" tone="course" />
+      <DetailFloatingActionButton onClick={handleOpenComposer} label="写评价" tone="course" />
 
       <DetailComposerModal
         isOpen={isComposerOpen}

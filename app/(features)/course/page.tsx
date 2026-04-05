@@ -13,7 +13,7 @@ import DetailFloatingActionButton from "@/components/detail/DetailFloatingAction
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import { useAuthStore } from "@/store/useAuthStore";
-import { feedback } from "@/store/useFeedbackStore";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import CourseGlobalEvaluationModal from "./components/CourseGlobalEvaluationModal";
 
 type RankCardItem = {
@@ -36,7 +36,7 @@ const mapRankItems = (
 
 export default function Course() {
   const router = useRouter();
-  const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const [homeworkRanks, setHomeworkRanks] = useState<RankCardItem[]>([]);
   const [gainRanks, setGainRanks] = useState<RankCardItem[]>([]);
   const [examRanks, setExamRanks] = useState<RankCardItem[]>([]);
@@ -86,16 +86,31 @@ export default function Course() {
   }, []);
 
   const handleOpenSupplementModal = () => {
-    if (!authUser) {
-      feedback.warning({
-        title: "请先登录",
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
         description: "登录后才能提交课程补录申请。",
-      });
-      router.push("/login");
+      })
+    ) {
       return;
     }
 
     setIsSupplementModalOpen(true);
+  };
+
+  const handleOpenComposer = () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表课程评价。",
+      })
+    ) {
+      return;
+    }
+
+    setIsComposerOpen(true);
   };
 
   return (
@@ -169,7 +184,7 @@ export default function Course() {
           <DetailFloatingActionButton
             label="写评价"
             tone="course"
-            onClick={() => setIsComposerOpen(true)}
+            onClick={handleOpenComposer}
           />
         </div>
       </div>

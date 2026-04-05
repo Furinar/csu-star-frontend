@@ -1,5 +1,8 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import { addFavorite, removeFavorite } from "@/api/detail";
+import { useAuthStore } from "@/store/useAuthStore";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { feedback } from "@/store/useFeedbackStore";
 
 interface CollectButtonProps {
@@ -25,6 +28,8 @@ export default function CollectButton({
   className = "",
   activeColor = "text-white",
 }: CollectButtonProps) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const [collected, setCollected] = React.useState(initialStatus ?? isCollected);
   const [loading, setLoading] = React.useState(false);
 
@@ -63,6 +68,16 @@ export default function CollectButton({
 
     if (!targetId || !targetType) {
       onClick?.();
+      return;
+    }
+
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能收藏内容。",
+      })
+    ) {
       return;
     }
 

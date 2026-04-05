@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { createSupplementRequest } from "@/api/supplement";
 import {
   AdvancedInput,
@@ -8,6 +9,8 @@ import {
 } from "@/app/(features)/resource/components/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { DEPARTMENTS } from "@/data/departments";
+import { requireAuthAction } from "@/lib/requireAuthAction";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CreateSupplementRequestInput,
@@ -52,6 +55,8 @@ export default function SupplementRequestModal({
   initialRequestType: SupplementRequestType;
   allowTypeSwitch?: boolean;
 }) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const [form, setForm] = useState<FormState>(
     createInitialForm(initialRequestType),
   );
@@ -139,6 +144,20 @@ export default function SupplementRequestModal({
   };
 
   const handleSubmit = async () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description:
+          currentType === "teacher"
+            ? "登录后才能提交老师补录申请。"
+            : "登录后才能提交课程补录申请。",
+      })
+    ) {
+      onClose();
+      return;
+    }
+
     const payload = buildPayload();
     if (!payload) return;
 

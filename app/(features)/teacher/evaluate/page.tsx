@@ -9,13 +9,15 @@ import {
 import ComposePageShell from "@/components/detail/ComposePageShell";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { buildTeacherPath } from "@/lib/paths";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-import type { EntityId } from "@/types/entity";
 import type { TeacherDetail, TeacherEvaluationInput } from "@/types/detail";
 
 export default function TeacherEvaluationComposerPage() {
   const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const teacherId = hasMounted ? searchParams.get("id") : null;
@@ -26,6 +28,17 @@ export default function TeacherEvaluationComposerPage() {
 
   useEffect(() => {
     if (!hasMounted) {
+      return;
+    }
+
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表教师评价。",
+        redirectMethod: "replace",
+      })
+    ) {
       return;
     }
 
@@ -58,7 +71,7 @@ export default function TeacherEvaluationComposerPage() {
     return () => {
       active = false;
     };
-  }, [hasMounted, isInvalidTeacherId, teacherId]);
+  }, [accessToken, hasMounted, isInvalidTeacherId, router, teacherId]);
 
   const relatedCourses = useMemo(
     () =>

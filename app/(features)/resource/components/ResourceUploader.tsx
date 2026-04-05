@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import {
   abortResourceUpload,
   createResource,
@@ -20,6 +21,8 @@ import {
   getResourceCategoryLabel,
 } from "@/lib/resourceCategory";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { requireAuthAction } from "@/lib/requireAuthAction";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -66,6 +69,8 @@ export default function ResourceUploader({
   initialCourse,
   onUploadSuccess,
 }: ResourceUploaderProps = {}) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<UploadFileItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -179,6 +184,17 @@ export default function ResourceUploader({
   }, [debouncedCourseQuery]);
 
   const startUpload = async () => {
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能上传资源。",
+      })
+    ) {
+      onClose?.();
+      return;
+    }
+
     if (files.length === 0) {
       setErrorMsg("请至少选择一个文件");
       return;

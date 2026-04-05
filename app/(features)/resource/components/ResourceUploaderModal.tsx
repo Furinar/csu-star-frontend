@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ResourceUploader, { ResourceUploaderProps } from "./ResourceUploader";
+import { requireAuthAction } from "@/lib/requireAuthAction";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export interface ResourceUploaderModalProps extends ResourceUploaderProps {
   isOpen: boolean;
@@ -14,8 +17,22 @@ export default function ResourceUploaderModal({
   initialCourse,
   onUploadSuccess,
 }: ResourceUploaderModalProps) {
+  const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
+
   useEffect(() => {
     if (!isOpen) return;
+
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能上传资源。",
+      })
+    ) {
+      onClose();
+      return;
+    }
 
     const handleEscape = (e: KeyboardEvent) => {
       // Prevent closing if we are typing in an input
@@ -26,7 +43,7 @@ export default function ResourceUploaderModal({
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, onClose]);
+  }, [accessToken, isOpen, onClose, router]);
 
   if (!isOpen) return null;
 

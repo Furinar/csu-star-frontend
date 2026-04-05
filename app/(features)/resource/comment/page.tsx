@@ -6,13 +6,16 @@ import { createResourceComment, getResourceDetail } from "@/api/detail";
 import CommentComposerForm from "@/components/detail/CommentComposerForm";
 import ComposePageShell from "@/components/detail/ComposePageShell";
 import { useHasMounted } from "@/hooks/useHasMounted";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { buildResourceCommentsAnchor, buildResourcePath } from "@/lib/paths";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type { ResourceDetail } from "@/types/detail";
 import { getResourceTypeLabel } from "@/app/(features)/me/components/shared/helpers";
 
 export default function ResourceCommentComposerPage() {
   const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const resourceId = hasMounted ? searchParams.get("id") : null;
@@ -23,6 +26,17 @@ export default function ResourceCommentComposerPage() {
 
   useEffect(() => {
     if (!hasMounted) {
+      return;
+    }
+
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description: "登录后才能发表评论。",
+        redirectMethod: "replace",
+      })
+    ) {
       return;
     }
 
@@ -55,7 +69,7 @@ export default function ResourceCommentComposerPage() {
     return () => {
       active = false;
     };
-  }, [hasMounted, isInvalidResourceId, resourceId]);
+  }, [accessToken, hasMounted, isInvalidResourceId, resourceId, router]);
 
   if (isInvalidResourceId) {
     return <div className="p-8 text-center text-slate-500">请提供有效的资源 ID</div>;

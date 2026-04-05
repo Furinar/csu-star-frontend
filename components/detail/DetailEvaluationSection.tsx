@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { addLike, removeLike } from "@/api/detail";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import EvaluationBarChart from "@/components/detail/EvaluationBarChart";
@@ -10,6 +11,7 @@ import ReportDialog from "@/components/report/ReportDialog";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import type { ItemActionMenuItem } from "@/components/ui/ItemActionMenu";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { requireAuthAction } from "@/lib/requireAuthAction";
 import { DetailSection } from "./DetailScaffold";
 import { Role } from "@/types/auth";
 import type {
@@ -131,7 +133,9 @@ export default function DetailEvaluationSection({
   onUpdateReply,
   onDeleteReply,
 }: DetailEvaluationSectionProps) {
+  const router = useRouter();
   const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const viewerId = authUser?.id ?? null;
   const viewerRole = authUser?.role ?? null;
   const [items, setItems] = useState<ThreadEvaluation[]>(initialItems);
@@ -181,6 +185,15 @@ export default function DetailEvaluationSection({
     evaluationType === "teacher" ? "teacher_evaluation" : "course_evaluation";
   const replyReportType: ReportItemType =
     evaluationType === "teacher" ? "teacher_evaluation_reply" : "course_evaluation_reply";
+  const ensureSignedIn = useCallback(
+    (description: string) =>
+      requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
+        description,
+      }),
+    [accessToken, router],
+  );
 
   const reloadEvaluations = useCallback(
     async (nextSort: EvaluationSort) => {
@@ -249,6 +262,16 @@ export default function DetailEvaluationSection({
   }, [fetchMore, hasMore, isLoadingMore]);
 
   const handleReplySubmit = async (evaluationId: string) => {
+    if (
+      !ensureSignedIn(
+        evaluationType === "teacher"
+          ? "登录后才能回复教师评价。"
+          : "登录后才能回复课程评价。",
+      )
+    ) {
+      return;
+    }
+
     const content = draftMap[evaluationId]?.trim();
     if (!content) {
       feedback.warning({ title: "回复内容不能为空" });
@@ -320,6 +343,10 @@ export default function DetailEvaluationSection({
     id: string,
     currentLiked: boolean,
   ) => {
+    if (!ensureSignedIn("登录后才能点赞内容。")) {
+      return;
+    }
+
     const key = `${itemType}-${id}`;
     if (likeLoadingKey) return;
 
@@ -372,6 +399,10 @@ export default function DetailEvaluationSection({
     targetId: string,
     label: string,
   ) => {
+    if (!ensureSignedIn("登录后才能提交举报。")) {
+      return;
+    }
+
     setActiveReportTarget({
       type: targetType,
       id: String(targetId),
@@ -551,6 +582,16 @@ export default function DetailEvaluationSection({
       replyCount: evaluation.reply_count ?? replies.length,
       onLike: (liked: boolean) => handleToggleLike(evaluationLikeType, id, liked),
       onReplyClick: () => {
+        if (
+          !ensureSignedIn(
+            evaluationType === "teacher"
+              ? "登录后才能回复教师评价。"
+              : "登录后才能回复课程评价。",
+          )
+        ) {
+          return;
+        }
+
         setReplyingToId(id);
         setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
         setTargetMap((prev) => ({
@@ -629,6 +670,16 @@ export default function DetailEvaluationSection({
         isLiked: reply.is_liked,
         onLike: (liked: boolean) => handleToggleLike(replyLikeType, String(reply.id), liked),
         onReplyClick: () => {
+          if (
+            !ensureSignedIn(
+              evaluationType === "teacher"
+                ? "登录后才能回复教师评价。"
+                : "登录后才能回复课程评价。",
+            )
+          ) {
+            return;
+          }
+
           setReplyingToId(id);
           setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
           setTargetMap((prev) => ({
