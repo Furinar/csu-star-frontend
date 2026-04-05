@@ -116,7 +116,7 @@ export interface ResourceItem {
 }
 
 export interface DownloadRecord {
-  id: number;
+  id: EntityId;
   resource: ResourceBrief;
   created_at: string;
 }
@@ -166,7 +166,7 @@ export interface CourseEvaluation {
 }
 
 export interface FavoriteItem {
-  id: number;
+  id: EntityId;
   target_type?: FavoriteTargetType;
   target_id?: EntityId;
   title?: string;
@@ -179,7 +179,7 @@ export interface FavoriteItem {
 }
 
 export interface PointsRecord {
-  id: number;
+  id: EntityId;
   change_amount: number;
   balance_after: number;
   reason: PointsReason;
@@ -206,7 +206,7 @@ export interface CheckinResult {
 }
 
 export interface NotificationItem {
-  id: number;
+  id: EntityId;
   type: NotificationType;
   category?: NotificationCategory | null;
   result?: NotificationResult | null;
@@ -219,8 +219,8 @@ export interface NotificationItem {
   | "comment"
   | "announcement"
   | null;
-  source_id?: number | null;
-  related_id?: number | null;
+  source_id?: EntityId | null;
+  related_id?: EntityId | null;
   is_read: boolean;
   is_pinned?: boolean;
   metadata?: Record<string, unknown> | null;

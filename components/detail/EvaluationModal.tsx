@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { EntityId } from "@/types/entity";
 
 interface RelatedItem {
-  id: number;
+  id: EntityId;
   name: string;
 }
 
@@ -75,7 +76,7 @@ export default function EvaluationModal({
   onSubmit,
 }: EvaluationModalProps) {
   const [ratings, setRatings] = useState<Record<string, number>>({});
-  const [relatedId, setRelatedId] = useState<number | null>(null);
+  const [relatedId, setRelatedId] = useState<EntityId | null>(null);
   const [comment, setComment] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

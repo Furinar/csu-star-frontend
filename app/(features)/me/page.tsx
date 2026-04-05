@@ -263,7 +263,7 @@ export default function Me() {
           points: nextBalance,
         };
         const syntheticRecord: PointsRecord = {
-          id: Date.now(),
+          id: String(Date.now()),
           change_amount: gainedPoints,
           balance_after: nextBalance,
           reason: "daily_checkin",

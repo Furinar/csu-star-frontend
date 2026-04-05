@@ -8,6 +8,7 @@ import {
 import { submitReport } from "@/api/me";
 import { formatDateTimeZh } from "@/lib/date";
 import { feedback } from "@/store/useFeedbackStore";
+import type { EntityId } from "@/types/entity";
 import type {
   CourseEvaluation,
   EvaluationReply,
@@ -24,7 +25,7 @@ type ReportItemType =
   | "course_evaluation_reply";
 
 interface RelatedItem {
-  id: number;
+  id: EntityId;
   name: string;
 }
 

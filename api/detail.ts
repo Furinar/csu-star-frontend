@@ -253,12 +253,12 @@ const normalizeResourceComments = (raw: unknown): ResourceComment[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         user: normalizeUserBrief(item.user),
-        resource_id: toNumber(item.resource_id) ?? 0,
-        parent_id: toNumber(item.parent_id),
+        resource_id: toStringId(item.resource_id) ?? "",
+        parent_id: toStringId(item.parent_id),
         reply_to_user: normalizeUserBrief(item.reply_to_user),
-        reply_to_comment_id: toNumber(item.reply_to_comment_id),
+        reply_to_comment_id: toStringId(item.reply_to_comment_id),
         content: toStringSafe(item.content) ?? "",
         likes: toNumber(item.likes),
         is_liked: toBoolean(item.is_liked),
@@ -474,8 +474,8 @@ export async function createCourseEvaluation(courseId: EntityId, payload: Course
 
 export async function createCourseTeacherRelation(course_id: EntityId, teacher_id: EntityId) {
   const response = await service.post<ApiEnvelope<unknown>>("/course-teacher-relations", {
-    course_id: Number(course_id),
-    teacher_id: Number(teacher_id),
+    course_id,
+    teacher_id,
   });
 
   const raw = unwrapResponseData(response);
@@ -546,17 +546,21 @@ export async function listResourceComments(
 export async function createResourceComment(resourceId: EntityId, payload: ResourceCommentInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
       `/resources/${resourceId}/comments`,
-      payload,
+      {
+        ...payload,
+        parent_id: payload.parent_id ?? undefined,
+        reply_to_comment_id: payload.reply_to_comment_id ?? undefined,
+      },
   );
   return normalizeResourceComments([unwrapResponseData(response)])[0];
 }
 
-export async function updateResourceComment(commentId: number, payload: Pick<ResourceCommentInput, "content">) {
+export async function updateResourceComment(commentId: EntityId, payload: Pick<ResourceCommentInput, "content">) {
   const response = await service.put<ApiEnvelope<unknown>>(`/comments/${commentId}`, payload);
   return normalizeResourceComments([unwrapResponseData(response)])[0];
 }
 
-export async function deleteResourceComment(commentId: number) {
+export async function deleteResourceComment(commentId: EntityId) {
   await service.delete<ApiEnvelope<unknown>>(`/comments/${commentId}`);
 }
 

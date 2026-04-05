@@ -91,7 +91,7 @@ const normalizeNotificationItem = (item: unknown): NotificationItem | null => {
   const sourceType = toStringSafe(item.source_type);
 
   return {
-    id: toNumber(item.id) ?? 0,
+    id: toStringId(item.id) ?? "",
     type:
       type === "liked" || type === "commented" || type === "system"
         ? type
@@ -121,8 +121,8 @@ const normalizeNotificationItem = (item: unknown): NotificationItem | null => {
       sourceType === "announcement"
         ? sourceType
         : null,
-    source_id: toNumber(item.source_id),
-    related_id: toNumber(item.related_id),
+    source_id: toStringId(item.source_id),
+    related_id: toStringId(item.related_id),
     is_read: toBoolean(item.is_read) ?? false,
     is_pinned: toBoolean(item.is_pinned) ?? false,
     metadata,
@@ -204,7 +204,7 @@ const normalizeDownloadRecords = (
 
       return [
         {
-          id: toNumber(item.id) ?? 0,
+          id: toStringId(item.id) ?? "",
           created_at: toStringSafe(item.created_at) ?? "",
           resource: {
             id: resourceId,
@@ -254,14 +254,14 @@ const normalizePointsRecords = (
 
       return [
         {
-          id: toNumber(item.id) ?? 0,
+          id: toStringId(item.id) ?? "",
           change_amount: toNumber(item.change_amount) ?? toNumber(item.delta) ?? 0,
           balance_after: toNumber(item.balance_after) ?? toNumber(item.balance) ?? 0,
           reason: normalizePointsReason(item.reason),
           reference_type: toStringSafe(item.reference_type),
           reference_id:
             toStringSafe(item.reference_id) ??
-            (toNumber(item.related_id) !== null ? String(toNumber(item.related_id)) : null),
+            toStringId(item.related_id),
           created_at: toStringSafe(item.created_at) ?? "",
         },
       ];
@@ -425,7 +425,7 @@ export async function getUnreadNotificationCount() {
   return data.count;
 }
 
-export function markNotificationRead(id: number) {
+export function markNotificationRead(id: string) {
   return unwrap<null>(
     service.patch<ApiEnvelope<null>>(`/notifications/${id}/read`),
   );

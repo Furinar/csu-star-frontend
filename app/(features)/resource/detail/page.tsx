@@ -49,7 +49,7 @@ import DownloadButton from "@/template/download";
 import type { EntityId } from "@/types/entity";
 
 interface ReplyTarget {
-  replyId?: number | null;
+  replyId?: EntityId | null;
   userId?: string | null;
   userName?: string | null;
 }
@@ -84,9 +84,9 @@ export default function ResourceDetailPage() {
   const [commentSort, setCommentSort] = useState<EvaluationSort>("created_at");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshingComments, setIsRefreshingComments] = useState(false);
-  const [draftMap, setDraftMap] = useState<Record<number, string>>({});
-  const [targetMap, setTargetMap] = useState<Record<number, ReplyTarget>>({});
-  const [submittingId, setSubmittingId] = useState<number | null>(null);
+  const [draftMap, setDraftMap] = useState<Record<string, string>>({});
+  const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isResourceLikeLoading, setIsResourceLikeLoading] = useState(false);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
@@ -94,8 +94,8 @@ export default function ResourceDetailPage() {
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<{
-    id: number;
-    parentId?: number | null;
+    id: EntityId;
+    parentId?: EntityId | null;
     content: string;
   } | null>(null);
   const [editingCommentDraft, setEditingCommentDraft] = useState("");
@@ -247,7 +247,7 @@ export default function ResourceDetailPage() {
     return () => observer.disconnect();
   }, [fetchMore, hasMore, isLoadingMore, resourceId]);
 
-  const handleReplySubmit = async (parentId: number) => {
+  const handleReplySubmit = async (parentId: EntityId) => {
     if (!resourceId) {
       feedback.error({
         title: "资源信息缺失",
@@ -304,9 +304,9 @@ export default function ResourceDetailPage() {
   };
 
   const handleToggleLike = async (
-    id: number,
+    id: EntityId,
     currentLiked: boolean,
-    parentId?: number,
+    parentId?: EntityId,
   ) => {
     if (isDeleted) {
       feedback.warning({
@@ -454,7 +454,7 @@ export default function ResourceDetailPage() {
     }
   };
 
-  const handleDeleteComment = async (commentId: number, parentId?: number) => {
+  const handleDeleteComment = async (commentId: EntityId, parentId?: EntityId) => {
     if (!window.confirm("确认删除这条评论吗？")) return;
     try {
       setDeletingKey(`comment-${commentId}`);
@@ -552,7 +552,7 @@ export default function ResourceDetailPage() {
 
   const buildCommentActions = (
     comment: ResourceComment,
-    parentId?: number,
+    parentId?: EntityId,
   ): ItemActionMenuItem[] => {
     const actions: ItemActionMenuItem[] = [];
     const isAuthor = viewerId != null && comment.user?.id === viewerId;

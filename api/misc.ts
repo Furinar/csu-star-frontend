@@ -1,5 +1,6 @@
 import { service } from "@/lib/request";
 import type { AxiosResponse } from "axios";
+import type { EntityId } from "@/types/entity";
 
 interface ApiEnvelope<T> {
   code: number;
@@ -9,7 +10,7 @@ interface ApiEnvelope<T> {
 }
 
 interface AnnouncementItem {
-  id: number;
+  id: EntityId;
   title: string;
   content: string;
   type?: string | null;
@@ -34,6 +35,12 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
+
 export async function listAnnouncements() {
   const response:
     | ApiEnvelope<{ items?: unknown[] }>
@@ -54,7 +61,7 @@ export async function listAnnouncements() {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         title: toStringSafe(item.title) ?? "未命名公告",
         content: toStringSafe(item.content) ?? "",
         type: toStringSafe(item.type),

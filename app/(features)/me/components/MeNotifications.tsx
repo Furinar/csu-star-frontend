@@ -54,7 +54,7 @@ export default function MeNotifications({
     }
   }, [hasLoaded, loadNotifications]);
 
-  const handleMarkRead = async (id: number) => {
+  const handleMarkRead = async (id: string) => {
     try {
       await markNotificationRead(id);
       setNotifications((current) => ({
@@ -163,7 +163,7 @@ function NotificationSection({
   items: NotificationItem[];
   emptyTitle: string;
   emptyDescription: string;
-  onMarkRead: (id: number) => void;
+  onMarkRead: (id: string) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -194,7 +194,7 @@ function NotificationCard({
   onMarkRead,
 }: {
   item: NotificationItem;
-  onMarkRead: (id: number) => void;
+  onMarkRead: (id: string) => void;
 }) {
   const tone = getNotificationCardTone(item);
 

@@ -140,8 +140,8 @@ export interface CourseTeacherRelation {
 
 export interface ResourceCommentInput {
   content: string;
-  parent_id?: number | null;
-  reply_to_comment_id?: number | null;
+  parent_id?: EntityId | null;
+  reply_to_comment_id?: EntityId | null;
 }
 
 export interface TeacherDetail {
@@ -201,12 +201,12 @@ export interface ResourceFile {
 }
 
 export interface ResourceComment {
-  id: number;
+  id: EntityId;
   user?: UserBrief | null;
-  resource_id: number;
-  parent_id?: number | null;
+  resource_id: EntityId;
+  parent_id?: EntityId | null;
   reply_to_user?: UserBrief | null;
-  reply_to_comment_id?: number | null;
+  reply_to_comment_id?: EntityId | null;
   content: string;
   likes?: number | null;
   is_liked?: boolean | null;
