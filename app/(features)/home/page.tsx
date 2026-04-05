@@ -31,8 +31,19 @@ export default function Home() {
       const isPersistent =
         item.type === "system" &&
         (item.category !== "announcement" || !item.is_pinned);
+      const isRejectedModerationResult =
+        item.type === "system" &&
+        item.result === "rejected" &&
+        (item.category === "report" ||
+          item.category === "correction" ||
+          item.category === "feedback" ||
+          item.category === "supplement");
 
-      feedback.info({
+      const showFeedbackToast = isRejectedModerationResult
+        ? feedback.error
+        : feedback.info;
+
+      showFeedbackToast({
         title: item.title,
         description: item.content || "你有一条新的站内消息。",
         duration: isPersistent ? 0 : undefined,
