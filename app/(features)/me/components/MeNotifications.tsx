@@ -13,7 +13,8 @@ import {
   createEmptyPaginated,
   formatDateTime,
   getErrorMessage,
-  getNotificationTypeLabel,
+  getNotificationBadgeLabel,
+  isAnnouncementNotification,
 } from "./shared/helpers";
 
 interface MeNotificationsProps {
@@ -101,10 +102,10 @@ export default function MeNotifications({
   };
 
   const announcementItems = notificationItems.filter(
-    (item) => item.source_type === "announcement",
+    (item) => isAnnouncementNotification(item),
   );
   const messageItems = notificationItems.filter(
-    (item) => item.source_type !== "announcement",
+    (item) => !isAnnouncementNotification(item),
   );
 
   if (isLoading) {
@@ -138,10 +139,10 @@ export default function MeNotifications({
 
       <NotificationSection
         title="通知"
-        description="审核结果、点赞评论等互动消息"
+        description="系统通知、审核结果与点赞评论等消息"
         items={messageItems}
         emptyTitle="暂无通知"
-        emptyDescription="新的互动通知会展示在这里。"
+        emptyDescription="新的系统通知和互动消息会展示在这里。"
         onMarkRead={handleMarkRead}
       />
     </div>
@@ -178,9 +179,7 @@ function NotificationSection({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                      {item.source_type === "announcement"
-                        ? "公告"
-                        : getNotificationTypeLabel(item.type)}
+                      {getNotificationBadgeLabel(item)}
                     </span>
                     {!item.is_read ? (
                       <span className="rounded-full bg-first/10 px-2 py-1 text-[11px] text-first">

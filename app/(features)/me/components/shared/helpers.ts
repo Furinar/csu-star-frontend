@@ -297,8 +297,31 @@ export function getNotificationTypeLabel(type: NotificationItem["type"]) {
     return "收到评论";
   }
 
-  if (type === "audit") {
-    return "审核通知";
+  return "系统通知";
+}
+
+export function isAnnouncementNotification(item: NotificationItem) {
+  return (
+    item.category === "announcement" ||
+    item.source_type === "announcement"
+  );
+}
+
+export function getNotificationBadgeLabel(item: NotificationItem) {
+  if (isAnnouncementNotification(item)) {
+    return "公告";
+  }
+
+  if (item.type === "liked" || item.type === "commented") {
+    return getNotificationTypeLabel(item.type);
+  }
+
+  if (item.result === "approved") {
+    return "处理通过";
+  }
+
+  if (item.result === "rejected") {
+    return "处理未通过";
   }
 
   return "系统通知";

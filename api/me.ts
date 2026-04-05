@@ -12,6 +12,7 @@ import type {
   EmailStatus,
   FavoriteItem,
   FeedbackInput,
+  HomeNotificationSummary,
   InviteCodeInfo,
   MyProfileUpdateInput,
   MeDashboardData,
@@ -61,6 +62,97 @@ const toNumber = (value: unknown): number | null => {
 
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
+
+const toBoolean = (value: unknown): boolean | null => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value !== 0;
+  if (typeof value === "string") {
+    if (value === "true" || value === "1") return true;
+    if (value === "false" || value === "0") return false;
+  }
+  return null;
+};
+
+const normalizeNotificationItem = (item: unknown): NotificationItem | null => {
+  if (!isRecord(item)) return null;
+
+  const metadata = isRecord(item.metadata) ? item.metadata : null;
+  const type = toStringSafe(item.type);
+  const category = toStringSafe(item.category);
+  const result = toStringSafe(item.result);
+  const sourceType = toStringSafe(item.source_type);
+
+  return {
+    id: toNumber(item.id) ?? 0,
+    type:
+      type === "liked" || type === "commented" || type === "system"
+        ? type
+        : "system",
+    category:
+      category === "announcement" ||
+      category === "report" ||
+      category === "correction" ||
+      category === "feedback" ||
+      category === "supplement" ||
+      category === "admin_message" ||
+      category === "points" ||
+      category === "interaction"
+        ? category
+        : null,
+    result:
+      result === "inform" || result === "approved" || result === "rejected"
+        ? result
+        : null,
+    title: toStringSafe(item.title) ?? "未命名通知",
+    content: toStringSafe(item.content) ?? "",
+    source_type:
+      sourceType === "resource" ||
+      sourceType === "teacher_evaluation" ||
+      sourceType === "course_evaluation" ||
+      sourceType === "comment" ||
+      sourceType === "announcement"
+        ? sourceType
+        : null,
+    source_id: toNumber(item.source_id),
+    related_id: toNumber(item.related_id),
+    is_read: toBoolean(item.is_read) ?? false,
+    is_pinned: toBoolean(item.is_pinned) ?? false,
+    metadata,
+    created_at: toStringSafe(item.created_at) ?? "",
+  };
+};
+
+const normalizeNotifications = (
+  data: PaginatedData<unknown> | PaginatedEnvelope<unknown> | null | undefined,
+): PaginatedData<NotificationItem> => {
+  const items = Array.isArray(data?.items) ? data.items : [];
+
+  return {
+    items: items.flatMap((item) => {
+      const normalized = normalizeNotificationItem(item);
+      return normalized ? [normalized] : [];
+    }),
+    total: typeof data?.total === "number" ? data.total : 0,
+  };
+};
+
+const normalizeHomeNotificationSummary = (data: unknown): HomeNotificationSummary => {
+  const record = isRecord(data) ? data : {};
+
+  const normalizeList = (value: unknown) =>
+    Array.isArray(value)
+      ? value.flatMap((item) => {
+          const normalized = normalizeNotificationItem(item);
+          return normalized ? [normalized] : [];
+        })
+      : [];
+
+  return {
+    announcements: normalizeList(record.announcements),
+    interactions: normalizeList(record.interactions),
+    system_messages: normalizeList(record.system_messages),
+  };
+};
 
 const unwrap = async <T>(
   request: Promise<ApiEnvelope<T> | AxiosResponse<ApiEnvelope<T>>>,
@@ -302,7 +394,15 @@ export function listMyNotifications(params?: {
       "/me/notifications",
       { params },
     ),
-  ).then(normalizePaginated);
+  ).then(normalizeNotifications);
+}
+
+export function getHomeNotificationSummary() {
+  return unwrap<HomeNotificationSummary | Record<string, unknown>>(
+    service.get<ApiEnvelope<HomeNotificationSummary>>(
+      "/me/home-notification-summary",
+    ),
+  ).then(normalizeHomeNotificationSummary);
 }
 
 export async function getUnreadNotificationCount() {

@@ -4,8 +4,17 @@ export type FavoriteTargetType = "resource" | "course" | "teacher";
 export type NotificationType =
   | "liked"
   | "commented"
-  | "audit"
   | "system";
+export type NotificationCategory =
+  | "announcement"
+  | "report"
+  | "correction"
+  | "feedback"
+  | "supplement"
+  | "admin_message"
+  | "points"
+  | "interaction";
+export type NotificationResult = "inform" | "approved" | "rejected";
 export type PointsReason =
   | "daily_checkin"
   | "upload_reward"
@@ -196,6 +205,8 @@ export interface CheckinResult {
 export interface NotificationItem {
   id: number;
   type: NotificationType;
+  category?: NotificationCategory | null;
+  result?: NotificationResult | null;
   title: string;
   content?: string;
   source_type?:
@@ -206,8 +217,17 @@ export interface NotificationItem {
   | "announcement"
   | null;
   source_id?: number | null;
+  related_id?: number | null;
   is_read: boolean;
+  is_pinned?: boolean;
+  metadata?: Record<string, unknown> | null;
   created_at: string;
+}
+
+export interface HomeNotificationSummary {
+  announcements: NotificationItem[];
+  interactions: NotificationItem[];
+  system_messages: NotificationItem[];
 }
 
 export interface NotificationUnreadCount {

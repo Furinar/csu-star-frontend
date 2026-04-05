@@ -2,78 +2,66 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { listAnnouncements } from "@/api/misc";
+import { getHomeNotificationSummary } from "@/api/me";
 import SearchBar from "@/components/ui/SearchBar";
 import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-
-const HOME_ANNOUNCEMENT_CHECK_DATE_KEY = "csustar:home-announcement-check-date";
-const HOME_ANNOUNCEMENT_LATEST_ID_KEY = "csustar:home-announcement-latest-id";
+import type { NotificationItem } from "@/types/me";
 
 export const dynamic = "force-static";
 
 export default function Home() {
   const router = useRouter();
+  const accessToken = useAuthStore((state) => state.access_token);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const checkedDate = window.localStorage.getItem(
-      HOME_ANNOUNCEMENT_CHECK_DATE_KEY,
-    );
-
-    if (checkedDate === today) {
+    if (!hasHydrated || !accessToken) {
       return;
     }
 
     let cancelled = false;
 
-    const checkAnnouncements = async () => {
+    const openNotifications = () => {
+      router.push("/me?tab=notifications");
+    };
+
+    const showToast = (item: NotificationItem) => {
+      const isPersistent =
+        item.type === "system" &&
+        (item.category !== "announcement" || !item.is_pinned);
+
+      feedback.info({
+        title: item.title,
+        description: item.content || "你有一条新的站内消息。",
+        duration: isPersistent ? 0 : undefined,
+        actionLabel: item.category === "announcement" ? "查看公告" : "查看通知",
+        onAction: openNotifications,
+      });
+    };
+
+    const loadHomeNotifications = async () => {
       try {
-        const announcements = await listAnnouncements();
+        const summary = await getHomeNotificationSummary();
         if (cancelled) {
           return;
         }
 
-        const latestAnnouncement = announcements[0];
-        const previousLatestId = Number(
-          window.localStorage.getItem(HOME_ANNOUNCEMENT_LATEST_ID_KEY) ?? "",
-        );
-
-        if (
-          latestAnnouncement &&
-          Number.isFinite(previousLatestId) &&
-          previousLatestId > 0 &&
-          latestAnnouncement.id !== previousLatestId
-        ) {
-          feedback.info({
-            title: latestAnnouncement.title,
-            description: latestAnnouncement.content || "有新的平台公告。",
-            duration: 0,
-            actionLabel: "查看公告",
-            onAction: () => {
-              router.push("/me?tab=notifications");
-            },
-          });
-        }
-
-        if (latestAnnouncement) {
-          window.localStorage.setItem(
-            HOME_ANNOUNCEMENT_LATEST_ID_KEY,
-            String(latestAnnouncement.id),
-          );
-        }
-        window.localStorage.setItem(HOME_ANNOUNCEMENT_CHECK_DATE_KEY, today);
-      } catch {
-        window.localStorage.setItem(HOME_ANNOUNCEMENT_CHECK_DATE_KEY, today);
-      }
+        [
+          ...summary.announcements,
+          ...summary.interactions,
+          ...summary.system_messages,
+        ].forEach(showToast);
+      } catch {}
     };
 
-    void checkAnnouncements();
+    void loadHomeNotifications();
 
     return () => {
       cancelled = true;
     };
-  }, [router]);
+  }, [accessToken, hasHydrated, router]);
 
   return (
     <>
