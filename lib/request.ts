@@ -21,6 +21,23 @@ export const service = axios.create({
 let isRefreshing = false;
 let failedQueue: { resolve: (token: string) => void; reject: (error: unknown) => void }[] = [];
 
+const extractApiErrorMessage = (error: AxiosError) => {
+  const payload = error.response?.data;
+  if (!payload || typeof payload !== 'object') {
+    return '';
+  }
+
+  if ('msg' in payload && typeof payload.msg === 'string' && payload.msg.trim()) {
+    return payload.msg;
+  }
+
+  if ('message' in payload && typeof payload.message === 'string' && payload.message.trim()) {
+    return payload.message;
+  }
+
+  return '';
+}
+
 
 const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(({resolve, reject}) => {
@@ -56,6 +73,10 @@ service.interceptors.response.use(
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
       if (error.response?.status !== 401 || originalRequest._retry) {
+        const message = extractApiErrorMessage(error);
+        if (message) {
+          error.message = message;
+        }
         return Promise.reject(error);
       }
 
