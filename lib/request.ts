@@ -1,4 +1,5 @@
 import {useAuthStore} from '@/store/useAuthStore';
+import {feedback} from '@/store/useFeedbackStore';
 import {TokenResponse} from '@/types/auth';
 import axios, {AxiosError, InternalAxiosRequestConfig} from 'axios';
 
@@ -38,6 +39,71 @@ const extractApiErrorMessage = (error: AxiosError) => {
   return '';
 }
 
+const extractApiErrorData = (error: AxiosError) => {
+  const payload = error.response?.data;
+  if (!payload || typeof payload !== 'object' || !('data' in payload)) {
+    return null;
+  }
+
+  const data = payload.data;
+  return data && typeof data === 'object' ? data as Record<string, unknown> : null;
+}
+
+const appendRetryAfter = (message: string, error: AxiosError) => {
+  const data = extractApiErrorData(error);
+  const retryAfter = data?.retry_after;
+  if (typeof retryAfter === 'number' && retryAfter > 0) {
+    return `${message || '请求过于频繁'}，请在 ${retryAfter} 秒后重试`;
+  }
+  if (typeof retryAfter === 'string' && retryAfter.trim()) {
+    return `${message || '请求过于频繁'}，请在 ${retryAfter} 秒后重试`;
+  }
+  return message;
+}
+
+const buildIllegalPageUrl = (error: AxiosError) => {
+  const data = extractApiErrorData(error);
+  const params = new URLSearchParams({
+    reason: 'banned',
+  });
+
+  if (data) {
+    if (typeof data.ban_reason === 'string' && data.ban_reason.trim()) {
+      params.set('ban_reason', data.ban_reason);
+    }
+    if (typeof data.ban_until === 'string' && data.ban_until.trim()) {
+      params.set('ban_until', data.ban_until);
+    }
+    if (typeof data.violation_count === 'number') {
+      params.set('violation_count', String(data.violation_count));
+    }
+    if (typeof data.violation_count === 'string' && data.violation_count.trim()) {
+      params.set('violation_count', data.violation_count);
+    }
+    if (typeof data.permanent === 'boolean') {
+      params.set('permanent', data.permanent ? '1' : '0');
+    }
+  }
+
+  return `/login/illegal?${params.toString()}`;
+}
+
+const shouldRedirectToIllegalPage = (error: AxiosError) => {
+  const status = error.response?.status;
+  if (status !== 403) return false;
+
+  const payload = error.response?.data;
+  if (!payload || typeof payload !== 'object') {
+    return false;
+  }
+
+  const code = 'code' in payload ? payload.code : null;
+  if (code === 1021) return true;
+
+  const data = extractApiErrorData(error);
+  return data?.ban_source === 'system' || Boolean(data?.ban_until) || data?.permanent === true;
+}
+
 
 const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach(({resolve, reject}) => {
@@ -72,8 +138,22 @@ service.interceptors.response.use(
     async (error: AxiosError) => {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
+      if (shouldRedirectToIllegalPage(error)) {
+        const message = extractApiErrorMessage(error) || '账号因异常行为已被系统限制';
+        feedback.warning({
+          title: '账号已被限制',
+          description: message,
+        });
+        useAuthStore.getState().logout();
+        window.location.href = buildIllegalPageUrl(error);
+        return Promise.reject(error);
+      }
+
       if (error.response?.status !== 401 || originalRequest._retry) {
-        const message = extractApiErrorMessage(error);
+        let message = extractApiErrorMessage(error);
+        if (error.response?.status === 429) {
+          message = appendRetryAfter(message, error);
+        }
         if (message) {
           error.message = message;
         }

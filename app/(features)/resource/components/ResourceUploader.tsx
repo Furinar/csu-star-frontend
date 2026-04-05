@@ -50,7 +50,15 @@ function getUploadErrorMessage(error: unknown) {
   }
 
   if (status === 403) {
-    return "上传失败：COS 返回 403（可能是签名过期或 CORS 拒绝）。";
+    const requestUrl = error.config?.url ?? "";
+    if (requestUrl.startsWith("http")) {
+      return "上传失败：COS 返回 403（可能是签名过期或 CORS 拒绝）。";
+    }
+    return error.message || "当前账号已被限制，暂时无法继续上传。";
+  }
+
+  if (status === 429) {
+    return error.message || "当前上传请求过于频繁，请稍后再试";
   }
 
   return error.message || "上传过程中出错，请重试";
