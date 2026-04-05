@@ -5,6 +5,7 @@ import { bindCampusEmail, sendCampusEmailCaptcha } from "@/api/me";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { feedback } from "@/store/useFeedbackStore";
+import { showCaptchaSentFeedback } from "@/lib/campusMail";
 import type { UserProfile } from "@/types/auth";
 import type { EmailStatus, MeDashboardData } from "@/types/me";
 import {
@@ -80,10 +81,7 @@ export default function EmailPanel({
         ...current,
         email,
       }));
-      feedback.success({
-        title: "验证码已发送",
-        description: message,
-      });
+      showCaptchaSentFeedback(message);
     } catch (error) {
       feedback.error({
         title: "发送失败",

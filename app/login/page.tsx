@@ -9,6 +9,7 @@ import CryptoJS from "crypto-js";
 import { useTimer } from "@/hooks/useTimer";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
+import { showCaptchaSentFeedback } from "@/lib/campusMail";
 import {
   type AuthPlatform,
   type OAuthContext,
@@ -85,10 +86,7 @@ export default function Login() {
 
     try {
       await sendCaptcha(toCsuEmail(emailPrefix));
-      feedback.success({
-        title: "验证码已发送",
-        description: `请查收 ${toCsuEmail(emailPrefix)} 的邮件。`,
-      });
+      showCaptchaSentFeedback(`请查收 ${toCsuEmail(emailPrefix)} 的邮件。`);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "验证码发送失败，请稍后重试";
