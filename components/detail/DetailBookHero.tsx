@@ -76,6 +76,21 @@ const TeacherHomepageButtonShell = styled.div<{
     white-space: nowrap;
   }
 
+  .homepage-button .svg-wrapper-1 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .homepage-button .svg-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease-in-out;
+    will-change: transform;
+  }
+
   .homepage-button svg {
     display: block;
     transform-origin: center center;
@@ -87,11 +102,12 @@ const TeacherHomepageButtonShell = styled.div<{
   }
 
   .homepage-button:hover svg {
-    transform: translateX(0.8em) rotate(45deg) scale(1.05);
+    transform: translateX(1.35em) rotate(45deg) scale(1.08);
   }
 
   .homepage-button:hover .button-label {
-    transform: translateX(3.3em);
+    transform: translateX(5.2em);
+    opacity: 0;
   }
 
   .homepage-button:active {
