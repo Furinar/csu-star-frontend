@@ -55,23 +55,27 @@ const TeacherHomepageButtonShell = styled.div<{
 }>`
   .learn-more {
     position: relative;
-    display: inline-block;
-    width: 12rem;
-    height: auto;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    min-width: max-content;
     cursor: pointer;
     text-decoration: none;
   }
 
   .circle {
     transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 0;
     display: block;
     margin: 0;
-    width: 3rem;
-    height: 3rem;
+    width: 2.75rem;
+    height: 2.75rem;
     background: ${({ $accentGradient }) => $accentGradient};
     border-radius: 1.625rem;
     box-shadow: 0 12px 28px ${({ $shadowColor }) => $shadowColor};
+    transform: translateY(-50%);
   }
 
   .icon {
@@ -104,20 +108,20 @@ const TeacherHomepageButtonShell = styled.div<{
 
   .button-text {
     transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 0.75rem 0;
-    margin: 0 0 0 1.85rem;
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.75rem 1rem 0.75rem 1.9rem;
     color: ${({ $accentText }) => $accentText};
     font-size: 0.8rem;
     font-weight: 700;
-    line-height: 1.6;
+    line-height: 1;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.08em;
+    white-space: nowrap;
   }
 
   .learn-more:hover .circle {
