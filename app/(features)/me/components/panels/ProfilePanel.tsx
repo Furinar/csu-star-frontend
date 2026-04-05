@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { updateMyProfile } from "@/api/me";
 import {
   AdvancedInput,
-  AdvancedSelect,
 } from "@/app/(features)/resource/components/AdvancedFormControls";
 import { DEPARTMENTS } from "@/data/departments";
 import { feedback } from "@/store/useFeedbackStore";
@@ -19,6 +18,102 @@ import {
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
   getErrorMessage,
 } from "../shared/helpers";
+
+function DepartmentSelectField({
+  value,
+  departments,
+  onChange,
+}: {
+  value: string;
+  departments: Department[];
+  onChange: (nextValue: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const selectedDepartment =
+    departments.find((department) => `${department.id}` === value) ?? null;
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  return (
+    <div ref={wrapperRef} className="relative">
+      <button
+        type="button"
+        className={`relative w-full rounded-2xl border border-gray-500 bg-white px-4 pb-3 pt-6 text-left text-base text-gray-900 transition ${open ? "border-first ring-2 ring-first/10" : "hover:border-gray-600"} cursor-pointer`}
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+      >
+        <span className="absolute left-4 top-2 bg-white px-1 text-xs text-gray-500">
+          所属学院
+        </span>
+        <span className={selectedDepartment ? "" : "text-gray-400"}>
+          {selectedDepartment?.name ?? "点击选择你的学院"}
+        </span>
+        <i
+          className={`uil uil-angle-down absolute right-4 top-1/2 -translate-y-1/2 text-lg text-gray-500 transition ${open ? "rotate-180" : ""}`}
+        ></i>
+      </button>
+
+      {open ? (
+        <div
+          className="absolute left-0 right-0 z-20 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
+          role="listbox"
+          aria-label="所属学院"
+        >
+          <button
+            type="button"
+            className={`flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm transition ${value ? "text-slate-600 hover:bg-slate-50" : "bg-sky-50 text-sky-700"}`}
+            onClick={() => {
+              onChange("");
+              setOpen(false);
+            }}
+          >
+            点击选择你的学院
+          </button>
+
+          {departments.map((department) => {
+            const isSelected = `${department.id}` === value;
+
+            return (
+              <button
+                key={department.id}
+                type="button"
+                className={`mt-1 flex w-full cursor-pointer items-center rounded-xl px-3 py-2 text-left text-sm transition ${isSelected ? "bg-sky-50 text-sky-700" : "text-slate-700 hover:bg-slate-50"}`}
+                onClick={() => {
+                  onChange(`${department.id}`);
+                  setOpen(false);
+                }}
+              >
+                {department.name}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export default function ProfilePanel({
   profile,
@@ -152,23 +247,16 @@ export default function ProfilePanel({
         }
       />
 
-      <AdvancedSelect
-        label="所属学院"
+      <DepartmentSelectField
         value={form.department_id}
-        onChange={(event) =>
+        departments={resolvedDepartments}
+        onChange={(departmentId) =>
           setForm((current) => ({
             ...current,
-            department_id: event.target.value,
+            department_id: departmentId,
           }))
         }
-      >
-        <option value="">点击选择你的学院</option>
-        {resolvedDepartments.map((department) => (
-          <option key={department.id} value={department.id}>
-            {department.name}
-          </option>
-        ))}
-      </AdvancedSelect>
+      />
 
       <AdvancedInput
         label="入学年份"
