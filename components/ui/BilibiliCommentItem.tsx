@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {UserBrief} from "@/types/detail";
 import {formatDateTimeZh} from "@/lib/date";
@@ -71,6 +71,7 @@ export default function BilibiliCommentItem({
                                               highlightedReplyId = null,
                                             }: BilibiliCommentItemProps) {
   const [showAllReplies, setShowAllReplies] = useState(false);
+  const replyComposerRef = useRef<HTMLDivElement | null>(null);
 
   const displayUser = isAnonymous
       ? {nickname: "匿名用户", avatar_url: DEFAULT_AVATAR}
@@ -79,6 +80,21 @@ export default function BilibiliCommentItem({
   const shouldShowAllReplies = forceShowAllReplies || showAllReplies;
   const displayedReplies = shouldShowAllReplies ? replies : replies.slice(0, 2);
   const hasMoreReplies = replies.length > 2;
+
+  useEffect(() => {
+    if (!isReplying || !replyComposerRef.current) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      replyComposerRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isReplying, replyComposer]);
 
   return (
       <div
@@ -180,7 +196,11 @@ export default function BilibiliCommentItem({
                     </div>
                 )}
 
-                {isReplying && <div className="mt-3">{replyComposer}</div>}
+                {isReplying && (
+                  <div ref={replyComposerRef} className="mt-3">
+                    {replyComposer}
+                  </div>
+                )}
               </div>
           )}
         </div>
