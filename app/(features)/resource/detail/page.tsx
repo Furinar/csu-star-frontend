@@ -628,7 +628,16 @@ export default function ResourceDetailPage() {
         <DetailHero
           accent="resource"
           title={resource.title}
-          description="资源说明"
+          description={
+            <div className="space-y-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
+                资源说明
+              </div>
+              <div className="whitespace-pre-wrap text-sm leading-7 text-slate-600 md:text-base">
+                {resource.description?.trim() || "暂无资源说明。"}
+              </div>
+            </div>
+          }
           meta={
             <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 mt-4">
               <div className="flex items-center gap-1.5 transition-colors">
@@ -749,16 +758,6 @@ export default function ResourceDetailPage() {
               </div>
             ) : null}
 
-            {resource.description ? (
-              <div className="mt-2 rounded-[20px] bg-white/60 p-4 text-sm leading-relaxed text-slate-600 shadow-sm border border-slate-100">
-                <div className="mb-2 font-semibold text-slate-700">
-                  资源说明
-                </div>
-                <div className="whitespace-pre-wrap">
-                  {resource.description}
-                </div>
-              </div>
-            ) : null}
           </div>
         </DetailHero>
 

@@ -192,6 +192,16 @@ export default function CourseResourceCollectionPage() {
                   <div className="mt-3 text-lg font-semibold text-gray-900 line-clamp-2">
                     {resource.title}
                   </div>
+                  <p
+                    className="mt-2 h-10 overflow-hidden text-sm leading-5 text-gray-500"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 2,
+                    }}
+                  >
+                    {resource.description?.trim() || "暂无资源说明。"}
+                  </p>
                 </div>
                 <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-center min-w-20 flex flex-col items-center justify-center">
                   <div className="text-[11px] text-emerald-600">文件数</div>

@@ -20,6 +20,7 @@ export interface CourseBrief {
 export interface ResourceBrief {
   id: number;
   title: string;
+  description?: string | null;
   resource_type?: string | null;
   downloads?: number | null;
   views?: number | null;
