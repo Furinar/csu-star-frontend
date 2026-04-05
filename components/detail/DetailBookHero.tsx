@@ -354,7 +354,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 <div className="text-sm text-gray-600">{departmentName}</div>
               ) : null}
               {teacher.metadata?.tutor_type ? (
-                <div className="text-sm text-rose-500">
+                <div className="text-sm text-gray-600">
                   {teacher.metadata.tutor_type}
                 </div>
               ) : null}
