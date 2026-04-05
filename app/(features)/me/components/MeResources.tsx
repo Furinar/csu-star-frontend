@@ -12,6 +12,7 @@ import {useState} from "react";
 import ItemActionMenu from "@/components/ui/ItemActionMenu";
 import ResourceEditModal from "@/components/detail/ResourceEditModal";
 import type { ResourceDetail } from "@/types/detail";
+import type { EntityId } from "@/types/entity";
 
 interface MeResourcesProps {
   resources: PaginatedData<ResourceItem>;
@@ -20,7 +21,7 @@ interface MeResourcesProps {
 export default function MeResources({resources}: MeResourcesProps) {
   const router = useRouter();
   const [items, setItems] = useState(resources.items ?? []);
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<EntityId | null>(null);
   const [editingItem, setEditingItem] = useState<ResourceDetail | null>(null);
 
   const handleDelete = async (item: ResourceItem) => {

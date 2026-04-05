@@ -46,6 +46,7 @@ import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import DownloadButton from "@/template/download";
+import type { EntityId } from "@/types/entity";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -69,8 +70,7 @@ export default function ResourceDetailPage() {
   const resourceTheme = getPageTheme("/resource");
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const idStr = hasMounted ? searchParams.get("id") : null;
-  const resourceId = idStr ? parseInt(idStr, 10) : null;
+  const resourceId = hasMounted ? searchParams.get("id") : null;
 
   const authUser = useAuthStore((state) => state.user);
   const viewerId = authUser?.id ?? null;
@@ -913,7 +913,7 @@ export default function ResourceDetailPage() {
                             setSubmittingId(comment.id);
                             try {
                               const reply = await createResourceComment(
-                                resourceId || 0,
+                                resourceId,
                                 {
                                   content,
                                   parent_id: comment.id,

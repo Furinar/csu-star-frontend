@@ -1,6 +1,7 @@
 import axios, { AxiosProgressEvent } from "axios";
 import { service } from "@/lib/request";
 import { normalizeCourseType } from "@/lib/courseType";
+import type { EntityId } from "@/types/entity";
 import type { ResourceUpdateInput } from "@/types/detail";
 import type {
   CourseSuggestionItem,
@@ -46,6 +47,12 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
+
 const FORBIDDEN_BROWSER_HEADERS = new Set([
   "host",
   "content-length",
@@ -69,7 +76,7 @@ const normalizeCourseSuggestionItems = (raw: unknown): CourseSuggestionItem[] =>
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名课程",
         course_type: normalizeCourseType(toStringSafe(item.course_type)) as CourseSuggestionItem["course_type"] | null,
       },
@@ -85,7 +92,7 @@ const normalizeTeacherSuggestionItems = (raw: unknown): TeacherSuggestionItem[] 
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未知教师",
         department: toStringSafe(item.department) ?? null,
       },
@@ -126,7 +133,7 @@ const normalizeResourceFinalizeResponse = (raw: unknown): ResourceFinalizeRespon
   const data = isRecord(raw) ? raw : {};
 
   return {
-    resource_id: toNumber(data.resource_id) ?? 0,
+    resource_id: toStringId(data.resource_id) ?? "",
   };
 };
 
@@ -186,7 +193,7 @@ export async function searchTeacherSuggestions(query: string) {
   return normalizeTeacherSuggestionItems(raw);
 }
 
-export async function downloadResourceFile(resourceId: number, fileId?: string) {
+export async function downloadResourceFile(resourceId: EntityId, fileId?: string) {
   const response = await service.get<ApiEnvelope<unknown>>(`/resources/${resourceId}/download`, {
     params: fileId ? { file_id: fileId } : undefined,
   });
@@ -194,12 +201,12 @@ export async function downloadResourceFile(resourceId: number, fileId?: string) 
   return normalizeDownloadResponse(unwrapResponseData(response));
 }
 
-export async function deleteResource(resourceId: number) {
+export async function deleteResource(resourceId: EntityId) {
   const response = await service.delete<ApiEnvelope<unknown>>(`/resources/${resourceId}`);
   return unwrapResponseData(response);
 }
 
-export async function updateResource(resourceId: number, payload: ResourceUpdateInput) {
+export async function updateResource(resourceId: EntityId, payload: ResourceUpdateInput) {
   const response = await service.put<ApiEnvelope<unknown>>(`/resources/${resourceId}`, payload);
   return unwrapResponseData(response);
 }

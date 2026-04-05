@@ -9,13 +9,14 @@ import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { useDebounce } from "@/hooks/useDebounce";
 import { feedback } from "@/store/useFeedbackStore";
 import type { CourseSuggestionItem, TeacherSuggestionItem } from "@/types/resource";
+import type { EntityId } from "@/types/entity";
 
 type CourseRelationLinkModalProps = {
   variant: "course";
   isOpen: boolean;
   onClose: () => void;
-  course: { id: number; name: string };
-  currentTeachers: Array<{ id: number; name: string }>;
+  course: { id: EntityId; name: string };
+  currentTeachers: Array<{ id: EntityId; name: string }>;
   onLinked?: () => Promise<void> | void;
 };
 
@@ -23,8 +24,8 @@ type TeacherRelationLinkModalProps = {
   variant: "teacher";
   isOpen: boolean;
   onClose: () => void;
-  teacher: { id: number; name: string };
-  currentCourses: Array<{ id: number; name: string }>;
+  teacher: { id: EntityId; name: string };
+  currentCourses: Array<{ id: EntityId; name: string }>;
   onLinked?: () => Promise<void> | void;
 };
 

@@ -28,6 +28,7 @@ import {
   AdvancedSelect,
   AdvancedTextarea,
 } from "./AdvancedFormControls";
+import type { EntityId } from "@/types/entity";
 
 function getUploadErrorMessage(error: unknown) {
   if (!axios.isAxiosError(error)) {
@@ -55,7 +56,7 @@ function getUploadErrorMessage(error: unknown) {
 export interface ResourceUploaderProps {
   isModal?: boolean;
   onClose?: () => void;
-  initialCourse?: { id: number; name: string };
+  initialCourse?: { id: EntityId; name: string };
   onUploadSuccess?: () => void;
 }
 
@@ -85,7 +86,7 @@ export default function ResourceUploader({
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
   const [totalProgress, setTotalProgress] = useState(0);
-  const [uploadedResourceId, setUploadedResourceId] = useState<number | null>(
+  const [uploadedResourceId, setUploadedResourceId] = useState<EntityId | null>(
     null,
   );
   const [errorMsg, setErrorMsg] = useState("");

@@ -11,15 +11,15 @@ import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildCourseEvaluationAnchor, buildCoursePath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
+import type { EntityId } from "@/types/entity";
 import type { CourseDetail, CourseEvaluationInput } from "@/types/detail";
 
 export default function CourseEvaluationComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const courseId = Number(hasMounted ? searchParams.get("id") : null);
-  const isInvalidCourseId =
-    hasMounted && (!Number.isFinite(courseId) || courseId <= 0);
+  const courseId = hasMounted ? searchParams.get("id") : null;
+  const isInvalidCourseId = hasMounted && !courseId;
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +30,9 @@ export default function CourseEvaluationComposerPage() {
     }
 
     if (isInvalidCourseId) {
+      return;
+    }
+    if (!courseId) {
       return;
     }
 

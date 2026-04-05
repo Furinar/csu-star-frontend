@@ -8,6 +8,7 @@ import { searchCourseSuggestions } from "@/api/resource";
 import type { CourseSuggestionItem } from "@/types/resource";
 import { createCourseEvaluation, getCourseDetail } from "@/api/detail";
 import type { CourseEvaluationInput } from "@/types/detail";
+import type { EntityId } from "@/types/entity";
 import { feedback } from "@/store/useFeedbackStore";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 
@@ -27,7 +28,7 @@ export default function CourseGlobalEvaluationModal({
   const [options, setOptions] = useState<CourseSuggestionItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [relatedTeachers, setRelatedTeachers] = useState<
-    Array<{ id: number; name: string }>
+    Array<{ id: EntityId; name: string }>
   >([]);
   const debouncedQuery = useDebounce(query, 300);
 

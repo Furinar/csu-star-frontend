@@ -1,23 +1,25 @@
-export const buildTeacherPath = (id: number) => `/teacher/detail?id=${id}`;
+import type { EntityId } from "@/types/entity";
 
-export const buildCoursePath = (id: number) => `/course/detail?id=${id}`;
+export const buildTeacherPath = (id: EntityId) => `/teacher/detail?id=${id}`;
 
-export const buildResourceCollectionPath = (courseId: number) =>
+export const buildCoursePath = (id: EntityId) => `/course/detail?id=${id}`;
+
+export const buildResourceCollectionPath = (courseId: EntityId) =>
   `/resource/course?courseId=${courseId}`;
 
-export const buildResourcePath = (id: number) => `/resource/detail?id=${id}`;
+export const buildResourcePath = (id: EntityId) => `/resource/detail?id=${id}`;
 
-export const buildCourseEvaluationAnchor = (courseId: number) =>
+export const buildCourseEvaluationAnchor = (courseId: EntityId) =>
   `${buildCoursePath(courseId)}#evaluations`;
 
-export const buildResourceCommentsAnchor = (resourceId: number) =>
+export const buildResourceCommentsAnchor = (resourceId: EntityId) =>
   `${buildResourcePath(resourceId)}#comments`;
 
-export const buildCourseEvaluationComposerPath = (courseId: number) =>
+export const buildCourseEvaluationComposerPath = (courseId: EntityId) =>
   `/course/evaluate?id=${courseId}`;
 
-export const buildTeacherEvaluationComposerPath = (teacherId: number) =>
+export const buildTeacherEvaluationComposerPath = (teacherId: EntityId) =>
   `/teacher/evaluate?id=${teacherId}`;
 
-export const buildResourceCommentComposerPath = (resourceId: number) =>
+export const buildResourceCommentComposerPath = (resourceId: EntityId) =>
   `/resource/comment?id=${resourceId}`;

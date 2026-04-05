@@ -170,7 +170,7 @@ export default function MeEvaluations({
                                       event.preventDefault();
                                       event.stopPropagation();
                                       if (item.course_id) {
-                                        router.push(buildCoursePath(Number(item.course_id)));
+                                        router.push(buildCoursePath(item.course_id));
                                       }
                                     }}
                                     className="ml-1 cursor-pointer font-medium text-gray-800 hover:text-first hover:underline"
@@ -301,7 +301,7 @@ export default function MeEvaluations({
                                       event.preventDefault();
                                       event.stopPropagation();
                                       if (item.teacher_id) {
-                                        router.push(buildTeacherPath(Number(item.teacher_id)));
+                                        router.push(buildTeacherPath(item.teacher_id));
                                       }
                                     }}
                                     className="ml-1 cursor-pointer font-medium text-gray-800 hover:text-first hover:underline"
@@ -423,7 +423,7 @@ export default function MeEvaluations({
                     editingTeacherEvaluation.course_id
                         ? [
                           {
-                            id: Number(editingTeacherEvaluation.course_id),
+                            id: editingTeacherEvaluation.course_id,
                             name: editingTeacherEvaluation.course_name || `课程 #${editingTeacherEvaluation.course_id}`,
                           },
                         ]
@@ -431,7 +431,7 @@ export default function MeEvaluations({
                   }
                   submitLabel="保存修改"
                   initialValues={{
-                    relatedId: editingTeacherEvaluation.course_id ? Number(editingTeacherEvaluation.course_id) : null,
+                    relatedId: editingTeacherEvaluation.course_id ?? null,
                     comment: editingTeacherEvaluation.comment ?? "",
                     anonymous: editingTeacherEvaluation.is_anonymous ?? false,
                     ratings: {
@@ -485,7 +485,7 @@ export default function MeEvaluations({
                     editingCourseEvaluation.teacher_id
                         ? [
                           {
-                            id: Number(editingCourseEvaluation.teacher_id),
+                            id: editingCourseEvaluation.teacher_id,
                             name: editingCourseEvaluation.teacher_name || `教师 #${editingCourseEvaluation.teacher_id}`,
                           },
                         ]
@@ -493,7 +493,7 @@ export default function MeEvaluations({
                   }
                   submitLabel="保存修改"
                   initialValues={{
-                    relatedId: editingCourseEvaluation.teacher_id ? Number(editingCourseEvaluation.teacher_id) : null,
+                    relatedId: editingCourseEvaluation.teacher_id ?? null,
                     comment: editingCourseEvaluation.comment ?? "",
                     anonymous: editingCourseEvaluation.is_anonymous ?? false,
                     ratings: {

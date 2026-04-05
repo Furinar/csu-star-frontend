@@ -1,5 +1,6 @@
 import {service} from "@/lib/request";
 import { normalizeCourseType } from "@/lib/courseType";
+import type { EntityId } from "@/types/entity";
 import type {
   CourseDetail,
   CourseEvaluation,
@@ -102,7 +103,7 @@ const normalizeTeacherBriefs = (raw: unknown) => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名教师",
         title: toStringSafe(item.title),
         avatar_url: toStringSafe(item.avatar_url),
@@ -119,7 +120,7 @@ const normalizeCourseBriefs = (raw: unknown) => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名课程",
       },
     ];
@@ -134,7 +135,7 @@ const normalizeResourceBriefs = (raw: unknown) => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         title: toStringSafe(item.title) ?? "未命名资料",
         description: toStringSafe(item.description),
         resource_type: toStringSafe(item.resource_type),
@@ -187,7 +188,7 @@ const normalizeTeacherEvaluations = (raw: unknown): TeacherEvaluation[] => {
     return [
       {
         id: toStringId(item.id) ?? "",
-        teacher_id: toNumber(item.teacher_id) ?? 0,
+        teacher_id: toStringId(item.teacher_id) ?? "",
         mode: (toStringSafe(item.mode) as TeacherEvaluation["mode"]) ?? null,
         course_id: toStringId(item.course_id),
         course_name: toStringSafe(item.course_name),
@@ -220,7 +221,7 @@ const normalizeCourseEvaluations = (raw: unknown): CourseEvaluation[] => {
     return [
       {
         id: toStringId(item.id) ?? "",
-        course_id: toNumber(item.course_id) ?? 0,
+        course_id: toStringId(item.course_id) ?? "",
         mode: (toStringSafe(item.mode) as CourseEvaluation["mode"]) ?? null,
         teacher_id: toStringId(item.teacher_id),
         teacher_name: toStringSafe(item.teacher_name),
@@ -274,7 +275,7 @@ const normalizeTeacherDetail = (raw: unknown): TeacherDetail => {
   const metadata = isRecord(data.metadata) ? data.metadata : null;
 
   return {
-    id: toNumber(data.id) ?? 0,
+    id: toStringId(data.id) ?? "",
     name: toStringSafe(data.name) ?? "未命名教师",
     title: toStringSafe(data.title),
     department_id: toNumber(data.department_id),
@@ -303,7 +304,7 @@ const normalizeCourseDetail = (raw: unknown): CourseDetail => {
   const data = isRecord(raw) ? raw : {};
 
   return {
-    id: toNumber(data.id) ?? 0,
+    id: toStringId(data.id) ?? "",
     name: toStringSafe(data.name) ?? "未命名课程",
     course_type: normalizeCourseType(toStringSafe(data.course_type)) as CourseDetail["course_type"],
     avg_score: toNumber(data.avg_score),
@@ -324,7 +325,7 @@ const normalizeResourceCollection = (raw: unknown): CourseResourceCollection => 
 
   return {
     course: {
-      id: toNumber(course.id) ?? 0,
+      id: toStringId(course.id) ?? "",
       name: toStringSafe(course.name) ?? "未命名课程",
     },
     resource_count: toNumber(data.resource_count) ?? 0,
@@ -342,13 +343,13 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
   const files = Array.isArray(data.files) ? data.files : [];
 
   return {
-    id: toNumber(data.id) ?? 0,
+    id: toStringId(data.id) ?? "",
     title: toStringSafe(data.title) ?? "未命名资料",
     uploader_id: toStringId(data.uploader_id),
-    course_id: toNumber(data.course_id) ?? 0,
+    course_id: toStringId(data.course_id) ?? "",
     course: course
         ? {
-          id: toNumber(course.id) ?? 0,
+          id: toStringId(course.id) ?? "",
           name: toStringSafe(course.name) ?? "未命名课程",
         }
         : null,
@@ -380,17 +381,17 @@ const normalizeResourceDetail = (raw: unknown): ResourceDetail => {
   };
 };
 
-export async function getTeacherDetail(id: number) {
+export async function getTeacherDetail(id: EntityId) {
   const response = await service.get<ApiEnvelope<unknown>>(`/teachers/${id}`);
   return normalizeTeacherDetail(unwrapResponseData(response));
 }
 
-export async function getCourseDetail(id: number) {
+export async function getCourseDetail(id: EntityId) {
   const response = await service.get<ApiEnvelope<unknown>>(`/courses/${id}`);
   return normalizeCourseDetail(unwrapResponseData(response));
 }
 
-export async function getCourseResourceCollection(id: number, page = 1, size = 20) {
+export async function getCourseResourceCollection(id: EntityId, page = 1, size = 20) {
   const response = await service.get<ApiEnvelope<unknown>>(`/course-resource-collections/${id}`, {
     params: {page, size},
   });
@@ -398,13 +399,13 @@ export async function getCourseResourceCollection(id: number, page = 1, size = 2
   return normalizeResourceCollection(unwrapResponseData(response));
 }
 
-export async function getResourceDetail(id: number) {
+export async function getResourceDetail(id: EntityId) {
   const response = await service.get<ApiEnvelope<unknown>>(`/resources/${id}`);
   return normalizeResourceDetail(unwrapResponseData(response));
 }
 
 export async function listTeacherEvaluations(
-  teacherId: number,
+  teacherId: EntityId,
   page = 1,
   size = 20,
   sort: EvaluationSort = "created_at",
@@ -418,7 +419,7 @@ export async function listTeacherEvaluations(
 }
 
 export async function listCourseEvaluations(
-  courseId: number,
+  courseId: EntityId,
   page = 1,
   size = 20,
   sort: EvaluationSort = "created_at",
@@ -455,7 +456,7 @@ export async function createCourseEvaluationReply(
   return normalizeEvaluationReplies([unwrapResponseData(response)])[0];
 }
 
-export async function createTeacherEvaluation(teacherId: number, payload: TeacherEvaluationInput) {
+export async function createTeacherEvaluation(teacherId: EntityId, payload: TeacherEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
       `/teachers/evaluations/${teacherId}`,
       payload,
@@ -463,7 +464,7 @@ export async function createTeacherEvaluation(teacherId: number, payload: Teache
   return normalizeTeacherEvaluations([unwrapResponseData(response)])[0];
 }
 
-export async function createCourseEvaluation(courseId: number, payload: CourseEvaluationInput) {
+export async function createCourseEvaluation(courseId: EntityId, payload: CourseEvaluationInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
       `/courses/evaluations/${courseId}`,
       payload,
@@ -471,18 +472,18 @@ export async function createCourseEvaluation(courseId: number, payload: CourseEv
   return normalizeCourseEvaluations([unwrapResponseData(response)])[0];
 }
 
-export async function createCourseTeacherRelation(course_id: number, teacher_id: number) {
+export async function createCourseTeacherRelation(course_id: EntityId, teacher_id: EntityId) {
   const response = await service.post<ApiEnvelope<unknown>>("/course-teacher-relations", {
-    course_id,
-    teacher_id,
+    course_id: Number(course_id),
+    teacher_id: Number(teacher_id),
   });
 
   const raw = unwrapResponseData(response);
   const data = isRecord(raw) ? raw : {};
 
   return {
-    course_id: toNumber(data.course_id) ?? course_id,
-    teacher_id: toNumber(data.teacher_id) ?? teacher_id,
+    course_id: toStringId(data.course_id) ?? course_id,
+    teacher_id: toStringId(data.teacher_id) ?? teacher_id,
   } satisfies CourseTeacherRelation;
 }
 
@@ -529,7 +530,7 @@ export async function deleteCourseEvaluationReply(replyId: string) {
 }
 
 export async function listResourceComments(
-  resourceId: number,
+  resourceId: EntityId,
   page = 1,
   size = 20,
   sort: EvaluationSort = "created_at",
@@ -542,7 +543,7 @@ export async function listResourceComments(
   return normalizePaginated(raw, normalizeResourceComments);
 }
 
-export async function createResourceComment(resourceId: number, payload: ResourceCommentInput) {
+export async function createResourceComment(resourceId: EntityId, payload: ResourceCommentInput) {
   const response = await service.post<ApiEnvelope<unknown>>(
       `/resources/${resourceId}/comments`,
       payload,
@@ -559,7 +560,7 @@ export async function deleteResourceComment(commentId: number) {
   await service.delete<ApiEnvelope<unknown>>(`/comments/${commentId}`);
 }
 
-export async function updateResource(resourceId: number, payload: ResourceUpdateInput) {
+export async function updateResource(resourceId: EntityId, payload: ResourceUpdateInput) {
   const response = await service.put<ApiEnvelope<unknown>>(`/resources/${resourceId}`, payload);
   return normalizeResourceDetail(unwrapResponseData(response));
 }

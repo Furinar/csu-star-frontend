@@ -1,5 +1,6 @@
 import { service } from "@/lib/request";
 import { normalizeCourseType } from "@/lib/courseType";
+import type { EntityId } from "@/types/entity";
 import type {
   PaginatedData,
   SearchCourseItem,
@@ -45,6 +46,12 @@ const toNumber = (value: unknown): number | null => {
 
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
+
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
 
 const unwrapPaginatedPayload = (raw: unknown): AnyRecord | null => {
   if (!isRecord(raw)) return null;
@@ -110,7 +117,7 @@ const normalizeTeacherBriefs = (items: unknown): SearchTeacherBrief[] => {
 
     return [
       {
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         name: toStringSafe(raw.name) ?? "未命名教师",
         title: toStringSafe(raw.title),
         avatar_url: toStringSafe(raw.avatar_url),
@@ -127,7 +134,7 @@ const normalizeCourseItems = (items: unknown[]): SearchCourseItem[] =>
 
     return [
       {
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         name: toStringSafe(raw.name) ?? "未命名课程",
         course_type: normalizeCourseType(toStringSafe(raw.course_type)) as SearchCourseItem["course_type"],
         avg_score: toNumber(raw.avg_score),
@@ -152,7 +159,7 @@ const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
 
     return [
       {
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         name: toStringSafe(raw.name) ?? "未命名教师",
         department_id: toNumber(raw.department_id),
         department_name: toStringSafe(raw.department_name),
@@ -167,7 +174,7 @@ const normalizeTeacherItems = (items: unknown[]): SearchTeacherItem[] =>
         favorite_count: toNumber(raw.favorite_count),
         courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
           if (typeof c !== "object" || c === null) return [];
-          return [{ id: toNumber(c.id) ?? 0, name: toStringSafe(c.name) ?? "" }];
+          return [{ id: toStringId(c.id) ?? "", name: toStringSafe(c.name) ?? "" }];
         }) : [],
       },
     ];
@@ -184,7 +191,7 @@ const normalizeResourcePreview = (items: unknown) => {
 
     return [
       {
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         title: toStringSafe(raw.title) ?? "未命名资料",
         resource_type: toStringSafe(raw.resource_type),
       },
@@ -196,7 +203,7 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
   items.flatMap((raw) => {
     if (!isRecord(raw)) return [];
 
-    const courseId = toNumber(raw.course_id) ?? toNumber(raw.id) ?? 0;
+    const courseId = toStringId(raw.course_id) ?? toStringId(raw.id) ?? "";
 
     return [
       {
@@ -204,7 +211,7 @@ const normalizeResourceItems = (items: unknown[]): SearchResourceCard[] =>
         course_name:
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
-          `课程 ${courseId}`,
+          `课程 ${courseId || "未知"}`,
         course_type: normalizeCourseType(toStringSafe(raw.course_type)) as SearchResourceCard["course_type"],
         avg_score: toNumber(raw.avg_score),
         resource_count: toNumber(raw.resource_count) ?? 0,

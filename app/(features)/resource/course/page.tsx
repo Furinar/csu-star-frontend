@@ -27,19 +27,17 @@ export default function CourseResourceCollectionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const courseId = Number(
-    hasMounted
-      ? (searchParams.get("courseId") ?? searchParams.get("course_id"))
-      : null,
-  );
-  const isInvalidCourseId = hasMounted && !Number.isFinite(courseId);
+  const courseId = hasMounted
+    ? (searchParams.get("courseId") ?? searchParams.get("course_id"))
+    : null;
+  const isInvalidCourseId = hasMounted && !courseId;
   const [detail, setDetail] = useState<CourseResourceCollection | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [shouldRefreshAfterUpload, setShouldRefreshAfterUpload] = useState(false);
 
-  const loadCollectionDetail = async (targetCourseId: number) => {
+  const loadCollectionDetail = async (targetCourseId: string) => {
     const data = await getCourseResourceCollection(targetCourseId, 1, 24);
     setDetail(data);
     setError("");
@@ -48,6 +46,9 @@ export default function CourseResourceCollectionPage() {
   useEffect(() => {
     if (!hasMounted) return;
     if (isInvalidCourseId) {
+      return;
+    }
+    if (!courseId) {
       return;
     }
 
@@ -286,7 +287,7 @@ export default function CourseResourceCollectionPage() {
         isOpen={isUploadModalOpen}
         onClose={() => {
           setIsUploadModalOpen(false);
-          if (!shouldRefreshAfterUpload || !Number.isFinite(courseId)) return;
+          if (!shouldRefreshAfterUpload || !courseId) return;
           setLoading(true);
           loadCollectionDetail(courseId)
             .catch((err) => {

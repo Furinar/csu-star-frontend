@@ -1,3 +1,5 @@
+import type { EntityId } from "@/types/entity";
+
 export type ResourceRankType =
   | "comprehensive"
   | "downloads"
@@ -50,7 +52,7 @@ export interface PaginatedData<T> {
 
 export interface RankingItem {
   rank: number;
-  id: number;
+  id: EntityId;
   name: string;
   department_name?: string | null;
   score: number;
@@ -65,7 +67,7 @@ export interface CourseRankingItem extends RankingItem {
   eval_count?: number | null;
   resource_count?: number | null;
   favorite_count?: number | null;
-  teachers?: Array<{ id: number; name: string; title?: string | null; avatar_url?: string | null }>;
+  teachers?: Array<{ id: EntityId; name: string; title?: string | null; avatar_url?: string | null }>;
 }
 
 export interface TeacherRankingItem extends RankingItem {
@@ -78,11 +80,11 @@ export interface TeacherRankingItem extends RankingItem {
   eval_count?: number | null;
   favorite_count?: number | null;
   avatar_url?: string | null;
-  courses?: Array<{ id: number; name: string }>;
+  courses?: Array<{ id: EntityId; name: string }>;
 }
 
 export interface ResourcePreviewItem {
-  id: number;
+  id: EntityId;
   title: string;
   resource_type?: string | null;
   downloads?: number | null;
@@ -92,7 +94,7 @@ export interface ResourcePreviewItem {
 
 export interface ResourceRankingItem {
   rank: number;
-  course_id: number;
+  course_id: EntityId;
   course_name: string;
   course_type?: "公选课" | "非公选课" | null;
   resource_count?: number | null;

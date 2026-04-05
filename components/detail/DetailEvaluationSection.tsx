@@ -25,6 +25,7 @@ import type {
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type { ReportTargetType } from "@/types/me";
+import type { EntityId } from "@/types/entity";
 
 const SUBMIT_ANIMATION_MS = 1200;
 
@@ -48,7 +49,7 @@ interface ReplyTarget {
 }
 
 interface RelatedItem {
-  id: number;
+  id: EntityId;
   name: string;
 }
 
@@ -86,12 +87,8 @@ function sortLabel(sort: EvaluationSort) {
 function buildEvaluationInitialValues(evaluation: ThreadEvaluation) {
   const relatedId =
     "teacher_id" in evaluation
-      ? evaluation.teacher_id
-        ? Number(evaluation.teacher_id)
-        : null
-      : evaluation.course_id
-        ? Number(evaluation.course_id)
-        : null;
+      ? evaluation.teacher_id ?? null
+      : evaluation.course_id ?? null;
 
   return {
     relatedId,

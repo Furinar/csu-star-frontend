@@ -5,9 +5,10 @@ import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
 import RatingStar from "@/components/ui/RatingStar";
+import type { EntityId } from "@/types/entity";
 
 interface RelatedItem {
-  id: number;
+  id: EntityId;
   name: string;
 }
 
@@ -52,7 +53,7 @@ export default function EvaluationComposerForm({
   relatedItems?: RelatedItem[];
   submitLabel?: string;
   initialValues?: {
-    relatedId?: number | null;
+    relatedId?: EntityId | null;
     comment?: string | null;
     anonymous?: boolean;
     ratings?: Record<string, number | null | undefined>;
@@ -60,7 +61,7 @@ export default function EvaluationComposerForm({
   onSubmit: (payload: Record<string, unknown>) => Promise<void>;
 }) {
   const [ratings, setRatings] = useState<Record<string, number>>({});
-  const [relatedId, setRelatedId] = useState<number | null>(null);
+  const [relatedId, setRelatedId] = useState<EntityId | null>(null);
   const [comment, setComment] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

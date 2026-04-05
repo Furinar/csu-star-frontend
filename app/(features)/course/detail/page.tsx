@@ -23,6 +23,7 @@ import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
+import type { EntityId } from "@/types/entity";
 import type { CourseDetail, CourseEvaluation, CourseEvaluationInput } from "@/types/detail";
 
 export default function CourseDetailPage() {
@@ -30,8 +31,7 @@ export default function CourseDetailPage() {
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const authUser = useAuthStore((state) => state.user);
-  const idStr = hasMounted ? searchParams.get("id") : null;
-  const courseId = idStr ? parseInt(idStr, 10) : null;
+  const courseId = hasMounted ? searchParams.get("id") : null;
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [evaluations, setEvaluations] = useState<CourseEvaluation[]>([]);

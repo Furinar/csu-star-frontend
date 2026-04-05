@@ -1,6 +1,7 @@
 import { service } from "@/lib/request";
 import { DEPARTMENTS } from "@/data/departments";
 import type { UserProfile } from "@/types/auth";
+import type { EntityId } from "@/types/entity";
 import axios from "axios";
 import type {
   CheckinResult,
@@ -63,6 +64,12 @@ const toNumber = (value: unknown): number | null => {
 
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
+
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
 
 const toBoolean = (value: unknown): boolean | null => {
   if (typeof value === "boolean") return value;
@@ -187,7 +194,7 @@ const normalizeDownloadRecords = (
 
       const resourceRecord = isRecord(item.resource) ? item.resource : null;
       const resourceId =
-        toNumber(resourceRecord?.id) ?? toNumber(item.resource_id) ?? 0;
+        toStringId(resourceRecord?.id) ?? toStringId(item.resource_id) ?? "";
       const resourceTitle =
         toStringSafe(resourceRecord?.title) ??
         toStringSafe(item.title) ??

@@ -67,7 +67,7 @@ const PAGE_SIZE = 20;
 const mergeRankingItems = <T,>(
   previous: T[],
   incoming: T[],
-  getKey: (item: T) => number,
+  getKey: (item: T) => string | number,
 ) => {
   const existingIds = new Set(previous.map(getKey));
   return [...previous, ...incoming.filter((item) => !existingIds.has(getKey(item)))];

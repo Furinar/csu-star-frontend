@@ -1,4 +1,5 @@
 import type { ResourceCategoryKey } from "@/lib/resourceCategory";
+import type { EntityId } from "@/types/entity";
 
 export type ResourceType = ResourceCategoryKey;
 export const MAX_RESOURCE_UPLOAD_SIZE_BYTES = 300 * 1024 * 1024;
@@ -12,7 +13,7 @@ export interface ResourceCreateFileInput {
 export interface ResourceCreateInput {
   title: string;
   description?: string | null;
-  course_id: number;
+  course_id: EntityId;
   resource_type: ResourceType;
   files: ResourceCreateFileInput[];
 }
@@ -30,7 +31,7 @@ export interface ResourceUploadResponse {
 }
 
 export interface ResourceFinalizeResponse {
-  resource_id: number;
+  resource_id: EntityId;
 }
 
 export interface ResourceDownloadResponse {
@@ -41,13 +42,13 @@ export interface ResourceDownloadResponse {
 }
 
 export interface CourseSuggestionItem {
-  id: number;
+  id: EntityId;
   name: string;
   course_type?: "公选课" | "非公选课" | null;
 }
 
 export interface TeacherSuggestionItem {
-  id: number;
+  id: EntityId;
   name: string;
   department?: string | null;
 }
@@ -74,7 +75,7 @@ export type UploadBatchStatus =
 
 export interface UploadBatch {
   id: string;
-  resource_id?: number | null;
+  resource_id?: EntityId | null;
   title: string;
   description: string;
   resource_type: ResourceType;

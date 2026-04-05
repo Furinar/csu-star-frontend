@@ -26,10 +26,10 @@ const PAGE_SIZE = 5;
 const teacherTheme = getPageTheme("/teacher");
 
 const mapRankItems = (
-  items: Array<{ id: number; name: string; score: number }>,
+  items: Array<{ id: string; name: string; score: number }>,
 ): RankCardItem[] =>
   items.slice(0, PAGE_SIZE).map((item) => ({
-    id: String(item.id),
+    id: item.id,
     name: item.name,
     score: item.score,
   }));
@@ -134,23 +134,17 @@ export default function Teacher() {
             <RankCard
               title="教学质量排行榜"
               data={qualityRanks}
-              onItemClick={(item) =>
-                router.push(buildTeacherPath(Number(item.id)))
-              }
+              onItemClick={(item) => router.push(buildTeacherPath(item.id))}
             />
             <RankCard
               title="给分优异榜"
               data={gradingRanks}
-              onItemClick={(item) =>
-                router.push(buildTeacherPath(Number(item.id)))
-              }
+              onItemClick={(item) => router.push(buildTeacherPath(item.id))}
             />
             <RankCard
               title="考勤宽松榜"
               data={attendanceRanks}
-              onItemClick={(item) =>
-                router.push(buildTeacherPath(Number(item.id)))
-              }
+              onItemClick={(item) => router.push(buildTeacherPath(item.id))}
             />
           </div>
         </div>

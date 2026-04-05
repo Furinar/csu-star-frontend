@@ -1,4 +1,5 @@
 import type { UserProfile, Role } from "@/types/auth";
+import type { EntityId } from "@/types/entity";
 
 export type FavoriteTargetType = "resource" | "course" | "teacher";
 export type NotificationType =
@@ -87,18 +88,18 @@ export interface Department {
 }
 
 export interface ResourceBrief {
-  id: number;
+  id: EntityId;
   title: string;
   resource_type: ResourceType;
 }
 
 export interface ResourceItem {
-  id: number;
+  id: EntityId;
   title: string;
   uploader_id?: string;
-  course_id: number;
+  course_id: EntityId;
   course?: {
-    id: number;
+    id: EntityId;
     name: string;
     detail_path?: string | null;
     resource_collection_path?: string | null;
@@ -123,7 +124,7 @@ export interface DownloadRecord {
 export interface TeacherEvaluation {
   id: string;
   user?: UserBrief | null;
-  teacher_id: number;
+  teacher_id: EntityId;
   teacher_name?: string | null;
   mode?: "standalone" | "linked" | null;
   course_id?: string | null;
@@ -145,7 +146,7 @@ export interface TeacherEvaluation {
 export interface CourseEvaluation {
   id: string;
   user?: UserBrief | null;
-  course_id: number;
+  course_id: EntityId;
   course_name?: string | null;
   mode?: "standalone" | "linked" | null;
   teacher_id?: string | null;
@@ -167,7 +168,7 @@ export interface CourseEvaluation {
 export interface FavoriteItem {
   id: number;
   target_type?: FavoriteTargetType;
-  target_id?: number | string;
+  target_id?: EntityId;
   title?: string;
   name?: string;
   resource_type?: string;

@@ -30,7 +30,7 @@ function normalizeRating(value?: number | null) {
 }
 
 const EMPTY_COURSE: CourseShowcaseItem = {
-  id: 0,
+  id: "",
   name: "暂无课程数据",
   course_type: "待更新",
   avg_score: null,

@@ -11,15 +11,15 @@ import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { buildTeacherPath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
+import type { EntityId } from "@/types/entity";
 import type { TeacherDetail, TeacherEvaluationInput } from "@/types/detail";
 
 export default function TeacherEvaluationComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const teacherId = Number(hasMounted ? searchParams.get("id") : null);
-  const isInvalidTeacherId =
-    hasMounted && (!Number.isFinite(teacherId) || teacherId <= 0);
+  const teacherId = hasMounted ? searchParams.get("id") : null;
+  const isInvalidTeacherId = hasMounted && !teacherId;
 
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,6 +30,9 @@ export default function TeacherEvaluationComposerPage() {
     }
 
     if (isInvalidTeacherId) {
+      return;
+    }
+    if (!teacherId) {
       return;
     }
 

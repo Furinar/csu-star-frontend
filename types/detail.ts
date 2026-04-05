@@ -1,3 +1,5 @@
+import type { EntityId } from "@/types/entity";
+
 export interface PaginatedData<T> {
   total: number;
   items: T[];
@@ -6,19 +8,19 @@ export interface PaginatedData<T> {
 }
 
 export interface TeacherBrief {
-  id: number;
+  id: EntityId;
   name: string;
   title?: string | null;
   avatar_url?: string | null;
 }
 
 export interface CourseBrief {
-  id: number;
+  id: EntityId;
   name: string;
 }
 
 export interface ResourceBrief {
-  id: number;
+  id: EntityId;
   title: string;
   description?: string | null;
   resource_type?: string | null;
@@ -63,9 +65,9 @@ export interface EvaluationReplyInput {
 
 export interface TeacherEvaluation {
   id: string;
-  teacher_id: number;
+  teacher_id: EntityId;
   mode?: "standalone" | "linked" | null;
-  course_id?: string | null;
+  course_id?: EntityId | null;
   course_name?: string | null;
   user?: UserBrief | null;
   rating_quality?: number | null;
@@ -86,9 +88,9 @@ export interface TeacherEvaluation {
 
 export interface CourseEvaluation {
   id: string;
-  course_id: number;
+  course_id: EntityId;
   mode?: "standalone" | "linked" | null;
-  teacher_id?: string | null;
+  teacher_id?: EntityId | null;
   teacher_name?: string | null;
   user?: UserBrief | null;
   rating_homework?: number | null;
@@ -108,7 +110,7 @@ export interface CourseEvaluation {
 }
 
 export interface TeacherEvaluationInput {
-  course_id?: number | null;
+  course_id?: EntityId | null;
   rating_quality: number;
   rating_grading: number;
   rating_attendance: number;
@@ -120,7 +122,7 @@ export interface TeacherEvaluationInput {
 }
 
 export interface CourseEvaluationInput {
-  teacher_id?: number | null;
+  teacher_id?: EntityId | null;
   rating_homework: number;
   rating_gain: number;
   rating_exam_difficulty: number;
@@ -132,8 +134,8 @@ export interface CourseEvaluationInput {
 }
 
 export interface CourseTeacherRelation {
-  course_id: number;
-  teacher_id: number;
+  course_id: EntityId;
+  teacher_id: EntityId;
 }
 
 export interface ResourceCommentInput {
@@ -143,7 +145,7 @@ export interface ResourceCommentInput {
 }
 
 export interface TeacherDetail {
-  id: number;
+  id: EntityId;
   name: string;
   title?: string | null;
   department_id?: number | null;
@@ -166,7 +168,7 @@ export interface TeacherDetail {
 }
 
 export interface CourseDetail {
-  id: number;
+  id: EntityId;
   name: string;
   course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
@@ -214,10 +216,10 @@ export interface ResourceComment {
 }
 
 export interface ResourceDetail {
-  id: number;
+  id: EntityId;
   title: string;
   uploader_id?: string | null;
-  course_id: number;
+  course_id: EntityId;
   course?: CourseBrief | null;
   resource_type?: string | null;
   status?: string | null;
@@ -239,6 +241,6 @@ export type EvaluationSort = "created_at" | "likes";
 export interface ResourceUpdateInput {
   title: string;
   description?: string;
-  course_id: number;
+  course_id: EntityId;
   resource_type: string;
 }

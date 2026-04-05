@@ -1,3 +1,5 @@
+import type { EntityId } from "@/types/entity";
+
 export type SearchScope = "all" | "resource" | "course" | "teacher";
 
 export interface SearchQuery {
@@ -15,14 +17,14 @@ export interface PaginatedData<T> {
 }
 
 export interface SearchTeacherBrief {
-  id: number;
+  id: EntityId;
   name: string;
   title?: string | null;
   avatar_url?: string | null;
 }
 
 export interface SearchCourseItem {
-  id: number;
+  id: EntityId;
   name: string;
   course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;
@@ -37,7 +39,7 @@ export interface SearchCourseItem {
 }
 
 export interface SearchTeacherItem {
-  id: number;
+  id: EntityId;
   name: string;
   department_id?: number | null;
   department_name?: string | null;
@@ -50,17 +52,17 @@ export interface SearchTeacherItem {
   good_rate?: number | null;
   eval_count?: number | null;
   favorite_count?: number | null;
-  courses?: Array<{ id: number; name: string }>;
+  courses?: Array<{ id: EntityId; name: string }>;
 }
 
 export interface SearchResourcePreview {
-  id: number;
+  id: EntityId;
   title: string;
   resource_type?: string | null;
 }
 
 export interface SearchResourceCard {
-  course_id: number;
+  course_id: EntityId;
   course_name: string;
   course_type?: "公选课" | "非公选课" | null;
   avg_score?: number | null;

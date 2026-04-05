@@ -1,12 +1,14 @@
+import type { EntityId } from "@/types/entity";
+
 export interface ShowcaseTeacherBrief {
-  id: number;
+  id: EntityId;
   name: string;
   title?: string | null;
   avatar_url?: string | null;
 }
 
 export interface CourseShowcaseItem {
-  id: number;
+  id: EntityId;
   name: string;
   course_type?: string | null;
   avg_score?: number | null;
@@ -20,7 +22,7 @@ export interface CourseShowcaseItem {
 }
 
 export interface TeacherShowcaseItem {
-  id: number;
+  id: EntityId;
   name: string;
   title?: string | null;
   department_name?: string | null;

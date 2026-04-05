@@ -15,9 +15,8 @@ export default function ResourceCommentComposerPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
-  const resourceId = Number(hasMounted ? searchParams.get("id") : null);
-  const isInvalidResourceId =
-    hasMounted && (!Number.isFinite(resourceId) || resourceId <= 0);
+  const resourceId = hasMounted ? searchParams.get("id") : null;
+  const isInvalidResourceId = hasMounted && !resourceId;
 
   const [resource, setResource] = useState<ResourceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,6 +27,9 @@ export default function ResourceCommentComposerPage() {
     }
 
     if (isInvalidResourceId) {
+      return;
+    }
+    if (!resourceId) {
       return;
     }
 

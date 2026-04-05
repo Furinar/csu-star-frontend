@@ -1,5 +1,6 @@
 import { service } from "@/lib/request";
 import { normalizeCourseType } from "@/lib/courseType";
+import type { EntityId } from "@/types/entity";
 import type {
   CourseShowcaseItem,
   ShowcaseTeacherBrief,
@@ -46,6 +47,12 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
+
 const normalizeTeacherBriefs = (raw: unknown): ShowcaseTeacherBrief[] => {
   if (!Array.isArray(raw)) return [];
 
@@ -54,7 +61,7 @@ const normalizeTeacherBriefs = (raw: unknown): ShowcaseTeacherBrief[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名教师",
         title: toStringSafe(item.title),
         avatar_url: toStringSafe(item.avatar_url),
@@ -71,7 +78,7 @@ const normalizeCourseShowcaseItems = (raw: unknown): CourseShowcaseItem[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名课程",
         course_type: normalizeCourseType(toStringSafe(item.course_type)),
         avg_score: toNumber(item.avg_score),
@@ -96,7 +103,7 @@ const normalizeTeacherShowcaseItems = (raw: unknown): TeacherShowcaseItem[] => {
 
     return [
       {
-        id: toNumber(item.id) ?? 0,
+        id: toStringId(item.id) ?? "",
         name: toStringSafe(item.name) ?? "未命名教师",
         title: toStringSafe(item.title),
         department_name: toStringSafe(item.department_name),

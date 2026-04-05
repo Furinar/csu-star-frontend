@@ -1,5 +1,6 @@
 import { service } from "@/lib/request";
 import { normalizeCourseType } from "@/lib/courseType";
+import type { EntityId } from "@/types/entity";
 import type {
   CourseRankingItem,
   CourseRankingQuery,
@@ -45,6 +46,12 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const toStringId = (value: unknown): EntityId | null => {
+  if (typeof value === "string" && value.trim() !== "") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+};
+
 const normalizePaginated = <T>(
   raw: unknown,
   normalizeItems: (items: unknown[]) => T[],
@@ -70,7 +77,7 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
     return [
       {
         rank: toNumber(raw.rank) ?? index + 1,
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         name: toStringSafe(raw.name) ?? `课程 ${index + 1}`,
         course_type: normalizeCourseType(toStringSafe(raw.course_type)) as CourseRankingItem["course_type"],
         department_name: toStringSafe(raw.department_name),
@@ -84,7 +91,7 @@ const normalizeCourseRankingItems = (items: unknown[]): CourseRankingItem[] =>
         favorite_count: toNumber(raw.favorite_count),
         teachers: Array.isArray(raw.teachers) ? (raw.teachers as Record<string, unknown>[]).flatMap((t) => {
           if (typeof t !== "object" || t === null) return [];
-          return [{ id: toNumber(t.id) ?? 0, name: toStringSafe(t.name) ?? "", title: toStringSafe(t.title), avatar_url: toStringSafe(t.avatar_url) }];
+          return [{ id: toStringId(t.id) ?? "", name: toStringSafe(t.name) ?? "", title: toStringSafe(t.title), avatar_url: toStringSafe(t.avatar_url) }];
         }) : [],
       },
     ];
@@ -97,7 +104,7 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
     return [
       {
         rank: toNumber(raw.rank) ?? index + 1,
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         name: toStringSafe(raw.name) ?? `教师 ${index + 1}`,
         title: toStringSafe(raw.title),
         department_id: toNumber(raw.department_id),
@@ -112,7 +119,7 @@ const normalizeTeacherRankingItems = (items: unknown[]): TeacherRankingItem[] =>
         favorite_count: toNumber(raw.favorite_count),
         courses: Array.isArray(raw.courses) ? (raw.courses as Record<string, unknown>[]).flatMap((c) => {
           if (typeof c !== "object" || c === null) return [];
-          return [{ id: toNumber(c.id) ?? 0, name: toStringSafe(c.name) ?? "" }];
+          return [{ id: toStringId(c.id) ?? "", name: toStringSafe(c.name) ?? "" }];
         }) : [],
       },
     ];
@@ -126,7 +133,7 @@ const normalizeResourcePreview = (value: unknown) => {
 
     return [
       {
-        id: toNumber(raw.id) ?? 0,
+        id: toStringId(raw.id) ?? "",
         title: toStringSafe(raw.title) ?? "未命名资料",
         resource_type: toStringSafe(raw.resource_type),
         downloads: toNumber(raw.downloads),
@@ -144,7 +151,7 @@ const normalizeResourceRankingItems = (items: unknown[]): ResourceRankingItem[] 
     return [
       {
         rank: toNumber(raw.rank) ?? index + 1,
-        course_id: toNumber(raw.course_id) ?? toNumber(raw.id) ?? 0,
+        course_id: toStringId(raw.course_id) ?? toStringId(raw.id) ?? "",
         course_name:
           toStringSafe(raw.course_name) ??
           toStringSafe(raw.name) ??
