@@ -50,91 +50,62 @@ const teacherTheme = getPageTheme("/teacher");
 
 const TeacherHomepageButtonShell = styled.div<{
   $accentGradient: string;
-  $accentText: string;
   $shadowColor: string;
 }>`
-  .learn-more {
-    position: relative;
+  .homepage-button {
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: ${({ $accentGradient }) => $accentGradient};
+    color: #fff;
+    padding: 0.56em 0.82em 0.56em 0.72em;
     display: inline-flex;
     align-items: center;
-    width: fit-content;
-    min-width: max-content;
+    border: none;
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.2s;
     cursor: pointer;
     text-decoration: none;
+    box-shadow: 0 10px 24px ${({ $shadowColor }) => $shadowColor};
   }
 
-  .circle {
-    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-    position: absolute;
-    top: 50%;
-    left: 0;
+  .homepage-button .button-label {
     display: block;
-    margin: 0;
-    width: 2.75rem;
-    height: 2.75rem;
-    background: ${({ $accentGradient }) => $accentGradient};
-    border-radius: 1.625rem;
-    box-shadow: 0 12px 28px ${({ $shadowColor }) => $shadowColor};
-    transform: translateY(-50%);
-  }
-
-  .icon {
-    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    background: #fff;
-  }
-
-  .icon.arrow {
-    left: 0.625rem;
-    width: 1.125rem;
-    height: 0.125rem;
-    background: none;
-  }
-
-  .icon.arrow::before {
-    position: absolute;
-    content: "";
-    top: -0.29rem;
-    right: 0.0625rem;
-    width: 0.625rem;
-    height: 0.625rem;
-    border-top: 0.125rem solid #fff;
-    border-right: 0.125rem solid #fff;
-    transform: rotate(45deg);
-  }
-
-  .button-text {
-    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
-    position: relative;
-    z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.75rem;
-    padding: 0.75rem 1rem 0.75rem 1.9rem;
-    color: ${({ $accentText }) => $accentText};
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    margin-left: 0.26em;
+    transition: all 0.3s ease-in-out;
     white-space: nowrap;
   }
 
-  .learn-more:hover .circle {
-    width: 100%;
+  .homepage-button svg {
+    display: block;
+    transform-origin: center center;
+    transition: transform 0.3s ease-in-out;
   }
 
-  .learn-more:hover .circle .icon.arrow {
-    background: #fff;
-    transform: translate(1rem, 0);
+  .homepage-button:hover .svg-wrapper {
+    animation: fly-1 0.6s ease-in-out infinite alternate;
   }
 
-  .learn-more:hover .button-text {
-    color: #fff;
+  .homepage-button:hover svg {
+    transform: translateX(0.8em) rotate(45deg) scale(1.05);
+  }
+
+  .homepage-button:hover .button-label {
+    transform: translateX(3.3em);
+  }
+
+  .homepage-button:active {
+    transform: scale(0.95);
+  }
+
+  @keyframes fly-1 {
+    from {
+      transform: translateY(0.08em);
+    }
+
+    to {
+      transform: translateY(-0.08em);
+    }
   }
 `;
 
@@ -370,19 +341,31 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               {teacher.metadata?.homepage_url ? (
                 <TeacherHomepageButtonShell
                   $accentGradient={teacherTheme.pageAccentGradient}
-                  $accentText={teacherTheme.pageAccentText}
                   $shadowColor={teacherTheme.pageAccentSoftStrong}
                 >
                   <Link
                     href={teacher.metadata.homepage_url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="learn-more"
+                    className="homepage-button"
                   >
-                    <span className="circle" aria-hidden="true">
-                      <span className="icon arrow" />
+                    <span className="svg-wrapper-1" aria-hidden="true">
+                      <span className="svg-wrapper">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          width={18}
+                          height={18}
+                        >
+                          <path fill="none" d="M0 0h24v24H0z" />
+                          <path
+                            fill="currentColor"
+                            d="M1.946 9.315c-.522-.174-.527-.455.01-.634l19.087-6.362c.529-.176.832.12.684.638l-5.454 19.086c-.15.529-.455.547-.679.045L12 14l6-8-8 6-8.054-2.685z"
+                          />
+                        </svg>
+                      </span>
                     </span>
-                    <span className="button-text">教师主页</span>
+                    <span className="button-label">教师主页</span>
                   </Link>
                 </TeacherHomepageButtonShell>
               ) : null}
