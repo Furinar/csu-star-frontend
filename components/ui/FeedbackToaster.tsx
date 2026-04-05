@@ -75,7 +75,9 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
         ease: [0.25, 1, 0.5, 1],
         duration: 0.4,
       }}
-      className={`pointer-events-auto relative w-full overflow-hidden shadow-lg ${tone.backgroundClass}`}
+      className={`pointer-events-auto relative w-full overflow-hidden shadow-lg ${
+        toast.onAction ? "cursor-pointer" : ""
+      } ${tone.backgroundClass}`}
     >
       <div className="flex gap-4 p-5">
         <div className="flex shrink-0 items-start mt-0.5">
@@ -110,7 +112,7 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
           {toast.actionLabel && toast.onAction && (
             <button
               type="button"
-              className="mt-3 text-sm font-medium underline underline-offset-2 opacity-80 hover:opacity-100 transition-opacity"
+              className="mt-3 cursor-pointer text-sm font-medium underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
               onClick={() => {
                 toast.onAction?.();
                 feedback.dismiss(toast.id);
