@@ -4,6 +4,7 @@
 import "@/app/(features)/course/components/style.css";
 import { getDepartmentNameById } from "@/data/departments";
 import Link from "next/link";
+import styled from "styled-components";
 import CollectButton from "@/components/ui/CollectButton";
 import RatingBar from "@/components/ui/RatingBar";
 import StarRating from "@/components/ui/StarRating";
@@ -46,6 +47,92 @@ const TEACHER_CARD_CLASS =
 
 const courseTheme = getPageTheme("/course");
 const teacherTheme = getPageTheme("/teacher");
+
+const TeacherHomepageButtonShell = styled.div<{
+  $accentGradient: string;
+  $accentText: string;
+  $shadowColor: string;
+}>`
+  .learn-more {
+    position: relative;
+    display: inline-block;
+    width: 12rem;
+    height: auto;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .circle {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: relative;
+    display: block;
+    margin: 0;
+    width: 3rem;
+    height: 3rem;
+    background: ${({ $accentGradient }) => $accentGradient};
+    border-radius: 1.625rem;
+    box-shadow: 0 12px 28px ${({ $shadowColor }) => $shadowColor};
+  }
+
+  .icon {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    background: #fff;
+  }
+
+  .icon.arrow {
+    left: 0.625rem;
+    width: 1.125rem;
+    height: 0.125rem;
+    background: none;
+  }
+
+  .icon.arrow::before {
+    position: absolute;
+    content: "";
+    top: -0.29rem;
+    right: 0.0625rem;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-top: 0.125rem solid #fff;
+    border-right: 0.125rem solid #fff;
+    transform: rotate(45deg);
+  }
+
+  .button-text {
+    transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0.75rem 0;
+    margin: 0 0 0 1.85rem;
+    color: ${({ $accentText }) => $accentText};
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .learn-more:hover .circle {
+    width: 100%;
+  }
+
+  .learn-more:hover .circle .icon.arrow {
+    background: #fff;
+    transform: translate(1rem, 0);
+  }
+
+  .learn-more:hover .button-text {
+    color: #fff;
+  }
+`;
 
 type DetailBookHeroProps =
   | {
@@ -268,7 +355,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               ) : null}
               {teacher.metadata?.tutor_type ? (
                 <div className="text-sm text-rose-500">
-                  导师类型 {teacher.metadata.tutor_type}
+                  {teacher.metadata.tutor_type}
                 </div>
               ) : null}
               {teacher.bio ? (
@@ -277,16 +364,23 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 </div>
               ) : null}
               {teacher.metadata?.homepage_url ? (
-                <div>
+                <TeacherHomepageButtonShell
+                  $accentGradient={teacherTheme.pageAccentGradient}
+                  $accentText={teacherTheme.pageAccentText}
+                  $shadowColor={teacherTheme.pageAccentSoftStrong}
+                >
                   <Link
                     href={teacher.metadata.homepage_url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="rounded-md px-2 py-1 text-xs font-medium text-rose-500 transition-colors hover:bg-rose-500 hover:text-white"
+                    className="learn-more"
                   >
-                    教师主页
+                    <span className="circle" aria-hidden="true">
+                      <span className="icon arrow" />
+                    </span>
+                    <span className="button-text">教师主页</span>
                   </Link>
-                </div>
+                </TeacherHomepageButtonShell>
               ) : null}
             </div>
           </div>
