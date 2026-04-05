@@ -36,7 +36,7 @@ export interface UserProfile {
    */
   email_verified?: boolean;
   /**
-   * 未绑定邮箱用户的免费下载次数（已绑定邮箱则为 null）
+   * 第三方 OAuth 未完成校园邮箱认证用户的剩余免费下载次数（已认证则为 null）
    */
   free_download_count?: number | null;
   /**
