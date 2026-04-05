@@ -4,6 +4,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   dailyCheckin,
   getMeDashboard,
@@ -72,6 +73,7 @@ type PanelKey =
 
 export default function Me() {
   const hasMounted = useHasMounted();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<TabKey>("overview");
   const [openPanel, setOpenPanel] = useState<PanelKey | null>(null);
   const [dashboard, setDashboard] = useState<MeDashboardData | null>(null);
@@ -117,10 +119,10 @@ export default function Me() {
   );
   const todayKey = hasMounted ? getDateKey(new Date()) : "";
   const hasCheckedInToday = todayKey
-    ? contributionSummary.weeks
+    ? (contributionSummary.weeks
         .flat()
         .find((item) => item.date === todayKey)
-        ?.actions.some((item) => item.type === "daily_checkin") ?? false
+        ?.actions.some((item) => item.type === "daily_checkin") ?? false)
     : false;
 
   const loadDashboard = useCallback(
@@ -160,6 +162,19 @@ export default function Me() {
     }
     void loadDashboard();
   }, [accessToken, hasHydrated, loadDashboard]);
+
+  useEffect(() => {
+    const nextTab = searchParams.get("tab");
+    if (
+      nextTab === "overview" ||
+      nextTab === "resources" ||
+      nextTab === "favorites" ||
+      nextTab === "evaluations" ||
+      nextTab === "notifications"
+    ) {
+      setActiveTab(nextTab);
+    }
+  }, [searchParams]);
 
   const loadDownloadsData = async () => {
     if (!accessToken) return;
@@ -238,8 +253,7 @@ export default function Me() {
       }
 
       const currentPoints = profile.points ?? 0;
-      const nextBalance =
-        result.balance_after ?? currentPoints;
+      const nextBalance = result.balance_after ?? currentPoints;
       const gainedPoints =
         result.points_gained ?? Math.max(0, nextBalance - currentPoints);
 
@@ -753,10 +767,7 @@ export default function Me() {
         description="如果你有任何建议或遇到了问题，请告诉我们。"
         onClose={() => setOpenPanel(null)}
       >
-        <FeedbackPanel
-          mode="feedback"
-          onClose={() => setOpenPanel(null)}
-        />
+        <FeedbackPanel mode="feedback" onClose={() => setOpenPanel(null)} />
       </FloatingPanel>
 
       <FloatingPanel
@@ -765,10 +776,7 @@ export default function Me() {
         description="感谢你协助我们维护社区的环境与信息准确性。"
         onClose={() => setOpenPanel(null)}
       >
-        <FeedbackPanel
-          mode="report"
-          onClose={() => setOpenPanel(null)}
-        />
+        <FeedbackPanel mode="report" onClose={() => setOpenPanel(null)} />
       </FloatingPanel>
 
       <FloatingPanel

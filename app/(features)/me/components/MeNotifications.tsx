@@ -52,20 +52,6 @@ export default function MeNotifications({
     }
   }, [hasLoaded, loadNotifications]);
 
-  useEffect(() => {
-    if (!hasLoaded) {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      void loadNotifications();
-    }, 60000);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [hasLoaded, loadNotifications]);
-
   const handleMarkRead = async (id: number) => {
     try {
       await markNotificationRead(id);
