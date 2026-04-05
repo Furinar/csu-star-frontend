@@ -31,10 +31,13 @@ export default function Home() {
       const isPersistent =
         item.type === "system" &&
         (item.category !== "announcement" || !item.is_pinned);
-      const isApprovedReportResult =
+      const isApprovedModerationResult =
         item.type === "system" &&
         item.result === "approved" &&
-        item.category === "report";
+        (item.category === "report" ||
+          item.category === "correction" ||
+          item.category === "feedback" ||
+          item.category === "supplement");
       const isRejectedModerationResult =
         item.type === "system" &&
         item.result === "rejected" &&
@@ -45,7 +48,7 @@ export default function Home() {
 
       const showFeedbackToast = isRejectedModerationResult
         ? feedback.error
-        : isApprovedReportResult
+        : isApprovedModerationResult
           ? feedback.success
           : feedback.info;
 
