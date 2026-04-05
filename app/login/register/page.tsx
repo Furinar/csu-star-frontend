@@ -18,8 +18,13 @@ export default function Register() {
 
   const [nickname, setNickname] = useState("");
   const [avatarIndex, setAvatarIndex] = useState(0);
+  const [customAvatarUrl, setCustomAvatarUrl] = useState("");
+  const [avatarPreviewError, setAvatarPreviewError] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  const selectedAvatarUrl =
+    customAvatarUrl.trim() || avatarOptions[avatarIndex]?.url || "";
 
   useEffect(() => {
     const inviteCodeFromQuery = searchParams.get("invite_code")?.trim() ?? "";
@@ -34,7 +39,6 @@ export default function Register() {
         router.replace("/login/illegal");
         return;
       }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRegisterPayload(payload);
       if (inviteCodeFromQuery) {
         setInviteCode(inviteCodeFromQuery);
@@ -61,8 +65,19 @@ export default function Register() {
       }
     }
     if (currentStep === 3) {
-      if (avatarIndex < 0 || avatarIndex >= avatarOptions.length) {
-        setErrorMessage("请选择一个可用的头像");
+      const trimmedAvatarUrl = customAvatarUrl.trim();
+      if (trimmedAvatarUrl) {
+        try {
+          const parsed = new URL(trimmedAvatarUrl);
+          if (!["http:", "https:"].includes(parsed.protocol)) {
+            throw new Error("invalid protocol");
+          }
+        } catch {
+          setErrorMessage("请输入有效的头像 URL");
+          return false;
+        }
+      } else if (avatarIndex < 0 || avatarIndex >= avatarOptions.length) {
+        setErrorMessage("请选择一个可用的头像，或手动输入 URL");
         return false;
       }
     }
@@ -76,7 +91,7 @@ export default function Register() {
         email: registerPayload.email,
         password: registerPayload.password,
         nickname: nickname.trim(),
-        avatar_url: avatarOptions[avatarIndex].url,
+        avatar_url: selectedAvatarUrl,
         invite_code: inviteCode.trim(),
       });
 
@@ -151,21 +166,63 @@ export default function Register() {
 
           <Step>
             <h2>挑个头像吧!</h2>
-            <div className="w-full h-60 mt-2 overflow-y-auto rounded-lg">
-              <div className="flex flex-wrap content-between items-center border-gray-200 border-5 justify-between gap-3 p-4">
-                {avatarOptions.map((avatar, index) => (
-                  <img
-                    key={index}
-                    src={avatar.url}
-                    alt="Avatar"
-                    onClick={() => setAvatarIndex(index)}
-                    className={`h-16 w-16 rounded-full object-cover hover:-translate-y-1 cursor-pointer transition-transform duration-200 border-2 ${
-                      avatarIndex === index
-                        ? "border-(--color-first)"
-                        : "border-transparent"
-                    } hover:border-(--color-first)`}
-                  />
-                ))}
+            <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="min-w-0">
+                <input
+                  type="text"
+                  placeholder="手动输入头像 URL（可选）"
+                  value={customAvatarUrl}
+                  onChange={(e) => {
+                    setCustomAvatarUrl(e.target.value);
+                    setAvatarPreviewError(false);
+                  }}
+                  className="mb-3 w-full rounded-2xl bg-gray-200 py-2 pl-3 pr-3 focus:outline-none focus:ring-2 focus:ring-(--color-first)"
+                />
+                <div className="h-60 overflow-y-auto rounded-lg">
+                  <div className="flex flex-wrap content-between items-center justify-between gap-3 border-gray-200 border-5 p-4">
+                    {avatarOptions.map((avatar, index) => (
+                      <img
+                        key={index}
+                        src={avatar.url}
+                        alt={avatar.label || "Avatar"}
+                        onClick={() => {
+                          setAvatarIndex(index);
+                          setAvatarPreviewError(false);
+                        }}
+                        className={`h-16 w-16 rounded-full object-cover transition-transform duration-200 hover:-translate-y-1 ${
+                          !customAvatarUrl.trim() && avatarIndex === index
+                            ? "border-(--color-first)"
+                            : "border-transparent"
+                        } cursor-pointer border-2 hover:border-(--color-first)`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center justify-start rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm">
+                <p className="text-sm font-medium text-slate-700">头像预览</p>
+                <div className="mt-4 flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-slate-100 bg-slate-50">
+                  {!avatarPreviewError && selectedAvatarUrl ? (
+                    <img
+                      src={selectedAvatarUrl}
+                      alt="头像预览"
+                      onError={() => setAvatarPreviewError(true)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="px-4 text-center text-xs leading-5 text-slate-400">
+                      {selectedAvatarUrl
+                        ? "头像加载失败"
+                        : "请选择头像或输入头像 URL"}
+                    </div>
+                  )}
+                </div>
+                <p className="mt-3 break-all text-center text-xs text-slate-500">
+                  {customAvatarUrl.trim()
+                    ? "当前使用手动输入 URL"
+                    : avatarOptions[avatarIndex]?.label || "默认头像"}
+                </p>
               </div>
             </div>
             {errorMessage && (

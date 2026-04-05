@@ -9,7 +9,7 @@ import {avatarOptions} from "@/data/avatar";
 import type {ItemActionMenuItem} from "./ItemActionMenu";
 import ItemActionMenu from "./ItemActionMenu";
 
-const DEFAULT_AVATAR = avatarOptions[0].url;
+const DEFAULT_AVATAR = avatarOptions[0]?.url ?? "";
 
 export interface BilibiliCommentItemProps {
   id: string | number;

@@ -7,7 +7,7 @@ import { formatDateTimeZh } from "@/lib/date";
 import { avatarOptions } from "@/data/avatar";
 import ItemActionMenu, { ItemActionMenuItem } from "./ItemActionMenu";
 
-const DEFAULT_AVATAR = avatarOptions[0].url;
+const DEFAULT_AVATAR = avatarOptions[0]?.url ?? "";
 
 export interface BilibiliReplyItemProps {
   id: string | number;
