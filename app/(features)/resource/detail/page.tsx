@@ -497,17 +497,18 @@ export default function ResourceDetailPage() {
     });
   };
 
-  const buildUserAvatarActions = (user?: ResourceComment["user"] | null) => {
+  const buildUserAvatarActions = (comment: ResourceComment) => {
+    const user = comment.user;
     if (!user?.id || user.id === viewerId) {
       return [];
     }
 
     return [
       {
-        key: `report-user-${user.id}`,
-        label: "举报用户",
+        key: `report-comment-${comment.id}`,
+        label: "举报该评论",
         onClick: () =>
-          openReportDialog("user", String(user.id), `用户 ${user.nickname ?? user.id}`),
+          openReportDialog("comment", String(comment.id), "评论内容"),
       },
     ];
   };
@@ -880,7 +881,7 @@ export default function ResourceDetailPage() {
                     likes: comment.likes,
                     isLiked: comment.is_liked,
                     actions: buildCommentActions(comment),
-                    avatarActions: buildUserAvatarActions(comment.user),
+                    avatarActions: buildUserAvatarActions(comment),
                     replies: (comment.children || []).map((reply) => ({
                       id: reply.id,
                       user: reply.user,
@@ -890,7 +891,7 @@ export default function ResourceDetailPage() {
                       likes: reply.likes,
                       isLiked: reply.is_liked,
                       actions: buildCommentActions(reply, comment.id),
-                      avatarActions: buildUserAvatarActions(reply.user),
+                      avatarActions: buildUserAvatarActions(reply),
                       onLike: (liked: boolean) =>
                         handleToggleLike(reply.id, liked, comment.id),
                       onReplyClick: () => {

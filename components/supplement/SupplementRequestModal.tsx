@@ -139,12 +139,12 @@ export default function SupplementRequestModal({
     setIsSubmitting(true);
     try {
       await createSupplementRequest(payload);
-      feedback.success({
-        title: "补录申请已提交",
-        description: "审核员或管理员审核通过后才会正式添加。",
-      });
       onClose();
       setForm(createInitialForm(initialRequestType));
+      feedback.success({
+        title: "补录申请已提交",
+        description: "补录申请已提交，可在通知中心查看处理结果。",
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "提交失败，请稍后重试。";

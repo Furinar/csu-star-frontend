@@ -384,6 +384,7 @@ export default function DetailEvaluationSection({
 
   const buildUserAvatarActions = (
     user: { id?: string | null; nickname?: string | null } | null | undefined,
+    reportTarget: { type: ReportTargetType; id: string; label: string },
     isAnonymous = false,
   ): ItemActionMenuItem[] => {
     if (isAnonymous || !user?.id || user.id === viewerId) {
@@ -392,10 +393,10 @@ export default function DetailEvaluationSection({
 
     return [
       {
-        key: `report-user-${user.id}`,
-        label: "举报用户",
+        key: `report-${reportTarget.type}-${reportTarget.id}`,
+        label: reportTarget.label === "评价内容" ? "举报该评价" : "举报该回复",
         onClick: () =>
-          openReportDialog("user", String(user.id), `用户 ${user.nickname ?? user.id}`),
+          openReportDialog(reportTarget.type, reportTarget.id, reportTarget.label),
       },
     ];
   };
@@ -566,7 +567,15 @@ export default function DetailEvaluationSection({
         }));
       },
       actions: buildEvaluationActions(evaluation),
-      avatarActions: buildUserAvatarActions(evaluation.user, Boolean(evaluation.is_anonymous)),
+      avatarActions: buildUserAvatarActions(
+        evaluation.user,
+        {
+          type: evaluationReportType,
+          id,
+          label: "评价内容",
+        },
+        Boolean(evaluation.is_anonymous),
+      ),
       isReplying: replyingToId === id,
       replyComposer:
         replyingToId === id ? (
@@ -635,7 +644,15 @@ export default function DetailEvaluationSection({
           }));
         },
         actions: buildReplyActions(id, reply),
-        avatarActions: buildUserAvatarActions(reply.user, Boolean(reply.is_anonymous)),
+        avatarActions: buildUserAvatarActions(
+          reply.user,
+          {
+            type: replyReportType,
+            id: String(reply.id),
+            label: "回复内容",
+          },
+          Boolean(reply.is_anonymous),
+        ),
       })),
       forceShowAllReplies: Boolean(expandedReplyMap[id]),
       highlightedReplyId: highlightReplyMap[id],

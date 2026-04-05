@@ -29,7 +29,7 @@ export default function ReportDialog({
   open,
   onClose,
   target,
-  successDescription = "感谢反馈，管理员会尽快处理。",
+  successDescription = "举报已提交，可在通知中心查看处理结果。",
 }: ReportDialogProps) {
   const [reason, setReason] = useState<ReportReason>("other");
   const [description, setDescription] = useState("");
@@ -43,7 +43,7 @@ export default function ReportDialog({
 
   const helperText = useMemo(() => {
     if (!target) return "";
-    return `请说明举报${target.label}的具体原因，提交后管理员可以直接看到你的分类和理由。`;
+    return `请说明举报${target.label}的具体原因，提交后管理员可以直接看到你的分类和理由。处理结果会通过通知中心告知。`;
   }, [target]);
 
   const handleSubmit = async () => {

@@ -21,6 +21,7 @@ import type {
   OAuthBindResult,
   PaginatedData,
   PointsRecord,
+  ReportInput,
   ResourceItem,
   TeacherEvaluation,
 } from "@/types/me";
@@ -523,20 +524,7 @@ export function submitFeedback(payload: FeedbackInput) {
   return unwrap<null>(service.post<ApiEnvelope<null>>("/feedbacks", payload));
 }
 
-export function submitReport(payload: {
-  target_type:
-    | "resource"
-    | "course"
-    | "teacher_evaluation"
-    | "course_evaluation"
-    | "teacher_evaluation_reply"
-    | "course_evaluation_reply"
-    | "comment"
-    | "user";
-  target_id: string;
-  reason: "copyright" | "spam" | "inappropriate" | "other";
-  description: string;
-}) {
+export function submitReport(payload: ReportInput) {
   return unwrap<null>(service.post<ApiEnvelope<null>>("/reports", payload));
 }
 

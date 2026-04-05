@@ -33,8 +33,7 @@ export type ReportTargetType =
   | "course_evaluation"
   | "teacher_evaluation_reply"
   | "course_evaluation_reply"
-  | "comment"
-  | "user";
+  | "comment";
 export type CorrectionTargetType = "course" | "teacher";
 export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
 export type ResourceType = string;

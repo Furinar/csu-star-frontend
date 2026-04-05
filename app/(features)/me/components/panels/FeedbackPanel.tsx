@@ -65,7 +65,7 @@ function FeedbackForm({ onClose }: { onClose: () => void }) {
       onClose();
       feedback.success({
         title: "反馈已提交",
-        description: "感谢你的建议，我们会尽快处理。",
+        description: "反馈已提交，可在通知中心查看处理结果。",
       });
     } catch (error) {
       feedback.error({
@@ -184,7 +184,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
       onClose();
       feedback.success({
         title: "纠错已提交",
-        description: "感谢协助完善平台内容。",
+        description: "纠错已提交，可在通知中心查看处理结果。",
       });
     } catch (error) {
       feedback.error({
