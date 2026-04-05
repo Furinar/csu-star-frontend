@@ -74,12 +74,6 @@ function BarRow({
   );
 }
 
-function truncateString(str: string, maxLength: number) {
-  if (!str) return "";
-  if (str.length <= maxLength) return str;
-  return `${str.slice(0, maxLength)}...`;
-}
-
 function formatCourseType(courseType?: string | null) {
   if (courseType === "public") return "公选";
   if (courseType === "non_public") return "非公选";
@@ -113,15 +107,6 @@ export default function RankItemCard(props: RankItemCardProps) {
     title = item.name;
     const courseTypeLabel = formatCourseType(item.course_type);
     isPublic = courseTypeLabel === "公选";
-
-    subtitleIcon = "uil-tag-alt";
-    subtitleContent = (
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
-          {truncateString(courseTypeLabel, 8)}
-        </span>
-      </div>
-    );
 
     rightDetailsContent = (
       <>
@@ -204,14 +189,6 @@ export default function RankItemCard(props: RankItemCardProps) {
     title = item.course_name;
     const courseTypeLabel = formatCourseType(item.course_type);
     isPublic = courseTypeLabel === "公选";
-    subtitleIcon = "uil-folder-open";
-    subtitleContent = (
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
-          {truncateString(courseTypeLabel, 8)}
-        </span>
-      </div>
-    );
 
     rightDetailsContent = (
       <div className="flex flex-col gap-1 sm:gap-1.5 justify-center h-full">
@@ -330,10 +307,12 @@ export default function RankItemCard(props: RankItemCardProps) {
               </span>
             ) : null}
           </div>
-          <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-xs text-gray-500 truncate h-[20px]">
-            <i className={`uil ${subtitleIcon} text-gray-400`}></i>
-            {subtitleContent}
-          </div>
+          {subtitleContent ? (
+            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-xs text-gray-500 truncate h-[20px]">
+              <i className={`uil ${subtitleIcon} text-gray-400`}></i>
+              {subtitleContent}
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-1 flex items-center gap-3 sm:gap-4 overflow-x-auto scroolbar-hide">
