@@ -44,33 +44,27 @@ function formatScore(value?: number | null, digits = 2) {
 function StarRating({
   value,
   fullClassName,
-  halfClassName,
 }: {
   value?: number | null;
   fullClassName: string;
-  halfClassName: string;
 }) {
   const score = clampScore(value);
-  const fullStars = Math.floor(score);
-  const hasHalf = score - fullStars >= 0.5;
 
   return (
     <div className="flex items-center gap-0.5 text-xs">
       {Array.from({ length: 5 }).map((_, i) => {
-        const isFull = i < fullStars;
-        const isHalf = i === fullStars && hasHalf;
+        const fill =
+          score >= i + 1 ? 100 : score > i ? Math.round((score - i) * 100) : 0;
+
         return (
-          <span
-            key={i}
-            className={
-              isFull ? fullClassName : isHalf ? halfClassName : "text-gray-200"
-            }
-          >
-            <i
-              className={
-                isFull ? "uil uil-star" : isHalf ? "uil uil-star-half-alt" : "uil uil-star"
-              }
-            ></i>
+          <span key={i} className="relative inline-flex text-sm leading-none">
+            <span className="text-gray-200">★</span>
+            <span
+              className={`absolute inset-y-0 left-0 overflow-hidden ${fullClassName}`}
+              style={{ width: `${fill}%` }}
+            >
+              ★
+            </span>
           </span>
         );
       })}
@@ -288,7 +282,6 @@ export default function SearchResultCard(props: SearchResultCardProps) {
               <StarRating
                 value={leftScoreValue}
                 fullClassName={theme.starFillClassName}
-                halfClassName={`${theme.starFillClassName} opacity-60`}
               />
             </div>
           </div>
