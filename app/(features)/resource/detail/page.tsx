@@ -45,6 +45,7 @@ import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import LikeBurstEffect from "@/template/like";
+import DownloadButton from "@/template/download";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -92,6 +93,8 @@ export default function ResourceDetailPage() {
   const [commentLikeEffectMap, setCommentLikeEffectMap] = useState<
     Record<string, number>
   >({});
+  const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+  const [downloadedFileId, setDownloadedFileId] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<{
@@ -118,6 +121,8 @@ export default function ResourceDetailPage() {
       return;
     }
     try {
+      setDownloadingFileId(fileId);
+      setDownloadedFileId(null);
       feedback.info({ title: "正在获取下载链接..." });
       const { url } = await downloadResourceFile(resourceId, fileId);
 
@@ -129,10 +134,16 @@ export default function ResourceDetailPage() {
       document.body.removeChild(link);
 
       feedback.success({ title: "开始下载" });
+      setDownloadedFileId(fileId);
+      window.setTimeout(() => {
+        setDownloadedFileId((current) => (current === fileId ? null : current));
+      }, 1400);
     } catch (e: unknown) {
       console.error(e);
       const msg = e instanceof Error ? e.message : "无法获取下载链接";
       feedback.error({ title: "下载失败", description: msg });
+    } finally {
+      setDownloadingFileId((current) => (current === fileId ? null : current));
     }
   };
 
@@ -790,13 +801,16 @@ export default function ResourceDetailPage() {
                       已删除，禁止下载
                     </div>
                   ) : (
-                    <button
-                      type="button"
+                    <DownloadButton
+                      status={
+                        downloadingFileId === file.id
+                          ? "loading"
+                          : downloadedFileId === file.id
+                            ? "success"
+                            : "idle"
+                      }
                       onClick={() => handleDownload(file.id, file.filename)}
-                      className="inline-flex shrink-0 items-center justify-center rounded-[14px] bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 focus:ring-2 focus:ring-slate-900/20"
-                    >
-                      下载文件
-                    </button>
+                    />
                   )}
                 </div>
               ))}
