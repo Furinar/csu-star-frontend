@@ -68,7 +68,9 @@ export default function AuthBootstrap() {
           return;
         }
 
-        const systemItems = data.items.filter((item) => item.type === "system");
+        const systemItems = data.items.filter(
+          (item) => item.source_type === "announcement",
+        );
         const seen = seenSystemNotificationIdsRef.current;
 
         if (shouldNotify) {

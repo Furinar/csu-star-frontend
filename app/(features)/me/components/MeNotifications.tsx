@@ -115,10 +115,10 @@ export default function MeNotifications({
   };
 
   const announcementItems = notificationItems.filter(
-    (item) => item.type === "system",
+    (item) => item.source_type === "announcement",
   );
   const messageItems = notificationItems.filter(
-    (item) => item.type !== "system",
+    (item) => item.source_type !== "announcement",
   );
 
   if (isLoading) {
@@ -192,7 +192,7 @@ function NotificationSection({
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                      {item.type === "system"
+                      {item.source_type === "announcement"
                         ? "公告"
                         : getNotificationTypeLabel(item.type)}
                     </span>
