@@ -209,10 +209,7 @@ export default function Me() {
   };
 
   const openProtectedPanel = (panel: PanelKey) => {
-    const noAuthRequiredPanels: PanelKey[] = [
-      "feedback",
-      "contribution",
-    ];
+    const noAuthRequiredPanels: PanelKey[] = ["contribution"];
     if (noAuthRequiredPanels.includes(panel)) {
       setOpenPanel(panel);
       return;

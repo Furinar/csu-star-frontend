@@ -10,6 +10,7 @@ import {
 } from "@/app/(features)/resource/components/AdvancedFormControls";
 import { DEPARTMENTS } from "@/data/departments";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CorrectionInput,
@@ -127,6 +128,7 @@ export default function FeedbackPanel({
 }
 
 function FeedbackForm({ onClose }: { onClose: () => void }) {
+  const accessToken = useAuthStore((state) => state.access_token);
   const [form, setForm] = useState<FeedbackInput>({
     type: "suggestion",
     title: "",
@@ -136,6 +138,15 @@ function FeedbackForm({ onClose }: { onClose: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    if (!accessToken) {
+      feedback.warning({
+        title: "请先登录",
+        description: "登录后才能提交意见反馈。",
+      });
+      onClose();
+      return;
+    }
+
     if (!form.title.trim() || !form.content.trim()) {
       feedback.warning({
         title: "内容不完整",
