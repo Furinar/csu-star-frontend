@@ -157,7 +157,15 @@ export default function MeOverview({
               <h4 className="mt-1 text-xl font-semibold text-gray-900">
                 {accountMode === "guest"
                   ? "登录后开始累计你的社区贡献"
-                  : `累计 ${formatNumber(contributionData.total_score)} 分贡献`}
+                  : (
+                    <>
+                      累计{" "}
+                      <span className="text-emerald-400">
+                        {formatNumber(contributionData.total_score)}
+                      </span>{" "}
+                      分贡献
+                    </>
+                  )}
               </h4>
             </div>
             <div className="flex flex-wrap gap-3 text-sm text-gray-600">
