@@ -149,25 +149,37 @@ export default function CourseResourceCollectionPage() {
           </div>
           <div className="grid min-w-full grid-cols-2 gap-3 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-sm lg:min-w-[420px]">
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">资源总数</div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <i className="uil uil-file-alt text-base text-emerald-500"></i>
+                <span>资源总数</span>
+              </div>
               <div className="mt-1 text-lg font-semibold text-gray-900">
                 {detail.resource_count}
               </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">累计下载</div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <i className="uil uil-cloud-download text-base text-blue-500"></i>
+                <span>累计下载</span>
+              </div>
               <div className="mt-1 text-lg font-semibold text-gray-900">
                 {detail.download_total ?? 0}
               </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">累计点赞</div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <i className="uil uil-thumbs-up text-base text-rose-500"></i>
+                <span>累计点赞</span>
+              </div>
               <div className="mt-1 text-lg font-semibold text-gray-900">
                 {detail.like_total ?? 0}
               </div>
             </div>
             <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="text-xs text-gray-400">累计收藏</div>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
+                <i className="uil uil-bookmark text-base text-emerald-500"></i>
+                <span>累计收藏</span>
+              </div>
               <div className="mt-1 text-lg font-semibold text-gray-900">
                 {detail.favorite_count ?? 0}
               </div>
