@@ -1,3 +1,4 @@
+import axios from "axios";
 import { getDepartmentNameById } from "@/data/departments";
 import { getResourceCategoryLabel } from "@/lib/resourceCategory";
 import type { UserProfile } from "@/types/auth";
@@ -85,6 +86,47 @@ export function createEmptyContributionSummary(): ContributionSummary {
 }
 
 export function getErrorMessage(error: unknown, fallback: string) {
+  if (axios.isAxiosError(error)) {
+    if (
+      error.code === "ECONNABORTED" ||
+      /timeout/i.test(error.message || "")
+    ) {
+      return "请求超时，网络可能不稳定，请稍后重试。";
+    }
+
+    if (!error.response) {
+      return "网络连接失败，请检查网络后重试。";
+    }
+
+    const payload = error.response.data;
+    if (typeof payload === "object" && payload !== null) {
+      const code = "code" in payload ? payload.code : undefined;
+      const msg =
+        "msg" in payload && typeof payload.msg === "string"
+          ? payload.msg
+          : "message" in payload && typeof payload.message === "string"
+            ? payload.message
+            : "";
+
+      if (code === 10001) return "积分不足。";
+      if (code === 10002) return "请勿重复操作。";
+      if (code === 40001) return "请先登录或重新登录。";
+      if (code === 40003) return "你当前没有权限执行此操作。";
+      if (code === 40004) return "资源不存在或已被删除。";
+      if (code === 40005) return "当前账号已被封禁。";
+
+      if (msg.trim()) {
+        return msg;
+      }
+    }
+
+    if (typeof error.response.status === "number") {
+      if (error.response.status === 401) return "请先登录或重新登录。";
+      if (error.response.status === 403) return "你当前没有权限执行此操作。";
+      if (error.response.status === 404) return "请求的资源不存在。";
+    }
+  }
+
   if (error instanceof Error && error.message.trim()) {
     return error.message;
   }
