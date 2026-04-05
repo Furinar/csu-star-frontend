@@ -6,6 +6,7 @@ import { addLike, removeLike } from "@/api/detail";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import EvaluationBarChart from "@/components/detail/EvaluationBarChart";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
+import ReportDialog from "@/components/report/ReportDialog";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import type { ItemActionMenuItem } from "@/components/ui/ItemActionMenu";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
@@ -21,9 +22,9 @@ import type {
   TeacherEvaluation,
   TeacherEvaluationInput,
 } from "@/types/detail";
-import { submitReport } from "@/api/me";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
+import type { ReportTargetType } from "@/types/me";
 
 const SUBMIT_ANIMATION_MS = 1200;
 
@@ -156,6 +157,11 @@ export default function DetailEvaluationSection({
   const [editingReplyAnonymous, setEditingReplyAnonymous] = useState(false);
   const [isUpdatingReply, setIsUpdatingReply] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [activeReportTarget, setActiveReportTarget] = useState<{
+    type: ReportTargetType;
+    id: string;
+    label: string;
+  } | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const didMountRef = useRef(false);
 
@@ -364,26 +370,34 @@ export default function DetailEvaluationSection({
     }
   };
 
-  const reportTarget = async (
-    targetType: ReportItemType,
+  const openReportDialog = (
+    targetType: ReportTargetType,
     targetId: string,
     label: string,
   ) => {
-    try {
-      await submitReport({
-        target_type: targetType,
-        target_id: String(targetId),
-        reason: "other",
-        description: `${label}举报`,
-      });
-      feedback.success({
-        title: "举报已提交",
-        description: "管理员会尽快处理。",
-      });
-    } catch (error) {
-      console.error(error);
-      feedback.error({ title: "举报失败", description: "请稍后重试。" });
+    setActiveReportTarget({
+      type: targetType,
+      id: String(targetId),
+      label,
+    });
+  };
+
+  const buildUserAvatarActions = (
+    user: { id?: string | null; nickname?: string | null } | null | undefined,
+    isAnonymous = false,
+  ): ItemActionMenuItem[] => {
+    if (isAnonymous || !user?.id || user.id === viewerId) {
+      return [];
     }
+
+    return [
+      {
+        key: `report-user-${user.id}`,
+        label: "举报用户",
+        onClick: () =>
+          openReportDialog("user", String(user.id), `用户 ${user.nickname ?? user.id}`),
+      },
+    ];
   };
 
   const handleDeleteEvaluation = async (evaluationId: string) => {
@@ -488,7 +502,7 @@ export default function DetailEvaluationSection({
       actions.push({
         key: "report",
         label: "举报",
-        onClick: () => reportTarget(evaluationReportType, String(evaluation.id), "评价"),
+        onClick: () => openReportDialog(evaluationReportType, String(evaluation.id), "评价内容"),
       });
     }
     return actions;
@@ -518,7 +532,7 @@ export default function DetailEvaluationSection({
       actions.push({
         key: "report",
         label: "举报",
-        onClick: () => reportTarget(replyReportType, String(reply.id), "回复"),
+        onClick: () => openReportDialog(replyReportType, String(reply.id), "回复内容"),
       });
     }
     return actions;
@@ -552,6 +566,7 @@ export default function DetailEvaluationSection({
         }));
       },
       actions: buildEvaluationActions(evaluation),
+      avatarActions: buildUserAvatarActions(evaluation.user, Boolean(evaluation.is_anonymous)),
       isReplying: replyingToId === id,
       replyComposer:
         replyingToId === id ? (
@@ -620,6 +635,7 @@ export default function DetailEvaluationSection({
           }));
         },
         actions: buildReplyActions(id, reply),
+        avatarActions: buildUserAvatarActions(reply.user, Boolean(reply.is_anonymous)),
       })),
       forceShowAllReplies: Boolean(expandedReplyMap[id]),
       highlightedReplyId: highlightReplyMap[id],
@@ -750,6 +766,12 @@ export default function DetailEvaluationSection({
           </div>
         ) : null}
       </DetailComposerModal>
+
+      <ReportDialog
+        open={activeReportTarget !== null}
+        target={activeReportTarget}
+        onClose={() => setActiveReportTarget(null)}
+      />
     </>
   );
 }

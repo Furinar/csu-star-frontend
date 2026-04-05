@@ -18,11 +18,12 @@ import type {
   ResourceComment,
   ResourceDetail,
 } from "@/types/detail";
+import type { ReportTargetType } from "@/types/me";
 import { Role } from "@/types/auth";
-import { submitReport } from "@/api/me";
 import { feedback } from "@/store/useFeedbackStore";
 import CommentComposerForm from "@/components/detail/CommentComposerForm";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
+import ReportDialog from "@/components/report/ReportDialog";
 import ResourceEditModal from "@/components/detail/ResourceEditModal";
 import CollectButton from "@/components/ui/CollectButton";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
@@ -100,6 +101,11 @@ export default function ResourceDetailPage() {
   const [editingCommentDraft, setEditingCommentDraft] = useState("");
   const [isUpdatingComment, setIsUpdatingComment] = useState(false);
   const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [activeReportTarget, setActiveReportTarget] = useState<{
+    type: ReportTargetType;
+    id: string;
+    label: string;
+  } | null>(null);
   const isDeleted = resource?.status === "deleted";
   const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
   const isUploader = Boolean(
@@ -479,26 +485,31 @@ export default function ResourceDetailPage() {
     }
   };
 
-  const reportTarget = async (
-    targetType: "resource" | "comment",
+  const openReportDialog = (
+    targetType: ReportTargetType,
     targetId: string,
     label: string,
   ) => {
-    try {
-      await submitReport({
-        target_type: targetType,
-        target_id: targetId,
-        reason: "other",
-        description: `${label}举报`,
-      });
-      feedback.success({
-        title: "举报已提交",
-        description: "管理员会尽快处理。",
-      });
-    } catch (error) {
-      console.error(error);
-      feedback.error({ title: "举报失败", description: "请稍后重试。" });
+    setActiveReportTarget({
+      type: targetType,
+      id: targetId,
+      label,
+    });
+  };
+
+  const buildUserAvatarActions = (user?: ResourceComment["user"] | null) => {
+    if (!user?.id || user.id === viewerId) {
+      return [];
     }
+
+    return [
+      {
+        key: `report-user-${user.id}`,
+        label: "举报用户",
+        onClick: () =>
+          openReportDialog("user", String(user.id), `用户 ${user.nickname ?? user.id}`),
+      },
+    ];
   };
 
   const buildResourceActions = (): ItemActionMenuItem[] => {
@@ -532,7 +543,7 @@ export default function ResourceDetailPage() {
       actions.push({
         key: "report",
         label: "举报资源",
-        onClick: () => reportTarget("resource", String(resource.id), "资源"),
+        onClick: () => openReportDialog("resource", String(resource.id), "资源内容"),
       });
     }
     return actions;
@@ -571,7 +582,7 @@ export default function ResourceDetailPage() {
       actions.push({
         key: "report",
         label: "举报",
-        onClick: () => reportTarget("comment", String(comment.id), "评论"),
+        onClick: () => openReportDialog("comment", String(comment.id), "评论内容"),
       });
     }
     return actions;
@@ -869,6 +880,7 @@ export default function ResourceDetailPage() {
                     likes: comment.likes,
                     isLiked: comment.is_liked,
                     actions: buildCommentActions(comment),
+                    avatarActions: buildUserAvatarActions(comment.user),
                     replies: (comment.children || []).map((reply) => ({
                       id: reply.id,
                       user: reply.user,
@@ -878,6 +890,7 @@ export default function ResourceDetailPage() {
                       likes: reply.likes,
                       isLiked: reply.is_liked,
                       actions: buildCommentActions(reply, comment.id),
+                      avatarActions: buildUserAvatarActions(reply.user),
                       onLike: (liked: boolean) =>
                         handleToggleLike(reply.id, liked, comment.id),
                       onReplyClick: () => {
@@ -1057,6 +1070,12 @@ export default function ResourceDetailPage() {
             feedback.error({ title: "更新失败", description: "请稍后重试。" });
           }
         }}
+      />
+
+      <ReportDialog
+        open={activeReportTarget !== null}
+        target={activeReportTarget}
+        onClose={() => setActiveReportTarget(null)}
       />
     </>
   );

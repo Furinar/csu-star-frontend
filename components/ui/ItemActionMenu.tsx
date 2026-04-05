@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
 export interface ItemActionMenuItem {
@@ -12,9 +13,13 @@ export interface ItemActionMenuItem {
 export default function ItemActionMenu({
   items,
   align = "right",
+  trigger,
+  triggerClassName,
 }: {
   items: ItemActionMenuItem[];
   align?: "left" | "right";
+  trigger?: ReactNode;
+  triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -37,9 +42,14 @@ export default function ItemActionMenu({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+        className={
+          triggerClassName ??
+          (trigger
+            ? "block rounded-full"
+            : "flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600")
+        }
       >
-        <i className="uil uil-ellipsis-h text-lg" />
+        {trigger ?? <i className="uil uil-ellipsis-h text-lg" />}
       </button>
       {open ? (
         <div

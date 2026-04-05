@@ -36,12 +36,14 @@ export interface BilibiliCommentItemProps {
     onLike?: (isLiked: boolean) => void;
     onReplyClick?: () => void;
     actions?: ItemActionMenuItem[];
+    avatarActions?: ItemActionMenuItem[];
   }>;
 
   // Actions
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
   actions?: ItemActionMenuItem[];
+  avatarActions?: ItemActionMenuItem[];
 
   // Reply Composer
   isReplying?: boolean;
@@ -65,6 +67,7 @@ export default function BilibiliCommentItem({
                                               onLike,
                                               onReplyClick,
                                               actions = [],
+                                              avatarActions = [],
                                               isReplying,
                                               replyComposer,
                                               forceShowAllReplies = false,
@@ -101,17 +104,36 @@ export default function BilibiliCommentItem({
           className="flex gap-4 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors px-2 rounded-xl">
         {/* Avatar */}
         <div className="shrink-0 flex-none">
-          <div
-              className="relative h-12 w-12 rounded-full overflow-hidden border border-gray-200 bg-gray-50 cursor-pointer hover:border-gray-300">
-            <Image
+          {avatarActions.length > 0 ? (
+            <ItemActionMenu
+              items={avatarActions}
+              align="left"
+              triggerClassName="block rounded-full"
+              trigger={
+                <div className="relative h-12 w-12 overflow-hidden rounded-full border border-gray-200 bg-gray-50 transition hover:border-gray-300">
+                  <Image
+                    src={displayUser.avatar_url || DEFAULT_AVATAR}
+                    alt={displayUser.nickname}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                    unoptimized
+                  />
+                </div>
+              }
+            />
+          ) : (
+            <div className="relative h-12 w-12 overflow-hidden rounded-full border border-gray-200 bg-gray-50">
+              <Image
                 src={displayUser.avatar_url || DEFAULT_AVATAR}
                 alt={displayUser.nickname}
                 fill
                 className="object-cover"
                 sizes="48px"
                 unoptimized
-            />
-          </div>
+              />
+            </div>
+          )}
         </div>
 
         {/* Main Content */}
@@ -177,6 +199,7 @@ export default function BilibiliCommentItem({
                           onLike={reply.onLike}
                           onReplyClick={reply.onReplyClick}
                           actions={reply.actions}
+                          avatarActions={reply.avatarActions}
                           shouldFlash={highlightedReplyId != null && String(highlightedReplyId) === String(reply.id)}
                       />
                   ))}

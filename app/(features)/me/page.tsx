@@ -68,7 +68,7 @@ type PanelKey =
   | "invite"
   | "downloads"
   | "feedback"
-  | "report"
+  | "correction"
   | "contribution";
 
 export default function Me() {
@@ -211,7 +211,6 @@ export default function Me() {
   const openProtectedPanel = (panel: PanelKey) => {
     const noAuthRequiredPanels: PanelKey[] = [
       "feedback",
-      "report",
       "contribution",
     ];
     if (noAuthRequiredPanels.includes(panel)) {
@@ -771,12 +770,12 @@ export default function Me() {
       </FloatingPanel>
 
       <FloatingPanel
-        open={openPanel === "report"}
-        title="违规举报与信息纠错"
-        description="感谢你协助我们维护社区的环境与信息准确性。"
+        open={openPanel === "correction"}
+        title="信息纠错"
+        description="如果课程或教师信息有误，可以在这里提交更正建议。"
         onClose={() => setOpenPanel(null)}
       >
-        <FeedbackPanel mode="report" onClose={() => setOpenPanel(null)} />
+        <FeedbackPanel mode="correction" onClose={() => setOpenPanel(null)} />
       </FloatingPanel>
 
       <FloatingPanel

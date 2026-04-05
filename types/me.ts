@@ -28,11 +28,13 @@ export type FeedbackType = "bug" | "suggestion" | "complaint" | "other";
 export type ReportReason = "copyright" | "spam" | "inappropriate" | "other";
 export type ReportTargetType =
   | "resource"
+  | "course"
   | "teacher_evaluation"
   | "course_evaluation"
   | "teacher_evaluation_reply"
   | "course_evaluation_reply"
-  | "comment";
+  | "comment"
+  | "user";
 export type CorrectionTargetType = "course" | "teacher";
 export type OAuthBindProvider = "qq" | "wechat" | "github" | "google";
 export type ResourceType = string;

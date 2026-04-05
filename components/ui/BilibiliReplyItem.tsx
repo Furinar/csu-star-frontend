@@ -20,6 +20,7 @@ export interface BilibiliReplyItemProps {
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
   actions?: ItemActionMenuItem[];
+  avatarActions?: ItemActionMenuItem[];
   shouldFlash?: boolean;
 }
 
@@ -34,6 +35,7 @@ export default function BilibiliReplyItem({
   onLike,
   onReplyClick,
   actions = [],
+  avatarActions = [],
   shouldFlash = false,
 }: BilibiliReplyItemProps) {
   const displayUser = user || { nickname: "匿名用户", avatar_url: DEFAULT_AVATAR };
@@ -65,16 +67,36 @@ export default function BilibiliReplyItem({
     >
       {/* Avatar */}
       <div className="shrink-0 flex-none self-start mt-0.5">
-        <div className="relative h-6 w-6 rounded-full overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer">
-          <Image
-            src={displayUser.avatar_url || DEFAULT_AVATAR}
-            alt={displayUser.nickname}
-            fill
-            className="object-cover"
-            sizes="24px"
-            unoptimized
+        {avatarActions.length > 0 ? (
+          <ItemActionMenu
+            items={avatarActions}
+            align="left"
+            triggerClassName="block rounded-full"
+            trigger={
+              <div className="relative h-6 w-6 overflow-hidden rounded-full border border-gray-100 bg-gray-50 cursor-pointer">
+                <Image
+                  src={displayUser.avatar_url || DEFAULT_AVATAR}
+                  alt={displayUser.nickname}
+                  fill
+                  className="object-cover"
+                  sizes="24px"
+                  unoptimized
+                />
+              </div>
+            }
           />
-        </div>
+        ) : (
+          <div className="relative h-6 w-6 rounded-full overflow-hidden border border-gray-100 bg-gray-50">
+            <Image
+              src={displayUser.avatar_url || DEFAULT_AVATAR}
+              alt={displayUser.nickname}
+              fill
+              className="object-cover"
+              sizes="24px"
+              unoptimized
+            />
+          </div>
+        )}
       </div>
 
       {/* Content */}

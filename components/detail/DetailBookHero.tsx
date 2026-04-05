@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
+import type { ReactNode } from "react";
 import "@/app/(features)/course/components/style.css";
 import { getDepartmentNameById } from "@/data/departments";
 import Link from "next/link";
@@ -131,12 +132,14 @@ type DetailBookHeroProps =
       data: CourseDetail;
       onAddRelation?: () => void;
       isAddingRelation?: boolean;
+      headerActions?: ReactNode;
     }
   | {
       variant: "teacher";
       data: TeacherDetail;
       onAddRelation?: () => void;
       isAddingRelation?: boolean;
+      headerActions?: ReactNode;
     };
 
 export default function DetailBookHero(props: DetailBookHeroProps) {
@@ -168,12 +171,15 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               {course.name}
             </Link>
 
-            <CollectButton
-              size="sm"
-              targetId={course.id}
-              targetType="course"
-              initialStatus={course.is_favorited ?? false}
-            />
+            <div className="flex items-center gap-3">
+              {props.headerActions}
+              <CollectButton
+                size="sm"
+                targetId={course.id}
+                targetType="course"
+                initialStatus={course.is_favorited ?? false}
+              />
+            </div>
           </div>
 
           <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4 md:grid-cols-2">
@@ -388,12 +394,15 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
             </div>
           </div>
 
-          <CollectButton
-            size="sm"
-            targetId={teacher.id}
-            targetType="teacher"
-            initialStatus={teacher.is_favorited ?? false}
-          />
+          <div className="flex items-center gap-3">
+            {props.headerActions}
+            <CollectButton
+              size="sm"
+              targetId={teacher.id}
+              targetType="teacher"
+              initialStatus={teacher.is_favorited ?? false}
+            />
+          </div>
         </div>
 
         <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4">

@@ -17,6 +17,7 @@ import DetailBookHero from "@/components/detail/DetailBookHero";
 import DetailEvaluationSection from "@/components/detail/DetailEvaluationSection";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import RelationLinkModal from "@/components/detail/RelationLinkModal";
+import ReportDialog from "@/components/report/ReportDialog";
 import { DetailPageShell } from "@/components/detail/DetailScaffold";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
 import { useHasMounted } from "@/hooks/useHasMounted";
@@ -40,6 +41,11 @@ export default function CourseDetailPage() {
   const [isRelationModalOpen, setIsRelationModalOpen] = useState(false);
   const [isReloadingCourse, setIsReloadingCourse] = useState(false);
   const [composerVersion, setComposerVersion] = useState(0);
+  const [activeReportTarget, setActiveReportTarget] = useState<{
+    type: "course";
+    id: string;
+    label: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!hasMounted) return;
@@ -156,6 +162,21 @@ export default function CourseDetailPage() {
           data={course}
           onAddRelation={handleOpenRelationModal}
           isAddingRelation={isReloadingCourse}
+          headerActions={
+            <button
+              type="button"
+              onClick={() =>
+                setActiveReportTarget({
+                  type: "course",
+                  id: String(course.id),
+                  label: `课程 ${course.name}`,
+                })
+              }
+              className="rounded-full border border-sky-200 bg-white px-4 py-2 text-sm font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50"
+            >
+              举报课程
+            </button>
+          }
         />
 
         <div id="evaluations">
@@ -220,6 +241,12 @@ export default function CourseDetailPage() {
         course={{ id: course.id, name: course.name }}
         currentTeachers={relatedTeachers}
         onLinked={reloadCourseDetail}
+      />
+
+      <ReportDialog
+        open={activeReportTarget !== null}
+        target={activeReportTarget}
+        onClose={() => setActiveReportTarget(null)}
       />
     </>
   );

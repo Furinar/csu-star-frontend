@@ -22,7 +22,7 @@ type PanelKey =
   | "invite"
   | "downloads"
   | "feedback"
-  | "report"
+  | "correction"
   | "contribution";
 
 interface MeOverviewProps {
@@ -122,10 +122,10 @@ export default function MeOverview({
       desc: "提交建议或问题",
     },
     {
-      key: "report" as PanelKey,
-      title: "举报/纠错",
-      icon: "multiply",
-      desc: "提交举报或纠错",
+      key: "correction" as PanelKey,
+      title: "信息纠错",
+      icon: "edit-alt",
+      desc: "提交课程或教师纠错",
     },
   ];
   const isVerified = accountMode === "verified";

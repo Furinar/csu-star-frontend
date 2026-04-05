@@ -526,14 +526,16 @@ export function submitFeedback(payload: FeedbackInput) {
 export function submitReport(payload: {
   target_type:
     | "resource"
+    | "course"
     | "teacher_evaluation"
     | "course_evaluation"
     | "teacher_evaluation_reply"
     | "course_evaluation_reply"
-    | "comment";
+    | "comment"
+    | "user";
   target_id: string;
   reason: "copyright" | "spam" | "inappropriate" | "other";
-  description?: string | null;
+  description: string;
 }) {
   return unwrap<null>(service.post<ApiEnvelope<null>>("/reports", payload));
 }
