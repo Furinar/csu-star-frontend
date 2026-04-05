@@ -40,6 +40,10 @@ export default function Register() {
         return;
       }
       setRegisterPayload(payload);
+      if (avatarOptions.length > 0) {
+        setAvatarIndex(Math.floor(Math.random() * avatarOptions.length));
+      }
+      setAvatarPreviewError(false);
       if (inviteCodeFromQuery) {
         setInviteCode(inviteCodeFromQuery);
       }
