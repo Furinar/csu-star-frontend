@@ -168,16 +168,31 @@ export default function Register() {
             <h2>挑个头像吧!</h2>
             <div className="mt-3 grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
               <div className="min-w-0">
-                <input
-                  type="text"
-                  placeholder="手动输入头像 URL（可选）"
-                  value={customAvatarUrl}
-                  onChange={(e) => {
-                    setCustomAvatarUrl(e.target.value);
-                    setAvatarPreviewError(false);
-                  }}
-                  className="mb-3 w-full rounded-2xl bg-gray-200 py-2 pl-3 pr-3 focus:outline-none focus:ring-2 focus:ring-(--color-first)"
-                />
+                <div className="mb-3 flex flex-col gap-2 sm:flex-row">
+                  <input
+                    type="text"
+                    placeholder="手动输入头像 URL（可选）"
+                    value={customAvatarUrl}
+                    onChange={(e) => {
+                      setCustomAvatarUrl(e.target.value);
+                      setAvatarPreviewError(false);
+                    }}
+                    className="w-full rounded-2xl bg-gray-200 py-2 pl-3 pr-3 focus:outline-none focus:ring-2 focus:ring-(--color-first)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(
+                        "https://picui.cn/upload",
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
+                    className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                  >
+                    获取头像 URL
+                  </button>
+                </div>
                 <div className="h-60 overflow-y-auto rounded-lg">
                   <div className="flex flex-wrap content-between items-center justify-between gap-3 border-gray-200 border-5 p-4">
                     {avatarOptions.map((avatar, index) => (
