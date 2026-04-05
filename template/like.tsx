@@ -1,11 +1,32 @@
-import React from 'react';
-import styled from 'styled-components';
+import React from "react";
+import styled from "styled-components";
 
-const Checkbox = () => {
+interface LikeButtonProps {
+  checked?: boolean;
+  disabled?: boolean;
+  className?: string;
+  onChange?: (nextChecked: boolean) => void;
+}
+
+const LikeButton = ({
+  checked = false,
+  disabled = false,
+  className = "",
+  onChange,
+}: LikeButtonProps) => {
+  const inputId = React.useId();
+
   return (
-    <StyledWrapper>
-      <div className="heart-container" title="Like">
-        <input type="checkbox" className="checkbox" id="Give-It-An-Id" />
+    <StyledWrapper className={className}>
+      <label className={`heart-container ${disabled ? "is-disabled" : ""}`} title="Like" htmlFor={inputId}>
+        <input
+          id={inputId}
+          type="checkbox"
+          className="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) => onChange?.(event.target.checked)}
+        />
         <div className="svg-container">
           <svg viewBox="0 0 24 24" className="svg-outline" xmlns="http://www.w3.org/2000/svg">
             <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Zm-3.585,18.4a2.973,2.973,0,0,1-3.83,0C4.947,16.006,2,11.87,2,8.967a4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,11,8.967a1,1,0,0,0,2,0,4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,22,8.967C22,11.87,19.053,16.006,13.915,20.313Z">
@@ -24,10 +45,10 @@ const Checkbox = () => {
             <polygon points="80,80 70,70" />
           </svg>
         </div>
-      </div>
+      </label>
     </StyledWrapper>
   );
-}
+};
 
 const StyledWrapper = styled.div`
   .heart-container {
@@ -38,6 +59,10 @@ const StyledWrapper = styled.div`
     transition: .3s;
   }
 
+  .heart-container.is-disabled {
+    opacity: 0.55;
+  }
+
   .heart-container .checkbox {
     position: absolute;
     width: 100%;
@@ -45,6 +70,10 @@ const StyledWrapper = styled.div`
     opacity: 0;
     z-index: 20;
     cursor: pointer;
+  }
+
+  .heart-container.is-disabled .checkbox {
+    cursor: not-allowed;
   }
 
   .heart-container .svg-container {
@@ -116,4 +145,4 @@ const StyledWrapper = styled.div`
     }
   }`;
 
-export default Checkbox;
+export default LikeButton;

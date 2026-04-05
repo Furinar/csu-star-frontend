@@ -44,6 +44,7 @@ import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import LikeButton from "@/template/like";
 
 interface ReplyTarget {
   replyId?: number | null;
@@ -511,7 +512,7 @@ export default function ResourceDetailPage() {
     } else if (!isDeleted) {
       actions.push({
         key: "report",
-        label: "举报",
+        label: "举报资源",
         onClick: () => reportTarget("resource", String(resource.id), "资源"),
       });
     }
@@ -631,23 +632,27 @@ export default function ResourceDetailPage() {
                   <ItemActionMenu items={buildResourceActions()} />
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => void handleToggleResourceLike()}
-                    disabled={isDeleted || isResourceLikeLoading}
-                    className={`inline-flex items-center justify-center gap-2 rounded-[14px] border px-4 py-2.5 text-sm font-medium transition ${
-                      resource.is_liked
-                        ? "border-rose-200 bg-rose-50 text-rose-600"
-                        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                    } disabled:cursor-not-allowed disabled:opacity-70`}
+                  <div
+                    className={`flex items-center justify-center gap-2 rounded-[14px] border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition ${
+                      isDeleted || isResourceLikeLoading
+                        ? "cursor-not-allowed opacity-70"
+                        : "hover:bg-slate-50"
+                    }`}
                   >
-                    <i className="uil uil-thumbs-up text-base"></i>
+                    <LikeButton
+                      checked={resource.is_liked ?? false}
+                      disabled={isDeleted || isResourceLikeLoading}
+                      className="scale-[0.78]"
+                      onChange={() => {
+                        void handleToggleResourceLike();
+                      }}
+                    />
                     <span>
                       {isResourceLikeLoading
                         ? "处理中..."
-                        : `${resource.is_liked ? "已点赞" : "点赞"} ${resource.likes ?? 0}`}
+                        : `${resource.likes ?? 0}`}
                     </span>
-                  </button>
+                  </div>
                   {isDeleted ? (
                     <div className="rounded-[12px] border border-rose-100 bg-rose-50 px-4 py-2 text-center text-sm font-medium text-rose-700">
                       禁止收藏
@@ -676,15 +681,6 @@ export default function ResourceDetailPage() {
                     />
                   )}
                 </div>
-              </div>
-              <div
-                className={`rounded-[12px] p-3 text-xs leading-relaxed ${
-                  isDeleted
-                    ? "bg-rose-50/50 text-rose-600"
-                    : "bg-slate-50 text-slate-500"
-                }`}
-              >
-                {isDeleted ? "资源已删除，仅供记录展示" : "点赞表达认可，收藏方便回看"}
               </div>
             </div>
           }
