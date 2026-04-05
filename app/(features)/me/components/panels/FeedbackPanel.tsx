@@ -1,14 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { submitCorrection, submitFeedback } from "@/api/me";
+import { searchCourseSuggestions, searchTeacherSuggestions } from "@/api/resource";
 import {
   AdvancedInput,
   AdvancedSelect,
   AdvancedTextarea,
 } from "@/app/(features)/resource/components/AdvancedFormControls";
+import { DEPARTMENTS } from "@/data/departments";
+import { useDebounce } from "@/hooks/useDebounce";
 import { feedback } from "@/store/useFeedbackStore";
-import type { CorrectionInput, FeedbackInput } from "@/types/me";
+import type {
+  CorrectionInput,
+  CorrectionTargetType,
+  FeedbackInput,
+} from "@/types/me";
+import type { CourseSuggestionItem, TeacherSuggestionItem } from "@/types/resource";
 import {
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
@@ -22,6 +30,87 @@ const CORRECTION_TARGET_OPTIONS: Array<{
   { value: "course", label: "课程" },
   { value: "teacher", label: "教师" },
 ];
+
+type CorrectionFieldOption = {
+  value: string;
+  label: string;
+  placeholder: string;
+  inputType?: "input" | "textarea" | "select";
+  selectOptions?: Array<{ value: string; label: string }>;
+};
+
+const COURSE_CORRECTION_FIELDS: CorrectionFieldOption[] = [
+  {
+    value: "name",
+    label: "课程名称",
+    placeholder: "请输入正确的课程名称",
+  },
+  {
+    value: "description",
+    label: "课程简介",
+    placeholder: "请输入更准确的课程简介",
+    inputType: "textarea",
+  },
+  {
+    value: "course_type",
+    label: "课程类型",
+    placeholder: "请选择正确的课程类型",
+    inputType: "select",
+    selectOptions: [
+      { value: "公选课", label: "公选课" },
+      { value: "非公选课", label: "非公选课" },
+    ],
+  },
+];
+
+const TEACHER_CORRECTION_FIELDS: CorrectionFieldOption[] = [
+  {
+    value: "name",
+    label: "教师姓名",
+    placeholder: "请输入正确的教师姓名",
+  },
+  {
+    value: "title",
+    label: "教师职称",
+    placeholder: "请输入正确的教师职称",
+  },
+  {
+    value: "avatar_url",
+    label: "头像链接",
+    placeholder: "请输入正确的头像链接",
+  },
+  {
+    value: "department_id",
+    label: "所属学院",
+    placeholder: "请选择正确的所属学院",
+    inputType: "select",
+    selectOptions: DEPARTMENTS.map((department) => ({
+      value: String(department.id),
+      label: department.name,
+    })),
+  },
+  {
+    value: "bio",
+    label: "教师简介",
+    placeholder: "请输入更准确的教师简介",
+    inputType: "textarea",
+  },
+  {
+    value: "tutor_type",
+    label: "导师类型",
+    placeholder: "请输入正确的导师类型",
+  },
+  {
+    value: "homepage_url",
+    label: "个人主页",
+    placeholder: "请输入正确的个人主页链接",
+  },
+];
+
+const CORRECTION_FIELD_OPTIONS: Record<CorrectionTargetType, CorrectionFieldOption[]> = {
+  course: COURSE_CORRECTION_FIELDS,
+  teacher: TEACHER_CORRECTION_FIELDS,
+};
 
 export default function FeedbackPanel({
   mode,
@@ -81,7 +170,7 @@ function FeedbackForm({ onClose }: { onClose: () => void }) {
     <>
       <div className="space-y-4">
         <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-          当前反馈系统只会提交真正被后端接收的字段：类型、标题和内容。截图上传与独立联系方式暂未开放。
+          欢迎告诉我们你遇到的问题或建议。提交后我们会尽快查看，并通过通知中心同步处理结果。
         </div>
 
         <AdvancedSelect
@@ -153,14 +242,91 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
     field: "",
     suggested_value: "",
   });
+  const [targetQuery, setTargetQuery] = useState("");
+  const [courseOptions, setCourseOptions] = useState<CourseSuggestionItem[]>([]);
+  const [teacherOptions, setTeacherOptions] = useState<TeacherSuggestionItem[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<CourseSuggestionItem | null>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<TeacherSuggestionItem | null>(null);
+  const [isSearchingTarget, setIsSearchingTarget] = useState(false);
   const [isSubmittingCorrection, setIsSubmittingCorrection] = useState(false);
+  const debouncedTargetQuery = useDebounce(targetQuery, 300);
+
+  const fieldOptions = CORRECTION_FIELD_OPTIONS[correctionForm.target_type];
+  const selectedFieldOption = useMemo(
+    () =>
+      fieldOptions.find((item) => item.value === correctionForm.field) ?? null,
+    [correctionForm.field, fieldOptions],
+  );
+  const selectedTarget = correctionForm.target_type === "course"
+    ? selectedCourse
+    : selectedTeacher;
+
+  useEffect(() => {
+    setCorrectionForm((current) => ({
+      ...current,
+      target_id: "",
+      field: "",
+      suggested_value: "",
+    }));
+    setTargetQuery("");
+    setCourseOptions([]);
+    setTeacherOptions([]);
+    setSelectedCourse(null);
+    setSelectedTeacher(null);
+    setIsSearchingTarget(false);
+  }, [correctionForm.target_type]);
+
+  useEffect(() => {
+    if (!debouncedTargetQuery.trim()) {
+      setCourseOptions([]);
+      setTeacherOptions([]);
+      setIsSearchingTarget(false);
+      return;
+    }
+
+    let isActive = true;
+    setIsSearchingTarget(true);
+
+    const searchPromise =
+      correctionForm.target_type === "course"
+        ? searchCourseSuggestions(debouncedTargetQuery)
+        : searchTeacherSuggestions(debouncedTargetQuery);
+
+    searchPromise
+      .then((items) => {
+        if (!isActive) return;
+
+        if (correctionForm.target_type === "course") {
+          setCourseOptions(items as CourseSuggestionItem[]);
+        } else {
+          setTeacherOptions(items as TeacherSuggestionItem[]);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!isActive) return;
+        setCourseOptions([]);
+        setTeacherOptions([]);
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsSearchingTarget(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [correctionForm.target_type, debouncedTargetQuery]);
 
   const handleSubmitCorrection = async () => {
-    const targetId = correctionForm.target_id.trim();
-    if (!/^\d+$/.test(targetId) || targetId === "0") {
+    if (!selectedTarget || !correctionForm.target_id) {
       feedback.warning({
-        title: "目标 ID 无效",
-        description: "纠错需要有效的数字 ID。",
+        title: "请先选择纠错对象",
+        description:
+          correctionForm.target_type === "course"
+            ? "请先搜索并选择需要纠错的课程。"
+            : "请先搜索并选择需要纠错的老师。",
       });
       return;
     }
@@ -168,7 +334,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
     if (!correctionForm.field.trim() || !correctionForm.suggested_value.trim()) {
       feedback.warning({
         title: "纠错信息不完整",
-        description: "字段名和建议值都不能为空。",
+        description: "请选择需要纠正的信息，并填写建议内容。",
       });
       return;
     }
@@ -177,7 +343,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
     try {
       await submitCorrection({
         target_type: correctionForm.target_type,
-        target_id: targetId,
+        target_id: correctionForm.target_id,
         field: correctionForm.field.trim(),
         suggested_value: correctionForm.suggested_value.trim(),
       });
@@ -200,7 +366,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
     <>
       <div className="space-y-4">
         <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-          纠错当前仅支持课程和教师两个目标，提交时请尽量提供准确的目标 ID、字段名和建议值。
+          如果你发现课程或老师信息有误，可以在这里提交更正建议。我们会尽快核实，并通过通知中心告知处理结果。
         </div>
 
         <AdvancedSelect
@@ -220,41 +386,191 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
           ))}
         </AdvancedSelect>
 
-        <AdvancedInput
-          label="目标 ID"
-          inputMode="numeric"
-          value={correctionForm.target_id}
-          onChange={(event) =>
-            setCorrectionForm((current) => ({
-              ...current,
-              target_id: event.target.value,
-            }))
-          }
-        />
+        {selectedTarget ? (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+            <div className="text-xs font-medium text-slate-500">
+              已选择的{correctionForm.target_type === "course" ? "课程" : "老师"}
+            </div>
+            <div className="mt-1 flex items-center justify-between gap-4">
+              <div>
+                <div className="font-medium text-slate-800">{selectedTarget.name}</div>
+                {"course_type" in selectedTarget && selectedTarget.course_type ? (
+                  <div className="mt-1 text-xs text-slate-500">{selectedTarget.course_type}</div>
+                ) : null}
+                {"department" in selectedTarget && selectedTarget.department ? (
+                  <div className="mt-1 text-xs text-slate-500">{selectedTarget.department}</div>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setCorrectionForm((current) => ({
+                    ...current,
+                    target_id: "",
+                    field: "",
+                    suggested_value: "",
+                  }));
+                  setTargetQuery("");
+                  setCourseOptions([]);
+                  setTeacherOptions([]);
+                  setSelectedCourse(null);
+                  setSelectedTeacher(null);
+                }}
+                className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+              >
+                重新选择
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <AdvancedInput
+              label={
+                <>
+                  {correctionForm.target_type === "course" ? "选择课程" : "选择老师"}{" "}
+                  <span className="text-red-500">*</span>
+                </>
+              }
+              value={targetQuery}
+              onChange={(event) => setTargetQuery(event.target.value)}
+              placeholder={
+                correctionForm.target_type === "course"
+                  ? "输入课程名称进行搜索"
+                  : "输入老师姓名进行搜索"
+              }
+            />
 
-        <AdvancedInput
-          label="字段名"
-          placeholder="例如：name / title / department_name"
+            {isSearchingTarget ? (
+              <div className="text-sm text-slate-400">搜索中...</div>
+            ) : null}
+
+            {!isSearchingTarget &&
+            (correctionForm.target_type === "course"
+              ? courseOptions.length > 0
+              : teacherOptions.length > 0) ? (
+              <div className="overflow-hidden rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+                {(correctionForm.target_type === "course"
+                  ? courseOptions
+                  : teacherOptions
+                ).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      if (correctionForm.target_type === "course") {
+                        const course = item as CourseSuggestionItem;
+                        setSelectedCourse(course);
+                      } else {
+                        const teacher = item as TeacherSuggestionItem;
+                        setSelectedTeacher(teacher);
+                      }
+
+                      setCorrectionForm((current) => ({
+                        ...current,
+                        target_id: item.id,
+                        field: "",
+                        suggested_value: "",
+                      }));
+                      setTargetQuery("");
+                      setCourseOptions([]);
+                      setTeacherOptions([]);
+                    }}
+                    className="flex w-full items-start justify-between border-b border-slate-100 px-5 py-4 text-left transition last:border-none hover:bg-slate-50"
+                  >
+                    <div>
+                      <div className="font-medium text-slate-800">{item.name}</div>
+                      {"course_type" in item && item.course_type ? (
+                        <div className="mt-1 text-xs text-slate-400">{item.course_type}</div>
+                      ) : null}
+                      {"department" in item && item.department ? (
+                        <div className="mt-1 text-xs text-slate-400">{item.department}</div>
+                      ) : null}
+                    </div>
+                    <span className="mt-0.5 text-xs font-medium text-[var(--first-color)] opacity-80">
+                      选择
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {!isSearchingTarget &&
+            targetQuery.trim() &&
+            (correctionForm.target_type === "course"
+              ? courseOptions.length === 0
+              : teacherOptions.length === 0) ? (
+              <div className="text-sm text-slate-400">
+                {correctionForm.target_type === "course"
+                  ? "未找到相关课程"
+                  : "未找到相关老师"}
+              </div>
+            ) : null}
+          </div>
+        )}
+
+        <AdvancedSelect
+          label="需要纠正的信息"
           value={correctionForm.field}
           onChange={(event) =>
             setCorrectionForm((current) => ({
               ...current,
               field: event.target.value,
+              suggested_value: "",
             }))
           }
-        />
+        >
+          <option value="">请选择需要纠正的信息</option>
+          {fieldOptions.map((item) => (
+            <option key={item.value} value={item.value}>
+              {item.label}
+            </option>
+          ))}
+        </AdvancedSelect>
 
-        <AdvancedTextarea
-          label="建议值"
-          rows={6}
-          value={correctionForm.suggested_value}
-          onChange={(event) =>
-            setCorrectionForm((current) => ({
-              ...current,
-              suggested_value: event.target.value,
-            }))
-          }
-        />
+        {selectedFieldOption?.inputType === "select" ? (
+          <AdvancedSelect
+            label="建议修改为"
+            value={correctionForm.suggested_value}
+            onChange={(event) =>
+              setCorrectionForm((current) => ({
+                ...current,
+                suggested_value: event.target.value,
+              }))
+            }
+          >
+            <option value="">{selectedFieldOption.placeholder}</option>
+            {selectedFieldOption.selectOptions?.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </AdvancedSelect>
+        ) : selectedFieldOption?.inputType === "textarea" ? (
+          <AdvancedTextarea
+            label="建议修改为"
+            rows={6}
+            placeholder={selectedFieldOption.placeholder}
+            value={correctionForm.suggested_value}
+            onChange={(event) =>
+              setCorrectionForm((current) => ({
+                ...current,
+                suggested_value: event.target.value,
+              }))
+            }
+          />
+        ) : (
+          <AdvancedInput
+            label="建议修改为"
+            placeholder={selectedFieldOption?.placeholder ?? "请输入建议内容"}
+            value={correctionForm.suggested_value}
+            onChange={(event) =>
+              setCorrectionForm((current) => ({
+                ...current,
+                suggested_value: event.target.value,
+              }))
+            }
+          />
+        )}
       </div>
 
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
