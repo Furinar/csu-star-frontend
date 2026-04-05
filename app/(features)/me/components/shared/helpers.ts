@@ -47,12 +47,12 @@ const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("zh-CN", {
 export const CONTRIBUTION_RULES = [
   {
     title: "资源上传",
-    score: 5,
+    score: 2,
     detail: "上传资源为社区提供内容。",
   },
   {
     title: "教师评价 / 课程评价",
-    score: 3,
+    score: 1,
     detail: "为选课与避坑提供直接帮助，权重高于签到。",
   },
   {
@@ -269,6 +269,10 @@ export function getPointsReasonLabel(reason: PointsRecord["reason"]) {
     return "上传奖励";
   }
 
+  if (reason === "evaluation_reward") {
+    return "评价奖励";
+  }
+
   if (reason === "download_cost") {
     return "下载扣减";
   }
@@ -325,4 +329,44 @@ export function getNotificationBadgeLabel(item: NotificationItem) {
   }
 
   return "系统通知";
+}
+
+export function getNotificationCardTone(item: NotificationItem) {
+  if (isAnnouncementNotification(item)) {
+    return {
+      cardClassName: "border-sky-200/70 bg-gradient-to-r from-white to-sky-50/80",
+      badgeClassName: "border-sky-200 bg-sky-50 text-sky-700",
+      unreadClassName: "bg-sky-100 text-sky-700",
+    };
+  }
+
+  if (item.result === "approved") {
+    return {
+      cardClassName: "border-emerald-200/70 bg-gradient-to-r from-white to-emerald-50/80",
+      badgeClassName: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      unreadClassName: "bg-emerald-100 text-emerald-700",
+    };
+  }
+
+  if (item.result === "rejected") {
+    return {
+      cardClassName: "border-rose-200/70 bg-gradient-to-r from-white to-rose-50/80",
+      badgeClassName: "border-rose-200 bg-rose-50 text-rose-700",
+      unreadClassName: "bg-rose-100 text-rose-700",
+    };
+  }
+
+  if (item.type === "liked" || item.type === "commented") {
+    return {
+      cardClassName: "border-amber-200/70 bg-gradient-to-r from-white to-amber-50/80",
+      badgeClassName: "border-amber-200 bg-amber-50 text-amber-700",
+      unreadClassName: "bg-amber-100 text-amber-700",
+    };
+  }
+
+  return {
+    cardClassName: "border-blue-200/70 bg-gradient-to-r from-white to-blue-50/80",
+    badgeClassName: "border-blue-200 bg-blue-50 text-blue-700",
+    unreadClassName: "bg-blue-100 text-blue-700",
+  };
 }

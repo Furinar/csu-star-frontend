@@ -18,6 +18,7 @@ export type NotificationResult = "inform" | "approved" | "rejected";
 export type PointsReason =
   | "daily_checkin"
   | "upload_reward"
+  | "evaluation_reward"
   | "download_cost"
   | "invite_reward"
   | "invite_signup_reward"

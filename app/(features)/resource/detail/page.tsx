@@ -119,7 +119,8 @@ export default function ResourceDetailPage() {
       setDownloadingFileId(fileId);
       setDownloadedFileId(null);
       feedback.info({ title: "正在获取下载链接..." });
-      const { url } = await downloadResourceFile(resourceId, fileId);
+      const result = await downloadResourceFile(resourceId, fileId);
+      const { url } = result;
 
       const link = document.createElement("a");
       link.href = url;
@@ -128,7 +129,15 @@ export default function ResourceDetailPage() {
       link.click();
       document.body.removeChild(link);
 
-      feedback.success({ title: "开始下载" });
+      feedback.success({
+        title: "开始下载",
+        description:
+          typeof result.remaining_points === "number"
+            ? `本次下载消耗 1 积分，剩余 ${result.remaining_points} 积分。`
+            : typeof result.free_download_count === "number"
+              ? `本次下载未扣积分，剩余免费下载次数 ${result.free_download_count}。`
+              : undefined,
+      });
       setDownloadedFileId(fileId);
       window.setTimeout(() => {
         setDownloadedFileId((current) => (current === fileId ? null : current));

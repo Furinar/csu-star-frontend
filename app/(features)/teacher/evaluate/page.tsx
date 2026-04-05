@@ -105,7 +105,10 @@ export default function TeacherEvaluationComposerPage() {
         onSubmit={async (payload) => {
           try {
             await createTeacherEvaluation(teacher.id, payload as unknown as TeacherEvaluationInput);
-            feedback.success({ title: "评价已发布" });
+            feedback.success({
+              title: "评价已发布",
+              description: "发表评价获得 1 积分。",
+            });
             router.push(`${buildTeacherPath(teacher.id)}#evaluations`);
           } catch (error) {
             console.error(error);

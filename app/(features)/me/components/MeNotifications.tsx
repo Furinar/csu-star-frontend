@@ -14,6 +14,7 @@ import {
   formatDateTime,
   getErrorMessage,
   getNotificationBadgeLabel,
+  getNotificationCardTone,
   isAnnouncementNotification,
 } from "./shared/helpers";
 
@@ -174,44 +175,66 @@ function NotificationSection({
       {items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item) => (
-            <GlassCard key={item.id} className="border border-white/50 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-gray-200 bg-white/60 px-2.5 py-1 text-xs text-gray-600">
-                      {getNotificationBadgeLabel(item)}
-                    </span>
-                    {!item.is_read ? (
-                      <span className="rounded-full bg-first/10 px-2 py-1 text-[11px] text-first">
-                        未读
-                      </span>
-                    ) : null}
-                  </div>
-                  <p className="mt-2 font-medium text-gray-900">{item.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-gray-600">
-                    {item.content || "暂无附加内容"}
-                  </p>
-                  <p className="mt-2 text-xs text-gray-500">
-                    {formatDateTime(item.created_at)}
-                  </p>
-                </div>
-                {!item.is_read ? (
-                  <button
-                    type="button"
-                    onClick={() => void onMarkRead(item.id)}
-                    className="rounded-xl border border-gray-200/70 bg-white/70 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-white"
-                  >
-                    标记已读
-                  </button>
-                ) : null}
-              </div>
-            </GlassCard>
+            <NotificationCard
+              key={item.id}
+              item={item}
+              onMarkRead={onMarkRead}
+            />
           ))}
         </div>
       ) : (
         <SectionEmptyState title={emptyTitle} description={emptyDescription} />
       )}
     </div>
+  );
+}
+
+function NotificationCard({
+  item,
+  onMarkRead,
+}: {
+  item: NotificationItem;
+  onMarkRead: (id: number) => void;
+}) {
+  const tone = getNotificationCardTone(item);
+
+  return (
+    <GlassCard className={`${tone.cardClassName} p-4`}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs ${tone.badgeClassName}`}
+            >
+              {getNotificationBadgeLabel(item)}
+            </span>
+            {!item.is_read ? (
+              <span
+                className={`rounded-full px-2 py-1 text-[11px] ${tone.unreadClassName}`}
+              >
+                未读
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 font-medium text-gray-900">{item.title}</p>
+          <p className="mt-1 text-sm leading-6 text-gray-600">
+            {item.content || "暂无附加内容"}
+          </p>
+          <p className="mt-2 text-xs text-gray-500">
+            {formatDateTime(item.created_at)}
+          </p>
+        </div>
+        {!item.is_read ? (
+          <button
+            type="button"
+            onClick={() => void onMarkRead(item.id)}
+            className="rounded-xl border border-gray-200/70 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-white"
+          >
+            标记已读
+          </button>
+        ) : null}
+      </div>
+    </GlassCard>
   );
 }
 

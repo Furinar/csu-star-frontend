@@ -20,6 +20,7 @@ import {
   getResourceCategoryLabel,
 } from "@/lib/resourceCategory";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { feedback } from "@/store/useFeedbackStore";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
 import {
@@ -311,6 +312,10 @@ export default function ResourceUploader({
 
       setTotalProgress(100);
       setUploadedResourceId(resource_id);
+      feedback.success({
+        title: "上传成功",
+        description: "资源已发布，获得 2 积分。",
+      });
       onUploadSuccess?.();
       setIsUploading(false);
     } catch (e: unknown) {

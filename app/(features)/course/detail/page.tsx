@@ -200,7 +200,10 @@ export default function CourseDetailPage() {
               setEvaluations((prev) => [result, ...prev]);
               setEvaluationTotal((prev) => prev + 1);
               setComposerVersion((prev) => prev + 1);
-              feedback.success({ title: "评价已发布" });
+              feedback.success({
+                title: "评价已发布",
+                description: "发表评价获得 1 积分。",
+              });
             } catch (error) {
               console.error(error);
               feedback.error({ title: "发布失败", description: "请稍后重试。" });

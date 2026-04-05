@@ -103,7 +103,10 @@ export default function CourseEvaluationComposerPage() {
         onSubmit={async (payload) => {
           try {
             await createCourseEvaluation(course.id, payload as unknown as CourseEvaluationInput);
-            feedback.success({ title: "评价已发布" });
+            feedback.success({
+              title: "评价已发布",
+              description: "发表评价获得 1 积分。",
+            });
             router.push(buildCourseEvaluationAnchor(course.id));
           } catch (error) {
             console.error(error);

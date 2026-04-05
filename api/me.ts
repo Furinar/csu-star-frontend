@@ -214,8 +214,11 @@ const normalizePointsReason = (value: unknown): PointsRecord["reason"] => {
   if (value === "daily_checkin" || value === "每日签到获得积分") {
     return "daily_checkin";
   }
-  if (value === "upload_reward") {
+  if (value === "upload_reward" || value === "上传资源获得积分") {
     return "upload_reward";
+  }
+  if (value === "evaluation_reward" || value === "发布评价获得积分") {
+    return "evaluation_reward";
   }
   if (value === "download_cost" || value === "下载资源消耗积分") {
     return "download_cost";
