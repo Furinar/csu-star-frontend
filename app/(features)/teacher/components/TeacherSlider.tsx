@@ -17,12 +17,6 @@ function clampScore(value?: number | null) {
   return Math.max(0, Math.min(5, value));
 }
 
-function formatRate(value?: number | null) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "--";
-  return value.toFixed(2);
-}
-
-
 export default function TeacherSlider() {
   const [teachers, setTeachers] = useState<TeacherShowcaseItem[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -67,31 +61,36 @@ export default function TeacherSlider() {
 
   const shiftIndex = (step: number) => {
     if (teachers.length === 0) return;
-    setActiveIndex((current) => (current + step + teachers.length) % teachers.length);
+    setActiveIndex(
+      (current) => (current + step + teachers.length) % teachers.length,
+    );
   };
 
   const getPositionClass = (index: number) => {
-    if (teachers.length === 0) return 'is-hidden';
+    if (teachers.length === 0) return "is-hidden";
     const num = teachers.length;
     const diff = (index - activeIndex + num) % num;
     // to handle small arrays
-    if (diff === 0) return 'is-current';
-    if (diff === 1) return 'is-next-1';
-    if (diff === 2 && num >= 5) return 'is-next-2';
-    if (diff === num - 1) return 'is-prev-1';
-    if (diff === num - 2 && num >= 5) return 'is-prev-2';
-    return 'is-hidden';
+    if (diff === 0) return "is-current";
+    if (diff === 1) return "is-next-1";
+    if (diff === 2 && num >= 5) return "is-next-2";
+    if (diff === num - 1) return "is-prev-1";
+    if (diff === num - 2 && num >= 5) return "is-prev-2";
+    return "is-hidden";
   };
 
   const currentTeacher = teachers[activeIndex];
-  const currentTeacherPath = currentTeacher ? buildTeacherPath(currentTeacher.id) : null;
+  const currentTeacherPath = currentTeacher
+    ? buildTeacherPath(currentTeacher.id)
+    : null;
   const radarValues = currentTeacher
     ? [
         clampScore(currentTeacher.avg_quality),
         clampScore(currentTeacher.avg_attendance),
         clampScore(currentTeacher.avg_grading),
         clampScore(
-          typeof currentTeacher.good_rate === "number" && currentTeacher.good_rate <= 1
+          typeof currentTeacher.good_rate === "number" &&
+            currentTeacher.good_rate <= 1
             ? currentTeacher.good_rate * 5
             : currentTeacher.good_rate,
         ),
@@ -132,10 +131,20 @@ export default function TeacherSlider() {
               <div className="teacher-slider-empty">暂无教师数据</div>
             )}
 
-            <button type="button" className="slider-switch slider-switch-prev" onClick={() => shiftIndex(-1)} aria-label="查看上一位教师">
+            <button
+              type="button"
+              className="slider-switch slider-switch-prev"
+              onClick={() => shiftIndex(-1)}
+              aria-label="查看上一位教师"
+            >
               <span></span>
             </button>
-            <button type="button" className="slider-switch slider-switch-next" onClick={() => shiftIndex(1)} aria-label="查看下一位教师">
+            <button
+              type="button"
+              className="slider-switch slider-switch-next"
+              onClick={() => shiftIndex(1)}
+              aria-label="查看下一位教师"
+            >
               <span></span>
             </button>
           </div>
@@ -152,39 +161,48 @@ export default function TeacherSlider() {
                 随机教师加载失败，请稍后重试。
               </div>
             ) : (
-            <div className="flex items-center justify-between h-full">
-              <RadarMap
-                values={radarValues}
-                indicator={[
-                  { name: '教学质量', max: 5 },
-                  { name: '考勤宽松', max: 5 },
-                  { name: '给分宽松', max: 5 },
-                  { name: '好评率', max: 5 }
-                ]}
-                width="200px"
-                height="200px"
-              />
+              <div className="flex items-center justify-between h-full">
+                <RadarMap
+                  values={radarValues}
+                  indicator={[
+                    { name: "教学质量", max: 5 },
+                    { name: "考勤宽松", max: 5 },
+                    { name: "给分宽松", max: 5 },
+                    { name: "好评率", max: 5 },
+                  ]}
+                  width="200px"
+                  height="200px"
+                />
 
-              <div className="detail flex flex-col gap-2 items-end" >
-                {currentTeacherPath ? (
-                  <Link href={currentTeacherPath} className="name hero-gradient-text text-2xl font-bold">
-                    {currentTeacher.name}
-                  </Link>
-                ) : (
-                  <p className="name hero-gradient-text text-2xl font-bold">
-                    {isLoading ? "教师加载中..." : "暂无教师"}
-                  </p>
-                )}
-                <div className="flex flex-col gap-0.5 items-end " >
-                  <p className="title text-gray-600">综合评分 {formatRate(currentTeacher?.avg_score)}</p>
-                  <p className="position text-gray-600">{currentTeacher?.title || "职称待补充"}</p>
-                  <p className="department text-gray-600">{currentTeacher?.department_name || "院系待补充"}</p>
-                  <p className="department text-gray-500 text-sm">
-                    {`评价 ${currentTeacher?.eval_count ?? 0} / 收藏 ${currentTeacher?.favorite_count ?? 0}`}
-                  </p>
+                <div className="detail flex flex-col gap-2 items-end">
+                  {currentTeacherPath ? (
+                    <Link
+                      href={currentTeacherPath}
+                      className="name hero-gradient-text text-2xl font-bold"
+                    >
+                      {currentTeacher.name}
+                    </Link>
+                  ) : (
+                    <p className="name hero-gradient-text text-2xl font-bold">
+                      {isLoading ? "教师加载中..." : "暂无教师"}
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-0.5 items-end ">
+                    <p className="title text-gray-600">
+                      {currentTeacher?.tutor_type || "导师类型待补充"}
+                    </p>
+                    <p className="position text-gray-600">
+                      {currentTeacher?.title || "职称待补充"}
+                    </p>
+                    <p className="department text-gray-600">
+                      {currentTeacher?.department_name || "院系待补充"}
+                    </p>
+                    <p className="department text-gray-500 text-sm">
+                      {`评价 ${currentTeacher?.eval_count ?? 0} / 收藏 ${currentTeacher?.favorite_count ?? 0}`}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
             )}
 
             <div className="teacher-links flex mb-2 justify-end">
@@ -202,7 +220,6 @@ export default function TeacherSlider() {
                   <i className="uil uil-message button__icon ml-1" />
                 </div>
               )}
-
             </div>
           </div>
         </div>

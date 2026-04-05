@@ -10,7 +10,11 @@ import StarRating from "@/components/ui/StarRating";
 import { getPageTheme } from "@/lib/pageTheme";
 import { isPublicCourseType } from "@/lib/courseType";
 import type { CourseDetail, TeacherDetail } from "@/types/detail";
-import { buildCoursePath, buildResourceCollectionPath, buildTeacherPath } from "@/lib/paths";
+import {
+  buildCoursePath,
+  buildResourceCollectionPath,
+  buildTeacherPath,
+} from "@/lib/paths";
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
@@ -24,12 +28,14 @@ function normalizeRating(value?: number | null) {
 
 const COURSE_HERO_STYLE = {
   background: "linear-gradient(135deg, #d9ecff 0%, #ffffff 48%, #d8eaff 100%)",
-  boxShadow: "14px 14px 30px rgba(125, 163, 214, 0.26), -14px -14px 30px rgba(255, 255, 255, 0.96)",
+  boxShadow:
+    "14px 14px 30px rgba(125, 163, 214, 0.26), -14px -14px 30px rgba(255, 255, 255, 0.96)",
 };
 
 const TEACHER_HERO_STYLE = {
   background: "linear-gradient(135deg, #ffe2ef 0%, #ffffff 48%, #fff1c9 100%)",
-  boxShadow: "14px 14px 30px rgba(224, 164, 189, 0.24), -14px -14px 30px rgba(255, 255, 255, 0.96)",
+  boxShadow:
+    "14px 14px 30px rgba(224, 164, 189, 0.24), -14px -14px 30px rgba(255, 255, 255, 0.96)",
 };
 
 const COURSE_CARD_CLASS =
@@ -60,7 +66,9 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
     const course = props.data;
     const teachers = course.teachers || [];
     const resourcePath = buildResourceCollectionPath(course.id);
-    const courseTypeChars = isPublicCourseType(course.course_type) ? ["公", "选"] : ["非", "公", "选"];
+    const courseTypeChars = isPublicCourseType(course.course_type)
+      ? ["公", "选"]
+      : ["非", "公", "选"];
 
     return (
       <div
@@ -91,10 +99,14 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
           </div>
 
           <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4 md:grid-cols-2">
-            <div className={`resource-card flex flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}>
+            <div
+              className={`resource-card flex flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
+            >
               <div className="mb-2 flex items-center gap-2 text-gray-500">
                 <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
-                <span className="text-sm font-medium text-gray-600">关联资源</span>
+                <span className="text-sm font-medium text-gray-600">
+                  关联资源
+                </span>
               </div>
               <div className="my-2 flex flex-1 items-center justify-center text-5xl font-bold tracking-tight text-gray-800">
                 {course.resource_count ?? 0}
@@ -112,7 +124,9 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               </div>
             </div>
 
-            <div className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}>
+            <div
+              className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
+            >
               <div className="mb-3 flex items-center justify-between gap-3 text-gray-500">
                 <div className="flex items-center gap-2">
                   <i className="uil uil-user-circle text-xl text-[var(--first-color)]"></i>
@@ -157,7 +171,9 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
           <div className="course-rate flex h-full flex-col">
             <div className="avg-rate flex w-full items-center justify-around self-center">
               <div className="flex">
-                <div className="self-center text-6xl font-bold">{formatScore(course.avg_score)}</div>
+                <div className="self-center text-6xl font-bold">
+                  {formatScore(course.avg_score)}
+                </div>
                 <div className="self-end text-gray-500">/ 5.0</div>
               </div>
 
@@ -211,7 +227,8 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
   const teacher = props.data;
   const courses = teacher.courses || [];
   const avatarInitial = teacher.name.slice(0, 1) || "?";
-  const departmentName = teacher.department_name || getDepartmentNameById(teacher.department_id);
+  const departmentName =
+    teacher.department_name || getDepartmentNameById(teacher.department_id);
 
   return (
     <div
@@ -228,7 +245,11 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
           <div className="flex items-center gap-4">
             <div className="flex h-36 w-36 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white text-5xl font-bold text-rose-300 shadow-[10px_10px_22px_rgba(244,114,182,0.14),-10px_-10px_20px_rgba(255,255,255,0.95)]">
               {teacher.avatar_url ? (
-                <img src={teacher.avatar_url} alt={teacher.name} className="h-full w-full object-cover" />
+                <img
+                  src={teacher.avatar_url}
+                  alt={teacher.name}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 <span>{avatarInitial}</span>
               )}
@@ -238,9 +259,16 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               <div className="pb-1 text-4xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm">
                 {teacher.name}
               </div>
-              {departmentName ? <div className="text-sm text-gray-600">{departmentName}</div> : null}
+              {departmentName ? (
+                <div className="text-sm text-gray-600">{departmentName}</div>
+              ) : null}
+              <div className="text-sm text-rose-500">
+                导师类型 {teacher.metadata?.tutor_type || "待补充"}
+              </div>
               {teacher.bio ? (
-                <div className="max-h-[4.5rem] overflow-hidden text-sm leading-6 text-gray-600">{teacher.bio}</div>
+                <div className="max-h-[4.5rem] overflow-hidden text-sm leading-6 text-gray-600">
+                  {teacher.bio}
+                </div>
               ) : null}
               {teacher.metadata?.homepage_url ? (
                 <div>
@@ -266,7 +294,9 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
         </div>
 
         <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4">
-          <div className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${TEACHER_CARD_CLASS}`}>
+          <div
+            className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${TEACHER_CARD_CLASS}`}
+          >
             <div className="mb-3 flex items-center justify-between gap-3 text-gray-500">
               <div className="flex items-center gap-2">
                 <i className="uil uil-book-open text-xl text-rose-500"></i>
@@ -311,7 +341,9 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
         <div className="course-rate flex h-full flex-col">
           <div className="avg-rate flex w-full items-center justify-around self-center">
             <div className="flex">
-              <div className="self-center text-6xl font-bold">{formatScore(teacher.avg_score)}</div>
+              <div className="self-center text-6xl font-bold">
+                {formatScore(teacher.avg_score)}
+              </div>
               <div className="self-end text-gray-500">/ 5.0</div>
             </div>
 

@@ -25,6 +25,7 @@ export interface TeacherShowcaseItem {
   title?: string | null;
   department_name?: string | null;
   avatar_url?: string | null;
+  tutor_type?: string | null;
   avg_score?: number | null;
   avg_quality?: number | null;
   avg_grading?: number | null;
