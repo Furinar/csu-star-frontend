@@ -1,142 +1,119 @@
-"use client";
-
 import React from "react";
 import styled from "styled-components";
 
-interface LikeBurstEffectProps {
-  triggerKey: number | string | null | undefined;
-  className?: string;
-}
-
-const ANIMATION_DURATION_MS = 520;
-
-export default function LikeBurstEffect({
-  triggerKey,
-  className = "",
-}: LikeBurstEffectProps) {
-  const [instanceKey, setInstanceKey] = React.useState(0);
-  const [isVisible, setIsVisible] = React.useState(false);
-
-  React.useEffect(() => {
-    if (triggerKey == null) {
-      return;
-    }
-
-    setInstanceKey((prev) => prev + 1);
-    setIsVisible(true);
-    const timer = window.setTimeout(() => {
-      setIsVisible(false);
-    }, ANIMATION_DURATION_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [triggerKey]);
-
-  if (!isVisible) {
-    return null;
-  }
-
+const Checkbox = () => {
   return (
-    <StyledWrapper
-      key={instanceKey}
-      aria-hidden="true"
-      className={`${className} is-active`}
-    >
-      <div className="burst-core" />
-      <svg className="burst-rays" width={100} height={100} viewBox="0 0 100 100">
-        <polygon points="50,8 54,24 46,24" />
-        <polygon points="78,18 70,31 64,25" />
-        <polygon points="92,50 76,54 76,46" />
-        <polygon points="82,78 69,70 75,64" />
-        <polygon points="50,92 46,76 54,76" />
-        <polygon points="18,82 25,69 31,75" />
-        <polygon points="8,50 24,46 24,54" />
-        <polygon points="18,18 31,25 25,31" />
-      </svg>
+    <StyledWrapper>
+      <div className="heart-container" title="Like">
+        <input type="checkbox" className="checkbox" id="Give-It-An-Id" />
+        <div className="svg-container">
+          <svg viewBox="0 0 24 24" className="svg-outline" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Zm-3.585,18.4a2.973,2.973,0,0,1-3.83,0C4.947,16.006,2,11.87,2,8.967a4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,11,8.967a1,1,0,0,0,2,0,4.8,4.8,0,0,1,4.5-5.05A4.8,4.8,0,0,1,22,8.967C22,11.87,19.053,16.006,13.915,20.313Z">
+            </path>
+          </svg>
+          <svg viewBox="0 0 24 24" className="svg-filled" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.5,1.917a6.4,6.4,0,0,0-5.5,3.3,6.4,6.4,0,0,0-5.5-3.3A6.8,6.8,0,0,0,0,8.967c0,4.547,4.786,9.513,8.8,12.88a4.974,4.974,0,0,0,6.4,0C19.214,18.48,24,13.514,24,8.967A6.8,6.8,0,0,0,17.5,1.917Z">
+            </path>
+          </svg>
+          <svg className="svg-celebrate" width={100} height={100} xmlns="http://www.w3.org/2000/svg">
+            <polygon points="10,10 20,20" />
+            <polygon points="10,50 20,50" />
+            <polygon points="20,80 30,70" />
+            <polygon points="90,10 80,20" />
+            <polygon points="90,50 80,50" />
+            <polygon points="80,80 70,70" />
+          </svg>
+        </div>
+      </div>
     </StyledWrapper>
   );
-}
+};
 
 const StyledWrapper = styled.div`
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 92px;
-  height: 92px;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  opacity: 1;
-  z-index: 20;
-  overflow: visible;
+  .heart-container {
+    --heart-color: rgb(255, 91, 137);
+    position: relative;
+    width: 50px;
+    height: 50px;
+    transition: .3s;
+  }
 
-  .burst-core {
+  .heart-container .checkbox {
     position: absolute;
-    inset: 28px;
-    border-radius: 9999px;
-    background:
-      radial-gradient(circle, rgba(255, 115, 160, 0.8) 0%, rgba(255, 115, 160, 0.32) 38%, rgba(255, 115, 160, 0) 72%);
-    transform: scale(0.16);
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: 20;
+    cursor: pointer;
   }
 
-  .burst-rays {
+  .heart-container .svg-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .heart-container .svg-outline,
+          .heart-container .svg-filled {
+    fill: var(--heart-color);
     position: absolute;
-    inset: 0;
-    overflow: visible;
-    fill: rgba(255, 115, 160, 1);
-    filter: drop-shadow(0 0 10px rgba(255, 115, 160, 0.6));
-    transform: scale(0.28);
   }
 
-  &.is-active {
-    animation: burst-fade ${ANIMATION_DURATION_MS}ms ease-out forwards;
+  .heart-container .svg-filled {
+    animation: keyframes-svg-filled 1s;
+    display: none;
   }
 
-  &.is-active .burst-core {
-    animation: burst-core ${ANIMATION_DURATION_MS}ms ease-out forwards;
+  .heart-container .svg-celebrate {
+    position: absolute;
+    animation: keyframes-svg-celebrate .5s;
+    animation-fill-mode: forwards;
+    display: none;
+    stroke: var(--heart-color);
+    fill: var(--heart-color);
+    stroke-width: 2px;
   }
 
-  &.is-active .burst-rays {
-    animation: burst-rays ${ANIMATION_DURATION_MS}ms ease-out forwards;
+  .heart-container .checkbox:checked~.svg-container .svg-filled {
+    display: block
   }
 
-  @keyframes burst-fade {
+  .heart-container .checkbox:checked~.svg-container .svg-celebrate {
+    display: block
+  }
+
+  @keyframes keyframes-svg-filled {
     0% {
-      opacity: 0.1;
+      transform: scale(0);
     }
-    18% {
+
+    25% {
+      transform: scale(1.2);
+    }
+
+    50% {
+      transform: scale(1);
+      filter: brightness(1.5);
+    }
+  }
+
+  @keyframes keyframes-svg-celebrate {
+    0% {
+      transform: scale(0);
+    }
+
+    50% {
       opacity: 1;
+      filter: brightness(1.5);
     }
-    100% {
-      opacity: 0;
-    }
-  }
 
-  @keyframes burst-core {
-    0% {
-      opacity: 0.95;
-      transform: scale(0.08);
-    }
-    38% {
-      opacity: 0.55;
-      transform: scale(1.1);
-    }
     100% {
+      transform: scale(1.4);
       opacity: 0;
-      transform: scale(1.7);
+      display: none;
     }
-  }
+  }`;
 
-  @keyframes burst-rays {
-    0% {
-      opacity: 0;
-      transform: scale(0.22) rotate(-10deg);
-    }
-    20% {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.6) rotate(12deg);
-    }
-  }
-`;
+export default Checkbox;

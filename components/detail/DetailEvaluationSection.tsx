@@ -150,9 +150,6 @@ export default function DetailEvaluationSection({
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
-  const [likeEffectMap, setLikeEffectMap] = useState<Record<string, number>>(
-    {},
-  );
   const [editingEvaluation, setEditingEvaluation] = useState<ThreadEvaluation | null>(null);
   const [editingReply, setEditingReply] = useState<{ evaluationId: string; reply: EvaluationReply } | null>(null);
   const [editingReplyDraft, setEditingReplyDraft] = useState("");
@@ -359,12 +356,6 @@ export default function DetailEvaluationSection({
           return item;
         }),
       );
-      if (!currentLiked) {
-        setLikeEffectMap((prev) => ({
-          ...prev,
-          [key]: (prev[key] ?? 0) + 1,
-        }));
-      }
     } catch (error) {
       console.error(error);
       feedback.error({ title: "操作失败", description: "请稍后重试。" });
@@ -545,7 +536,6 @@ export default function DetailEvaluationSection({
       createdAt: evaluation.created_at,
       likes: evaluation.likes,
       isLiked: evaluation.is_liked,
-      likeEffectKey: likeEffectMap[`${evaluationLikeType}-${id}`] ?? null,
       replyCount: evaluation.reply_count ?? replies.length,
       onLike: (liked: boolean) => handleToggleLike(evaluationLikeType, id, liked),
       onReplyClick: () => {
@@ -616,8 +606,6 @@ export default function DetailEvaluationSection({
         createdAt: reply.created_at,
         likes: reply.likes,
         isLiked: reply.is_liked,
-        likeEffectKey:
-          likeEffectMap[`${replyLikeType}-${String(reply.id)}`] ?? null,
         onLike: (liked: boolean) => handleToggleLike(replyLikeType, String(reply.id), liked),
         onReplyClick: () => {
           setReplyingToId(id);

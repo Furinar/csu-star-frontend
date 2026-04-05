@@ -7,7 +7,6 @@ import {
 } from "@/api/detail";
 import { submitReport } from "@/api/me";
 import { formatDateTimeZh } from "@/lib/date";
-import LikeBurstEffect from "@/template/like";
 import { feedback } from "@/store/useFeedbackStore";
 import type {
   CourseEvaluation,
@@ -136,7 +135,6 @@ export default function EvaluationThread({
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
-  const [likeEffectMap, setLikeEffectMap] = useState<Record<string, number>>({});
   const [reportingKey, setReportingKey] = useState<string | null>(null);
 
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -195,12 +193,6 @@ export default function EvaluationThread({
             : item,
         ),
       );
-      if (!evaluation.is_liked) {
-        setLikeEffectMap((prev) => ({
-          ...prev,
-          [loadingKey]: (prev[loadingKey] ?? 0) + 1,
-        }));
-      }
     } catch (error) {
       console.error(error);
       feedback.error({
@@ -245,12 +237,6 @@ export default function EvaluationThread({
           };
         }),
       );
-      if (!reply.is_liked) {
-        setLikeEffectMap((prev) => ({
-          ...prev,
-          [loadingKey]: (prev[loadingKey] ?? 0) + 1,
-        }));
-      }
     } catch (error) {
       console.error(error);
       feedback.error({
@@ -536,13 +522,12 @@ export default function EvaluationThread({
                     type="button"
                     onClick={() => updateEvaluationLike(evaluation.id, evaluationLikeType)}
                     disabled={likeLoadingKey === `evaluation-${evaluation.id}`}
-                    className={`relative rounded-full px-3 py-1.5 text-xs transition ${
+                    className={`rounded-full px-3 py-1.5 text-xs transition ${
                       evaluation.is_liked
                         ? "bg-[var(--first-color)] text-white"
                         : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
                     }`}
                   >
-                    <LikeBurstEffect triggerKey={likeEffectMap[`evaluation-${evaluation.id}`] ?? null} />
                     {likeLoadingKey === `evaluation-${evaluation.id}` ? "处理中..." : evaluation.is_liked ? "已点赞" : "点赞"}
                   </button>
                   <button
@@ -615,13 +600,12 @@ export default function EvaluationThread({
                               type="button"
                               onClick={() => updateReplyLike(evaluation.id, reply.id)}
                               disabled={likeLoadingKey === `reply-${reply.id}`}
-                              className={`relative rounded-full px-3 py-1.5 text-xs transition ${
+                              className={`rounded-full px-3 py-1.5 text-xs transition ${
                                 reply.is_liked
                                   ? "bg-[var(--first-color)] text-white"
                                   : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
                               }`}
                             >
-                              <LikeBurstEffect triggerKey={likeEffectMap[`reply-${reply.id}`] ?? null} />
                               {likeLoadingKey === `reply-${reply.id}` ? "处理中..." : `${reply.is_liked ? "已点赞" : "点赞"} ${reply.likes ?? 0}`}
                             </button>
                             <button

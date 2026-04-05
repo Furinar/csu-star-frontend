@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { UserBrief } from "@/types/detail";
 import { formatDateTimeZh } from "@/lib/date";
-import LikeBurstEffect from "@/template/like";
 import { avatarOptions } from "@/data/avatar";
 import ItemActionMenu, { ItemActionMenuItem } from "./ItemActionMenu";
 
@@ -18,7 +17,6 @@ export interface BilibiliReplyItemProps {
   createdAt: string;
   likes?: number | null;
   isLiked?: boolean | null;
-  likeEffectKey?: number | string | null;
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
   actions?: ItemActionMenuItem[];
@@ -33,7 +31,6 @@ export default function BilibiliReplyItem({
   createdAt,
   likes = 0,
   isLiked = false,
-  likeEffectKey = null,
   onLike,
   onReplyClick,
   actions = [],
@@ -105,10 +102,9 @@ export default function BilibiliReplyItem({
           <span>{formatDateTimeZh(createdAt)}</span>
 
           <button
-            className={`relative inline-flex items-center gap-1 overflow-visible transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
+            className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
             onClick={() => onLike?.(Boolean(isLiked))}
           >
-            <LikeBurstEffect triggerKey={likeEffectKey} />
             <i className="uil uil-thumbs-up text-[14px]"></i>
             <span>{likes || ""}</span>
           </button>

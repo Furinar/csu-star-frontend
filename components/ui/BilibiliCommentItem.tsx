@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Image from "next/image";
 import {UserBrief} from "@/types/detail";
 import {formatDateTimeZh} from "@/lib/date";
-import LikeBurstEffect from "@/template/like";
 import BilibiliReplyItem from "./BilibiliReplyItem";
 import {avatarOptions} from "@/data/avatar";
 import type {ItemActionMenuItem} from "./ItemActionMenu";
@@ -34,7 +33,6 @@ export interface BilibiliCommentItemProps {
     createdAt: string;
     likes?: number | null;
     isLiked?: boolean | null;
-    likeEffectKey?: number | string | null;
     onLike?: (isLiked: boolean) => void;
     onReplyClick?: () => void;
     actions?: ItemActionMenuItem[];
@@ -44,7 +42,6 @@ export interface BilibiliCommentItemProps {
   onLike?: (isLiked: boolean) => void;
   onReplyClick?: () => void;
   actions?: ItemActionMenuItem[];
-  likeEffectKey?: number | string | null;
 
   // Reply Composer
   isReplying?: boolean;
@@ -68,7 +65,6 @@ export default function BilibiliCommentItem({
                                               onLike,
                                               onReplyClick,
                                               actions = [],
-                                              likeEffectKey = null,
                                               isReplying,
                                               replyComposer,
                                               forceShowAllReplies = false,
@@ -128,10 +124,9 @@ export default function BilibiliCommentItem({
             <span className="text-gray-400">{formatDateTimeZh(createdAt)}</span>
 
             <button
-                className={`relative inline-flex items-center gap-1 overflow-visible transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
+                className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
                 onClick={() => onLike?.(Boolean(isLiked))}
             >
-              <LikeBurstEffect triggerKey={likeEffectKey} />
               <i
                   className={isLiked ? "uil uil-thumbs-up" : "uil uil-thumbs-up"}
               ></i>
@@ -163,7 +158,6 @@ export default function BilibiliCommentItem({
                           createdAt={reply.createdAt}
                           likes={reply.likes}
                           isLiked={reply.isLiked}
-                          likeEffectKey={reply.likeEffectKey}
                           onLike={reply.onLike}
                           onReplyClick={reply.onReplyClick}
                           actions={reply.actions}

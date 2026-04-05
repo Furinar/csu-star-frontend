@@ -44,7 +44,6 @@ import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
-import LikeBurstEffect from "@/template/like";
 import DownloadButton from "@/template/download";
 
 interface ReplyTarget {
@@ -89,10 +88,6 @@ export default function ResourceDetailPage() {
   const [submittingId, setSubmittingId] = useState<number | null>(null);
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isResourceLikeLoading, setIsResourceLikeLoading] = useState(false);
-  const [resourceLikeEffectKey, setResourceLikeEffectKey] = useState(0);
-  const [commentLikeEffectMap, setCommentLikeEffectMap] = useState<
-    Record<string, number>
-  >({});
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [downloadedFileId, setDownloadedFileId] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
@@ -350,13 +345,6 @@ export default function ResourceDetailPage() {
           return comment;
         }),
       );
-      if (!currentLiked) {
-        const effectId = parentId ? `reply-${id}` : `comment-${id}`;
-        setCommentLikeEffectMap((prev) => ({
-          ...prev,
-          [effectId]: (prev[effectId] ?? 0) + 1,
-        }));
-      }
     } catch (error) {
       console.error(error);
       feedback.error({ title: "操作失败", description: "请稍后重试。" });
@@ -402,9 +390,6 @@ export default function ResourceDetailPage() {
             }
           : prev,
       );
-      if (!currentLiked) {
-        setResourceLikeEffectKey((prev) => prev + 1);
-      }
     } catch (error) {
       console.error(error);
       feedback.error({ title: "点赞失败", description: "请稍后重试。" });
@@ -661,13 +646,12 @@ export default function ResourceDetailPage() {
                     type="button"
                     onClick={() => void handleToggleResourceLike()}
                     disabled={isDeleted || isResourceLikeLoading}
-                    className={`relative inline-flex items-center justify-center gap-2 rounded-[14px] border px-4 py-2.5 text-sm font-medium transition ${
+                    className={`inline-flex items-center justify-center gap-2 rounded-[14px] border px-4 py-2.5 text-sm font-medium transition ${
                       resource.is_liked
                         ? "border-rose-200 bg-rose-50 text-rose-600"
                         : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     } disabled:cursor-not-allowed disabled:opacity-70`}
                   >
-                    <LikeBurstEffect triggerKey={resourceLikeEffectKey} />
                     <i className="uil uil-thumbs-up text-base"></i>
                     <span>
                       {isResourceLikeLoading
@@ -875,8 +859,6 @@ export default function ResourceDetailPage() {
                     createdAt: comment.created_at || "",
                     likes: comment.likes,
                     isLiked: comment.is_liked,
-                    likeEffectKey:
-                      commentLikeEffectMap[`comment-${comment.id}`] ?? null,
                     actions: buildCommentActions(comment),
                     replies: (comment.children || []).map((reply) => ({
                       id: reply.id,
@@ -886,8 +868,6 @@ export default function ResourceDetailPage() {
                       createdAt: reply.created_at || "",
                       likes: reply.likes,
                       isLiked: reply.is_liked,
-                      likeEffectKey:
-                        commentLikeEffectMap[`reply-${reply.id}`] ?? null,
                       actions: buildCommentActions(reply, comment.id),
                       onLike: (liked: boolean) =>
                         handleToggleLike(reply.id, liked, comment.id),
