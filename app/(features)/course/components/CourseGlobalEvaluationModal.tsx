@@ -136,7 +136,7 @@ export default function CourseGlobalEvaluationModal({
       }
     >
       {!selectedCourse ? (
-        <div className="mx-auto max-w-2xl px-2">
+        <div className="mx-auto max-w-2xl px-1 sm:px-2">
           <div className="text-xl font-bold text-sky-800">课程检索</div>
           <p className="mt-2 text-sm leading-6 text-slate-500">
             输入课程名称并从结果中选择一门课程。
@@ -160,7 +160,6 @@ export default function CourseGlobalEvaluationModal({
                 <div className="h-full">
                   {options.map((course) => (
                     <button
-
                       key={course.id}
                       type="button"
                       onClick={() => {
@@ -169,9 +168,9 @@ export default function CourseGlobalEvaluationModal({
                         setQuery("");
                         setRelatedTeachers([]);
                       }}
-                      className="flex w-full items-start justify-between border-b border-slate-100 px-5 py-4 text-left transition last:border-none hover:bg-slate-50"
+                      className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
                     >
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-medium text-slate-800">{course.name}</div>
                         {course.course_type ? (
                           <div className="mt-1 text-xs text-slate-400">{course.course_type}</div>
@@ -192,14 +191,14 @@ export default function CourseGlobalEvaluationModal({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-4 rounded-3xl bg-slate-50/70 border border-slate-100 px-5 py-3">
-            <div>
+          <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-3xl border border-slate-100 bg-slate-50/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+            <div className="min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-500/80 mb-0.5">SELECTED COURSE</div>
               <div className="font-semibold text-slate-800">{selectedCourse.name}</div>
             </div>
             <button
               type="button"
-              className="rounded-full bg-white border border-slate-200 px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50 hover:border-slate-300 shadow-sm"
+              className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto sm:py-1.5"
               onClick={() => {
                 setSelectedCourse(null);
                 setRelatedTeachers([]);

@@ -194,17 +194,17 @@ export default function SupplementRequestModal({
       title={modalTitle}
       description={modalDescription}
     >
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-2">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-1 sm:gap-6 sm:px-2">
         <div className="space-y-3">
           <div className={`text-2xl font-bold ${currentType === "teacher" ? "text-rose-800" : "text-sky-800"}`}>
             没有你想找的{currentType === "teacher" ? "老师" : "课程"}？
           </div>
-          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 px-5 py-4 text-sm leading-6 text-slate-600">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50/80 px-4 py-4 text-sm leading-6 text-slate-600 sm:px-5">
             提交后我们会尽快审核，通过后会添加到平台中。你也可以在通知中心查看处理结果。
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {allowTypeSwitch ? (
             <AdvancedSelect
               label="补录类型"
@@ -333,7 +333,7 @@ export default function SupplementRequestModal({
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
           >
             取消
           </button>
@@ -341,7 +341,7 @@ export default function SupplementRequestModal({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={isSubmitting}
-            className={`rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-slate-300 ${
+            className={`w-full rounded-full px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto ${
               currentType === "teacher"
                 ? "bg-rose-500 hover:bg-rose-600"
                 : "bg-sky-500 hover:bg-sky-600"

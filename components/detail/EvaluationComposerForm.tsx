@@ -147,16 +147,16 @@ export default function EvaluationComposerForm({
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 w-full">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="mx-auto w-full max-w-4xl space-y-5 sm:space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         {/* Left Side: Primary Item Evaluation */}
-        <div className="flex flex-col h-full">
-          <div className="mb-4 h-10 flex items-center">
+        <div className="flex h-full flex-col">
+          <div className="mb-3 flex min-h-0 items-center sm:mb-4 sm:h-10">
             <h3 className={`text-lg font-semibold ${tone.accent}`}>
               {evaluationType === "teacher" ? "教师评分" : "课程评分"}
             </h3>
           </div>
-          <div className="grid gap-3 flex-1">
+          <div className="grid flex-1 gap-3">
             {primaryDimensions.map((dimension) => (
               <RatingStar
                 key={dimension.key}
@@ -171,9 +171,9 @@ export default function EvaluationComposerForm({
         </div>
 
         {/* Right Side: Related Item Evaluation */}
-        <div className="flex flex-col h-full pl-0 md:pl-2">
-          <div className="mb-4 h-10 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="flex h-full flex-col">
+          <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:h-10 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between gap-3 sm:justify-start">
               <h3
                 className={`text-lg font-semibold ${!enableRelated ? "text-slate-400" : "text-slate-700"}`}
               >
@@ -192,13 +192,13 @@ export default function EvaluationComposerForm({
             </div>
 
             {enableRelated && relatedItems.length > 0 && (
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition flex items-center gap-1 min-w-[90px] justify-center ${tone.chipActive}`}
+                  className={`flex w-full items-center justify-between gap-1 rounded-full border px-3 py-2 text-sm font-medium transition sm:min-w-[120px] sm:justify-center ${tone.chipActive}`}
                 >
-                  <span className="max-w-[120px] truncate leading-tight">
+                  <span className="max-w-[calc(100%-1.5rem)] truncate leading-tight sm:max-w-[120px]">
                     {relatedItems.find((i) => i.id === relatedId)?.name ||
                       "请选择"}
                   </span>
@@ -223,7 +223,7 @@ export default function EvaluationComposerForm({
                       className="fixed inset-0 z-40"
                       onClick={() => setIsDropdownOpen(false)}
                     />
-                    <div className="absolute top-full mt-2 right-0 w-max min-w-[200px] rounded-2xl border border-slate-200 bg-white p-2 shadow-xl z-50">
+                    <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl sm:left-auto sm:right-0 sm:min-w-[220px] sm:w-max">
                       <div className="flex flex-col gap-1">
                         {relatedItems.map((item) => (
                           <button
@@ -284,8 +284,8 @@ export default function EvaluationComposerForm({
       </div>
 
       {/* Main Comment and Action */}
-      <div className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_16px_42px_rgba(15,23,42,0.05)]">
-        <div className="flex items-center justify-between gap-3">
+      <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-sm font-medium text-slate-800">评价内容</div>
             <p className="mt-1 text-sm leading-6 text-slate-500">
@@ -308,7 +308,7 @@ export default function EvaluationComposerForm({
         />
       </div>
 
-      <div className="flex items-center justify-end">
+      <div className="flex justify-center sm:justify-end">
         <ActionSubmitButton
           defaultText={submitLabel}
           sentText="提交中..."
