@@ -207,7 +207,7 @@ export default function CourseResourceCollectionPage() {
 
       <SectionCard title="课程资料" subtitle="展示资源文件预览和基础信息。">
         {resourcesWithDetail.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {resourcesWithDetail.map((resource) => (
               <Link
                 key={resource.id}
