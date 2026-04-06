@@ -41,7 +41,7 @@ export function DetailPageShell({
 }: {
   children: ReactNode;
 }) {
-  return <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-24 pt-8 md:px-6 lg:px-8">{children}</div>;
+  return <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pt-4 pb-12 px-4 md:gap-8 md:pt-8 md:pb-24 md:px-6 lg:px-8">{children}</div>;
 }
 
 export function DetailHero({

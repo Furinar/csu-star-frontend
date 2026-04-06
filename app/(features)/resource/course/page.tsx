@@ -95,7 +95,7 @@ export default function CourseResourceCollectionPage() {
 
   if (!hasMounted) {
     return (
-      <div className="container mt-10 mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
         课程资源合集加载中...
       </div>
     );
@@ -103,7 +103,7 @@ export default function CourseResourceCollectionPage() {
 
   if (isInvalidCourseId) {
     return (
-      <div className="container mt-10 mb-20">
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
           课程 ID 无效。
         </div>
@@ -113,7 +113,7 @@ export default function CourseResourceCollectionPage() {
 
   if (loading) {
     return (
-      <div className="container mt-10 mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
         课程资源合集加载中...
       </div>
     );
@@ -121,7 +121,7 @@ export default function CourseResourceCollectionPage() {
 
   if (error || !detail) {
     return (
-      <div className="container mt-10 mb-20">
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
         <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
           {error || "课程资源合集不存在。"}
         </div>
@@ -130,7 +130,7 @@ export default function CourseResourceCollectionPage() {
   }
 
   return (
-    <div className="container mt-10 mb-20 space-y-8">
+    <div className="container mt-4 mb-10 space-y-4 md:mt-10 md:mb-20 md:space-y-8">
       <button
         type="button"
         onClick={() => router.back()}

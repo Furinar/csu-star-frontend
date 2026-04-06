@@ -195,7 +195,7 @@ export default function CourseDetailPage() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
+          className="mb-0 md:mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
         >
           <i className="uil uil-arrow-left text-base" />
           返回上一页
