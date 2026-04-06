@@ -331,20 +331,111 @@ export default function Rank() {
 
       <div className=" border-t border-gray-300" />
 
-      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+      <div className="md:hidden flex flex-col gap-2">
+        <div className="w-full">
+          <label className="mb-1 block text-sm font-medium text-gray-600">
+            排行维度
+          </label>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as FilterType)}
+            className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-2.5 pr-12 text-sm text-gray-800 outline-none transition focus:border-[var(--first-color)] focus:ring-2 focus:ring-[var(--first-color)]/10"
+            style={{
+              backgroundImage:
+                'url(\'data:image/svg+xml;utf8,<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.75L9 11.25L13.5 6.75" fill="none" stroke="%236b7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>\')',
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 1rem center",
+              backgroundSize: "1rem 1rem",
+            }}
+          >
+            {currentCategory.filters.map((item) => (
+              <option key={item.type} value={item.type}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center">
+            <span
+              onClick={() => setSortType("desc")}
+              className={`relative z-10 flex w-10 justify-center items-center py-1 transition-colors duration-300 ${
+                sortType === "desc"
+                  ? "text-first-alt"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
+              }`}
+            >
+              <i className="uil uil-sort-amount-down text-lg"></i>
+            </span>
+            <label
+              className="relative inline-block h-[1.75em] w-[3.3em] text-base"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setSortType((prev) => (prev === "desc" ? "asc" : "desc"));
+              }}
+            >
+              <input
+                type="checkbox"
+                className="peer opacity-0 w-0 h-0"
+                checked={sortType === "asc"}
+                onChange={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSortType((prev) => (prev === "desc" ? "asc" : "desc"));
+                }}
+              />
+              <span
+                className="absolute inset-0 cursor-pointer bg-gray-200 transition-all duration-400 rounded-[0.45em] shadow-[0_0.16em_#dfd9d9]
+               before:content-[''] before:absolute before:h-[1.25em] before:w-[1.15em] before:rounded-[0.28em]
+               before:left-[0.28em] before:bottom-[0.35em] before:bg-[lightsalmon] before:transition-all before:duration-400
+               before:shadow-[0_0.3em_#bcb4b4]
+               before:hover:shadow-[0_0.18em_#bcb4b4] before:hover:bottom-[0.28em]
+               peer-checked:before:translate-x-[1.55em] peer-checked:before:bg-[lightgreen]"
+              ></span>
+            </label>
+            <span
+              onClick={() => setSortType("asc")}
+              className={`relative z-10 flex w-10 justify-center items-center py-1 transition-colors duration-300 ${
+                sortType === "asc"
+                  ? "text-first-alt"
+                  : "text-gray-500 hover:text-gray-700 cursor-pointer"
+              }`}
+            >
+              <i className="uil uil-sort-amount-up text-lg"></i>
+            </span>
+          </div>
+
+          <div className="self-auto">
+            <button
+              onClick={() => void fetchRankings({ page: 1, append: false })}
+              disabled={loading || isLoadingMore}
+              className="group relative flex h-[2.55em] items-center overflow-hidden rounded-[0.85em] border-0 bg-first py-[0.32em] pl-[1em] pr-[3.05em] text-[15px] font-medium tracking-[0.04em] text-white shadow-[inset_0_0_1.3em_-0.55em_#714da6] whitespace-nowrap cursor-pointer disabled:opacity-70"
+            >
+              {loading ? "更新中..." : isLoadingMore ? "加载更多中..." : "Get Rank"}
+              <span className="icon absolute right-[0.28em] flex h-[1.95em] w-[1.95em] items-center justify-center rounded-[0.62em] bg-white shadow-[0.08em_0.08em_0.5em_0.18em_#7b52b9] transition-all duration-300 group-hover:w-[calc(100%-0.56em)] active:scale-95">
+                <i className="uil uil-arrow-right text-[1em] text-[#7b52b9] transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140"></i>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="hidden md:flex md:flex-row md:justify-between md:items-center">
         <div className="mt-5 flex items-center self-start">
           <span
             onClick={() => setSortType("desc")}
-            className={`relative z-10 flex w-10 md:w-12 justify-center items-center py-1.5 md:py-2 transition-colors duration-300 ${
+            className={`relative z-10 flex w-12 justify-center items-center py-2 transition-colors duration-300 ${
               sortType === "desc"
                 ? "text-first-alt"
                 : "text-gray-500 hover:text-gray-700 cursor-pointer"
             }`}
           >
-            <i className="uil uil-sort-amount-down text-lg md:text-xl"></i>
+            <i className="uil uil-sort-amount-down text-xl"></i>
           </span>
           <label
-            className="relative inline-block h-[1.75em] w-[3.3em] text-base md:w-[4em] md:h-[2em] md:text-lg"
+            className="relative inline-block w-[4em] h-[2em] text-lg"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -362,56 +453,27 @@ export default function Rank() {
               }}
             />
             <span
-              className="absolute inset-0 cursor-pointer bg-gray-200 transition-all duration-400 rounded-[0.45em] shadow-[0_0.16em_#dfd9d9]
-             before:content-[''] before:absolute before:h-[1.25em] before:w-[1.15em] before:rounded-[0.28em]
-             before:left-[0.28em] before:bottom-[0.35em] before:bg-[lightsalmon] before:transition-all before:duration-400
-             before:shadow-[0_0.3em_#bcb4b4]
-             before:hover:shadow-[0_0.18em_#bcb4b4] before:hover:bottom-[0.28em]
-             peer-checked:before:translate-x-[1.55em] peer-checked:before:bg-[lightgreen]
-             md:rounded-[0.5em] md:shadow-[0_0.2em_#dfd9d9]
-             md:before:h-[1.5em] md:before:w-[1.4em] md:before:left-[0.3em] md:before:bottom-[0.7em]
-             md:before:rounded-[0.3em] md:before:shadow-[0_0.4em_#bcb4b4]
-             md:before:hover:shadow-[0_0.2em_#bcb4b4] md:before:hover:bottom-[0.5em]
-             md:peer-checked:before:translate-x-[2em]"
+              className="absolute inset-0 cursor-pointer bg-gray-200 transition-all duration-400 rounded-[0.5em] shadow-[0_0.2em_#dfd9d9]
+             before:content-[''] before:absolute before:h-[1.5em] before:w-[1.4em] before:rounded-[0.3em]
+             before:left-[0.3em] before:bottom-[0.7em] before:bg-[lightsalmon] before:transition-all before:duration-400
+             before:shadow-[0_0.4em_#bcb4b4]
+             before:hover:shadow-[0_0.2em_#bcb4b4] before:hover:bottom-[0.5em]
+             peer-checked:before:translate-x-[2em] peer-checked:before:bg-[lightgreen]"
             ></span>
           </label>
           <span
             onClick={() => setSortType("asc")}
-            className={`relative z-10 flex w-10 md:w-12 justify-center items-center py-1.5 md:py-2 transition-colors duration-300 ${
+            className={`relative z-10 flex w-12 justify-center items-center py-2 transition-colors duration-300 ${
               sortType === "asc"
                 ? "text-first-alt"
                 : "text-gray-500 hover:text-gray-700 cursor-pointer"
             }`}
           >
-            <i className="uil uil-sort-amount-up text-lg md:text-xl"></i>
+            <i className="uil uil-sort-amount-up text-xl"></i>
           </span>
         </div>
 
-        <div className="w-full md:hidden">
-          <label className="mb-2 block text-sm font-medium text-gray-600">
-            排行维度
-          </label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as FilterType)}
-            className="w-full appearance-none rounded-2xl border border-gray-200 bg-white px-4 py-3 pr-12 text-sm text-gray-800 outline-none transition focus:border-[var(--first-color)] focus:ring-2 focus:ring-[var(--first-color)]/10"
-            style={{
-              backgroundImage:
-                'url(\'data:image/svg+xml;utf8,<svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"><path d="M4.5 6.75L9 11.25L13.5 6.75" fill="none" stroke="%236b7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>\')',
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 1rem center",
-              backgroundSize: "1rem 1rem",
-            }}
-          >
-            {currentCategory.filters.map((item) => (
-              <option key={item.type} value={item.type}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="hidden md:flex items-center gap-5 -mt-[99px]">
+        <div className="flex items-center gap-5 -mt-[99px]">
           <div className="relative flex py-1.5 bg-white shadow-gray-300 border-t-2 border-gray-200">
             <div
               className="absolute top-0 bottom-0 w-28 shadow-gray-400 z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)] border-t-2 border-first bg-gradient-to-b from-[var(--first-color)]/20 to-transparent"
@@ -437,15 +499,15 @@ export default function Rank() {
           </div>
         </div>
 
-        <div className="mt-1 md:mt-5 self-start">
+        <div className="mt-5 self-start">
           <button
             onClick={() => void fetchRankings({ page: 1, append: false })}
             disabled={loading || isLoadingMore}
-            className="group relative flex h-[2.55em] items-center overflow-hidden rounded-[0.85em] border-0 bg-first py-[0.32em] pl-[1em] pr-[3.05em] text-[15px] font-medium tracking-[0.04em] text-white shadow-[inset_0_0_1.3em_-0.55em_#714da6] whitespace-nowrap cursor-pointer disabled:opacity-70 md:h-[2.8em] md:rounded-[0.9em] md:py-[0.35em] md:pl-[1.2em] md:pr-[3.3em] md:text-[17px] md:tracking-[0.05em] md:shadow-[inset_0_0_1.6em_-0.6em_#714da6]"
+            className="group relative flex h-[2.8em] items-center overflow-hidden rounded-[0.9em] border-0 bg-first py-[0.35em] pl-[1.2em] pr-[3.3em] text-[17px] font-medium tracking-[0.05em] text-white shadow-[inset_0_0_1.6em_-0.6em_#714da6] whitespace-nowrap cursor-pointer disabled:opacity-70"
           >
             {loading ? "更新中..." : isLoadingMore ? "加载更多中..." : "Get Rank"}
-            <span className="icon absolute right-[0.28em] flex h-[1.95em] w-[1.95em] items-center justify-center rounded-[0.62em] bg-white shadow-[0.08em_0.08em_0.5em_0.18em_#7b52b9] transition-all duration-300 group-hover:w-[calc(100%-0.56em)] active:scale-95 md:right-[0.3em] md:h-[2.2em] md:w-[2.2em] md:rounded-[0.7em] md:shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] md:group-hover:w-[calc(100%-0.6em)]">
-              <i className="uil uil-arrow-right text-[1em] text-[#7b52b9] transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140 md:text-[1.1em]"></i>
+            <span className="icon absolute right-[0.3em] flex h-[2.2em] w-[2.2em] items-center justify-center rounded-[0.7em] bg-white shadow-[0.1em_0.1em_0.6em_0.2em_#7b52b9] transition-all duration-300 group-hover:w-[calc(100%-0.6em)] active:scale-95">
+              <i className="uil uil-arrow-right text-[1.1em] text-[#7b52b9] transition-transform duration-300 group-hover:translate-x-[0.1em] group-hover:scale-140"></i>
             </span>
           </button>
         </div>
