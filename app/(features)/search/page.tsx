@@ -522,15 +522,15 @@ export default function Search() {
 
         {/* Conditional rendering based on search state */}
         {showEmptyPrompt ? (
-            <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-5">
+            <div className="mt-8 flex flex-col items-center justify-center gap-2.5 md:mt-15 md:gap-5">
               <div className="text-8xl text-gray-300">
                 <i className="uil uil-search"></i>
               </div>
 
-              <div className="text-2xl text-gray-800">
+              <div className="text-lg sm:text-xl md:text-2xl text-gray-800">
                 开始搜索{currentSearchType?.label}吧！
               </div>
-              <div className="text-base md:text-lg text-gray-500">
+              <div className="text-sm sm:text-base md:text-lg text-gray-500">
                 使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
               </div>
             </div>
@@ -557,15 +557,15 @@ export default function Search() {
         ) : null}
 
         {showNoResults ? (
-            <div className="mt-8 flex flex-col items-center justify-center gap-4 md:mt-15 md:gap-6">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-6">
               <div className="text-8xl text-gray-300">
                 <i className="uil uil-tear"></i>
               </div>
 
-              <div className="text-2xl text-gray-800">
+              <div className="text-lg sm:text-xl md:text-2xl text-gray-800">
                 没有找到匹配的{currentSearchType?.label}
               </div>
-              <div className="text-base md:text-lg text-gray-500">
+              <div className="text-sm sm:text-base md:text-lg text-gray-500">
                 可以尝试换一个简短的关键词重新搜索看看~
               </div>
 

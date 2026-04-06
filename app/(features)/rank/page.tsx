@@ -514,12 +514,12 @@ export default function Rank() {
       </div>
 
       {!hasRequested ? (
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-5">
+        <div className="mt-8 flex flex-col items-center justify-center gap-2.5 md:mt-15 md:gap-5">
           <div className="text-8xl text-gray-300">
             <i className="uil uil-filter"></i>
           </div>
-          <div className="text-2xl text-gray-800">角逐左家垅之巅</div>
-          <div className="text-lg text-gray-500">
+          <div className="text-lg sm:text-xl md:text-2xl text-gray-800">角逐左家垅之巅</div>
+          <div className="text-sm sm:text-base md:text-lg text-gray-500">
             使用上方的排行筛选器，发现更多精彩内容！
           </div>
         </div>
