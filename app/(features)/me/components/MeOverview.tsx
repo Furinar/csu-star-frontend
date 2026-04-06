@@ -184,20 +184,22 @@ export default function MeOverview({
                   )}
               </h4>
             </div>
-            <div className="flex w-full flex-nowrap items-center justify-between gap-2 whitespace-nowrap text-[10px] text-gray-500 sm:hidden">
+            <div className="flex w-full flex-nowrap items-center justify-end gap-2 whitespace-nowrap text-[10px] text-gray-500 sm:hidden">
               {contributionStats.map((item) => (
-                <MobileStatItem
+                <ContributionStatItem
                   key={item.key}
                   icon={item.icon}
                   label={item.label}
                   value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
+                  mobile
                 />
               ))}
             </div>
-            <div className="hidden flex-wrap gap-3 text-sm text-gray-600 sm:flex">
+            <div className="hidden flex-wrap items-center justify-end gap-3 text-sm text-gray-600 sm:flex">
               {contributionStats.map((item) => (
-                <StatPill
+                <ContributionStatItem
                   key={item.key}
+                  icon={item.icon}
                   label={item.label}
                   value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
                 />
@@ -368,29 +370,36 @@ function SettingsActionCard({
   );
 }
 
-function StatPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-full border border-gray-200/70 bg-white/55 px-3 py-1.5 text-xs text-gray-600">
-      <span className="mr-2 text-gray-400">{label}</span>
-      <span className="font-medium text-gray-800">{value}</span>
-    </div>
-  );
-}
-
-function MobileStatItem({
+function ContributionStatItem({
   icon,
   label,
   value,
+  mobile = false,
 }: {
   icon: string;
   label: string;
   value: string;
+  mobile?: boolean;
 }) {
   return (
-    <div className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap leading-none text-gray-500">
-      <i className={`uil uil-${icon} shrink-0 text-[12px] text-gray-400`} />
-      <span className="text-[9px] text-gray-400">{label}</span>
-      <span className="text-[10px] font-medium text-gray-800">{value}</span>
+    <div
+      className={
+        mobile
+          ? "inline-flex min-w-0 items-center gap-1 whitespace-nowrap leading-none text-gray-500"
+          : "inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-gray-600"
+      }
+    >
+      <i
+        className={`uil uil-${icon} shrink-0 ${
+          mobile ? "text-[12px] text-gray-400" : "text-[15px] text-gray-400"
+        }`}
+      />
+      <span className={mobile ? "text-[9px] text-gray-400" : "text-xs text-gray-400"}>
+        {label}
+      </span>
+      <span className={mobile ? "text-[10px] font-medium text-gray-800" : "font-medium text-gray-800"}>
+        {value}
+      </span>
     </div>
   );
 }
