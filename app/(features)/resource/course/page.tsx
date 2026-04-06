@@ -140,64 +140,64 @@ export default function CourseResourceCollectionPage() {
         返回上一页
       </button>
 
-      <section className="relative overflow-hidden rounded-[36px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-        <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-emerald-200/55 blur-3xl"></div>
-        <div className="absolute -bottom-10 left-10 h-40 w-40 rounded-full bg-cyan-200/40 blur-3xl"></div>
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/85 px-4 py-2 text-sm text-emerald-700 shadow-sm">
+      <section className="relative overflow-hidden rounded-[24px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-4 shadow-[0_16px_42px_rgba(15,23,42,0.08)] md:rounded-[36px] md:p-8 md:shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-200/55 blur-3xl md:-right-10 md:-top-10 md:h-40 md:w-40"></div>
+        <div className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-200/40 blur-3xl md:-bottom-10 md:left-10 md:h-40 md:w-40"></div>
+        <div className="relative flex flex-col gap-4 md:gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-3 md:space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
               <i className="uil uil-folder-open"></i>
               课程资源合集
             </div>
             <div>
-              <div className="text-sm text-gray-400">{"课程信息"}</div>
-              <h1 className="mt-2 text-4xl font-bold text-gray-900">
+              <div className="text-[11px] text-gray-400 md:text-sm">课程信息</div>
+              <h1 className="mt-1.5 text-2xl font-bold text-gray-900 md:mt-2 md:text-4xl">
                 {detail.course.name}
               </h1>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 md:gap-3">
               <Link
                 href={buildCoursePath(detail.course.id)}
-                className="rounded-full border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+                className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-50 md:px-4 md:py-2 md:text-sm"
               >
                 进入课程详情
               </Link>
             </div>
           </div>
-          <div className="grid min-w-full grid-cols-2 gap-3 rounded-[28px] border border-white/70 bg-white/80 p-4 shadow-sm lg:min-w-[420px]">
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <i className="uil uil-file-alt text-base text-emerald-500"></i>
+          <div className="grid min-w-full grid-cols-2 gap-2 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm md:gap-3 md:rounded-[28px] md:p-4 lg:min-w-[420px]">
+            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
+                <i className="uil uil-file-alt text-sm text-emerald-500 md:text-base"></i>
                 <span>资源总数</span>
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
                 {detail.resource_count}
               </div>
             </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <i className="uil uil-cloud-download text-base text-blue-500"></i>
+            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
+                <i className="uil uil-cloud-download text-sm text-blue-500 md:text-base"></i>
                 <span>累计下载</span>
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
                 {detail.download_total ?? 0}
               </div>
             </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <i className="uil uil-thumbs-up text-base text-rose-500"></i>
+            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
+                <i className="uil uil-thumbs-up text-sm text-rose-500 md:text-base"></i>
                 <span>累计点赞</span>
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
                 {detail.like_total ?? 0}
               </div>
             </div>
-            <div className="rounded-2xl bg-gray-50 px-4 py-3">
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <i className="uil uil-bookmark text-base text-emerald-500"></i>
+            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
+              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
+                <i className="uil uil-bookmark text-sm text-emerald-500 md:text-base"></i>
                 <span>累计收藏</span>
               </div>
-              <div className="mt-1 text-lg font-semibold text-gray-900">
+              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
                 {detail.favorite_count ?? 0}
               </div>
             </div>

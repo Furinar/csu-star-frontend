@@ -59,22 +59,22 @@ export function DetailHero({
   const contentWidth = layout === "course-grid" ? "lg:grid-cols-[minmax(0,1.15fr)_320px]" : "lg:grid-cols-[minmax(0,1fr)_320px]";
 
   return (
-    <section className={`relative overflow-hidden rounded-[36px] border p-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] md:p-7 ${style.shell}`}>
-      <div className={`absolute -left-12 top-6 h-48 w-48 rounded-full blur-3xl ${style.spotlightA}`} />
-      <div className={`absolute right-0 top-0 h-56 w-56 rounded-full blur-3xl ${style.spotlightB}`} />
-      <div className={`absolute inset-x-0 top-0 h-24 bg-gradient-to-r ${style.stripe}`} />
-      <div className="absolute inset-[1px] rounded-[35px] border border-white/70" />
+    <section className={`relative overflow-hidden rounded-[24px] border p-4 shadow-[0_18px_48px_rgba(15,23,42,0.08)] md:rounded-[36px] md:p-7 md:shadow-[0_24px_80px_rgba(15,23,42,0.08)] ${style.shell}`}>
+      <div className={`absolute -left-10 top-4 h-36 w-36 rounded-full blur-3xl md:-left-12 md:top-6 md:h-48 md:w-48 ${style.spotlightA}`} />
+      <div className={`absolute right-0 top-0 h-40 w-40 rounded-full blur-3xl md:h-56 md:w-56 ${style.spotlightB}`} />
+      <div className={`absolute inset-x-0 top-0 h-16 bg-gradient-to-r md:h-24 ${style.stripe}`} />
+      <div className="absolute inset-[1px] rounded-[23px] border border-white/70 md:rounded-[35px]" />
 
-      <div className={`relative grid gap-5 ${aside ? contentWidth : ""}`}>
-        <div className="space-y-6 px-1 py-2 md:px-2 md:py-4">
-          {eyebrow ? <div className="flex flex-wrap items-center gap-3">{eyebrow}</div> : null}
-          <div className="space-y-3">
-            <h1 className="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-slate-950 md:text-5xl">{title}</h1>
+      <div className={`relative grid gap-4 md:gap-5 ${aside ? contentWidth : ""}`}>
+        <div className="space-y-4 px-0.5 py-1 md:space-y-6 md:px-2 md:py-4">
+          {eyebrow ? <div className="flex flex-wrap items-center gap-2 md:gap-3">{eyebrow}</div> : null}
+          <div className="space-y-2 md:space-y-3">
+            <h1 className="max-w-4xl text-2xl font-semibold tracking-[-0.05em] text-slate-950 md:text-5xl">{title}</h1>
             {description ? (
-              <div className="max-w-3xl text-sm leading-7 text-slate-600 md:text-base">{description}</div>
+              <div className="max-w-3xl text-xs leading-6 text-slate-600 md:text-base md:leading-7">{description}</div>
             ) : null}
           </div>
-          {meta ? <div className="flex flex-wrap gap-3">{meta}</div> : null}
+          {meta ? <div className="flex flex-wrap gap-2 md:gap-3">{meta}</div> : null}
           {children}
         </div>
 
@@ -82,7 +82,7 @@ export function DetailHero({
       </div>
 
       {footer ? (
-        <div className="relative mt-5 rounded-[30px] border border-white/75 bg-white/72 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl md:p-6">
+        <div className="relative mt-4 rounded-[20px] border border-white/75 bg-white/72 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.05)] backdrop-blur-xl md:mt-5 md:rounded-[30px] md:p-6">
           {footer}
         </div>
       ) : null}
@@ -202,7 +202,7 @@ export function EntityPillLink({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition ${toneStyles[tone]}`}
+      className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition md:px-4 md:py-2 md:text-sm ${toneStyles[tone]}`}
     >
       {children}
     </Link>

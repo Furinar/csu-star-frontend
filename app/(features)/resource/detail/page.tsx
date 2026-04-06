@@ -841,60 +841,60 @@ export default function ResourceDetailPage() {
           accent="resource"
           title={resource.title}
           description={
-            <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700/80">
+            <div className="space-y-1.5 md:space-y-2">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80 md:text-xs md:tracking-[0.18em]">
                 资源说明
               </div>
-              <div className="whitespace-pre-wrap text-sm leading-7 text-slate-600 md:text-base">
+              <div className="whitespace-pre-wrap text-xs leading-6 text-slate-600 md:text-base md:leading-7">
                 {resource.description?.trim() || "暂无资源说明。"}
               </div>
             </div>
           }
           meta={
-            <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600 mt-4">
-              <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-file-alt text-lg text-emerald-500"></i>
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 md:mt-4 md:gap-4 md:text-sm">
+              <div className="flex items-center gap-1 transition-colors md:gap-1.5">
+                <i className="uil uil-file-alt text-base text-emerald-500 md:text-lg"></i>
                 <span>{resource.files?.length || 0} 个文件</span>
               </div>
-              <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-cloud-download text-lg text-blue-500"></i>
+              <div className="flex items-center gap-1 transition-colors md:gap-1.5">
+                <i className="uil uil-cloud-download text-base text-blue-500 md:text-lg"></i>
                 <span>下载 {resource.downloads || 0}</span>
               </div>
-              <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-eye text-lg text-amber-500"></i>
+              <div className="flex items-center gap-1 transition-colors md:gap-1.5">
+                <i className="uil uil-eye text-base text-amber-500 md:text-lg"></i>
                 <span>浏览 {resource.views || 0}</span>
               </div>
-              <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+              <div className="flex items-center gap-1 transition-colors md:gap-1.5">
+                <i className="uil uil-thumbs-up text-base text-rose-500 md:text-lg"></i>
                 <span>点赞 {resource.likes || 0}</span>
               </div>
-              <div className="flex items-center gap-1.5 transition-colors">
-                <i className="uil uil-bookmark text-lg text-emerald-500"></i>
+              <div className="flex items-center gap-1 transition-colors md:gap-1.5">
+                <i className="uil uil-bookmark text-base text-emerald-500 md:text-lg"></i>
                 <span>收藏 {resource.favorite_count || 0}</span>
               </div>
             </div>
           }
           aside={
-            <div className="space-y-4 rounded-[20px] border border-white/80 bg-white/80 p-5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl">
+            <div className="space-y-3 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl md:space-y-4 md:rounded-[20px] md:p-5">
               <div>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-slate-700">
+                  <div className="text-xs font-semibold text-slate-700 md:text-sm">
                     资源互动
                   </div>
                   <ItemActionMenu items={buildResourceActions()} />
                 </div>
-                <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-2 md:mt-4 md:gap-3">
                   <button
                     type="button"
                     onClick={() => void handleToggleResourceLike()}
                     disabled={isDeleted || isResourceLikeLoading}
-                    className={`inline-flex items-center justify-center gap-2 rounded-[14px] border px-4 py-2.5 text-sm font-medium transition ${
+                    className={`inline-flex items-center justify-center gap-1.5 rounded-[12px] border px-3 py-2 text-xs font-medium transition md:gap-2 md:rounded-[14px] md:px-4 md:py-2.5 md:text-sm ${
                       resource.is_liked
                         ? "border-rose-200 bg-rose-50 text-rose-600"
                         : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                     } disabled:cursor-not-allowed disabled:opacity-70`}
                   >
-                    <i className="uil uil-thumbs-up text-base"></i>
+                    <i className="uil uil-thumbs-up text-sm md:text-base"></i>
                     <span>
                       {isResourceLikeLoading
                         ? "处理中..."
@@ -933,11 +933,11 @@ export default function ResourceDetailPage() {
             </div>
           }
         >
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-3 flex flex-col gap-2.5 md:mt-4 md:gap-3">
             {resource.course ? (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-400">
+              <div className="flex flex-col gap-2.5 md:gap-3">
+                <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:gap-3">
+                  <span className="text-xs font-medium text-slate-400 md:text-sm">
                     所属课程:
                   </span>
                   <div className="flex flex-wrap gap-2">
@@ -953,15 +953,15 @@ export default function ResourceDetailPage() {
             ) : null}
 
             {resource.tags && resource.tags.length > 0 ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-400">
+              <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:gap-3">
+                <span className="text-xs font-medium text-slate-400 md:text-sm">
                   资源标签:
                 </span>
-                <div className="flex flex-wrap gap-2 text-sm text-slate-600">
+                <div className="flex flex-wrap gap-1.5 text-xs text-slate-600 md:gap-2 md:text-sm">
                   {resource.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-lg bg-white/60 px-2 py-0.5 shadow-sm border border-slate-100"
+                      className="rounded-lg border border-slate-100 bg-white/60 px-2 py-0.5 shadow-sm"
                     >
                       {tag}
                     </span>
