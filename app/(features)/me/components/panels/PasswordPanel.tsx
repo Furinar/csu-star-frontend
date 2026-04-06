@@ -149,7 +149,7 @@ export default function PasswordPanel({
           }
         />
 
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
           <AdvancedInput
             label="验证码"
             placeholder="请输入 6 位验证码"
@@ -163,7 +163,7 @@ export default function PasswordPanel({
               }))
             }
           />
-          <div className="flex justify-center sm:mt-[3px] sm:block">
+          <div className="mt-[3px]">
             <ActionSubmitButton
               defaultText="获取验证码"
               sentText="发送中..."

@@ -494,8 +494,8 @@ export default function ResourceUploader({
             </div>
           )}
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-            <div className="w-full space-y-4 md:max-w-sm">
+          <div className="grid grid-cols-2 gap-3 md:gap-6">
+            <div className="w-full space-y-4 max-w-sm">
               <div>
                 <AdvancedInput
                   label={
