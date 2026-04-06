@@ -46,7 +46,7 @@ export default function SupplementRequestPrompt({
     <div
       className={`flex flex-col gap-3 sm:flex-row sm:items-center ${align === "right" ? "sm:justify-end" : align === "center" ? "sm:justify-center" : "sm:justify-between"} ${className}`}
     >
-      <div className={`flex flex-col gap-1 ${justifyClassName}`}>
+      <div className={`hidden flex-col gap-1 sm:flex ${justifyClassName}`}>
         <div className="text-sm font-semibold text-slate-700">{copy.title}</div>
         <div className="text-xs text-slate-500">
           提交补录申请，通过审核后才会正式添加。
