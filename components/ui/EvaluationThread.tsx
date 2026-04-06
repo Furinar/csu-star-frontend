@@ -114,7 +114,7 @@ function RatingInput({ label, value, onChange }: { label: string; value: number;
 
 function StatPill({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600">
+    <div className="rounded-full border border-gray-200 bg-white px-4 py-2 min-h-[40px] md:min-h-0 text-xs text-gray-600">
       <span className="mr-2 text-gray-400">{label}</span>
       <span className="font-medium text-gray-900">{value}</span>
     </div>
@@ -523,7 +523,7 @@ export default function EvaluationThread({
                     type="button"
                     onClick={() => updateEvaluationLike(evaluation.id, evaluationLikeType)}
                     disabled={likeLoadingKey === `evaluation-${evaluation.id}`}
-                    className={`rounded-full px-3 py-1.5 text-xs transition ${
+                    className={`rounded-full px-4 py-2 min-h-[40px] md:min-h-0 text-xs transition ${
                       evaluation.is_liked
                         ? "bg-[var(--first-color)] text-white"
                         : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
@@ -535,7 +535,7 @@ export default function EvaluationThread({
                     type="button"
                     onClick={() => reportTarget(`evaluation-${evaluation.id}`, evaluationReportType, evaluation.id, "评价")}
                     disabled={reportingKey === `evaluation-${evaluation.id}`}
-                    className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+                    className="rounded-full border border-gray-200 bg-white px-4 py-2 min-h-[40px] md:min-h-0 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
                   >
                     {reportingKey === `evaluation-${evaluation.id}` ? "提交中..." : "举报"}
                   </button>
@@ -593,7 +593,7 @@ export default function EvaluationThread({
                                   },
                                 }))
                               }
-                              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
+                              className="rounded-full border border-gray-200 bg-white px-4 py-2 min-h-[40px] md:min-h-0 text-xs text-gray-600 transition hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
                             >
                               回复这条
                             </button>
@@ -601,7 +601,7 @@ export default function EvaluationThread({
                               type="button"
                               onClick={() => updateReplyLike(evaluation.id, reply.id)}
                               disabled={likeLoadingKey === `reply-${reply.id}`}
-                              className={`rounded-full px-3 py-1.5 text-xs transition ${
+                              className={`rounded-full px-4 py-2 min-h-[40px] md:min-h-0 text-xs transition ${
                                 reply.is_liked
                                   ? "bg-[var(--first-color)] text-white"
                                   : "border border-gray-200 bg-white text-gray-600 hover:border-[var(--first-color)]/30 hover:text-[var(--first-color)]"
@@ -613,7 +613,7 @@ export default function EvaluationThread({
                               type="button"
                               onClick={() => reportTarget(`reply-${reply.id}`, replyReportType, reply.id, "回复")}
                               disabled={reportingKey === `reply-${reply.id}`}
-                              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
+                              className="rounded-full border border-gray-200 bg-white px-4 py-2 min-h-[40px] md:min-h-0 text-xs text-gray-600 transition hover:border-rose-200 hover:text-rose-600"
                             >
                               {reportingKey === `reply-${reply.id}` ? "提交中..." : "举报"}
                             </button>

@@ -65,7 +65,7 @@ export default function ItemActionMenu({
                 setOpen(false);
                 await item.onClick();
               }}
-              className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${
+              className={`flex w-full items-center rounded-xl px-3 py-3 md:py-2 text-left text-sm transition ${
                 item.destructive
                   ? "text-rose-600 hover:bg-rose-50"
                   : "text-slate-700 hover:bg-slate-50"

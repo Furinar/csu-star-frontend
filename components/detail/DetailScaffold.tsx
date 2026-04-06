@@ -152,7 +152,7 @@ export function DetailStatCard({
   return (
     <div className="rounded-[30px] border border-white/80 bg-white/82 p-6 shadow-[0_18px_40px_rgba(15,23,42,0.06)] backdrop-blur-xl">
       <div className="text-sm font-medium text-slate-500">{label}</div>
-      <div className="mt-3 text-6xl font-semibold tracking-[-0.07em] text-slate-950">{value}</div>
+      <div className="mt-3 text-5xl md:text-6xl font-semibold tracking-[-0.07em] text-slate-950">{value}</div>
       {helper ? <div className="mt-5 text-sm text-slate-500">{helper}</div> : null}
     </div>
   );
