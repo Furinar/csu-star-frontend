@@ -34,6 +34,11 @@ interface MeOverviewProps {
 }
 
 const MOBILE_CONTRIBUTION_WEEKS = 20;
+const contributionStats = [
+  { label: "活跃天数", icon: "calendar-alt", key: "active_days" as const, suffix: " 天" },
+  { label: "连续活跃", icon: "history", key: "current_streak" as const, suffix: " 天" },
+  { label: "最高单日", icon: "chart-line", key: "max_day_score" as const, suffix: " 分" },
+];
 
 function getContributionClassName(cell: ContributionCell) {
   if (cell.is_future) {
@@ -179,19 +184,24 @@ export default function MeOverview({
                   )}
               </h4>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm text-gray-600">
-              <StatPill
-                label="活跃天数"
-                value={`${formatNumber(contributionData.active_days)} 天`}
-              />
-              <StatPill
-                label="连续活跃"
-                value={`${formatNumber(contributionData.current_streak)} 天`}
-              />
-              <StatPill
-                label="最高单日"
-                value={`${formatNumber(contributionData.max_day_score)} 分`}
-              />
+            <div className="flex w-full flex-nowrap items-center justify-between gap-2 whitespace-nowrap text-[10px] text-gray-500 sm:hidden">
+              {contributionStats.map((item) => (
+                <MobileStatItem
+                  key={item.key}
+                  icon={item.icon}
+                  label={item.label}
+                  value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
+                />
+              ))}
+            </div>
+            <div className="hidden flex-wrap gap-3 text-sm text-gray-600 sm:flex">
+              {contributionStats.map((item) => (
+                <StatPill
+                  key={item.key}
+                  label={item.label}
+                  value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
+                />
+              ))}
             </div>
           </div>
 
@@ -363,6 +373,24 @@ function StatPill({ label, value }: { label: string; value: string }) {
     <div className="rounded-full border border-gray-200/70 bg-white/55 px-3 py-1.5 text-xs text-gray-600">
       <span className="mr-2 text-gray-400">{label}</span>
       <span className="font-medium text-gray-800">{value}</span>
+    </div>
+  );
+}
+
+function MobileStatItem({
+  icon,
+  label,
+  value,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="inline-flex min-w-0 items-center gap-1 whitespace-nowrap leading-none text-gray-500">
+      <i className={`uil uil-${icon} shrink-0 text-[12px] text-gray-400`} />
+      <span className="text-[9px] text-gray-400">{label}</span>
+      <span className="text-[10px] font-medium text-gray-800">{value}</span>
     </div>
   );
 }
