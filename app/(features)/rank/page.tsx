@@ -290,15 +290,15 @@ export default function Rank() {
   };
 
   return (
-    <div className="container flex flex-col gap-10 mt-10">
-      <div className="flex justify-center items-center flex-col gap-3 w-full">
+    <div className="container mt-6 flex flex-col gap-6 md:mt-8 md:gap-8">
+      <div className="flex w-full flex-col items-center justify-center gap-2 md:gap-3">
         <div className="hero-gradient-text text-4xl font-bold">天梯风云榜</div>
         <div className="text-gray-600">
           Rise step by step, witness the top glory.
         </div>
       </div>
 
-      <div className="flex flex-col gap-5 items-center">
+      <div className="flex flex-col items-center gap-3 md:gap-5">
         <div className="flex gap-5 w-full justify-center overflow-x-auto pb-1">
           <div className="relative flex min-w-max p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 ">
             <div
@@ -331,7 +331,7 @@ export default function Rank() {
 
       <div className=" border-t border-gray-300" />
 
-      <div className="md:hidden flex flex-col gap-2">
+      <div className="md:hidden flex flex-col gap-1.5">
         <div className="w-full">
           <label className="mb-1 block text-sm font-medium text-gray-600">
             排行维度
@@ -422,7 +422,7 @@ export default function Rank() {
         </div>
       </div>
 
-      <div className="hidden md:flex md:flex-row md:justify-between md:items-center">
+      <div className="hidden md:flex md:flex-row md:items-center md:justify-between">
         <div className="mt-5 flex items-center self-start">
           <span
             onClick={() => setSortType("desc")}
@@ -514,7 +514,7 @@ export default function Rank() {
       </div>
 
       {!hasRequested ? (
-        <div className="flex flex-col gap-5 items-center justify-center mt-15">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-12 md:gap-5">
           <div className="text-8xl text-gray-300">
             <i className="uil uil-filter"></i>
           </div>
@@ -524,8 +524,8 @@ export default function Rank() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-5 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
-          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-4 md:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+          <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between md:mb-4 md:gap-2">
             <div className="text-base md:text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-red-500 tracking-wider">
               巅峰百强
             </div>
@@ -536,7 +536,7 @@ export default function Rank() {
           </div>
 
           {errorMessage ? (
-            <div className="py-12 text-center">
+            <div className="py-8 text-center md:py-12">
               <div className="text-red-500 text-base">{errorMessage}</div>
               <div className="mt-3 text-gray-500 text-sm">
                 你可以点击右上角按钮重试请求。
@@ -545,7 +545,7 @@ export default function Rank() {
           ) : null}
 
           {!errorMessage && loading ? (
-            <div className="py-12 text-center text-gray-500">
+            <div className="py-8 text-center text-gray-500 md:py-12">
               排行榜加载中...
             </div>
           ) : null}
@@ -611,7 +611,7 @@ export default function Rank() {
           ) : null}
 
           {!errorMessage && !loading && currentItemsEmpty ? (
-            <div className="flex flex-col gap-4 items-center justify-center py-12">
+            <div className="flex flex-col items-center justify-center gap-3 py-8 md:gap-4 md:py-12">
               <div className="text-7xl text-gray-300">
                 <i className="uil uil-filter"></i>
               </div>
@@ -625,7 +625,7 @@ export default function Rank() {
           {!errorMessage && !loading && !currentItemsEmpty ? (
             <div
               ref={loadMoreRef}
-              className="flex justify-center py-6 text-sm text-gray-500"
+              className="flex justify-center py-4 text-sm text-gray-500 md:py-6"
             >
               {isLoadingMore ? "正在加载更多..." : null}
               {!isLoadingMore && !hasMore ? "没有更多内容了" : null}
