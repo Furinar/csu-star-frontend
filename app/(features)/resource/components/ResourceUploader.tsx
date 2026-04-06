@@ -33,6 +33,8 @@ import {
 } from "./AdvancedFormControls";
 import type { EntityId } from "@/types/entity";
 
+const MAX_UPLOAD_FILENAME_LENGTH = 255;
+
 function getUploadErrorMessage(error: unknown) {
   if (!axios.isAxiosError(error)) {
     return error instanceof Error ? error.message : "上传过程中出错，请重试";
@@ -64,6 +66,30 @@ function getUploadErrorMessage(error: unknown) {
   return error.message || "上传过程中出错，请重试";
 }
 
+function splitEditableFilename(filename: string) {
+  const lastDot = filename.lastIndexOf(".");
+  if (lastDot <= 0 || lastDot === filename.length - 1) {
+    return { baseName: filename, extension: "" };
+  }
+
+  return {
+    baseName: filename.slice(0, lastDot),
+    extension: filename.slice(lastDot),
+  };
+}
+
+function buildEditedFilename(baseName: string, extension: string) {
+  const trimmed = baseName.trim();
+  if (!trimmed) return null;
+
+  const nextFilename = `${trimmed}${extension}`;
+  if (nextFilename.length > MAX_UPLOAD_FILENAME_LENGTH) {
+    return null;
+  }
+
+  return nextFilename;
+}
+
 export interface ResourceUploaderProps {
   isModal?: boolean;
   onClose?: () => void;
@@ -82,6 +108,7 @@ export default function ResourceUploader({
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<UploadFileItem[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -103,6 +130,8 @@ export default function ResourceUploader({
     null,
   );
   const [errorMsg, setErrorMsg] = useState("");
+  const [editingFileId, setEditingFileId] = useState<string | null>(null);
+  const [editingBaseName, setEditingBaseName] = useState("");
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -120,13 +149,14 @@ export default function ResourceUploader({
       const mapped = newFiles.map((f) => ({
         local_id: Math.random().toString(36).substring(7),
         file: f,
+        filename: f.name,
         progress: 0,
         status: "queued" as const,
       }));
       setFiles((prev) => {
         const next = [...prev, ...mapped];
         if (!title && prev.length === 0 && mapped.length > 0) {
-          setTitle(mapped[0].file.name.replace(/\.[^/.]+$/, ""));
+          setTitle(splitEditableFilename(mapped[0].filename).baseName);
         }
         return next;
       });
@@ -154,7 +184,39 @@ export default function ResourceUploader({
 
   const removeFile = (local_id: string) => {
     if (isUploading || uploadedResourceId) return;
+    if (editingFileId === local_id) {
+      setEditingFileId(null);
+      setEditingBaseName("");
+    }
     setFiles((prev) => prev.filter((f) => f.local_id !== local_id));
+  };
+
+  const startEditingFileName = (localId: string, filename: string) => {
+    if (isUploading || uploadedResourceId) return;
+    setErrorMsg("");
+    setEditingFileId(localId);
+    setEditingBaseName(splitEditableFilename(filename).baseName);
+  };
+
+  const cancelEditingFileName = () => {
+    setEditingFileId(null);
+    setEditingBaseName("");
+  };
+
+  const saveEditedFileName = (localId: string, extension: string) => {
+    const nextFilename = buildEditedFilename(editingBaseName, extension);
+    if (!nextFilename) {
+      setErrorMsg("文件名不能为空，且长度不能超过 255 个字符");
+      return;
+    }
+
+    setFiles((prev) =>
+      prev.map((item) =>
+        item.local_id === localId ? { ...item, filename: nextFilename } : item,
+      ),
+    );
+    setErrorMsg("");
+    cancelEditingFileName();
   };
 
   const debouncedCourseQuery = useDebounce(courseQuery, 500);
@@ -191,6 +253,12 @@ export default function ResourceUploader({
     };
   }, [debouncedCourseQuery]);
 
+  useEffect(() => {
+    if (!editingFileId) return;
+    renameInputRef.current?.focus();
+    renameInputRef.current?.select();
+  }, [editingFileId]);
+
   const startUpload = async () => {
     if (
       !requireAuthAction({
@@ -215,7 +283,27 @@ export default function ResourceUploader({
       setErrorMsg("请选择关联课程");
       return;
     }
-    const totalSize = files.reduce((acc, file) => acc + file.file.size, 0);
+    let filesForUpload = files;
+    if (editingFileId) {
+      const editingTarget = files.find((item) => item.local_id === editingFileId);
+      if (editingTarget) {
+        const nextFilename = buildEditedFilename(
+          editingBaseName,
+          splitEditableFilename(editingTarget.filename).extension,
+        );
+        if (!nextFilename) {
+          setErrorMsg("文件名不能为空，且长度不能超过 255 个字符");
+          return;
+        }
+        filesForUpload = files.map((item) =>
+          item.local_id === editingFileId ? { ...item, filename: nextFilename } : item,
+        );
+        setFiles(filesForUpload);
+        cancelEditingFileName();
+      }
+    }
+
+    const totalSize = filesForUpload.reduce((acc, file) => acc + file.file.size, 0);
     if (totalSize > MAX_RESOURCE_UPLOAD_SIZE_BYTES) {
       setErrorMsg("单个资源上传总大小不能超过 300MB");
       return;
@@ -239,8 +327,8 @@ export default function ResourceUploader({
         description,
         course_id: selectedCourse.id,
         resource_type: resourceType,
-        files: files.map((f) => ({
-          filename: f.file.name,
+        files: filesForUpload.map((f) => ({
+          filename: f.filename,
           size_bytes: f.file.size,
           mime: f.file.type || undefined,
         })),
@@ -253,10 +341,10 @@ export default function ResourceUploader({
       const totalBytes = totalSize;
       const uploadedBytesPerFile: Record<string, number> = {};
 
-      const uploadPromises = files.map(async (fileItem, index) => {
+      const uploadPromises = filesForUpload.map(async (fileItem, index) => {
         const urlItem = upload_urls[index];
         if (!urlItem) {
-          throw new Error(`未找到文件 ${fileItem.file.name} 的上传链接`);
+          throw new Error(`未找到文件 ${fileItem.filename} 的上传链接`);
         }
 
         try {
@@ -574,9 +662,41 @@ export default function ResourceUploader({
 
                     <div className="flex items-center gap-3 relative z-10 w-full max-w-[85%]">
                       <i className="uil uil-file-alt text-xl text-emerald-400" />
-                      <div className="truncate text-sm text-black flex-1">
-                        {f.file.name}
-                      </div>
+                      {editingFileId === f.local_id ? (
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                          <input
+                            ref={renameInputRef}
+                            type="text"
+                            value={editingBaseName}
+                            onChange={(e) => setEditingBaseName(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                saveEditedFileName(
+                                  f.local_id,
+                                  splitEditableFilename(f.filename).extension,
+                                );
+                              }
+                              if (e.key === "Escape") {
+                                e.preventDefault();
+                                cancelEditingFileName();
+                              }
+                            }}
+                            className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm text-black outline-none transition focus:border-emerald-400"
+                            maxLength={MAX_UPLOAD_FILENAME_LENGTH}
+                          />
+                          {splitEditableFilename(f.filename).extension ? (
+                            <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
+                              {splitEditableFilename(f.filename).extension}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <div className="truncate text-sm text-black flex-1" title={f.filename}>
+                          {f.filename}
+                        </div>
+                      )}
                       <div className="text-xs text-second w-16 text-right shrink-0">
                         {(f.file.size / 1024 / 1024).toFixed(2)} MB
                       </div>
@@ -598,15 +718,58 @@ export default function ResourceUploader({
                         />
                       )}
                       {f.status === "queued" && !isUploading && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFile(f.local_id);
-                          }}
-                          className="text-ice-400 hover:text-red-500 transition-colors"
-                        >
-                          <i className="uil uil-trash-alt text-lg" />
-                        </button>
+                        <>
+                          {editingFileId === f.local_id ? (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  saveEditedFileName(
+                                    f.local_id,
+                                    splitEditableFilename(f.filename).extension,
+                                  );
+                                }}
+                                className="text-emerald-500 hover:text-emerald-600 transition-colors"
+                                title="保存文件名"
+                              >
+                                <i className="uil uil-check text-lg" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  cancelEditingFileName();
+                                }}
+                                className="text-slate-400 hover:text-slate-600 transition-colors"
+                                title="取消编辑"
+                              >
+                                <i className="uil uil-times text-lg" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  startEditingFileName(f.local_id, f.filename);
+                                }}
+                                className="text-ice-400 hover:text-emerald-500 transition-colors"
+                                title="编辑文件名"
+                              >
+                                <i className="uil uil-edit text-lg" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeFile(f.local_id);
+                                }}
+                                className="text-ice-400 hover:text-red-500 transition-colors"
+                                title="移除文件"
+                              >
+                                <i className="uil uil-trash-alt text-lg" />
+                              </button>
+                            </>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

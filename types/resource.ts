@@ -58,6 +58,7 @@ export type UploadFileStatus = "queued" | "uploading" | "success" | "failed";
 export interface UploadFileItem {
   local_id: string;
   file: File;
+  filename: string;
   file_id?: string | null;
   upload?: ResourceUploadUrlItem | null;
   progress: number;
