@@ -89,6 +89,24 @@ const StyledWrapper = styled.div`
     font-weight: 600;
     color: #333;
   }
+  @media (max-width: 767px) {
+    .button {
+      min-width: 124px;
+      height: 40px;
+      padding: 0 14px;
+      font-size: 13px;
+      --radius: 12px;
+    }
+    .button::before {
+      inset: 6px 5px 5px 5px;
+    }
+    .state .icon {
+      transform: scale(1.08);
+    }
+    .button:hover .state--default .icon {
+      transform: rotate(45deg) scale(1.08);
+    }
+  }
   .button:hover {
     transform: scale(1.02);
     box-shadow: 0 0 1px 2px rgba(255, 255, 255, 0.3),

@@ -62,9 +62,9 @@ export default function DetailComposerModal({
 
   return (
     <div className="fixed inset-0 z-[1150] overflow-y-auto bg-slate-950/30 backdrop-blur-md">
-      <div className="flex min-h-full items-center justify-center p-4 md:p-6 pb-safe">
+      <div className="flex min-h-full items-center justify-center p-3 pb-safe md:p-6">
         <div
-          className={`relative w-full max-w-4xl flex flex-col rounded-[24px] border border-slate-200/80 bg-white p-6 md:p-8 ${tone.ring}`}
+          className={`relative flex w-full max-w-4xl flex-col rounded-[20px] border border-slate-200/80 bg-white p-4 md:rounded-[24px] md:p-8 ${tone.ring}`}
         >
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl opacity-50" />
 
@@ -72,12 +72,12 @@ export default function DetailComposerModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white/75 text-lg text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-800"
+          className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/75 text-base text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-800 md:right-4 md:top-4 md:h-10 md:w-10 md:text-lg"
         >
           ×
         </button>
 
-        <div className="relative z-10 w-full pt-4">
+        <div className="relative z-10 w-full pt-2 md:pt-4">
           {children}
         </div>
       </div>

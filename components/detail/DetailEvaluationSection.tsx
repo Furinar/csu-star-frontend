@@ -715,21 +715,21 @@ export default function DetailEvaluationSection({
       isReplying: replyingToId === id,
       replyComposer:
         replyingToId === id ? (
-          <div className="mt-3 flex flex-col gap-3">
+          <div className="mt-2.5 flex flex-col gap-2.5 md:mt-3 md:gap-3">
             <textarea
               value={draftMap[id] || ""}
               onChange={(e) => setDraftMap((prev) => ({ ...prev, [id]: e.target.value }))}
               placeholder={targetMap[id]?.userName ? `回复 @${targetMap[id].userName}...` : "写下你的回复..."}
-              className="w-full min-h-[100px] resize-none rounded-2xl border border-slate-200 p-4 text-sm transition-all focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
+              className="min-h-[88px] w-full resize-none rounded-2xl border border-slate-200 p-3 text-xs transition-all focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)] md:min-h-[100px] md:p-4 md:text-sm"
             />
-            <label className="flex items-center gap-2 text-sm text-slate-500">
+            <label className="flex items-center gap-2 text-xs text-slate-500 md:text-sm">
               <input
                 type="checkbox"
                 checked={Boolean(replyAnonymousMap[id])}
                 onChange={(event) =>
                   setReplyAnonymousMap((prev) => ({ ...prev, [id]: event.target.checked }))
                 }
-                className="h-4 w-4 rounded border-slate-300"
+                className="h-3.5 w-3.5 rounded border-slate-300 md:h-4 md:w-4"
               />
               匿名回复
             </label>
@@ -740,7 +740,7 @@ export default function DetailEvaluationSection({
                   setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));
                   setTargetMap((prev) => ({ ...prev, [id]: {} }));
                 }}
-                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 md:px-4 md:py-2 md:text-sm"
               >
                 取消
               </button>
@@ -812,19 +812,19 @@ export default function DetailEvaluationSection({
         title={
           <div className="flex items-center gap-2">
             <span>{title}</span>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-sm font-medium text-gray-500">{total}</span>
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 md:text-sm">{total}</span>
           </div>
         }
         description={description}
         action={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
+          <div className="flex w-full flex-nowrap items-center gap-2 overflow-x-auto pb-1 md:w-auto md:flex-wrap md:gap-3 md:overflow-visible md:pb-0">
+            <div className="flex shrink-0 gap-1 rounded-full border border-slate-200 bg-slate-50 p-1 md:gap-2">
               {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
                 <button
                   key={item}
                   type="button"
                   onClick={() => setSort(item)}
-                  className={`rounded-full px-4 py-1.5 text-sm transition ${
+                  className={`rounded-full px-3 py-1 text-xs transition md:px-4 md:py-1.5 md:text-sm ${
                     sort === item
                       ? "bg-[image:var(--page-accent-gradient)] text-white"
                       : "text-slate-500 hover:text-[var(--page-accent-text)]"
@@ -843,7 +843,7 @@ export default function DetailEvaluationSection({
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-[var(--page-accent-text)]" />
           </div>
         ) : (
-          <div className="mt-6 flex flex-col gap-6">
+          <div className="mt-4 flex flex-col gap-4 md:mt-6 md:gap-6">
             <BilibiliCommentThread comments={bilibiliComments} />
           </div>
         )}
@@ -897,18 +897,18 @@ export default function DetailEvaluationSection({
         description="可以修改回复内容，并重新选择是否匿名。"
       >
         {editingReply ? (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <textarea
               value={editingReplyDraft}
               onChange={(event) => setEditingReplyDraft(event.target.value)}
-              className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
+              className="min-h-[112px] w-full resize-none rounded-2xl border border-slate-200 p-3 text-xs focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)] md:min-h-[140px] md:p-4 md:text-sm"
             />
-            <label className="flex items-center gap-2 text-sm text-slate-500">
+            <label className="flex items-center gap-2 text-xs text-slate-500 md:text-sm">
               <input
                 type="checkbox"
                 checked={editingReplyAnonymous}
                 onChange={(event) => setEditingReplyAnonymous(event.target.checked)}
-                className="h-4 w-4 rounded border-slate-300"
+                className="h-3.5 w-3.5 rounded border-slate-300 md:h-4 md:w-4"
               />
               匿名回复
             </label>
@@ -916,7 +916,7 @@ export default function DetailEvaluationSection({
               <button
                 type="button"
                 onClick={() => setEditingReply(null)}
-                className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-700 md:px-4 md:py-2 md:text-sm"
               >
                 取消
               </button>

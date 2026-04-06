@@ -25,7 +25,6 @@ export interface BilibiliReplyItemProps {
 }
 
 export default function BilibiliReplyItem({
-  id,
   user,
   replyToUser,
   content,
@@ -62,7 +61,7 @@ export default function BilibiliReplyItem({
 
   return (
     <div
-      className="group/reply flex gap-3 rounded-xl px-2 py-2 transition-colors duration-200"
+      className="group/reply flex gap-2 rounded-xl px-1.5 py-1.5 transition-colors duration-200 md:gap-3 md:px-2 md:py-2"
       style={{ backgroundColor: isFlashing ? "var(--page-accent-soft-strong)" : "transparent" }}
     >
       {/* Avatar */}
@@ -73,26 +72,26 @@ export default function BilibiliReplyItem({
             align="left"
             triggerClassName="block rounded-full"
             trigger={
-              <div className="relative h-6 w-6 overflow-hidden rounded-full border border-gray-100 bg-gray-50 cursor-pointer">
+              <div className="relative h-5 w-5 cursor-pointer overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
                 <Image
                   src={displayUser.avatar_url || DEFAULT_AVATAR}
                   alt={displayUser.nickname}
                   fill
                   className="object-cover"
-                  sizes="24px"
+                  sizes="(max-width: 767px) 20px, 24px"
                   unoptimized
                 />
               </div>
             }
           />
         ) : (
-          <div className="relative h-6 w-6 rounded-full overflow-hidden border border-gray-100 bg-gray-50">
+          <div className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
             <Image
               src={displayUser.avatar_url || DEFAULT_AVATAR}
               alt={displayUser.nickname}
               fill
               className="object-cover"
-              sizes="24px"
+              sizes="(max-width: 767px) 20px, 24px"
               unoptimized
             />
           </div>
@@ -100,14 +99,14 @@ export default function BilibiliReplyItem({
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 text-[13.5px] leading-relaxed">
+      <div className="min-w-0 flex-1 text-[12px] leading-5 md:text-[13.5px] md:leading-relaxed">
         <div className="flex flex-col gap-0.5">
-          <div className="flex items-center text-[12.5px] leading-normal mb-0.5">
-            <span className="mr-1.5 cursor-pointer font-medium text-gray-500 transition-colors hover:text-[var(--page-accent-text)]">
+          <div className="mb-0.5 flex flex-wrap items-center text-[11px] leading-normal md:text-[12.5px]">
+            <span className="mr-1 cursor-pointer font-medium text-gray-500 transition-colors hover:text-[var(--page-accent-text)] md:mr-1.5">
               {displayUser.nickname}
             </span>
             {replyToUser && (
-              <span className="text-gray-400 text-[12px] mr-1.5">
+              <span className="mr-1 text-[10px] text-gray-400 md:mr-1.5 md:text-[12px]">
                 回复{" "}
                 <span className="cursor-pointer text-[var(--page-at-color)] hover:underline">
                   @{replyToUser.nickname}
@@ -116,18 +115,18 @@ export default function BilibiliReplyItem({
               </span>
             )}
           </div>
-          <span className="text-gray-800 break-words text-[13.5px]">{content}</span>
+          <span className="break-words text-[12px] text-gray-800 md:text-[13.5px]">{content}</span>
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center gap-4 mt-1 text-[12px] text-gray-400">
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 md:gap-4 md:text-[12px]">
           <span>{formatDateTimeZh(createdAt)}</span>
 
           <button
             className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
             onClick={() => onLike?.(Boolean(isLiked))}
           >
-            <i className="uil uil-thumbs-up text-[14px]"></i>
+            <i className="uil uil-thumbs-up text-[12px] md:text-[14px]"></i>
             <span>{likes || ""}</span>
           </button>
 

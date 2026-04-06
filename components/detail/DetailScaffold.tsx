@@ -170,15 +170,15 @@ export function DetailSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[32px] border border-slate-200/80 bg-white/90 p-6 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:p-7">
-      <div className="flex flex-col gap-3 border-b border-slate-100 pb-5 md:flex-row md:items-end md:justify-between">
+    <section className="rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:rounded-[32px] md:p-7">
+      <div className="flex flex-col gap-2.5 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between md:gap-3 md:pb-5">
         <div>
-          <h2 className="text-2xl font-semibold tracking-[-0.04em] text-slate-950">{title}</h2>
-          {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
+          <h2 className="text-xl font-semibold tracking-[-0.04em] text-slate-950 md:text-2xl">{title}</h2>
+          {description ? <p className="mt-1 text-xs text-slate-500 md:text-sm">{description}</p> : null}
         </div>
         {action}
       </div>
-      <div className="pt-6">{children}</div>
+      <div className="pt-4 md:pt-6">{children}</div>
     </section>
   );
 }
