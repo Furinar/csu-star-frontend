@@ -193,6 +193,7 @@ export default function BilibiliCommentItem({
             <span className="text-gray-400">{formatDateTimeZh(createdAt)}</span>
 
             <button
+                type="button"
                 className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
                 onClick={() => onLike?.(Boolean(isLiked))}
             >
@@ -203,6 +204,7 @@ export default function BilibiliCommentItem({
             </button>
 
             <button
+                type="button"
                 className="flex items-center gap-1 transition-colors hover:text-[var(--page-accent-text)]"
                 onClick={onReplyClick}
             >
@@ -242,6 +244,7 @@ export default function BilibiliCommentItem({
                         共 {replies.length} 条回复，
                       </span>
                       <button
+                        type="button"
                         className="font-medium text-[var(--page-accent-text)] transition hover:opacity-80"
                         onClick={() => setShowAllReplies((prev) => !prev)}
                       >

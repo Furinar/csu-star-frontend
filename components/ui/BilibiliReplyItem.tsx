@@ -123,6 +123,7 @@ export default function BilibiliReplyItem({
           <span>{formatDateTimeZh(createdAt)}</span>
 
           <button
+            type="button"
             className={`flex items-center gap-1 transition-colors hover:text-[var(--page-like-color)] ${isLiked ? "text-[var(--page-like-color)]" : ""}`}
             onClick={() => onLike?.(Boolean(isLiked))}
           >
@@ -131,6 +132,7 @@ export default function BilibiliReplyItem({
           </button>
 
           <button
+            type="button"
             className="transition-colors hover:text-[var(--page-accent-text)]"
             onClick={onReplyClick}
           >

@@ -735,6 +735,7 @@ export default function DetailEvaluationSection({
             </label>
             <div className="flex justify-end gap-2">
               <button
+                type="button"
                 onClick={() => {
                   setReplyingToId(null);
                   setReplyAnonymousMap((prev) => ({ ...prev, [id]: false }));

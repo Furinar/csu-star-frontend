@@ -12,6 +12,7 @@ const ActionSubmitButton = ({
   sentText = "Sent", 
   isSent = false,
   disabled,
+  type = "button",
   ...props 
 }: ButtonProps) => {
 
@@ -20,7 +21,7 @@ const ActionSubmitButton = ({
 
   return (
     <StyledWrapper>
-      <button className={`button ${isSent ? 'is-sent' : ''}`} disabled={disabled} {...props}>
+      <button className={`button ${isSent ? 'is-sent' : ''}`} disabled={disabled} type={type} {...props}>
         <div className="outline" />
         <div className="state state--default">
           <div className="icon">
