@@ -166,8 +166,8 @@
   }
 
   .teacher-slider-container .teacher-slider .box .item.is-current {
-    z-index: 6;
-    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.3);
+    z-index: 10;
+    box-shadow: 0 18px 34px rgba(15, 23, 42, 0.34);
   }
 
   .teacher-slider-container .teacher-slider .box .item.is-prev-2,
