@@ -143,12 +143,12 @@ export default function RankItemCard(props: RankItemCardProps) {
     title = item.name;
     subtitleIcon = "uil-building";
     subtitleContent = (
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] sm:text-xs text-gray-600">
+      <div className="flex w-full min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+        <span className="min-w-0 text-[10px] sm:text-xs text-gray-600 truncate">
           {item.department_name ||
             (item.department_id ? `学院ID:${item.department_id}` : "未知学院")}
         </span>
-        <span className="bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
+        <span className="shrink-0 bg-gray-100 px-2 py-0.5 rounded-full text-[10px] sm:text-xs text-gray-600">
           {item.title || "未知职称"}
         </span>
       </div>
@@ -308,14 +308,14 @@ export default function RankItemCard(props: RankItemCardProps) {
             ) : null}
           </div>
           {subtitleContent ? (
-            <div className="flex items-center gap-1.5 mt-1 sm:mt-1.5 text-xs text-gray-500 truncate h-[20px]">
-              <i className={`uil ${subtitleIcon} text-gray-400`}></i>
+            <div className="flex w-full items-center gap-1.5 mt-1 sm:mt-1.5 text-xs text-gray-500 overflow-hidden whitespace-nowrap h-[20px]">
+              <i className={`uil ${subtitleIcon} text-gray-400 shrink-0`}></i>
               {subtitleContent}
             </div>
           ) : null}
         </div>
 
-        <div className="mt-1 flex items-center gap-3 sm:gap-4 overflow-x-auto scroolbar-hide">
+        <div className="mt-1 flex items-center gap-3 sm:gap-4 overflow-x-auto scrollbar-hide">
           {bottomStats.map((stat) => (
             <div
               key={stat.label}
@@ -331,7 +331,7 @@ export default function RankItemCard(props: RankItemCardProps) {
         </div>
       </div>
 
-      <div className="w-[42%] sm:w-[45%] md:w-3/5 shrink-0 flex border-l border-gray-100">
+      <div className="sm:w-[45%] md:w-3/5 shrink-0 flex border-l border-gray-100">
         <div className="hidden sm:flex flex-1 flex-col justify-center px-3 md:px-4 border-r border-gray-100 min-w-0">
           <div className="flex flex-col gap-1.5 sm:gap-2">
             {rightDetailsContent}
