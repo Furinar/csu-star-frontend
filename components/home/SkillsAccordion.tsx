@@ -33,10 +33,10 @@ export default function SkillsAccordion() {
         <div className="max-w-5xl mx-auto">
           <Reveal direction="left" delay={0}>
             <div className="mb-6 md:mb-10">
-              <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
+              <h2 className="text-xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
                 技术栈
               </h2>
-              <span className="text-xs md:text-sm text-text-light mt-1 block tracking-widest uppercase">
+              <span className="text-[11px] md:text-sm text-text-light mt-1 block tracking-widest uppercase">
                 Tech Stack
               </span>
             </div>
@@ -51,7 +51,7 @@ export default function SkillsAccordion() {
               >
                 <div>
                   <div className="flex items-baseline gap-3 mb-4 md:mb-6">
-                    <span className="text-xs font-bold text-first tracking-[0.2em] uppercase">
+                    <span className="text-[11px] font-bold text-first tracking-[0.2em] uppercase">
                       {group.subtitle}
                     </span>
                     <div className="flex-1 h-px bg-border/60" />
@@ -64,9 +64,9 @@ export default function SkillsAccordion() {
                         className="group flex items-center gap-3 md:gap-4 py-1.5 md:py-2 cursor-default transition-all duration-300 hover:translate-x-2"
                       >
                         <i
-                          className={`${skill.icon} text-first text-base md:text-lg w-5 text-center shrink-0 transition-transform duration-300 group-hover:scale-125`}
+                          className={`${skill.icon} text-first text-sm md:text-lg w-5 text-center shrink-0 transition-transform duration-300 group-hover:scale-125`}
                         />
-                        <span className="text-lg md:text-2xl lg:text-3xl font-bold text-title tracking-tight transition-colors duration-300 group-hover:text-first">
+                        <span className="text-base md:text-2xl lg:text-3xl font-bold text-title tracking-tight transition-colors duration-300 group-hover:text-first">
                           {skill.name}
                         </span>
                       </div>

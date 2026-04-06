@@ -40,10 +40,10 @@ export default function PortfolioGrid() {
         {/* 标题区：左对齐 */}
         <Reveal direction="left" delay={0}>
           <div className="max-w-5xl mx-auto mb-6 md:mb-10">
-            <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
+            <h2 className="text-xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
               功能展示
             </h2>
-            <span className="text-xs md:text-sm text-text-light mt-1 block tracking-widest uppercase">
+            <span className="text-[11px] md:text-sm text-text-light mt-1 block tracking-widest uppercase">
               Core Modules
             </span>
           </div>
@@ -62,7 +62,7 @@ export default function PortfolioGrid() {
               >
                 {/* 水印图标 */}
                 <i
-                  className={`${item.icon} absolute right-3 md:right-6 top-4 md:top-6 text-[3rem] md:text-[4.5rem] text-title/8 pointer-events-none`}
+                  className={`${item.icon} absolute right-3 md:right-6 top-4 md:top-6 text-[2.5rem] md:text-[4.5rem] text-title/8 pointer-events-none`}
                 />
 
                 <div className="relative flex items-start gap-4">
@@ -73,7 +73,7 @@ export default function PortfolioGrid() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-base md:text-lg font-bold text-title">
+                      <h3 className="text-sm md:text-lg font-bold text-title">
                         {item.title}
                       </h3>
                       {item.comingSoon && (
@@ -82,16 +82,16 @@ export default function PortfolioGrid() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs md:text-sm text-text-light leading-relaxed mb-2">
+                    <p className="text-[11px] md:text-sm text-text-light leading-relaxed mb-2">
                       {item.desc}
                     </p>
-                    <p className="text-[0.65rem] md:text-xs text-text-light/60 mb-2">
+                    <p className="text-[0.6rem] md:text-xs text-text-light/60 mb-2">
                       {item.features.join(" / ")}
                     </p>
                     {!item.comingSoon && (
                       <a
                         href="#"
-                        className="inline-flex items-center text-first text-xs font-medium group-hover:gap-1.5 transition-all duration-300"
+                        className="inline-flex items-center text-first text-[11px] font-medium group-hover:gap-1.5 transition-all duration-300"
                       >
                         <span>了解更多</span>
                         <i className="uil uil-arrow-right ml-1 group-hover:translate-x-1 transition-transform duration-300" />

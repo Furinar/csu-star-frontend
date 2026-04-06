@@ -41,10 +41,10 @@ export default function HomeSection() {
                 </g>
               </svg>
               <div>
-                <h2 className="text-2xl font-semibold leading-tight text-title">
+                <h2 className="text-xl font-semibold leading-tight text-title">
                   南极星
                 </h2>
-                <span className="text-sm text-text-light tracking-wider">
+                <span className="text-xs text-text-light tracking-wider">
                   CSU STAR
                 </span>
               </div>
@@ -53,7 +53,7 @@ export default function HomeSection() {
             <Reveal direction="up" delay={150}>
               <div className="">
                 <h2 className="hidden md:block md:text-6xl">南极星</h2>
-                <h1 className="text-[2.25rem] font-bold leading-[1.1] tracking-tight md:text-6xl md:font-semibold md:leading-normal md:tracking-normal">
+                <h1 className="text-[1.95rem] font-bold leading-[1.1] tracking-tight md:text-6xl md:font-semibold md:leading-normal md:tracking-normal">
                   <span className="text-title">EXPLORE</span>
                   <br className="md:hidden" />{" "}
                   <span className="hero-gradient-text">CSU STAR</span>
@@ -64,7 +64,7 @@ export default function HomeSection() {
             <Reveal direction="up" delay={250}>
               <div className="flex items-center gap-2">
                 <div className="w-1 h-5 rounded-full bg-first" />
-                <h3 className="text-(length:--h3-font-size) text-text font-medium">
+                <h3 className="text-sm md:text-(length:--h3-font-size) text-text font-medium">
                   中南大学一站式综合平台
                 </h3>
               </div>
@@ -81,7 +81,7 @@ export default function HomeSection() {
                 </Link>
                 <Link
                   href="#about"
-                  className="button--link button--flex text-first text-sm font-medium md:hidden"
+                  className="button--link button--flex text-first text-xs font-medium md:hidden"
                 >
                   Learn more <i className="uil uil-arrow-right ml-1" />
                 </Link>

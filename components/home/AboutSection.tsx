@@ -27,10 +27,10 @@ export default function AboutSection() {
                   className="w-10 h-10 md:w-14 md:h-14 shrink-0 mt-1 drop-shadow-md"
                 />
                 <div>
-                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
+                  <h2 className="text-xl md:text-4xl lg:text-5xl font-black tracking-tight text-title leading-[1.1]">
                     关于南极星
                   </h2>
-                  <span className="text-xs md:text-sm text-text-light mt-1 block tracking-widest uppercase">
+                  <span className="text-[11px] md:text-sm text-text-light mt-1 block tracking-widest uppercase">
                     About CSU Star
                   </span>
                 </div>
@@ -39,10 +39,10 @@ export default function AboutSection() {
 
             <Reveal direction="up" delay={150}>
               <div className="md:pl-20 max-w-lg">
-                <h3 className="text-lg md:text-xl font-bold text-title mb-2">
+                <h3 className="text-base md:text-xl font-bold text-title mb-2">
                   学习资源 · 课程评价
                 </h3>
-                <p className="text-sm md:text-base text-text-light leading-relaxed">
+                <p className="text-[13px] md:text-base text-text-light leading-relaxed">
                   南极星汇集中南大学全校学习资源，提供课程与教师评分功能，帮助同学们做出更明智的选课决策。未来将持续拓展为一站式综合校园平台。
                 </p>
               </div>
@@ -53,7 +53,7 @@ export default function AboutSection() {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center gap-1.5 text-first text-xs md:text-sm font-medium"
+                    className="inline-flex items-center gap-1.5 text-first text-[11px] md:text-sm font-medium"
                   >
                     <i className="fa-solid fa-check text-[0.55rem]" />
                     {tag}
@@ -68,12 +68,12 @@ export default function AboutSection() {
               <Reveal key={stat.label} direction="right" delay={200 + i * 120}>
                 <div className="group text-center md:text-right">
                   <i
-                    className={`${stat.icon} text-first text-base md:text-lg mb-1 block transition-transform duration-300 group-hover:scale-110`}
+                    className={`${stat.icon} text-first text-sm md:text-lg mb-1 block transition-transform duration-300 group-hover:scale-110`}
                   />
-                  <div className="text-3xl md:text-5xl lg:text-6xl font-black text-title leading-none tracking-tighter">
+                  <div className="text-2xl md:text-5xl lg:text-6xl font-black text-title leading-none tracking-tighter">
                     {stat.value}
                   </div>
-                  <div className="text-[0.65rem] md:text-xs text-text-light mt-1 tracking-wider uppercase">
+                  <div className="text-[0.6rem] md:text-xs text-text-light mt-1 tracking-wider uppercase">
                     {stat.label}
                   </div>
                 </div>
