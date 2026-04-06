@@ -839,8 +839,6 @@ export default function ResourceDetailPage() {
 
         <DetailHero
           accent="resource"
-          contentClassName="pr-[11rem] md:pr-2"
-          asideClassName="absolute right-3 top-3 z-20 w-[10rem] md:static md:w-auto"
           title={resource.title}
           description={
             resource.description?.trim() ? (
