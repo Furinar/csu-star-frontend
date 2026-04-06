@@ -39,7 +39,7 @@ export default function FeedbackToaster() {
   const toasts = useFeedbackStore((state) => state.toasts);
 
   return (
-    <div className="pointer-events-none fixed inset-y-0 right-0 z-[1100] flex flex-col justify-start gap-3 p-0 w-full sm:w-80 md:w-96 pt-4 mt-17">
+    <div className="pointer-events-none fixed inset-y-0 right-0 z-[1100] mt-17 flex w-full flex-col justify-start gap-2 px-3 pt-3 sm:w-80 sm:gap-3 sm:px-0 sm:pt-4 md:w-96">
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
           <ToastCard key={toast.id} toast={toast} />
@@ -79,22 +79,22 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
         toast.onAction ? "cursor-pointer" : ""
       } ${tone.backgroundClass}`}
     >
-      <div className="flex gap-4 p-5">
-        <div className="flex shrink-0 items-start mt-0.5">
+      <div className="flex gap-3 p-3.5 sm:gap-4 sm:p-5">
+        <div className="mt-0.5 flex shrink-0 items-start">
           <ToastIcon
             type={toast.type}
-            className={`h-6 w-6 ${tone.iconClass}`}
+            className={`h-5 w-5 sm:h-6 sm:w-6 ${tone.iconClass}`}
           />
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-2 sm:gap-3">
             <div>
-              <p className="text-[15px] font-medium leading-tight">
+              <p className="text-[13px] font-medium leading-tight sm:text-[15px]">
                 {toast.title}
               </p>
               {toast.description && (
-                <p className="mt-1.5 text-sm opacity-80 leading-snug">
+                <p className="mt-1 text-xs leading-snug opacity-80 sm:mt-1.5 sm:text-sm">
                   {toast.description}
                 </p>
               )}
@@ -102,7 +102,7 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
 
             <button
               type="button"
-              className="shrink-0 rounded-sm p-1 -m-1 opacity-50 hover:opacity-100 transition-opacity"
+              className="-m-1 shrink-0 rounded-sm p-1 opacity-50 transition-opacity hover:opacity-100"
               onClick={() => feedback.dismiss(toast.id)}
             >
               <CloseIcon />
@@ -112,7 +112,7 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
           {toast.actionLabel && toast.onAction && (
             <button
               type="button"
-              className="mt-3 cursor-pointer text-sm font-medium underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100"
+              className="mt-2 cursor-pointer text-xs font-medium underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100 sm:mt-3 sm:text-sm"
               onClick={() => {
                 toast.onAction?.();
                 feedback.dismiss(toast.id);
@@ -218,7 +218,7 @@ function ToastIcon({
 
 function CloseIcon() {
   return (
-    <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+    <svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5 sm:h-4 sm:w-4">
       <path
         d="M6 6L14 14M14 6L6 14"
         stroke="currentColor"
