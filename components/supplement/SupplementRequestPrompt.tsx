@@ -35,20 +35,24 @@ export default function SupplementRequestPrompt({
   variant: SupplementRequestPromptVariant;
 }) {
   const copy = getPromptCopy(variant);
+  const isCentered = align === "center";
   const justifyClassName =
     align === "right"
-      ? "justify-end text-right"
-      : align === "center"
+      ? "items-end text-right"
+      : isCentered
         ? "items-center text-center"
         : "items-start text-left";
+  const containerClassName = isCentered
+    ? "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center"
+    : "flex w-full items-center justify-between gap-3";
 
   return (
     <div
-      className={`flex flex-col gap-3 sm:flex-row sm:items-center ${align === "right" ? "sm:justify-end" : align === "center" ? "sm:justify-center" : "sm:justify-between"} ${className}`}
+      className={`${containerClassName} ${align === "right" ? "sm:justify-end" : isCentered ? "sm:justify-center" : "sm:justify-between"} ${className}`}
     >
-      <div className={`hidden flex-col gap-1 sm:flex ${justifyClassName}`}>
+      <div className={`flex min-w-0 flex-col gap-1 ${justifyClassName}`}>
         <div className="text-sm font-semibold text-slate-700">{copy.title}</div>
-        <div className="text-xs text-slate-500">
+        <div className={`text-xs text-slate-500 ${isCentered ? "" : "hidden sm:block"}`}>
           提交补录申请，通过审核后才会正式添加。
         </div>
       </div>
@@ -56,7 +60,7 @@ export default function SupplementRequestPrompt({
       <button
         type="button"
         onClick={onClick}
-        className="inline-flex cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+        className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md ${align === "right" ? "ml-auto" : ""}`}
       >
         {copy.buttonLabel}
       </button>

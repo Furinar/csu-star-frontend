@@ -184,7 +184,7 @@ export default function SearchLandingSection({
 
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
         <div className="flex flex-col gap-2">
           <h2
             className="bg-clip-text text-3xl font-bold text-transparent"
@@ -197,7 +197,7 @@ export default function SearchLandingSection({
           ) : null}
         </div>
 
-        {action ? <div className="shrink-0">{action}</div> : null}
+        {action ? <div className="w-full self-stretch md:w-auto md:shrink-0 md:self-auto">{action}</div> : null}
       </div>
 
       {isLoading ? (
