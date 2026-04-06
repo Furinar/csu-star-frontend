@@ -2,6 +2,7 @@
 
 import GlassCard from "@/components/ui/GlassCard";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { UserProfile } from "@/types/auth";
 import type { ContributionCell, ContributionSummary } from "@/types/me";
@@ -68,7 +69,7 @@ export default function MeOverview({
     key: PanelKey;
     title: string;
     icon: string;
-    desc: string;
+    desc: ReactNode;
     badge?: string;
   }> = [
     {
@@ -95,7 +96,12 @@ export default function MeOverview({
       desc:
         accountMode === "oauth_pending_email"
           ? "继续补绑其他方式"
-          : "绑定 QQ / GitHub / Google",
+          : (
+              <>
+                <span className="sm:hidden">绑定QQ等</span>
+                <span className="hidden sm:inline">绑定QQ / GitHub / Google</span>
+              </>
+            ),
     },
     {
       key: "points" as PanelKey,
@@ -280,7 +286,7 @@ function SettingsActionCard({
 }: {
   title: string;
   icon: string;
-  description: string;
+  description: ReactNode;
   badge?: string;
   onClick: () => void;
 }) {
