@@ -251,4 +251,19 @@ const StyledWrapper = styled.div`
       transform: translateY(0);
     }
   }
+
+  @media (max-width: 767px) {
+    .download-button,
+    .download-button[data-status="loading"],
+    .download-button[data-status="success"] {
+      width: 54px;
+      min-width: 54px;
+      padding: 5px;
+      justify-content: center;
+    }
+
+    .download-button .title {
+      display: none;
+    }
+  }
 `;
