@@ -184,7 +184,7 @@ export default function SearchLandingSection({
 
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div className="flex flex-col gap-2">
           <h2
             className="bg-clip-text text-3xl font-bold text-transparent"

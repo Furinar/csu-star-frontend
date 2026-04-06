@@ -130,22 +130,22 @@ export default function Teacher() {
 
         <TeacherSlider />
 
-        <div className="relative z-10 mt-8 flex w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-10 pt-7">
+        <div className="relative z-10 mt-8 flex w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-5 md:px-10 pt-7">
           <div className="absolute top-10 left-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl -z-10" style={{ backgroundColor: teacherTheme.blobColors[0] }}></div>
           <div className="absolute top-0 right-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-2000 -z-10" style={{ backgroundColor: teacherTheme.blobColors[1] }}></div>
           <div className="absolute -bottom-8 left-1/3 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-4000 -z-10" style={{ backgroundColor: teacherTheme.blobColors[2] }}></div>
 
           <div className="flex items-center justify-between mb-2 mt-4">
-            <div className="head flex w-full">
-              <h2 className="hero-gradient-text flex-1 pl-5 text-3xl font-extrabold">
+            <div className="head flex flex-col md:flex-row w-full items-start md:items-center gap-2 md:gap-0">
+              <h2 className="hero-gradient-text flex-1 pl-2 md:pl-5 text-2xl md:text-3xl font-extrabold">
                 教师综合评价榜单
               </h2>
 
-              <span className="mr-7 cursor-pointer">查看全部排行榜</span>
+              <span className="pl-2 md:pl-0 md:mr-7 cursor-pointer text-sm md:text-base text-gray-500 hover:text-gray-800 transition-colors">查看全部排行榜</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
             <RankCard
               title="教学质量排行榜"
               data={qualityRanks}
