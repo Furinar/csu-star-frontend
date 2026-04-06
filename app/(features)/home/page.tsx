@@ -114,7 +114,7 @@ export default function Home() {
           />
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-2 md:mt-10">
+        <div className="mt-8 flex items-center justify-center gap-2 md:mt-10">
           <img
             src="/undraw_route-planning_2psv.svg"
             alt=""
