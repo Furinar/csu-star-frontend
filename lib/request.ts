@@ -70,6 +70,9 @@ const buildIllegalPageUrl = (error: AxiosError) => {
   });
 
   if (data) {
+    if (typeof data.ban_source === 'string' && data.ban_source.trim()) {
+      params.set('ban_source', data.ban_source);
+    }
     if (typeof data.ban_reason === 'string' && data.ban_reason.trim()) {
       params.set('ban_reason', data.ban_reason);
     }
@@ -100,10 +103,10 @@ const shouldRedirectToIllegalPage = (error: AxiosError) => {
   }
 
   const code = 'code' in payload ? payload.code : null;
-  if (code === 1021) return true;
+  if (code === 1016 || code === 1021) return true;
 
   const data = extractApiErrorData(error);
-  return data?.ban_source === 'system' || Boolean(data?.ban_until) || data?.permanent === true;
+  return typeof data?.ban_source === 'string' || Boolean(data?.ban_until) || data?.permanent === true;
 }
 
 
@@ -141,7 +144,11 @@ service.interceptors.response.use(
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
       if (shouldRedirectToIllegalPage(error)) {
-        const message = extractApiErrorMessage(error) || '账号因异常行为已被系统限制';
+        const data = extractApiErrorData(error);
+        const defaultMessage = data?.ban_source === 'admin'
+          ? '账号已被管理员封禁'
+          : '账号因异常行为已被系统限制';
+        const message = extractApiErrorMessage(error) || defaultMessage;
         feedback.warning({
           title: '账号已被限制',
           description: message,

@@ -10,10 +10,13 @@ export default function IllegalPage() {
   const {countdown, startTimer} = useTimer(5);
 
   const reason = searchParams.get("reason");
+  const banSource = searchParams.get("ban_source");
   const banReason = searchParams.get("ban_reason");
   const banUntil = searchParams.get("ban_until");
   const violationCount = searchParams.get("violation_count");
   const permanent = searchParams.get("permanent") === "1";
+  const isAdminBan = banSource === "admin";
+  const isSystemBan = banSource === "system";
 
   const formattedBanUntil = (() => {
     if (!banUntil) return "";
@@ -46,8 +49,14 @@ export default function IllegalPage() {
           </p>
           {reason === "banned" ? (
             <div className="mb-6 space-y-2 text-sm text-gray-600">
-              <p>系统检测到异常请求或上传行为，当前账号已被临时限制。</p>
-              {violationCount && <p>累计违规次数：{violationCount}</p>}
+              <p>
+                {isAdminBan
+                  ? "管理员已对当前账号执行封禁操作，请联系管理员了解详情。"
+                  : isSystemBan
+                    ? "系统检测到异常请求或上传行为，当前账号已被临时限制。"
+                    : "当前账号已被限制，请稍后再试或联系管理员。"}
+              </p>
+              {isSystemBan && violationCount ? <p>累计违规次数：{violationCount}</p> : null}
               {banReason && <p>限制原因：{banReason}</p>}
               <p>解除时间：{permanent ? "永久封禁" : formattedBanUntil || "暂未提供"}</p>
             </div>
