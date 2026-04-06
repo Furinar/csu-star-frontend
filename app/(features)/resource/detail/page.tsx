@@ -988,9 +988,9 @@ export default function ResourceDetailPage() {
               {resource.files.map((file) => (
                 <div
                   key={file.id}
-                  className="flex flex-col gap-4 rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between"
+                  className="flex flex-row items-center justify-between gap-3 rounded-[20px] border border-slate-100 bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:-translate-y-0.5 hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] md:gap-4 md:p-4"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-4">
                     <Image
                       src={getFileIcon(file.filename)}
                       alt={file.filename}
@@ -998,11 +998,11 @@ export default function ResourceDetailPage() {
                       width={40}
                       height={40}
                     />
-                    <div className="min-w-0">
-                      <div className="truncate text-base font-semibold text-slate-800">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-semibold text-slate-800 md:text-base">
                         {file.filename}
                       </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-slate-500">
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-slate-500 md:gap-x-3 md:text-[13px]">
                         <span className="flex items-center gap-1">
                           <i className="uil uil-database text-sky-400"></i>{" "}
                           {formatFileSize(file.size_bytes)}
