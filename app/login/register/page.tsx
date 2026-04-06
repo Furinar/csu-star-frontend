@@ -1,51 +1,66 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Stepper, { Step } from "@/components/ui/Stepper";
 import { avatarOptions } from "@/data/avatar";
 import { useRouter, useSearchParams } from "next/navigation";
 import { registerByEmail } from "@/api/auth";
 import { feedback } from "@/store/useFeedbackStore";
+import { useHasMounted } from "@/hooks/useHasMounted";
+
+type RegisterPayload = {
+  email: string;
+  password: string;
+};
 
 export default function Register() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [registerPayload, setRegisterPayload] = useState<{
-    email: string;
-    password: string;
-  } | null>(null);
+  const hasMounted = useHasMounted();
+  const registerPayload = useMemo<RegisterPayload | null | undefined>(() => {
+    if (!hasMounted) {
+      return undefined;
+    }
+
+    const payloadStr = sessionStorage.getItem("registerPayload");
+    if (!payloadStr) {
+      return null;
+    }
+
+    try {
+      const payload = JSON.parse(payloadStr) as Partial<RegisterPayload>;
+      if (
+        typeof payload.email !== "string" ||
+        typeof payload.password !== "string" ||
+        !payload.email ||
+        !payload.password
+      ) {
+        return null;
+      }
+      return {
+        email: payload.email,
+        password: payload.password,
+      };
+    } catch {
+      return null;
+    }
+  }, [hasMounted]);
 
   const [nickname, setNickname] = useState("");
   const [avatarMode, setAvatarMode] = useState<"preset" | "custom">("preset");
   const [avatarIndex, setAvatarIndex] = useState(0);
   const [customAvatarUrl, setCustomAvatarUrl] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [inviteCode, setInviteCode] = useState(
+    () => searchParams.get("invite_code")?.trim() ?? "",
+  );
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const inviteCodeFromQuery = searchParams.get("invite_code")?.trim() ?? "";
-    const payloadStr = sessionStorage.getItem("registerPayload");
-    if (!payloadStr) {
-      router.replace("/login/illegal");
+    if (!hasMounted || registerPayload !== null) {
       return;
     }
-    try {
-      const payload = JSON.parse(payloadStr);
-      if (!payload.email || !payload.password) {
-        router.replace("/login/illegal");
-        return;
-      }
-      setRegisterPayload(payload);
-      if (inviteCodeFromQuery) {
-        setInviteCode(inviteCodeFromQuery);
-      }
-    } catch {
-      router.replace("/login/illegal");
-      return;
-    }
-    setIsVerifying(false);
-  }, [router, searchParams]);
+    router.replace("/login/illegal");
+  }, [hasMounted, registerPayload, router]);
 
   const handleBeforeStepChange = async (
     currentStep: number,
@@ -120,7 +135,7 @@ export default function Register() {
     router.push("/login");
   };
 
-  if (isVerifying) {
+  if (!hasMounted || registerPayload === undefined || registerPayload === null) {
     return (
       <div className="flex min-h-svh items-center justify-center">
         正在验证环境...
