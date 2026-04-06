@@ -11,7 +11,7 @@ export default function StarRating({
 
   return (
     <div
-      className="star-rating relative inline-block leading-none text-gray-400"
+      className="star-rating relative inline-block shrink-0 whitespace-nowrap leading-none text-gray-400"
       style={{ fontSize: size || "10px" }}
     >
       <i className="fa fa-star" />

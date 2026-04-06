@@ -159,18 +159,18 @@ function HeroScoreCard({
   return (
     <div className="course-rate flex h-full flex-col">
       <div
-        className={`avg-rate flex w-full items-center self-center ${
+        className={`avg-rate flex w-full flex-nowrap items-center self-center ${
           compact ? "justify-between gap-2" : "justify-around"
         }`}
       >
-        <div className="flex items-baseline gap-1">
+        <div className="flex flex-nowrap items-baseline gap-1">
           <div className={`self-center font-bold ${compact ? "text-3xl" : "text-6xl"}`}>
             {formatScore(avgScore)}
           </div>
-          <div className={`self-end text-gray-500 ${compact ? "text-[11px]" : "text-base"}`}>/ 5.0</div>
+          <div className={`self-end whitespace-nowrap text-gray-500 ${compact ? "text-[11px]" : "text-base"}`}>/ 5.0</div>
         </div>
 
-        <div className={`flex flex-col ${compact ? "items-end" : ""}`}>
+        <div className={`flex shrink-0 flex-col whitespace-nowrap ${compact ? "items-end" : ""}`}>
           <div className={compact ? "mb-0.5" : "mb-1"}>
             <StarRating
               score={normalizeRating(avgScore)}
@@ -179,7 +179,7 @@ function HeroScoreCard({
             />
           </div>
 
-          <div className={`text-gray-500 ${compact ? "text-[10px]" : "text-sm"}`}>
+          <div className={`whitespace-nowrap text-gray-500 ${compact ? "text-[10px]" : "text-sm"}`}>
             基于 <strong>{evalCount ?? 0}</strong> 条评价
           </div>
         </div>
@@ -210,7 +210,7 @@ function MobileResourceLink({ href, count }: MobileResourceLinkProps) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 md:hidden"
+      className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-sky-200 bg-white px-3 py-1.5 text-xs font-semibold text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 md:hidden"
     >
       <i className="uil uil-file-alt text-sm text-[var(--first-color)]"></i>
       <span>关联资源</span>
@@ -242,15 +242,15 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
         </div>
 
         <div className="left flex flex-col gap-3 md:gap-4">
-          <div className="course-info mt-2 flex flex-wrap items-center justify-between gap-2 md:mt-0 md:gap-4">
+          <div className="course-info mt-2 flex flex-nowrap items-center justify-between gap-2 overflow-hidden md:mt-0 md:gap-4">
             <Link
               href={buildCoursePath(course.id)}
-              className="course-name line-clamp-2 pl-10 pb-1 text-2xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm md:pl-15 md:text-4xl md:line-clamp-none"
+              className="course-name min-w-0 flex-1 truncate whitespace-nowrap pl-10 pb-1 text-2xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm md:pl-15 md:text-4xl"
             >
               {course.name}
             </Link>
 
-            <div className="ml-auto flex items-center gap-2 md:ml-0 md:gap-3">
+            <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap md:ml-0 md:gap-3">
               <MobileResourceLink href={resourcePath} count={resourceCount} />
               <CollectButton
                 size="sm"
