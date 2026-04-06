@@ -332,6 +332,10 @@ export default function Me() {
     );
   };
 
+  const handleOpenProfilePanel = () => {
+    openProtectedPanel("profile");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white px-4 py-10 transition-colors duration-300 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row">
@@ -339,7 +343,12 @@ export default function Me() {
         <aside className="w-full flex-shrink-0 md:w-1/3 lg:w-1/4">
           <div className="sticky top-24 space-y-6">
             <GlassCard className="flex flex-col items-center p-6 text-center md:items-start md:text-left">
-              <div className="group relative mb-4 cursor-pointer">
+              <button
+                type="button"
+                onClick={handleOpenProfilePanel}
+                className="group relative mb-4 cursor-pointer rounded-full text-left"
+                aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
+              >
                 <img
                   className="h-48 w-48 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02]"
                   src={profile?.avatar_url || "/furina.jpg"}
@@ -347,10 +356,10 @@ export default function Me() {
                 />
                 <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                   <span className="text-sm text-white">
-                    {accountMode === "guest" ? "登录后更换头像" : "编辑资料"}
+                    {accountMode === "guest" ? "登录后编辑资料" : "点击编辑资料"}
                   </span>
                 </div>
-              </div>
+              </button>
 
               <div className="mb-4 space-y-2">
                 <span
@@ -643,7 +652,7 @@ export default function Me() {
       <FloatingPanel
         open={openPanel === "profile"}
         title="编辑个人资料"
-        description="修改你的昵称、头像或学院信息。"
+        description="修改你的昵称、学院和年级信息，头像通过第三方账号同步。"
         onClose={() => setOpenPanel(null)}
       >
         {profile ? (
@@ -651,6 +660,7 @@ export default function Me() {
             profile={profile}
             departments={departments}
             onClose={() => setOpenPanel(null)}
+            onOpenOAuth={() => setOpenPanel("oauth")}
             onProfileUpdated={handleProfileUpdated}
           />
         ) : null}

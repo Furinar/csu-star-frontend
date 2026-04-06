@@ -119,11 +119,13 @@ export default function ProfilePanel({
   profile,
   departments,
   onClose,
+  onOpenOAuth,
   onProfileUpdated,
 }: {
   profile: UserProfile;
   departments: Department[];
   onClose: () => void;
+  onOpenOAuth: () => void;
   onProfileUpdated: (
     nextProfile: UserProfile,
     updater: (current: MeDashboardData | null) => MeDashboardData | null,
@@ -131,7 +133,6 @@ export default function ProfilePanel({
 }) {
   const [form, setForm] = useState({
     nickname: profile.nickname ?? "",
-    avatar_url: profile.avatar_url ?? "",
     department_id: profile.department_id ? `${profile.department_id}` : "",
     grade: profile.grade ? `${profile.grade}` : "",
   });
@@ -140,7 +141,6 @@ export default function ProfilePanel({
 
   const handleSave = async () => {
     const nickname = form.nickname.trim();
-    const avatarUrl = form.avatar_url.trim();
     const currentYear = new Date().getFullYear();
     const parsedGrade = form.grade.trim() ? Number(form.grade) : undefined;
 
@@ -150,21 +150,6 @@ export default function ProfilePanel({
         description: "请填写要展示的昵称。",
       });
       return;
-    }
-
-    if (avatarUrl) {
-      try {
-        const parsedUrl = new URL(avatarUrl);
-        if (!["http:", "https:"].includes(parsedUrl.protocol)) {
-          throw new Error("invalid protocol");
-        }
-      } catch {
-        feedback.warning({
-          title: "头像地址无效",
-          description: "请填写有效的 http/https 图片地址。",
-        });
-        return;
-      }
     }
 
     if (
@@ -182,7 +167,6 @@ export default function ProfilePanel({
 
     const payload: MyProfileUpdateInput = {
       nickname,
-      avatar_url: avatarUrl || undefined,
       department_id: form.department_id
         ? Number(form.department_id)
         : undefined,
@@ -221,6 +205,24 @@ export default function ProfilePanel({
         完善学院和年级后，个人中心会同步显示更完整的资料信息。
       </div>
 
+      <div className="rounded-2xl border border-amber-100 bg-amber-50/80 px-4 py-4 text-sm leading-6 text-slate-600">
+        <p>
+          想换个性化头像，请绑定第三方平台账户。绑定成功后会自动切换为该平台头像，之后通过 OAuth 登录也会同步刷新头像。
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenOAuth}
+            className="rounded-xl border border-amber-200 bg-white/90 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition hover:bg-white"
+          >
+            去绑定第三方账号
+          </button>
+          <span className="text-xs text-slate-500">
+            当前头像地址不再在此处展示或手动编辑。
+          </span>
+        </div>
+      </div>
+
       <AdvancedInput
         label="昵称"
         maxLength={30}
@@ -230,19 +232,6 @@ export default function ProfilePanel({
           setForm((current) => ({
             ...current,
             nickname: event.target.value,
-          }))
-        }
-      />
-
-      <AdvancedInput
-        label="头像 URL"
-        type="url"
-        placeholder="输入新的 http/https 头像链接"
-        value={form.avatar_url}
-        onChange={(event) =>
-          setForm((current) => ({
-            ...current,
-            avatar_url: event.target.value,
           }))
         }
       />

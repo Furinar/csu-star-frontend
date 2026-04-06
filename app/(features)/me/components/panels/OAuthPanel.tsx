@@ -29,6 +29,10 @@ export default function OAuthPanel({
     bindings?.github ? "github" : null,
     bindings?.google ? "google" : null,
   ].filter(Boolean) as OAuthBindProvider[]);
+  const syncHint =
+    accountMode === "oauth_pending_email"
+      ? "绑定更多第三方账号后，你可以在不同设备上更方便地登录南极星。"
+      : "绑定第三方账号后会自动同步该平台头像，后续通过 OAuth 登录时也会刷新为该平台当前头像。";
 
   const handleOAuthBind = async (platform: AuthPlatform) => {
     try {
@@ -67,9 +71,7 @@ export default function OAuthPanel({
     <>
       <div className="space-y-6">
         <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4 text-sm text-gray-500 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.02),inset_-2px_-2px_5px_rgba(255,255,255,0.5)]">
-          {accountMode === "oauth_pending_email" ? (
-            <p>绑定更多第三方账号后，你可以在不同设备上更方便地登录南极星。</p>
-          ) : null}
+          <p>{syncHint}</p>
           {providers.length > 0 ? (
             <p className="mt-2 font-medium text-first">
               已成功绑定：
