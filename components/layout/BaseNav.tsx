@@ -95,14 +95,18 @@ function DesktopNavLink(
 }
 
 export default function BaseNav({
-                                  navItems,
-                                  isActive,
-                                  scrolled,
-                                  useNextLink = false,
-                                  onItemClick,
-                                }: BaseNavProps) {
+  navItems,
+  isActive,
+  scrolled,
+  useNextLink = false,
+  onItemClick,
+}: BaseNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
   const navListRef = useRef<HTMLUListElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileAvatarRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({
     left: 0,
     width: 0,
@@ -114,6 +118,7 @@ export default function BaseNav({
 
   const handleMenuClose = () => {
     setMenuOpen(false);
+    setAvatarMenuOpen(false);
   };
 
   const handleNavClick = (href: string) => {
@@ -149,13 +154,36 @@ export default function BaseNav({
     return () => window.removeEventListener("resize", updateIndicator);
   }, [isActive, navItems]);
 
+  useEffect(() => {
+    if (!menuOpen && !avatarMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      const clickedMenu =
+        mobileMenuRef.current?.contains(target) ||
+        mobileMenuButtonRef.current?.contains(target);
+      const clickedAvatar = mobileAvatarRef.current?.contains(target);
+
+      if (!clickedMenu && menuOpen) {
+        setMenuOpen(false);
+      }
+
+      if (!clickedAvatar && avatarMenuOpen) {
+        setAvatarMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [avatarMenuOpen, menuOpen]);
+
   return (
     <>
-        <div
-            className={`sticky top-0 w-full z-fixed bg-body md:hidden ${
-                scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
-            } transition-shadow duration-1000`}
-        >
+      <div
+        className={`sticky top-0 w-full z-fixed bg-body md:hidden ${
+          scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
+        } transition-shadow duration-1000`}
+      >
         <div className="container relative flex justify-between items-center h-[calc(var(--header-height)+1.5rem)]">
           <Link
             href="/"
@@ -172,7 +200,11 @@ export default function BaseNav({
                   aria-hidden="true"
                 />
               ) : avatar ? (
-                <div className="relative group p-1 cursor-pointer">
+                <div
+                  ref={mobileAvatarRef}
+                  className="relative p-1 cursor-pointer"
+                  onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                >
                   <img
                     src={avatar}
                     alt="Avatar"
@@ -180,7 +212,13 @@ export default function BaseNav({
                     height={28}
                     className="w-7 h-7 rounded-full object-cover"
                   />
-                  <div className="absolute right-0 top-full mt-2 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-fixed overflow-hidden flex flex-col">
+                  <div
+                    className={`absolute right-0 top-full mt-2 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] transition-all duration-300 z-fixed overflow-hidden flex flex-col ${
+                      avatarMenuOpen
+                        ? "opacity-100 visible"
+                        : "opacity-0 invisible"
+                    }`}
+                  >
                     <Link
                       href="/me"
                       onClick={handleMenuClose}
@@ -190,7 +228,8 @@ export default function BaseNav({
                     </Link>
                     <div className="w-full h-[1px] bg-[var(--nav-splitter)] opacity-60"></div>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         logout();
                         handleMenuClose();
                       }}
@@ -221,6 +260,7 @@ export default function BaseNav({
             <div className="w-[1px] h-5 bg-[var(--nav-splitter)] opacity-60" />
 
             <button
+              ref={mobileMenuButtonRef}
               onClick={() => setMenuOpen(!menuOpen)}
               className="p-1 text-[var(--text-color)] hover:text-first transition-colors"
               aria-label="打开菜单"
@@ -232,7 +272,10 @@ export default function BaseNav({
           </div>
 
           {menuOpen && (
-            <div className="absolute top-[calc(var(--header-height)+1rem)] right-4 w-48 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] z-fixed overflow-hidden origin-top-right">
+            <div
+              ref={mobileMenuRef}
+              className="absolute top-[calc(var(--header-height)+1rem)] right-4 w-48 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] z-fixed overflow-hidden origin-top-right"
+            >
               <nav>
                 <ul className="flex flex-col py-2">
                   {navItems.map((item) => {
@@ -255,11 +298,11 @@ export default function BaseNav({
         </div>
       </div>
 
-        <header
-            className={`hidden md:block sticky top-0 w-full z-fixed px-4 lg:px-4 bg-body ${
-                scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
-            } transition-shadow duration-1000`}
-            id="header"
+      <header
+        className={`hidden md:block sticky top-0 w-full z-fixed px-4 lg:px-4 bg-body ${
+          scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
+        } transition-shadow duration-1000`}
+        id="header"
       >
         <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">
           <Link
