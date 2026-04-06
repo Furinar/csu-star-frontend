@@ -250,19 +250,24 @@ const normalizeResourceComments = (raw: unknown): ResourceComment[] => {
 
   return raw.flatMap((item) => {
     if (!isRecord(item)) return [];
+    const nestedReplies = Array.isArray(item.replies)
+      ? item.replies
+      : Array.isArray(item.children)
+        ? item.children
+        : [];
 
     return [
       {
         id: toStringId(item.id) ?? "",
         user: normalizeUserBrief(item.user),
-        resource_id: toStringId(item.resource_id) ?? "",
+        resource_id: toStringId(item.resource_id) ?? toStringId(item.target_id) ?? "",
         parent_id: toStringId(item.parent_id),
         reply_to_user: normalizeUserBrief(item.reply_to_user),
         reply_to_comment_id: toStringId(item.reply_to_comment_id),
         content: toStringSafe(item.content) ?? "",
-        likes: toNumber(item.likes),
+        likes: toNumber(item.likes) ?? toNumber(item.like_count),
         is_liked: toBoolean(item.is_liked),
-        children: normalizeResourceComments(item.children),
+        children: normalizeResourceComments(nestedReplies),
         depth: toNumber(item.depth),
         created_at: toStringSafe(item.created_at) ?? "",
       },
