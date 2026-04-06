@@ -173,21 +173,23 @@ export default function CourseResourceCollectionPage() {
       <section className="relative overflow-hidden rounded-[24px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-4 shadow-[0_16px_42px_rgba(15,23,42,0.08)] md:rounded-[36px] md:p-8 md:shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-200/55 blur-3xl md:-right-10 md:-top-10 md:h-40 md:w-40"></div>
         <div className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-200/40 blur-3xl md:-bottom-10 md:left-10 md:h-40 md:w-40"></div>
-        <div className="relative flex items-start gap-3 md:gap-6 lg:items-end lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3 rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:space-y-4 md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
-              <i className="uil uil-folder-open"></i>
-              课程资源合集
-            </div>
-            <div>
-              <div className="text-[11px] font-medium tracking-[0.18em] text-gray-400 md:text-sm">
-                课程信息
+        <div className="relative flex items-stretch gap-3 md:gap-6 lg:items-end lg:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col justify-between rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:space-y-4 md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
+            <div className="space-y-3 md:space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
+                <i className="uil uil-folder-open"></i>
+                课程资源合集
               </div>
-              <h1 className="mt-1.5 line-clamp-2 pr-1 text-xl font-bold leading-tight text-gray-900 md:mt-2 md:text-4xl">
-                {detail.course.name}
-              </h1>
+              <div>
+                <div className="text-[11px] font-medium tracking-[0.18em] text-gray-400 md:text-sm">
+                  课程信息
+                </div>
+                <h1 className="mt-1.5 line-clamp-2 pr-1 text-xl font-bold leading-tight text-gray-900 md:mt-2 md:text-4xl">
+                  {detail.course.name}
+                </h1>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 md:gap-3">
+            <div className="mt-3 flex flex-wrap gap-2 md:mt-0 md:gap-3">
               <Link
                 href={buildCoursePath(detail.course.id)}
                 className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-white/95 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-50 md:px-4 md:py-2 md:text-sm"
@@ -197,7 +199,7 @@ export default function CourseResourceCollectionPage() {
               </Link>
             </div>
           </div>
-          <div className="grid w-[148px] shrink-0 grid-cols-2 gap-2 rounded-[22px] border border-white/80 bg-white/78 p-2.5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm md:w-auto md:min-w-[320px] md:gap-3 md:rounded-[28px] md:p-4 lg:min-w-[420px]">
+          <div className="grid min-w-0 flex-1 grid-cols-2 gap-2 rounded-[22px] border border-white/80 bg-white/78 p-2.5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm md:w-auto md:min-w-[320px] md:flex-none md:gap-3 md:rounded-[28px] md:p-4 lg:min-w-[420px]">
             {statCards.map((stat) => (
               <div
                 key={stat.label}
