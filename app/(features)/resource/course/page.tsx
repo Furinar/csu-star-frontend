@@ -235,16 +235,18 @@ export default function CourseResourceCollectionPage() {
                     <div className="mt-1.5 md:mt-3 text-sm md:text-lg font-semibold text-gray-900 line-clamp-2">
                       {resource.title}
                     </div>
-                    <p
-                      className="mt-1 md:mt-2 line-clamp-2 overflow-hidden text-[11px] md:text-sm leading-snug md:leading-5 text-gray-500"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 2,
-                      }}
-                    >
-                      {resource.description?.trim() || "暂无资源说明。"}
-                    </p>
+                    {resource.description?.trim() ? (
+                      <p
+                        className="mt-1 md:mt-2 line-clamp-2 overflow-hidden text-[11px] md:text-sm leading-snug md:leading-5 text-gray-500"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 2,
+                        }}
+                      >
+                        {resource.description.trim()}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="shrink-0 rounded-xl md:rounded-2xl border border-emerald-100 bg-emerald-50/80 px-2 py-1 md:px-3 md:py-2 text-center min-w-16 md:min-w-20 flex flex-col items-center justify-center">
                     <div className="text-[11px] text-emerald-600">文件数</div>

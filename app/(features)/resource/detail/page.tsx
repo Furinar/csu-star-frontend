@@ -843,14 +843,16 @@ export default function ResourceDetailPage() {
           asideClassName="absolute right-3 top-3 z-20 w-[10rem] md:static md:w-auto"
           title={resource.title}
           description={
-            <div className="space-y-1.5 md:space-y-2">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80 md:text-xs md:tracking-[0.18em]">
-                资源说明
+            resource.description?.trim() ? (
+              <div className="space-y-1.5 md:space-y-2">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-emerald-700/80 md:text-xs md:tracking-[0.18em]">
+                  资源说明
+                </div>
+                <div className="whitespace-pre-wrap text-xs leading-6 text-slate-600 md:text-base md:leading-7">
+                  {resource.description.trim()}
+                </div>
               </div>
-              <div className="whitespace-pre-wrap text-xs leading-6 text-slate-600 md:text-base md:leading-7">
-                {resource.description?.trim() || "暂无资源说明。"}
-              </div>
-            </div>
+            ) : undefined
           }
           meta={
             <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 md:mt-4 md:gap-4 md:text-sm">
