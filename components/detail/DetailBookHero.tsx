@@ -147,6 +147,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
     const course = props.data;
     const teachers = course.teachers || [];
     const resourcePath = buildResourceCollectionPath(course.id);
+    const hasResourceCollection = (course.resource_count ?? 0) > 0;
     const courseTypeChars = isPublicCourseType(course.course_type)
       ? ["公", "选"]
       : ["非", "公", "选"];
@@ -182,31 +183,37 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
             </div>
           </div>
 
-          <div className="course-relate flex-1 grid grid-cols-1 gap-6 pt-4 md:grid-cols-2">
-            <div
-              className={`resource-card flex flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
-            >
-              <div className="mb-2 flex items-center gap-2 text-gray-500">
-                <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
-                <span className="text-sm font-medium text-gray-600">
-                  关联资源
-                </span>
-              </div>
-              <div className="my-2 flex flex-1 items-center justify-center text-5xl font-bold tracking-tight text-gray-800">
-                {course.resource_count ?? 0}
-              </div>
-              <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
-                <div className="flex items-center gap-1 text-xs font-medium text-gray-400">
-                  <i className="uil uil-import text-sm"></i> 课程资源
+          <div
+            className={`course-relate flex-1 grid grid-cols-1 gap-6 pt-4 ${
+              hasResourceCollection ? "md:grid-cols-2" : "md:grid-cols-1"
+            }`}
+          >
+            {hasResourceCollection ? (
+              <div
+                className={`resource-card flex flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
+              >
+                <div className="mb-2 flex items-center gap-2 text-gray-500">
+                  <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
+                  <span className="text-sm font-medium text-gray-600">
+                    关联资源
+                  </span>
                 </div>
-                <Link
-                  href={resourcePath}
-                  className="rounded-md px-2 py-1 text-xs font-medium text-[var(--first-color)] transition-colors hover:bg-[var(--first-color)] hover:text-white"
-                >
-                  资源详情
-                </Link>
+                <div className="my-2 flex flex-1 items-center justify-center text-5xl font-bold tracking-tight text-gray-800">
+                  {course.resource_count ?? 0}
+                </div>
+                <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
+                  <div className="flex items-center gap-1 text-xs font-medium text-gray-400">
+                    <i className="uil uil-import text-sm"></i> 课程资源
+                  </div>
+                  <Link
+                    href={resourcePath}
+                    className="rounded-md px-2 py-1 text-xs font-medium text-[var(--first-color)] transition-colors hover:bg-[var(--first-color)] hover:text-white"
+                  >
+                    资源详情
+                  </Link>
+                </div>
               </div>
-            </div>
+            ) : null}
 
             <div
               className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}

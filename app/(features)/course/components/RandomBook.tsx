@@ -106,6 +106,7 @@ export default function RandomBook() {
   const teacherCount = course.teacher_count ?? course.teachers.length;
   const coursePath = course.id ? buildCoursePath(course.id) : null;
   const resourcePath = course.id ? buildResourceCollectionPath(course.id) : null;
+  const hasResourceCollection = (course.resource_count ?? 0) > 0;
   const evaluationPath = course.id ? buildCourseEvaluationAnchor(course.id) : null;
   const courseTypeChars = isPublicCourseType(course.course_type) ? ["公", "选"] : ["非", "公", "选"];
 
@@ -174,38 +175,43 @@ export default function RandomBook() {
               </div>
             </div>
 
-            <div className="course-relate flex-1 grid grid-cols-3 gap-6 pt-4">
+            <div
+                className={`course-relate flex-1 grid gap-6 pt-4 ${
+                  hasResourceCollection ? "grid-cols-3" : "grid-cols-2"
+                }`}>
               {/* 关联资源卡片 */}
-              <div
-                  className="resource-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between transition-transform hover:-translate-y-1">
-                <div className="flex items-center gap-2 text-gray-500 mb-2">
-                  <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
-                  <span className="text-sm font-medium text-gray-600">
-                  关联资源
-                </span>
-                </div>
+              {hasResourceCollection ? (
                 <div
-                    className="flex-1 flex justify-center items-center text-5xl font-bold text-gray-800 my-2 tracking-tight">
-                  {isLoading ? "..." : course.resource_count ?? 0}
-                </div>
-                <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                  <div className="text-xs text-gray-400 flex items-center gap-1 font-medium">
-                    <i className="uil uil-import text-sm"></i> 课程资源
-                  </div>
-                  {resourcePath ? (
-                      <Link
-                          href={resourcePath}
-                          className="text-xs text-[var(--first-color)] hover:text-white hover:bg-[var(--first-color)] px-2 py-1 rounded-md transition-colors font-medium"
-                      >
-                        资源详情
-                      </Link>
-                  ) : (
-                      <span className="text-xs text-gray-300 px-2 py-1 font-medium">
-                    资源详情
+                    className="resource-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between transition-transform hover:-translate-y-1">
+                  <div className="flex items-center gap-2 text-gray-500 mb-2">
+                    <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
+                    <span className="text-sm font-medium text-gray-600">
+                    关联资源
                   </span>
-                  )}
+                  </div>
+                  <div
+                      className="flex-1 flex justify-center items-center text-5xl font-bold text-gray-800 my-2 tracking-tight">
+                    {isLoading ? "..." : course.resource_count ?? 0}
+                  </div>
+                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
+                    <div className="text-xs text-gray-400 flex items-center gap-1 font-medium">
+                      <i className="uil uil-import text-sm"></i> 课程资源
+                    </div>
+                    {resourcePath ? (
+                        <Link
+                            href={resourcePath}
+                            className="text-xs text-[var(--first-color)] hover:text-white hover:bg-[var(--first-color)] px-2 py-1 rounded-md transition-colors font-medium"
+                        >
+                          资源详情
+                        </Link>
+                    ) : (
+                        <span className="text-xs text-gray-300 px-2 py-1 font-medium">
+                      资源详情
+                    </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               {/* 相关评价卡片 */}
               <div

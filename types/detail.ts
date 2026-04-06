@@ -22,6 +22,7 @@ export interface CourseBrief {
 export interface ResourceBrief {
   id: EntityId;
   title: string;
+  detail_path?: string | null;
   description?: string | null;
   resource_type?: string | null;
   downloads?: number | null;

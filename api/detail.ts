@@ -137,6 +137,7 @@ const normalizeResourceBriefs = (raw: unknown) => {
       {
         id: toStringId(item.id) ?? "",
         title: toStringSafe(item.title) ?? "未命名资料",
+        detail_path: toStringSafe(item.detail_path),
         description: toStringSafe(item.description),
         resource_type: toStringSafe(item.resource_type),
         downloads: toNumber(item.downloads),
