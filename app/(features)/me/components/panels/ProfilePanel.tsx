@@ -59,7 +59,7 @@ function DepartmentSelectField({
     <div ref={wrapperRef} className="relative">
       <button
         type="button"
-        className={`relative w-full rounded-2xl border border-gray-500 bg-white px-4 pb-3 pt-6 text-left text-base text-gray-900 transition ${open ? "border-first ring-2 ring-first/10" : "hover:border-gray-600"} cursor-pointer`}
+        className={`relative w-full cursor-pointer rounded-2xl border border-gray-500 bg-white px-4 pb-3 pt-6 text-left text-sm text-gray-900 transition sm:text-base ${open ? "border-first ring-2 ring-first/10" : "hover:border-gray-600"}`}
         onClick={() => setOpen((current) => !current)}
         aria-expanded={open}
         aria-haspopup="listbox"
@@ -77,7 +77,7 @@ function DepartmentSelectField({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 z-20 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_45px_rgba(15,23,42,0.14)]"
+          className="absolute left-0 right-0 z-20 mt-2 max-h-[50vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_45px_rgba(15,23,42,0.14)] sm:max-h-60"
           role="listbox"
           aria-label="所属学院"
         >
@@ -209,11 +209,11 @@ export default function ProfilePanel({
         <p>
           想换个性化头像，请绑定第三方平台账户。绑定成功后会自动切换为该平台头像，之后通过 OAuth 登录也会同步刷新头像。
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="mt-3 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           <button
             type="button"
             onClick={onOpenOAuth}
-            className="rounded-xl border border-amber-200 bg-white/90 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition hover:bg-white"
+            className="w-full rounded-xl border border-amber-200 bg-white/90 px-4 py-2 text-sm font-medium text-amber-700 shadow-sm transition hover:bg-white sm:w-auto"
           >
             去绑定第三方账号
           </button>

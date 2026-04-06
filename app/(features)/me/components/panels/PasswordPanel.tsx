@@ -131,6 +131,10 @@ export default function PasswordPanel({
   return (
     <>
       <div className="space-y-4">
+        <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
+          修改密码仍通过校园邮箱验证码完成。验证码发送后，请回到此处继续填写新密码。
+        </div>
+
         <AdvancedInput
           label="校园邮箱"
           placeholder={emailLocked ? "校园邮箱已绑定，不可修改" : "填写你的校园邮箱或前缀"}
@@ -159,7 +163,7 @@ export default function PasswordPanel({
               }))
             }
           />
-          <div className="sm:mt-[3px]">
+          <div className="flex justify-center sm:mt-[3px] sm:block">
             <ActionSubmitButton
               defaultText="获取验证码"
               sentText="发送中..."

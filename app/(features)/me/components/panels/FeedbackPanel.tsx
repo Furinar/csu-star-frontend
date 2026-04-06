@@ -412,8 +412,8 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
             <div className="text-xs font-medium text-slate-500">
               已选择的{correctionForm.target_type === "course" ? "课程" : "老师"}
             </div>
-            <div className="mt-1 flex items-center justify-between gap-4">
-              <div>
+            <div className="mt-1 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <div className="font-medium text-slate-800">{selectedTarget.name}</div>
                 {"course_type" in selectedTarget && selectedTarget.course_type ? (
                   <div className="mt-1 text-xs text-slate-500">{selectedTarget.course_type}</div>
@@ -437,7 +437,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
                   setSelectedCourse(null);
                   setSelectedTeacher(null);
                 }}
-                className="rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50 sm:w-auto sm:py-1.5"
               >
                 重新选择
               </button>
@@ -496,9 +496,9 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
                       setCourseOptions([]);
                       setTeacherOptions([]);
                     }}
-                    className="flex w-full items-start justify-between border-b border-slate-100 px-5 py-4 text-left transition last:border-none hover:bg-slate-50"
+                    className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-medium text-slate-800">{item.name}</div>
                       {"course_type" in item && item.course_type ? (
                         <div className="mt-1 text-xs text-slate-400">{item.course_type}</div>

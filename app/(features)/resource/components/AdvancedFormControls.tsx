@@ -83,7 +83,29 @@ const StyledWrapper = styled.div`
     background-position: bottom 4px right 4px;
     background-size: 14px 14px;
   }
-  
+
+  @media (max-width: 640px) {
+    .input {
+      border-radius: 0.875rem;
+      padding: 0.875rem 0.875rem 0.8rem;
+      font-size: 0.95rem;
+    }
+
+    .user-label {
+      left: 14px;
+      transform: translateY(0.92rem);
+      font-size: 0.875rem;
+    }
+
+    select.input {
+      padding-right: 3.25rem;
+      background-position: right 0.95rem center;
+    }
+
+    textarea.input {
+      min-height: 108px;
+    }
+  }
 `;
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
