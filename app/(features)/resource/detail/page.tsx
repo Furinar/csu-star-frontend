@@ -21,7 +21,6 @@ import type {
 import type { ReportTargetType } from "@/types/me";
 import { Role } from "@/types/auth";
 import { feedback } from "@/store/useFeedbackStore";
-import CommentComposerForm from "@/components/detail/CommentComposerForm";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import ReportDialog from "@/components/report/ReportDialog";
 import ResourceEditModal from "@/components/detail/ResourceEditModal";
@@ -39,7 +38,6 @@ import {
 } from "@/components/detail/DetailScaffold";
 import { buildCoursePath } from "@/lib/paths";
 import { formatDateTimeZh } from "@/lib/date";
-import { getPageTheme } from "@/lib/pageTheme";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getFileIcon } from "./fileIcons";
@@ -57,6 +55,10 @@ interface ReplyTarget {
   userName?: string | null;
 }
 
+function commentSortLabel(sort: EvaluationSort) {
+  return sort === "likes" ? "按点赞" : "按时间";
+}
+
 function formatDate(value?: string) {
   return formatDateTimeZh(value);
 }
@@ -70,7 +72,6 @@ function formatFileSize(bytes?: number | null) {
 
 export default function ResourceDetailPage() {
   const router = useRouter();
-  const resourceTheme = getPageTheme("/resource");
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const resourceId = hasMounted ? searchParams.get("id") : null;
@@ -88,6 +89,8 @@ export default function ResourceDetailPage() {
   const [commentSort, setCommentSort] = useState<EvaluationSort>("created_at");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshingComments, setIsRefreshingComments] = useState(false);
+  const [replyDraftMap, setReplyDraftMap] = useState<Record<string, string>>({});
+  const [submittingReplyId, setSubmittingReplyId] = useState<string | null>(null);
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
   const [highlightCommentId, setHighlightCommentId] = useState<string | null>(null);
   const [highlightReplyMap, setHighlightReplyMap] = useState<Record<string, string | null>>({});
@@ -96,7 +99,8 @@ export default function ResourceDetailPage() {
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [downloadedFileId, setDownloadedFileId] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
-  const [composerVersion, setComposerVersion] = useState(0);
+  const [commentDraft, setCommentDraft] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<{
     id: EntityId;
@@ -194,6 +198,7 @@ export default function ResourceDetailPage() {
         setComments(commentData.items);
         setTotalComments(commentData.total);
         setPage(1);
+        setReplyDraftMap({});
         setTargetMap({});
         setHighlightCommentId(null);
         setHighlightReplyMap({});
@@ -270,6 +275,14 @@ export default function ResourceDetailPage() {
     });
   }, []);
 
+  const clearReplyDraft = useCallback((commentId: EntityId) => {
+    setReplyDraftMap((prev) => {
+      const next = { ...prev };
+      delete next[commentId];
+      return next;
+    });
+  }, []);
+
   const clearReplyHighlight = useCallback((parentId: EntityId, replyId: EntityId) => {
     window.setTimeout(() => {
       setHighlightReplyMap((prev) => ({
@@ -287,7 +300,7 @@ export default function ResourceDetailPage() {
     }, COMMENT_FLASH_RESET_MS);
   }, []);
 
-  const handleReplySubmit = useCallback(async (parentId: EntityId, content: string) => {
+  const handleReplySubmit = useCallback(async (parentId: EntityId) => {
     if (!ensureSignedIn("登录后才能回复资源评论。")) {
       return;
     }
@@ -307,13 +320,14 @@ export default function ResourceDetailPage() {
       return;
     }
 
-    const trimmedContent = content.trim();
+    const trimmedContent = replyDraftMap[parentId]?.trim();
     if (!trimmedContent) {
       feedback.warning({ title: "回复内容不能为空" });
       return;
     }
 
     try {
+      setSubmittingReplyId(String(parentId));
       const target = targetMap[parentId] || {};
       const result = await createResourceComment(resourceId, {
         content: trimmedContent,
@@ -339,14 +353,61 @@ export default function ResourceDetailPage() {
         ...prev,
         [parentId]: String(result.id),
       }));
+      clearReplyDraft(parentId);
       clearReplyTarget(parentId);
       clearReplyHighlight(parentId, result.id);
       feedback.success({ title: "回复成功" });
     } catch (error) {
       console.error(error);
       feedback.error({ title: "回复失败", description: "请稍后重试。" });
+    } finally {
+      setSubmittingReplyId((current) =>
+        current === String(parentId) ? null : current,
+      );
     }
-  }, [clearReplyHighlight, clearReplyTarget, ensureSignedIn, isDeleted, resourceId, targetMap]);
+  }, [clearReplyDraft, clearReplyHighlight, clearReplyTarget, ensureSignedIn, isDeleted, replyDraftMap, resourceId, targetMap]);
+
+  const handleCreateComment = useCallback(async () => {
+    if (!ensureSignedIn("登录后才能发表评论。")) {
+      return;
+    }
+    if (!resourceId) {
+      return;
+    }
+    if (isDeleted) {
+      feedback.warning({
+        title: "资源已删除",
+        description: "已删除资源不支持继续评论。",
+      });
+      return;
+    }
+
+    const trimmedContent = commentDraft.trim();
+    if (!trimmedContent) {
+      feedback.warning({ title: "评论内容不能为空" });
+      return;
+    }
+
+    try {
+      setIsSubmittingComment(true);
+      const res = await createResourceComment(resourceId, { content: trimmedContent });
+      setComments((prev) => [res, ...prev]);
+      setTotalComments((prev) => prev + 1);
+      setHighlightCommentId(String(res.id));
+      setCommentDraft("");
+      setIsComposerOpen(false);
+      clearCommentHighlight(res.id);
+      feedback.success({ title: "评论成功" });
+    } catch (error) {
+      console.error(error);
+      feedback.error({
+        title: "评论失败",
+        description: "由于某些原因，评论无法发布。",
+      });
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  }, [clearCommentHighlight, commentDraft, ensureSignedIn, isDeleted, resourceId]);
 
   const handleToggleLike = async (
     id: EntityId,
@@ -886,107 +947,139 @@ export default function ResourceDetailPage() {
               </div>
             }
             description="看看大家的使用反馈，也可以留下你的评论。"
-          >
-            <div className="mb-5 flex flex-wrap items-center justify-end gap-3 text-sm text-slate-500">
-              <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
-                {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setCommentSort(item)}
-                    className={`rounded-full px-4 py-1.5 text-sm transition ${
-                      commentSort === item
-                        ? "text-white"
-                        : "text-slate-500 hover:text-[var(--page-accent-text)]"
-                    }`}
-                    style={
-                      commentSort === item
-                        ? { backgroundImage: resourceTheme.pageAccentGradient }
-                        : undefined
-                    }
-                  >
-                    {item === "likes" ? "按热度" : "按时间"}
-                  </button>
-                ))}
+            action={
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex gap-2 rounded-full border border-slate-200 bg-slate-50 p-1">
+                  {(["created_at", "likes"] as EvaluationSort[]).map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => setCommentSort(item)}
+                      className={`rounded-full px-4 py-1.5 text-sm transition ${
+                        commentSort === item
+                          ? "bg-[image:var(--page-accent-gradient)] text-white"
+                          : "text-slate-500 hover:text-[var(--page-accent-text)]"
+                      }`}
+                    >
+                      {commentSortLabel(item)}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
+            }
+          >
             {isRefreshingComments ? (
               <div className="flex justify-center py-12">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-emerald-500" />
               </div>
             ) : (
-              <BilibiliCommentThread
-                comments={comments.map((comment) => {
-                  const isActive = !!targetMap[comment.id];
-                  const highlightedReplyId = highlightReplyMap[String(comment.id)] ?? highlightReplyMap[comment.id];
-                  const activeTarget = targetMap[comment.id] || {};
+              <div className="mt-6 flex flex-col gap-6">
+                <BilibiliCommentThread
+                  comments={comments.map((comment) => {
+                    const commentId = String(comment.id);
+                    const isActive = !!targetMap[comment.id];
+                    const highlightedReplyId =
+                      highlightReplyMap[commentId] ?? highlightReplyMap[comment.id];
+                    const activeTarget = targetMap[comment.id] || {};
 
-                  return {
-                    id: comment.id,
-                    user: comment.user,
-                    content: comment.content,
-                    createdAt: comment.created_at || "",
-                    likes: comment.likes,
-                    isLiked: comment.is_liked,
-                    actions: buildCommentActions(comment),
-                    avatarActions: buildUserAvatarActions(comment),
-                    replies: (comment.children || []).map((reply) => ({
-                      id: reply.id,
-                      user: reply.user,
-                      replyToUser: reply.reply_to_user,
-                      content: reply.content,
-                      createdAt: reply.created_at || "",
-                      likes: reply.likes,
-                      isLiked: reply.is_liked,
-                      actions: buildCommentActions(reply, comment.id),
-                      avatarActions: buildUserAvatarActions(reply),
-                      onLike: (liked: boolean) =>
-                        handleToggleLike(reply.id, liked, comment.id),
+                    return {
+                      id: comment.id,
+                      user: comment.user,
+                      content: comment.content,
+                      createdAt: comment.created_at || "",
+                      likes: comment.likes,
+                      isLiked: comment.is_liked,
+                      actions: buildCommentActions(comment),
+                      avatarActions: buildUserAvatarActions(comment),
+                      replies: (comment.children || []).map((reply) => ({
+                        id: reply.id,
+                        user: reply.user,
+                        replyToUser: reply.reply_to_user,
+                        content: reply.content,
+                        createdAt: reply.created_at || "",
+                        likes: reply.likes,
+                        isLiked: reply.is_liked,
+                        actions: buildCommentActions(reply, comment.id),
+                        avatarActions: buildUserAvatarActions(reply),
+                        onLike: (liked: boolean) =>
+                          handleToggleLike(reply.id, liked, comment.id),
+                        onReplyClick: () => {
+                          if (!ensureSignedIn("登录后才能回复资源评论。")) {
+                            return;
+                          }
+
+                          setTargetMap((prev) => ({
+                            ...prev,
+                            [comment.id]: {
+                              replyId: reply.id,
+                              userId: reply.user?.id,
+                              userName: reply.user?.nickname,
+                            },
+                          }));
+                        },
+                      })),
+                      shouldFlash: highlightCommentId === commentId,
+                      highlightedReplyId,
+                      isReplying: isActive,
+                      replyComposer: (
+                        <div className="mt-3 flex flex-col gap-3">
+                          <textarea
+                            value={replyDraftMap[commentId] || ""}
+                            onChange={(event) =>
+                              setReplyDraftMap((prev) => ({
+                                ...prev,
+                                [commentId]: event.target.value,
+                              }))
+                            }
+                            placeholder={
+                              activeTarget.userName
+                                ? `回复 @${activeTarget.userName}...`
+                                : "写下你的回复..."
+                            }
+                            className="min-h-[100px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm transition-all focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                clearReplyDraft(comment.id);
+                                clearReplyTarget(comment.id);
+                              }}
+                              className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+                            >
+                              取消
+                            </button>
+                            <ActionSubmitButton
+                              defaultText="提交回复"
+                              isSent={submittingReplyId === commentId}
+                              onClick={() => handleReplySubmit(comment.id)}
+                              disabled={
+                                submittingReplyId === commentId ||
+                                !replyDraftMap[commentId]?.trim()
+                              }
+                            />
+                          </div>
+                        </div>
+                      ),
+                      onLike: (liked) => handleToggleLike(comment.id, liked),
                       onReplyClick: () => {
+                        if (!ensureSignedIn("登录后才能回复资源评论。")) {
+                          return;
+                        }
+
                         setTargetMap((prev) => ({
                           ...prev,
                           [comment.id]: {
-                            replyId: reply.id,
-                            userId: reply.user?.id,
-                            userName: reply.user?.nickname,
+                            replyId: comment.id,
+                            userId: comment.user?.id,
+                            userName: comment.user?.nickname,
                           },
                         }));
                       },
-                    })),
-                    shouldFlash: highlightCommentId === String(comment.id),
-                    highlightedReplyId,
-                    isReplying: isActive,
-                    replyComposer: (
-                      <div className="mt-4">
-                        <CommentComposerForm
-                          onSubmit={(content) => handleReplySubmit(comment.id, content)}
-                          placeholder={
-                            activeTarget.userName
-                              ? `回复 @${activeTarget.userName}...`
-                              : "说点什么吧..."
-                          }
-                        />
-                      </div>
-                    ),
-                    onLike: (liked) => handleToggleLike(comment.id, liked),
-                    onReplyClick: () => {
-                      if (!ensureSignedIn("登录后才能回复资源评论。")) {
-                        return;
-                      }
-
-                      setTargetMap((prev) => ({
-                        ...prev,
-                        [comment.id]: {
-                          replyId: comment.id,
-                          userId: comment.user?.id,
-                          userName: comment.user?.nickname,
-                        },
-                      }));
-                    },
-                  };
-                })}
-              />
+                    };
+                  })}
+                />
+              </div>
             )}
 
             {hasMore ? (
@@ -1014,45 +1107,47 @@ export default function ResourceDetailPage() {
           }
           setIsComposerOpen(true);
         }}
-        label="发布评价"
+        label="写评价"
         tone="resource"
       />
 
       <DetailComposerModal
         isOpen={isComposerOpen}
-        onClose={() => setIsComposerOpen(false)}
-        title="发布评价"
-          accent="resource"
-        badge="评论"
-        description="谈谈你的看法"
+        onClose={() => {
+          setIsComposerOpen(false);
+          setCommentDraft("");
+        }}
+        accent="resource"
+        badge="资源评价"
+        title={resource ? `为 ${resource.title} 写一条评价` : "写一条资源评价"}
+        description="写下你对这份资源的体验和看法。"
       >
-        <CommentComposerForm
-          key={`resource-comment-form-${composerVersion}-${resource.id}`}
-          placeholder="你觉得这份资源怎么样？"
-          onSubmit={async (content) => {
-            if (!ensureSignedIn("登录后才能发表评论。")) {
-              return;
-            }
-
-            if (!resourceId) return;
-            try {
-              const res = await createResourceComment(resourceId, { content });
-              setComments((prev) => [res, ...prev]);
-              setTotalComments((prev) => prev + 1);
-              setHighlightCommentId(String(res.id));
-              setIsComposerOpen(false);
-              setComposerVersion((prev) => prev + 1);
-              clearCommentHighlight(res.id);
-              feedback.success({ title: "评论成功" });
-            } catch (err) {
-              console.error(err);
-              feedback.error({
-                title: "评论失败",
-                description: "由于某些原因，评论无法发布。",
-              });
-            }
-          }}
-        />
+        <div className="space-y-4">
+          <textarea
+            value={commentDraft}
+            onChange={(event) => setCommentDraft(event.target.value)}
+            placeholder="写下你对这份资源的使用体验、内容质量或适用场景。"
+            className="min-h-[160px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm transition-all focus:border-[var(--page-accent-border)] focus:outline-none focus:ring-4 focus:ring-[var(--page-accent-soft)]"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsComposerOpen(false);
+                setCommentDraft("");
+              }}
+              className="px-4 py-2 text-sm text-slate-500 hover:text-slate-700"
+            >
+              取消
+            </button>
+            <ActionSubmitButton
+              defaultText="提交评价"
+              isSent={isSubmittingComment}
+              onClick={handleCreateComment}
+              disabled={isSubmittingComment || !commentDraft.trim()}
+            />
+          </div>
+        </div>
       </DetailComposerModal>
 
       <DetailComposerModal
