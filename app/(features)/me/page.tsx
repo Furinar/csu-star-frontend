@@ -343,37 +343,42 @@ export default function Me() {
         <aside className="w-full flex-shrink-0 md:w-1/3 lg:w-1/4">
           <div className="sticky top-24 space-y-4 md:space-y-6">
             <GlassCard className="flex flex-col items-center p-4 text-center md:p-6 md:items-start md:text-left">
-              <button
-                type="button"
-                onClick={handleOpenProfilePanel}
-                className="group relative mb-3 cursor-pointer rounded-full text-left md:mb-4"
-                aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
-              >
-                <img
-                  className="h-36 w-36 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
-                  src={profile?.avatar_url || "/furina.jpg"}
-                  alt="User Avatar"
-                />
-                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                  <span className="text-sm text-white">
-                    {accountMode === "guest" ? "登录后编辑资料" : "点击编辑资料"}
-                  </span>
-                </div>
-              </button>
-
-              <div className="mb-3 space-y-1.5 md:mb-4 md:space-y-2">
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accountPresentation.badgeClassName}`}
+              <div className="mb-3 flex w-full items-center gap-4 md:mb-4 md:block">
+                <button
+                  type="button"
+                  onClick={handleOpenProfilePanel}
+                  className="group relative shrink-0 cursor-pointer rounded-full text-left md:mb-4"
+                  aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
                 >
-                  {accountPresentation.badge}
-                </span>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900 md:text-2xl">
-                    {profile?.nickname ?? "游客"}
-                  </h1>
-                  <h2 className="text-base font-light text-gray-500 md:text-lg">
-                    {accountPresentation.subtitle}
-                  </h2>
+                  <img
+                    className="h-24 w-24 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
+                    src={profile?.avatar_url || "/furina.jpg"}
+                    alt="User Avatar"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="text-sm text-white">
+                      {accountMode === "guest" ? "登录后编辑资料" : "点击编辑资料"}
+                    </span>
+                  </div>
+                </button>
+
+                <div className="min-w-0 flex-1 space-y-1.5 text-left md:space-y-2">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accountPresentation.badgeClassName}`}
+                  >
+                    {accountPresentation.badge}
+                  </span>
+                  <div>
+                    <h1 className="text-xl font-bold text-gray-900 md:text-2xl">
+                      {profile?.nickname ?? "游客"}
+                    </h1>
+                    <h2 className="text-base font-light text-gray-500 md:text-lg">
+                      {accountPresentation.subtitle}
+                    </h2>
+                  </div>
+                  <p className="truncate text-sm text-gray-600 md:hidden">
+                    {emailStatus.email ?? "尚未绑定校园邮箱"}
+                  </p>
                 </div>
               </div>
 
@@ -390,7 +395,7 @@ export default function Me() {
               </button>
 
               <div className="w-full space-y-2.5 text-sm text-gray-700 md:space-y-3">
-                <div className="flex items-center gap-2">
+                <div className="hidden items-center gap-2 md:flex">
                   <svg
                     className="h-4 w-4 text-gray-400"
                     fill="none"
