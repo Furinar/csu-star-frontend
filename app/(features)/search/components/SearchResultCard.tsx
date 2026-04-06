@@ -141,21 +141,21 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const teacherCount = item.teacher_count ?? teachers.length;
     subtitleIcon = "uil-users-alt";
     subtitleContent = (
-      <div className="flex items-center gap-1.5">
-        {teachers.slice(0, 3).map((teacher) => (
+      <div className="flex w-full min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
+        {teachers.slice(0, 3).map((teacher, index) => (
           <span
             key={teacher.id}
-            className="bg-gray-100 px-2 py-0.5 rounded-full text-[11px] text-gray-600"
+            className={`bg-gray-100 px-2 py-0.5 rounded-full text-[11px] text-gray-600 ${index > 0 ? "hidden md:inline-block shrink-0" : "min-w-0 truncate"}`}
           >
             {teacher.name}
           </span>
         ))}
         {teacherCount > 0 ? (
-          <span className="ml-1 text-[11px] text-gray-400">
+          <span className="shrink-0 ml-1 text-[11px] text-gray-400">
             共{teacherCount}位教师
           </span>
         ) : (
-          <span className="text-[11px] text-gray-400">暂无教师</span>
+          <span className="shrink-0 text-[11px] text-gray-400">暂无教师</span>
         )}
       </div>
     );
