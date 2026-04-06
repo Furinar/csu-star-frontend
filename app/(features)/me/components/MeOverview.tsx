@@ -168,8 +168,21 @@ export default function MeOverview({
         </h3>
         <GlassCard className="p-6">
           <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm text-gray-500">社区贡献概览</p>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-gray-500">社区贡献概览</p>
+                <div className="flex flex-nowrap items-center justify-end gap-2 whitespace-nowrap text-[10px] text-gray-500 sm:hidden">
+                  {contributionStats.map((item) => (
+                    <ContributionStatItem
+                      key={item.key}
+                      icon={item.icon}
+                      label={item.label}
+                      value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
+                      mobile
+                    />
+                  ))}
+                </div>
+              </div>
               <h4 className="mt-1 text-xl font-semibold text-gray-900">
                 {accountMode === "guest"
                   ? "登录后开始累计你的社区贡献"
@@ -183,17 +196,6 @@ export default function MeOverview({
                     </>
                   )}
               </h4>
-            </div>
-            <div className="flex w-full flex-nowrap items-center justify-end gap-2 whitespace-nowrap text-[10px] text-gray-500 sm:hidden">
-              {contributionStats.map((item) => (
-                <ContributionStatItem
-                  key={item.key}
-                  icon={item.icon}
-                  label={item.label}
-                  value={`${formatNumber(contributionData[item.key])}${item.suffix}`}
-                  mobile
-                />
-              ))}
             </div>
             <div className="hidden flex-wrap items-center justify-end gap-3 text-sm text-gray-600 sm:flex">
               {contributionStats.map((item) => (
