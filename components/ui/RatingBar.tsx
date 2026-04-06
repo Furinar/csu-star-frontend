@@ -7,6 +7,7 @@ interface RatingBarProps {
   max?: number;
   colorClass?: string;
   gradient?: string;
+  compact?: boolean;
 }
 
 const COLOR_PRESETS = [
@@ -38,6 +39,7 @@ export default function RatingBar({
   max,
   colorClass,
   gradient,
+  compact = false,
 }: RatingBarProps) {
   const resolvedMax = max ?? maxScore;
   const resolvedScore = value ?? score ?? 0;
@@ -56,19 +58,27 @@ export default function RatingBar({
   const resolvedGradient = gradient ?? COLOR_PRESETS[colorIndex];
 
   return (
-    <div className="flex w-full items-center gap-3 py-1">
+    <div className={`flex w-full items-center py-1 ${compact ? "gap-2" : "gap-3"}`}>
       {displayLabel ? (
-        <span className="w-20 truncate text-sm font-medium text-gray-600">
+        <span
+          className={`truncate font-medium text-gray-600 ${
+            compact ? "w-14 text-[10px]" : "w-20 text-sm"
+          }`}
+        >
           {displayLabel}
         </span>
       ) : null}
-      <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200/90">
+      <div className={`flex-1 overflow-hidden rounded-full bg-gray-200/90 ${compact ? "h-1.5" : "h-2"}`}>
         <div
           className="h-full rounded-full transition-[width] duration-300 ease-out"
           style={{ width, background: resolvedGradient }}
         />
       </div>
-      <span className="w-11 shrink-0 text-right text-sm font-semibold tabular-nums text-gray-500">
+      <span
+        className={`shrink-0 text-right font-semibold tabular-nums text-gray-500 ${
+          compact ? "w-8 text-[10px]" : "w-11 text-sm"
+        }`}
+      >
         {safeScore.toFixed(2)}
       </span>
     </div>
