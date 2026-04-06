@@ -200,7 +200,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     const courses = item.courses ?? [];
     subtitleIcon = "uil-bag";
     subtitleContent = (
-      <div className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
+      <div className="flex w-full min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
         <span className="shrink-0 text-[11px] text-gray-600">
           {item.department_name || item.title || "未录入职称"}
         </span>
@@ -329,7 +329,7 @@ export default function SearchResultCard(props: SearchResultCardProps) {
               </span>
             ) : null}
           </div>
-          <div className="flex items-center gap-1 md:gap-1.5 mt-1 text-xs md:text-sm text-gray-500 truncate">
+          <div className="flex w-full items-center gap-1 md:gap-1.5 mt-1 text-xs md:text-sm text-gray-500 truncate">
             <i className={`uil ${subtitleIcon} text-gray-400 mt-0.5`}></i>
             {subtitleContent}
           </div>
