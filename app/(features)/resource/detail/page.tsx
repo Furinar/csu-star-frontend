@@ -49,6 +49,8 @@ import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import DownloadButton from "@/components/ui/DownloadButton";
 import type { EntityId } from "@/types/entity";
 
+const COMMENT_FLASH_RESET_MS = 900;
+
 interface ReplyTarget {
   replyId?: EntityId | null;
   userId?: string | null;
@@ -86,14 +88,15 @@ export default function ResourceDetailPage() {
   const [commentSort, setCommentSort] = useState<EvaluationSort>("created_at");
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isRefreshingComments, setIsRefreshingComments] = useState(false);
-  const [draftMap, setDraftMap] = useState<Record<string, string>>({});
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [highlightCommentId, setHighlightCommentId] = useState<string | null>(null);
+  const [highlightReplyMap, setHighlightReplyMap] = useState<Record<string, string | null>>({});
   const [likeLoadingKey, setLikeLoadingKey] = useState<string | null>(null);
   const [isResourceLikeLoading, setIsResourceLikeLoading] = useState(false);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [downloadedFileId, setDownloadedFileId] = useState<string | null>(null);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
+  const [composerVersion, setComposerVersion] = useState(0);
   const [isEditResourceOpen, setIsEditResourceOpen] = useState(false);
   const [editingComment, setEditingComment] = useState<{
     id: EntityId;
@@ -191,8 +194,9 @@ export default function ResourceDetailPage() {
         setComments(commentData.items);
         setTotalComments(commentData.total);
         setPage(1);
-        setDraftMap({});
         setTargetMap({});
+        setHighlightCommentId(null);
+        setHighlightReplyMap({});
       })
       .catch((error) => {
         console.error("加载资源详情失败", error);
@@ -258,7 +262,32 @@ export default function ResourceDetailPage() {
     return () => observer.disconnect();
   }, [fetchMore, hasMore, isLoadingMore, resourceId]);
 
-  const handleReplySubmit = async (parentId: EntityId) => {
+  const clearReplyTarget = useCallback((commentId: EntityId) => {
+    setTargetMap((prev) => {
+      const next = { ...prev };
+      delete next[commentId];
+      return next;
+    });
+  }, []);
+
+  const clearReplyHighlight = useCallback((parentId: EntityId, replyId: EntityId) => {
+    window.setTimeout(() => {
+      setHighlightReplyMap((prev) => ({
+        ...prev,
+        [parentId]: prev[parentId] === String(replyId) ? null : prev[parentId],
+      }));
+    }, COMMENT_FLASH_RESET_MS);
+  }, []);
+
+  const clearCommentHighlight = useCallback((commentId: EntityId) => {
+    window.setTimeout(() => {
+      setHighlightCommentId((current) =>
+        current === String(commentId) ? null : current,
+      );
+    }, COMMENT_FLASH_RESET_MS);
+  }, []);
+
+  const handleReplySubmit = useCallback(async (parentId: EntityId, content: string) => {
     if (!ensureSignedIn("登录后才能回复资源评论。")) {
       return;
     }
@@ -278,17 +307,16 @@ export default function ResourceDetailPage() {
       return;
     }
 
-    const content = draftMap[parentId]?.trim();
-    if (!content) {
+    const trimmedContent = content.trim();
+    if (!trimmedContent) {
       feedback.warning({ title: "回复内容不能为空" });
       return;
     }
 
     try {
-      setSubmittingId(parentId);
       const target = targetMap[parentId] || {};
       const result = await createResourceComment(resourceId, {
-        content,
+        content: trimmedContent,
         parent_id: parentId,
         reply_to_comment_id: target.replyId ?? null,
       });
@@ -307,16 +335,18 @@ export default function ResourceDetailPage() {
             : comment,
         ),
       );
-      setDraftMap((prev) => ({ ...prev, [parentId]: "" }));
-      setTargetMap((prev) => ({ ...prev, [parentId]: {} }));
+      setHighlightReplyMap((prev) => ({
+        ...prev,
+        [parentId]: String(result.id),
+      }));
+      clearReplyTarget(parentId);
+      clearReplyHighlight(parentId, result.id);
       feedback.success({ title: "回复成功" });
     } catch (error) {
       console.error(error);
       feedback.error({ title: "回复失败", description: "请稍后重试。" });
-    } finally {
-      setSubmittingId(null);
     }
-  };
+  }, [clearReplyHighlight, clearReplyTarget, ensureSignedIn, isDeleted, resourceId, targetMap]);
 
   const handleToggleLike = async (
     id: EntityId,
@@ -889,6 +919,7 @@ export default function ResourceDetailPage() {
               <BilibiliCommentThread
                 comments={comments.map((comment) => {
                   const isActive = !!targetMap[comment.id];
+                  const highlightedReplyId = highlightReplyMap[String(comment.id)] ?? highlightReplyMap[comment.id];
                   const activeTarget = targetMap[comment.id] || {};
 
                   return {
@@ -923,51 +954,13 @@ export default function ResourceDetailPage() {
                         }));
                       },
                     })),
+                    shouldFlash: highlightCommentId === String(comment.id),
+                    highlightedReplyId,
                     isReplying: isActive,
                     replyComposer: (
                       <div className="mt-4">
                         <CommentComposerForm
-                          onSubmit={async (content) => {
-                            if (!ensureSignedIn("登录后才能回复资源评论。")) {
-                              return;
-                            }
-
-                            const target = targetMap[comment.id] || {};
-                            setSubmittingId(comment.id);
-                            try {
-                              const reply = await createResourceComment(
-                                resourceId,
-                                {
-                                  content,
-                                  parent_id: comment.id,
-                                  reply_to_comment_id:
-                                    target.replyId || undefined,
-                                },
-                              );
-                              setComments((prev) =>
-                                prev.map((item) =>
-                                  item.id === comment.id
-                                    ? {
-                                        ...item,
-                                        children: [
-                                          ...(item.children || []),
-                                          reply,
-                                        ],
-                                      }
-                                    : item,
-                                ),
-                              );
-                              setTargetMap((prev) => ({
-                                ...prev,
-                                [comment.id]: {},
-                              }));
-                              feedback.success({ title: "回复成功" });
-                            } catch (err) {
-                              feedback.error({ title: "回复失败" });
-                            } finally {
-                              setSubmittingId(null);
-                            }
-                          }}
+                          onSubmit={(content) => handleReplySubmit(comment.id, content)}
                           placeholder={
                             activeTarget.userName
                               ? `回复 @${activeTarget.userName}...`
@@ -1029,11 +1022,12 @@ export default function ResourceDetailPage() {
         isOpen={isComposerOpen}
         onClose={() => setIsComposerOpen(false)}
         title="发布评价"
-        accent="resource"
+          accent="resource"
         badge="评论"
         description="谈谈你的看法"
       >
         <CommentComposerForm
+          key={`resource-comment-form-${composerVersion}-${resource.id}`}
           placeholder="你觉得这份资源怎么样？"
           onSubmit={async (content) => {
             if (!ensureSignedIn("登录后才能发表评论。")) {
@@ -1045,7 +1039,10 @@ export default function ResourceDetailPage() {
               const res = await createResourceComment(resourceId, { content });
               setComments((prev) => [res, ...prev]);
               setTotalComments((prev) => prev + 1);
+              setHighlightCommentId(String(res.id));
               setIsComposerOpen(false);
+              setComposerVersion((prev) => prev + 1);
+              clearCommentHighlight(res.id);
               feedback.success({ title: "评论成功" });
             } catch (err) {
               console.error(err);
