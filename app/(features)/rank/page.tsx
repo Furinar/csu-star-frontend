@@ -290,7 +290,7 @@ export default function Rank() {
   };
 
   return (
-    <div className="container mt-6 flex flex-col gap-6 md:mt-8 md:gap-8">
+    <div className="container mt-6 flex flex-col gap-6 md:mt-10 md:gap-10">
       <div className="flex w-full flex-col items-center justify-center gap-2 md:gap-3">
         <div className="hero-gradient-text text-4xl font-bold">天梯风云榜</div>
         <div className="text-gray-600">
@@ -514,7 +514,7 @@ export default function Rank() {
       </div>
 
       {!hasRequested ? (
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-12 md:gap-5">
+        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-5">
           <div className="text-8xl text-gray-300">
             <i className="uil uil-filter"></i>
           </div>
@@ -524,7 +524,7 @@ export default function Rank() {
           </div>
         </div>
       ) : (
-        <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-4 md:p-5 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
+        <div className="rounded-2xl border border-gray-200/80 bg-white/90 p-4 md:p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)]">
           <div className="mb-3 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between md:mb-4 md:gap-2">
             <div className="text-base md:text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-red-500 tracking-wider">
               巅峰百强

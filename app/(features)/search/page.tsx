@@ -475,16 +475,16 @@ export default function Search() {
   };
 
   return (
-      <div className="container flex flex-col gap-10 mt-10 mb-20">
+      <div className="container mt-6 mb-12 flex flex-col gap-6 md:mt-10 md:mb-20 md:gap-10">
         {/* Retained your original Hero and Searchbar UI unchanged */}
-        <div className="w-full flex justify-center items-center flex-col gap-2 md:gap-3 px-4">
-          <div className="hero-gradient-text text-3xl md:text-4xl font-bold">风影情报处</div>
+        <div className="flex w-full flex-col items-center justify-center gap-2 px-4 md:gap-3">
+          <div className="hero-gradient-text text-4xl font-bold">风影情报处</div>
           <div className="text-sm md:text-base text-gray-600 text-center">
             Explore freely, discover what you need.
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 md:gap-5 items-center w-full px-2 md:px-0">
+        <div className="flex w-full flex-col items-center gap-3 px-1 md:gap-5 md:px-0">
           <div className="relative flex p-1 md:p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 max-w-full overflow-x-auto scrollbar-hide">
             <div
                 className="absolute top-1 bottom-1 md:top-1.5 md:bottom-1.5 w-20 md:w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
@@ -522,7 +522,7 @@ export default function Search() {
 
         {/* Conditional rendering based on search state */}
         {showEmptyPrompt ? (
-            <div className="flex flex-col gap-5 items-center justify-center mt-15">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-5">
               <div className="text-8xl text-gray-300">
                 <i className="uil uil-search"></i>
               </div>
@@ -530,14 +530,14 @@ export default function Search() {
               <div className="text-2xl text-gray-800">
                 开始搜索{currentSearchType?.label}吧！
               </div>
-              <div className="text-lg text-gray-500">
+              <div className="text-base md:text-lg text-gray-500">
                 使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
               </div>
             </div>
         ) : null}
 
         {isLoading ? (
-            <div className="flex flex-col gap-5 items-center justify-center mt-10">
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-10 md:gap-5">
               <div className="text-4xl text-first-alt animate-spin">
                 <i className="uil uil-spinner-alt"></i>
               </div>
@@ -547,7 +547,7 @@ export default function Search() {
 
         {error ? (
             <div
-                className="flex flex-col items-center justify-center mt-10 bg-red-50 p-6 rounded-2xl border border-red-200 shadow-sm max-w-2xl mx-auto w-full">
+                className="mt-8 mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm md:mt-10 md:p-6">
               <div className="text-red-500 text-4xl mb-3">
                 <i className="uil uil-exclamation-triangle"></i>
               </div>
@@ -557,7 +557,7 @@ export default function Search() {
         ) : null}
 
         {showNoResults ? (
-            <div className="flex flex-col gap-6 items-center justify-center mt-15">
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 md:mt-15 md:gap-6">
               <div className="text-8xl text-gray-300">
                 <i className="uil uil-tear"></i>
               </div>
@@ -565,7 +565,7 @@ export default function Search() {
               <div className="text-2xl text-gray-800">
                 没有找到匹配的{currentSearchType?.label}
               </div>
-              <div className="text-lg text-gray-500">
+              <div className="text-base md:text-lg text-gray-500">
                 可以尝试换一个简短的关键词重新搜索看看~
               </div>
 
@@ -573,7 +573,7 @@ export default function Search() {
                 <SupplementRequestPrompt
                     onClick={handleOpenSupplementModal}
                     align="center"
-                    className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                    className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-5 py-4 md:px-6 md:py-5"
                     variant={supplementPromptVariant}
                 />
               </div>
@@ -581,8 +581,8 @@ export default function Search() {
         ) : null}
 
         {!isLoading && !error && hasSearched && summary.total > 0 ? (
-            <div className="flex flex-col gap-10">
-              <div className="flex flex-col gap-3 text-sm text-gray-500">
+            <div className="flex flex-col gap-6 md:gap-10">
+              <div className="flex flex-col gap-2 text-sm text-gray-500 md:gap-3">
                 <div className="flex items-center gap-4">
                   找到相关的{" "}
                   <span className="font-semibold text-gray-800">{summary.total}</span>{" "}
@@ -609,19 +609,19 @@ export default function Search() {
               <SearchResultsGrid items={displayedItems} />
 
               {isLoadingMore ? (
-                  <div className="flex items-center justify-center py-8 text-gray-500">
+                  <div className="flex items-center justify-center py-5 text-gray-500 md:py-8">
                     正在加载更多结果...
                   </div>
               ) : null}
 
               {!isLoadingMore && !hasMore ? (
-                  <div className="flex flex-col items-center justify-center gap-4 py-6">
+                  <div className="flex flex-col items-center justify-center gap-3 py-5 md:gap-4 md:py-6">
                     <div className="text-sm text-gray-400">已经到底了</div>
                     <div className="w-full max-w-3xl">
                       <SupplementRequestPrompt
                           onClick={handleOpenSupplementModal}
                           align="center"
-                          className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-6 py-5"
+                          className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-5 py-4 md:px-6 md:py-5"
                           variant={supplementPromptVariant}
                       />
                     </div>
