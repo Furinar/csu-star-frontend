@@ -376,111 +376,129 @@ export default function Me() {
                       {accountPresentation.subtitle}
                     </h2>
                   </div>
-                  <p className="truncate text-sm text-gray-600 md:hidden">
-                    {emailStatus.email ?? "尚未绑定校园邮箱"}
-                  </p>
                 </div>
               </div>
 
-              <p className="mb-4 text-sm leading-relaxed text-gray-700 md:mb-6">
-                {accountMode === "verified"
-                  ? "已完成校园认证，可使用完整个人中心能力。"
-                  : accountPresentation.hint}
+              <p className="mb-4 hidden text-sm leading-relaxed text-gray-700 md:mb-6 md:block">
+                {accountPresentation.hint}
               </p>
 
               <button
                 type="button"
                 onClick={() => openProtectedPanel("profile")}
-                className="mb-4 min-w-[9.5rem] self-center rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:w-full md:self-auto md:text-base"
+                className="mb-3 w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:text-base"
               >
                 {accountMode === "guest" ? "登录后完善资料" : "编辑个人资料"}
               </button>
 
-              <div className="flex w-full items-stretch gap-3 text-sm text-gray-700 md:hidden">
-                <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                      />
-                    </svg>
-                    <span>{getDepartmentName(departments, profile?.department_id)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                      />
-                    </svg>
-                    <span>{profile?.grade ? `${profile.grade}级` : "年级未填写"}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 text-gray-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8c-3.866 0-7 2.239-7 5v3h14v-3c0-2.761-3.134-5-7-5zm0 0a4 4 0 100-8 4 4 0 000 8z"
-                      />
-                    </svg>
-                    <span>
-                      {accountMode === "guest"
-                        ? "游客模式"
-                        : accountMode === "verified"
-                          ? "已认证"
-                          : "待认证"}
-                    </span>
+              <div className="mb-3 flex items-center gap-2 text-sm text-gray-700 md:hidden">
+                <svg
+                  className="h-4 w-4 shrink-0 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="truncate">
+                  {emailStatus.email ?? "尚未绑定校园邮箱"}
+                </span>
+              </div>
+
+              <div className="flex w-full items-stretch text-sm text-gray-700 md:hidden">
+                <div className="min-w-0 basis-1/2 pr-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                      <span>{getDepartmentName(departments, profile?.department_id)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
+                      </svg>
+                      <span>{profile?.grade ? `${profile.grade}级` : "年级未填写"}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-3.866 0-7 2.239-7 5v3h14v-3c0-2.761-3.134-5-7-5zm0 0a4 4 0 100-8 4 4 0 000 8z"
+                        />
+                      </svg>
+                      <span>
+                        {accountMode === "guest"
+                          ? "游客模式"
+                          : accountMode === "verified"
+                            ? "已认证"
+                            : "待认证"}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="my-1 w-px shrink-0 self-stretch bg-gray-200/80" />
+                <div className="my-1 h-auto w-px shrink-0 self-stretch bg-gray-200/80" />
 
-                <div className="flex w-[110px] shrink-0 flex-col items-center justify-center gap-2 text-center">
-                  <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">
-                    STAR
+                <div className="basis-1/2 pl-3">
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                    <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">
+                      STAR
+                    </div>
+                    <div className="hero-gradient-text text-2xl font-black">
+                      {formatNumber(profile?.points)}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={
+                        accountMode === "guest"
+                          ? () => setOpenPanel("guest")
+                          : handleCheckin
+                      }
+                      disabled={isCheckingIn || hasCheckedInToday}
+                      className="min-w-[84px] rounded-lg bg-first px-3 py-1.5 text-sm font-medium text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {accountMode === "guest"
+                        ? "立即登录"
+                        : hasCheckedInToday
+                          ? "已签到"
+                          : isCheckingIn
+                            ? "签到中"
+                            : "签到"}
+                    </button>
                   </div>
-                  <div className="hero-gradient-text text-2xl font-black">
-                    {formatNumber(profile?.points)}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={
-                      accountMode === "guest"
-                        ? () => setOpenPanel("guest")
-                        : handleCheckin
-                    }
-                    disabled={isCheckingIn || hasCheckedInToday}
-                    className="w-full rounded-lg bg-first px-3 py-1.5 text-sm font-medium text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {accountMode === "guest"
-                      ? "立即登录"
-                      : hasCheckedInToday
-                        ? "今日已签到"
-                        : isCheckingIn
-                          ? "签到中..."
-                          : "每日签到"}
-                  </button>
                 </div>
               </div>
 
