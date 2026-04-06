@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
 
 const toneMap = {
   course: {
@@ -61,27 +62,24 @@ export default function DetailComposerModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[1150] overflow-y-auto bg-slate-950/30 backdrop-blur-md">
-      <div className="flex min-h-full items-center justify-center p-3 pb-safe md:p-6">
+    <div className="fixed inset-0 z-[1150] bg-slate-950/30 backdrop-blur-md">
+      <button
+        type="button"
+        className="absolute inset-0"
+        onClick={onClose}
+        aria-label="关闭表单弹层"
+      />
+      <div className="flex min-h-full items-end justify-center p-2 pb-safe sm:p-3 md:items-center md:p-6">
         <div
-          className={`relative flex w-full max-w-4xl flex-col rounded-[20px] border border-slate-200/80 bg-white p-4 md:rounded-[24px] md:p-8 ${tone.ring}`}
+          className={`relative flex max-h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[24px] border border-slate-200/80 bg-white sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] md:rounded-[28px] ${tone.ring}`}
         >
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl opacity-50" />
-
-        
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white/75 text-base text-slate-500 shadow-sm transition hover:bg-slate-50 hover:text-slate-800 md:right-4 md:top-4 md:h-10 md:w-10 md:text-lg"
-        >
-          ×
-        </button>
-
-        <div className="relative z-10 w-full pt-2 md:pt-4">
-          {children}
+          <FloatingCloseButton onClick={onClose} ariaLabel="关闭表单弹层" />
+          <div className="modal-scrollbar relative z-10 w-full overflow-y-auto px-4 pb-4 pt-14 sm:px-5 sm:pb-5 sm:pt-16 md:px-8 md:pb-8">
+            {children}
+          </div>
         </div>
       </div>
-     </div>
     </div>
   );
 }

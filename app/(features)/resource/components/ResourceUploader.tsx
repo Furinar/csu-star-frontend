@@ -453,16 +453,8 @@ export default function ResourceUploader({
           : "p-6 md:p-8 mt-6 max-w-4xl mx-auto rounded-xl border border-slate-200 bg-white shadow-sm"
       }
     >
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-black">上传资源</h2>
-        {isModal && onClose && (
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <i className="uil uil-times text-2xl" />
-          </button>
-        )}
       </div>
 
       {uploadedResourceId ? (

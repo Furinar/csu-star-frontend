@@ -12,6 +12,7 @@ import {
   getMyInviteCode,
 } from "@/api/me";
 import GlassCard from "@/components/ui/GlassCard";
+import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { feedback } from "@/store/useFeedbackStore";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -974,41 +975,28 @@ function FloatingPanel({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] px-3 py-4 sm:px-6 sm:py-6">
+    <div className="fixed inset-0 z-[1000] bg-black/25 px-2 py-2 sm:px-4 sm:py-4 md:px-6 md:py-6">
       <button
         type="button"
-        className="absolute inset-0 bg-black/25"
+        className="absolute inset-0"
         onClick={onClose}
         aria-label="关闭设置面板"
       />
-      <div className="relative mx-auto flex h-full max-w-3xl items-center">
-        <div className="max-h-[88vh] w-full overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)] sm:rounded-[32px]">
-          <div className="flex items-start justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
-            <div>
+      <div className="relative mx-auto flex min-h-full max-w-3xl items-end md:items-center">
+        <div className="relative flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)] sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] sm:rounded-[28px] md:rounded-[32px]">
+          <FloatingCloseButton onClick={onClose} ariaLabel="关闭设置面板" />
+          <div className="flex items-start justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 pb-4 pt-5 pr-14 sm:gap-4 sm:px-6 sm:pb-5 sm:pt-6 sm:pr-16">
+            <div className="min-w-0">
               <h3 className="text-lg font-semibold text-gray-900 sm:text-xl">{title}</h3>
               <p className="mt-1 text-sm leading-5 text-gray-600 sm:leading-6">
                 {description}
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              {headerAction}
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-gray-500 shadow-sm transition hover:bg-slate-50 hover:text-gray-800 sm:h-10 sm:w-10"
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-                  <path
-                    d="M15 9L9 15M9 9L15 15"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </div>
+            {headerAction ? (
+              <div className="flex items-center gap-3">{headerAction}</div>
+            ) : null}
           </div>
-          <div className="modal-scrollbar max-h-[calc(88vh-5rem)] overflow-y-auto bg-white/80 px-4 py-4 sm:max-h-[calc(88vh-5.5rem)] sm:px-6 sm:py-5">
+          <div className="modal-scrollbar flex-1 overflow-y-auto bg-white/80 px-4 py-4 sm:px-6 sm:py-5">
             {children}
           </div>
         </div>
