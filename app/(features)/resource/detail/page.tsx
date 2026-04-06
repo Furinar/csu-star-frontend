@@ -938,14 +938,15 @@ export default function ResourceDetailPage() {
           <div className="mt-3 flex flex-col gap-2.5 md:mt-4 md:gap-3">
             {resource.course ? (
               <div className="flex flex-col gap-2.5 md:gap-3">
-                <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:gap-3">
-                  <span className="text-xs font-medium text-slate-400 md:text-sm">
+                <div className="flex flex-nowrap items-center gap-2 overflow-hidden md:gap-3">
+                  <span className="shrink-0 text-xs font-medium text-slate-400 md:text-sm">
                     所属课程:
                   </span>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="min-w-0 flex flex-nowrap gap-2 overflow-hidden">
                     <EntityPillLink
                       href={buildCoursePath(resource.course.id)}
                       tone="resource"
+                      className="min-w-0 max-w-full shrink truncate whitespace-nowrap"
                     >
                       {resource.course.name}
                     </EntityPillLink>
