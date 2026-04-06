@@ -33,6 +33,8 @@ interface MeOverviewProps {
   onOpenPanel: (panel: PanelKey) => void;
 }
 
+const MOBILE_CONTRIBUTION_WEEKS = 20;
+
 function getContributionClassName(cell: ContributionCell) {
   if (cell.is_future) {
     return "bg-white/30 border border-white/30";
@@ -135,6 +137,9 @@ export default function MeOverview({
     },
   ];
   const isVerified = accountMode === "verified";
+  const mobileContributionWeeks = contributionData.weeks.slice(
+    -MOBILE_CONTRIBUTION_WEEKS,
+  );
   const settingsActions = baseSettingsActions.filter((item) => {
     if (item.key === "password") {
       return isVerified;
@@ -159,7 +164,7 @@ export default function MeOverview({
         <GlassCard className="p-6">
           <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm text-gray-500">最近 26 周社区贡献</p>
+              <p className="text-sm text-gray-500">社区贡献概览</p>
               <h4 className="mt-1 text-xl font-semibold text-gray-900">
                 {accountMode === "guest"
                   ? "登录后开始累计你的社区贡献"
@@ -190,7 +195,40 @@ export default function MeOverview({
             </div>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar">
+          <div className="flex gap-4 overflow-x-auto hide-scrollbar sm:hidden">
+            <div className="flex flex-col justify-around py-[2px] text-xs text-gray-400">
+              {WEEKDAY_LABELS.map((label) => (
+                <span key={label} className="h-3 leading-3">
+                  {label}
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-1">
+              {mobileContributionWeeks.map((week, weekIndex) => (
+                <div key={`mobile-week-${weekIndex}`} className="flex flex-col gap-1">
+                  {week.map((cell) => (
+                    <div
+                      key={cell.date}
+                      className={`h-3 w-3 rounded-[2px] ${getContributionClassName(
+                        cell,
+                      )}`}
+                      title={`${formatDate(cell.date)}${
+                        cell.is_future
+                          ? "\n未来日期"
+                          : cell.score > 0
+                            ? `\n${cell.score} 分贡献\n${cell.actions
+                                .map((item) => `• ${item.label} +${item.score}`)
+                                .join("\n")}`
+                            : "\n暂无贡献"
+                      }`}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden gap-4 overflow-x-auto hide-scrollbar sm:flex">
             <div className="flex flex-col justify-around py-[2px] text-xs text-gray-400">
               {WEEKDAY_LABELS.map((label) => (
                 <span key={label} className="h-3 leading-3">
