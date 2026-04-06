@@ -154,9 +154,6 @@ export default function CourseResourceCollectionPage() {
               <h1 className="mt-2 text-4xl font-bold text-gray-900">
                 {detail.course.name}
               </h1>
-              <p className="mt-3 max-w-3xl text-sm leading-7 text-gray-600">
-                这门课收录的资料都集中在这里，课程详情和评价入口保留在顶部，不再单独重复展开。
-              </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
