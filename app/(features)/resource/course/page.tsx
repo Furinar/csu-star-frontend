@@ -41,6 +41,36 @@ export default function CourseResourceCollectionPage() {
   const [shouldRefreshAfterUpload, setShouldRefreshAfterUpload] = useState(false);
   const resourcesWithDetail =
     detail?.items.items.filter((resource) => Boolean(resource.detail_path?.trim())) ?? [];
+  const statCards = [
+    {
+      label: "资源总数",
+      value: detail?.resource_count ?? 0,
+      icon: "uil-file-alt",
+      iconClassName: "text-emerald-500",
+      panelClassName: "from-emerald-50 to-white",
+    },
+    {
+      label: "累计下载",
+      value: detail?.download_total ?? 0,
+      icon: "uil-cloud-download",
+      iconClassName: "text-sky-500",
+      panelClassName: "from-sky-50 to-white",
+    },
+    {
+      label: "累计点赞",
+      value: detail?.like_total ?? 0,
+      icon: "uil-thumbs-up",
+      iconClassName: "text-rose-500",
+      panelClassName: "from-rose-50 to-white",
+    },
+    {
+      label: "累计收藏",
+      value: detail?.favorite_count ?? 0,
+      icon: "uil-bookmark",
+      iconClassName: "text-amber-500",
+      panelClassName: "from-amber-50 to-white",
+    },
+  ];
 
   const handleOpenUploadModal = () => {
     if (
@@ -143,64 +173,45 @@ export default function CourseResourceCollectionPage() {
       <section className="relative overflow-hidden rounded-[24px] border border-emerald-100/80 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 p-4 shadow-[0_16px_42px_rgba(15,23,42,0.08)] md:rounded-[36px] md:p-8 md:shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-200/55 blur-3xl md:-right-10 md:-top-10 md:h-40 md:w-40"></div>
         <div className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-200/40 blur-3xl md:-bottom-10 md:left-10 md:h-40 md:w-40"></div>
-        <div className="relative flex flex-col gap-4 md:gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="space-y-3 md:space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/85 px-3 py-1.5 text-xs text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
+        <div className="relative flex items-start gap-3 md:gap-6 lg:items-end lg:justify-between">
+          <div className="min-w-0 flex-1 space-y-3 rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:space-y-4 md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
               <i className="uil uil-folder-open"></i>
               课程资源合集
             </div>
             <div>
-              <div className="text-[11px] text-gray-400 md:text-sm">课程信息</div>
-              <h1 className="mt-1.5 text-2xl font-bold text-gray-900 md:mt-2 md:text-4xl">
+              <div className="text-[11px] font-medium tracking-[0.18em] text-gray-400 md:text-sm">
+                课程信息
+              </div>
+              <h1 className="mt-1.5 line-clamp-2 pr-1 text-xl font-bold leading-tight text-gray-900 md:mt-2 md:text-4xl">
                 {detail.course.name}
               </h1>
             </div>
             <div className="flex flex-wrap gap-2 md:gap-3">
               <Link
                 href={buildCoursePath(detail.course.id)}
-                className="rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-50 md:px-4 md:py-2 md:text-sm"
+                className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-white/95 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-50 md:px-4 md:py-2 md:text-sm"
               >
+                <i className="uil uil-arrow-up-right text-sm" />
                 进入课程详情
               </Link>
             </div>
           </div>
-          <div className="grid min-w-full grid-cols-2 gap-2 rounded-[20px] border border-white/70 bg-white/80 p-3 shadow-sm md:gap-3 md:rounded-[28px] md:p-4 lg:min-w-[420px]">
-            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
-                <i className="uil uil-file-alt text-sm text-emerald-500 md:text-base"></i>
-                <span>资源总数</span>
+          <div className="grid w-[148px] shrink-0 grid-cols-2 gap-2 rounded-[22px] border border-white/80 bg-white/78 p-2.5 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-sm md:w-auto md:min-w-[320px] md:gap-3 md:rounded-[28px] md:p-4 lg:min-w-[420px]">
+            {statCards.map((stat) => (
+              <div
+                key={stat.label}
+                className={`rounded-[18px] border border-white/80 bg-gradient-to-br ${stat.panelClassName} px-2.5 py-2 shadow-sm md:rounded-2xl md:px-4 md:py-3`}
+              >
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-gray-500 md:gap-2 md:text-xs">
+                  <i className={`uil ${stat.icon} text-sm md:text-base ${stat.iconClassName}`}></i>
+                  <span>{stat.label}</span>
+                </div>
+                <div className="mt-1.5 text-sm font-semibold leading-none text-gray-900 md:text-lg">
+                  {stat.value}
+                </div>
               </div>
-              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
-                {detail.resource_count}
-              </div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
-                <i className="uil uil-cloud-download text-sm text-blue-500 md:text-base"></i>
-                <span>累计下载</span>
-              </div>
-              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
-                {detail.download_total ?? 0}
-              </div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
-                <i className="uil uil-thumbs-up text-sm text-rose-500 md:text-base"></i>
-                <span>累计点赞</span>
-              </div>
-              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
-                {detail.like_total ?? 0}
-              </div>
-            </div>
-            <div className="rounded-2xl bg-gray-50 px-3 py-2.5 md:px-4 md:py-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-gray-400 md:gap-2 md:text-xs">
-                <i className="uil uil-bookmark text-sm text-emerald-500 md:text-base"></i>
-                <span>累计收藏</span>
-              </div>
-              <div className="mt-1 text-base font-semibold text-gray-900 md:text-lg">
-                {detail.favorite_count ?? 0}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
