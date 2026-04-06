@@ -315,8 +315,8 @@ export default function SearchResultCard(props: SearchResultCardProps) {
       </div>
 
       <div className="p-3 md:p-5 flex flex-col h-full">
-        <div className="mb-2 md:mb-4 pr-12 md:pr-16 h-[44px] md:h-[52px]">
-          <div className="flex items-center gap-2">
+        <div className="mb-2 md:mb-4 h-[44px] md:h-[52px]">
+          <div className="flex items-center gap-2 pr-12 md:pr-16">
             <h3
               className="text-sm md:text-lg font-bold text-gray-800 line-clamp-1"
               title={title}
