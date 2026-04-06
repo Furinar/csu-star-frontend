@@ -17,7 +17,9 @@ export default function Register() {
   } | null>(null);
 
   const [nickname, setNickname] = useState("");
+  const [avatarMode, setAvatarMode] = useState<"preset" | "custom">("preset");
   const [avatarIndex, setAvatarIndex] = useState(0);
+  const [customAvatarUrl, setCustomAvatarUrl] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -60,9 +62,22 @@ export default function Register() {
       }
     }
     if (currentStep === 3) {
-      if (avatarIndex < 0 || avatarIndex >= avatarOptions.length) {
-        setErrorMessage("请选择一个可用的头像");
-        return false;
+      if (avatarMode === "preset") {
+        if (avatarIndex < 0 || avatarIndex >= avatarOptions.length) {
+          setErrorMessage("请选择一个可用的头像");
+          return false;
+        }
+      } else {
+        if (!customAvatarUrl.trim()) {
+          setErrorMessage("请输入头像URL");
+          return false;
+        }
+        try {
+          new URL(customAvatarUrl);
+        } catch {
+          setErrorMessage("请输入有效的URL");
+          return false;
+        }
       }
     }
     return true;
@@ -71,11 +86,16 @@ export default function Register() {
   const handleFinalStepCompleted = async () => {
     if (!registerPayload) return;
     try {
+      const finalAvatarUrl =
+        avatarMode === "preset"
+          ? avatarOptions[avatarIndex].url
+          : customAvatarUrl.trim();
+
       await registerByEmail({
         email: registerPayload.email,
         password: registerPayload.password,
         nickname: nickname.trim(),
-        avatar_url: avatarOptions[avatarIndex].url,
+        avatar_url: finalAvatarUrl,
         invite_code: inviteCode.trim(),
       });
 
@@ -150,25 +170,81 @@ export default function Register() {
 
           <Step>
             <h2>挑个头像吧!</h2>
-            <div className="w-full h-60 mt-2 overflow-y-auto rounded-lg">
-              <div className="flex flex-wrap content-between items-center border-gray-200 border-5 justify-between gap-3 p-4">
-                {avatarOptions.map((avatar, index) => (
-                  <img
-                    key={index}
-                    src={avatar.url}
-                    alt="Avatar"
-                    onClick={() => setAvatarIndex(index)}
-                    className={`h-16 w-16 rounded-full object-cover hover:-translate-y-1 cursor-pointer transition-transform duration-200 border-2 ${
-                      avatarIndex === index
-                        ? "border-(--color-first)"
-                        : "border-transparent"
-                    } hover:border-(--color-first)`}
-                  />
-                ))}
-              </div>
+            <p className="text-sm text-gray-500 mt-1">
+              如需个性化头像,请在注册后绑定第三方平台账号.
+            </p>
+
+            <div className="flex gap-4 mt-3 mb-2 border-b border-gray-200">
+              <button
+                type="button"
+                className={`pb-2 text-sm font-medium transition-colors ${
+                  avatarMode === "preset"
+                    ? "border-b-2 border-(--color-first) text-(--color-first)"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setAvatarMode("preset")}
+              >
+                预设头像
+              </button>
+              <button
+                type="button"
+                className={`pb-2 text-sm font-medium transition-colors ${
+                  avatarMode === "custom"
+                    ? "border-b-2 border-(--color-first) text-(--color-first)"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+                onClick={() => setAvatarMode("custom")}
+              >
+                手动输入 URL
+              </button>
             </div>
+
+            {avatarMode === "preset" ? (
+              <div className="w-full h-60 mt-2 overflow-y-auto rounded-lg">
+                <div className="flex flex-wrap content-between items-center border-gray-200 border-5 justify-between gap-3 p-4">
+                  {avatarOptions.map((avatar, index) => (
+                    <img
+                      key={index}
+                      src={avatar.url}
+                      alt="Avatar"
+                      onClick={() => setAvatarIndex(index)}
+                      className={`h-16 w-16 rounded-full object-cover hover:-translate-y-1 cursor-pointer transition-transform duration-200 border-2 ${
+                        avatarIndex === index
+                          ? "border-(--color-first)"
+                          : "border-transparent"
+                      } hover:border-(--color-first)`}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="w-full h-60 mt-2 flex flex-col pt-2">
+                <input
+                  type="text"
+                  placeholder="https://..."
+                  value={customAvatarUrl}
+                  onChange={(e) => setCustomAvatarUrl(e.target.value)}
+                  className="bg-gray-100 py-2.5 px-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-(--color-first) w-full transition border border-gray-200"
+                />
+                <div className="mt-4 p-4 bg-blue-50/50 rounded-lg border border-blue-100/50">
+                  <p className="text-sm text-gray-600">
+                    你可以使用图床服务上传图片并获取链接：
+                  </p>
+                  <a
+                    href="https://picui.cn/upload"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center mt-2 text-sm text-(--color-first) hover:underline"
+                  >
+                    <i className="uil uil-external-link-alt mr-1"></i>
+                    前往 PICUI 图床上传
+                  </a>
+                </div>
+              </div>
+            )}
+
             {errorMessage && (
-              <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+              <p className="text-red-500 text-sm mt-2">{errorMessage}</p>
             )}
           </Step>
 
