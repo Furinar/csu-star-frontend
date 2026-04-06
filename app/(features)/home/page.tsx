@@ -85,17 +85,19 @@ export default function Home() {
 
   return (
     <>
-      <div className="container mt-10 flex flex-col gap-10">
-        <div className="title flex flex-col items-center justify-center">
-          <span className="hero-gradient-text text-[70px] font-bold ">
+      <div className="container mt-6 flex flex-col gap-6 md:mt-10 md:gap-10">
+        <div className="title flex flex-col items-center justify-center gap-1.5 md:gap-2">
+          <span className="hero-gradient-text text-[42px] font-bold leading-none sm:text-[54px] md:text-[70px]">
             CSUSTAR.wiki
           </span>
-          <span className="subtitle  text-center">
-            <span className="text-[25px] font-bold text-gray-600">
+          <span className="subtitle text-center leading-tight">
+            <span className="text-[18px] font-bold text-gray-600 sm:text-[21px] md:text-[25px]">
               让中南大学再次伟大
             </span>
             <br />
-            <span className="text-gray-500">Make CSU Great Again</span>
+            <span className="text-sm text-gray-500 sm:text-base md:text-lg">
+              Make CSU Great Again
+            </span>
           </span>
         </div>
 
@@ -112,8 +114,12 @@ export default function Home() {
           />
         </div>
 
-        <div className="mt-10 flex items-center justify-center gap-2">
-          <img src="/undraw_route-planning_2psv.svg" alt="" />
+        <div className="mt-4 flex items-center justify-center gap-2 md:mt-10">
+          <img
+            src="/undraw_route-planning_2psv.svg"
+            alt=""
+            className="w-full max-w-[260px] sm:max-w-[340px] md:max-w-none"
+          />
         </div>
       </div>
     </>
