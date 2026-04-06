@@ -214,7 +214,7 @@ export default function CourseResourceCollectionPage() {
                 href={resource.detail_path ?? buildResourcePath(resource.id)}
                 className="group rounded-2xl md:rounded-3xl border border-gray-100 bg-gradient-to-br from-white via-white to-gray-50 p-3 md:p-5 transition hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="flex items-start justify-between gap-1.5 md:gap-3 flex-col sm:flex-row">
+                <div className="flex items-start justify-between gap-1.5 md:gap-3 flex-row">
                   <div className="min-w-0">
                     <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs text-gray-600">
                       {getResourceTypeLabel(resource.resource_type)}
@@ -233,7 +233,7 @@ export default function CourseResourceCollectionPage() {
                       {resource.description?.trim() || "暂无资源说明。"}
                     </p>
                   </div>
-                  <div className="shrink-0 rounded-xl md:rounded-2xl border border-emerald-100 bg-emerald-50/80 px-2 py-1 md:px-3 md:py-2 text-center min-w-16 md:min-w-20 self-start sm:self-auto hidden sm:flex flex flex-col items-center justify-center">
+                  <div className="shrink-0 rounded-xl md:rounded-2xl border border-emerald-100 bg-emerald-50/80 px-2 py-1 md:px-3 md:py-2 text-center min-w-16 md:min-w-20 flex flex-col items-center justify-center">
                     <div className="text-[11px] text-emerald-600">文件数</div>
                     <div className="mt-1 text-base font-semibold text-emerald-900 leading-none">
                       {resource.file_count ?? 0}
