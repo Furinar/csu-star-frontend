@@ -4,7 +4,7 @@
 import Link from "next/link";
 import "./style.css";
 import RadarMap from "@/components/ui/RadarMap";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getRandomTeacherShowcase } from "@/api/showcase";
 import type { TeacherShowcaseItem } from "@/types/showcase";
 import { buildTeacherPath } from "@/lib/paths";
@@ -28,6 +28,13 @@ export default function TeacherSlider() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const touchStateRef = useRef<{
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+    active: boolean;
+  } | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -63,11 +70,52 @@ export default function TeacherSlider() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [teachers.length, activeIndex]);
+  }, [teachers.length]);
 
   const shiftIndex = (step: number) => {
     if (teachers.length === 0) return;
     setActiveIndex((current) => (current + step + teachers.length) % teachers.length);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (teachers.length <= 1) return;
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    touchStateRef.current = {
+      startX: touch.clientX,
+      startY: touch.clientY,
+      currentX: touch.clientX,
+      currentY: touch.clientY,
+      active: true,
+    };
+  };
+
+  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchStateRef.current) return;
+    const touch = event.touches[0];
+    if (!touch) return;
+
+    touchStateRef.current.currentX = touch.clientX;
+    touchStateRef.current.currentY = touch.clientY;
+  };
+
+  const handleTouchEnd = () => {
+    const state = touchStateRef.current;
+    touchStateRef.current = null;
+
+    if (!state?.active) return;
+
+    const deltaX = state.currentX - state.startX;
+    const deltaY = state.currentY - state.startY;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+
+    if (absX < 48 || absX <= absY * 1.2) {
+      return;
+    }
+
+    shiftIndex(deltaX < 0 ? 1 : -1);
   };
 
   const getPositionClass = (index: number) => {
@@ -110,7 +158,13 @@ export default function TeacherSlider() {
         }}
       >
         <div className="teacher-slider flex justify-center items-center flex-col">
-          <div className="box h-auto min-h-[300px] md:min-h-0 md:h-90">
+          <div
+            className="box h-auto min-h-[260px] md:min-h-0 md:h-90"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
             {teachers.length > 0 ? (
               teachers.map((teacher, index) => {
                 const position = getPositionClass(index);
@@ -141,9 +195,9 @@ export default function TeacherSlider() {
           </div>
         </div>
 
-        <div className="teacher-introduce-container">
-          <div className="inline-flex flex-col justify-evenly h-80">
-            <h1 className="text-3xl md:text-3xl font-bold mt-5">
+        <div className="teacher-introduce-container px-3 pb-3 pt-0 md:px-0 md:pb-0">
+          <div className="inline-flex h-auto min-h-[260px] flex-col justify-between gap-3 py-3 md:h-80 md:min-h-0 md:gap-0 md:py-0">
+            <h1 className="mt-1 text-2xl font-bold md:mt-5 md:text-3xl">
               Teacher Introduction
             </h1>
 
@@ -152,7 +206,7 @@ export default function TeacherSlider() {
                 随机教师加载失败，请稍后重试。
               </div>
             ) : (
-            <div className="flex items-center justify-between h-full">
+            <div className="flex h-full items-center justify-between gap-3 md:gap-4">
               <RadarMap
                 values={radarValues}
                 indicator={[
@@ -161,25 +215,25 @@ export default function TeacherSlider() {
                   { name: '给分宽松', max: 5 },
                   { name: '好评率', max: 5 }
                 ]}
-                width="200px"
-                height="200px"
+                width="140px"
+                height="140px"
               />
 
-              <div className="detail flex flex-col gap-2 items-end" >
+              <div className="detail flex min-w-0 flex-col items-end gap-1.5 md:gap-2" >
                 {currentTeacherPath ? (
-                  <Link href={currentTeacherPath} className="name hero-gradient-text text-2xl font-bold">
+                  <Link href={currentTeacherPath} className="name hero-gradient-text text-right text-xl font-bold md:text-2xl">
                     {currentTeacher.name}
                   </Link>
                 ) : (
-                  <p className="name hero-gradient-text text-2xl font-bold">
+                  <p className="name hero-gradient-text text-right text-xl font-bold md:text-2xl">
                     {isLoading ? "教师加载中..." : "暂无教师"}
                   </p>
                 )}
-                <div className="flex flex-col gap-0.5 items-end " >
-                  <p className="title text-gray-600">综合评分 {formatRate(currentTeacher?.avg_score)}</p>
-                  <p className="position text-gray-600">{currentTeacher?.title || "职称待补充"}</p>
-                  <p className="department text-gray-600">{currentTeacher?.department_name || "院系待补充"}</p>
-                  <p className="department text-gray-500 text-sm">
+                <div className="flex flex-col items-end gap-0.5 text-right" >
+                  <p className="title text-sm text-gray-600 md:text-base">综合评分 {formatRate(currentTeacher?.avg_score)}</p>
+                  <p className="position text-xs text-gray-600 md:text-base">{currentTeacher?.title || "职称待补充"}</p>
+                  <p className="department text-xs text-gray-600 md:text-base">{currentTeacher?.department_name || "院系待补充"}</p>
+                  <p className="department text-[11px] text-gray-500 md:text-sm">
                     {`评价 ${currentTeacher?.eval_count ?? 0} / 收藏 ${currentTeacher?.favorite_count ?? 0}`}
                   </p>
                 </div>
@@ -187,19 +241,19 @@ export default function TeacherSlider() {
             </div>
             )}
 
-            <div className="teacher-links flex mb-2 justify-end">
+            <div className="teacher-links mb-1 flex justify-end md:mb-2">
               {currentTeacherPath ? (
                 <Link
                   href={currentTeacherPath}
-                  className="flex justify-center button button--flex shadow-lg group w-full "
+                  className="button button--flex group flex w-full justify-center px-4 py-2 text-sm shadow-lg md:px-5 md:py-2.5 md:text-base"
                 >
                   查看当前教师
-                  <i className="uil uil-message button__icon ml-1 transition-transform duration-300 group-hover:translate-x-3" />
+                  <i className="uil uil-message button__icon ml-1 text-sm transition-transform duration-300 group-hover:translate-x-3 md:text-base" />
                 </Link>
               ) : (
-                <div className="flex justify-center button button--flex shadow-lg w-full cursor-not-allowed opacity-60">
+                <div className="button button--flex flex w-full cursor-not-allowed justify-center px-4 py-2 text-sm shadow-lg opacity-60 md:px-5 md:py-2.5 md:text-base">
                   查看当前教师
-                  <i className="uil uil-message button__icon ml-1" />
+                  <i className="uil uil-message button__icon ml-1 text-sm md:text-base" />
                 </div>
               )}
 
