@@ -839,6 +839,8 @@ export default function ResourceDetailPage() {
 
         <DetailHero
           accent="resource"
+          contentClassName="pr-[11rem] md:pr-2"
+          asideClassName="absolute right-3 top-3 z-20 w-[10rem] md:static md:w-auto"
           title={resource.title}
           description={
             <div className="space-y-1.5 md:space-y-2">
@@ -875,7 +877,7 @@ export default function ResourceDetailPage() {
             </div>
           }
           aside={
-            <div className="space-y-3 rounded-[18px] border border-white/80 bg-white/80 p-4 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl md:space-y-4 md:rounded-[20px] md:p-5">
+            <div className="space-y-3 rounded-[18px] border border-white/80 bg-white/82 p-3.5 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl md:space-y-4 md:rounded-[20px] md:p-5">
               <div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-xs font-semibold text-slate-700 md:text-sm">

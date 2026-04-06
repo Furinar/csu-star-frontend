@@ -9,6 +9,8 @@ interface DetailHeroProps {
   title: ReactNode;
   description?: ReactNode;
   aside?: ReactNode;
+  contentClassName?: string;
+  asideClassName?: string;
   meta?: ReactNode;
   children?: ReactNode;
   footer?: ReactNode;
@@ -50,6 +52,8 @@ export function DetailHero({
   title,
   description,
   aside,
+  contentClassName = "",
+  asideClassName = "",
   meta,
   children,
   footer,
@@ -66,7 +70,7 @@ export function DetailHero({
       <div className="absolute inset-[1px] rounded-[23px] border border-white/70 md:rounded-[35px]" />
 
       <div className={`relative grid gap-4 md:gap-5 ${aside ? contentWidth : ""}`}>
-        <div className="space-y-4 px-0.5 py-1 md:space-y-6 md:px-2 md:py-4">
+        <div className={`space-y-4 px-0.5 py-1 md:space-y-6 md:px-2 md:py-4 ${contentClassName}`}>
           {eyebrow ? <div className="flex flex-wrap items-center gap-2 md:gap-3">{eyebrow}</div> : null}
           <div className="space-y-2 md:space-y-3">
             <h1 className="max-w-4xl text-2xl font-semibold tracking-[-0.05em] text-slate-950 md:text-5xl">{title}</h1>
@@ -78,7 +82,7 @@ export function DetailHero({
           {children}
         </div>
 
-        {aside ? <div className="relative">{aside}</div> : null}
+        {aside ? <div className={`relative ${asideClassName}`}>{aside}</div> : null}
       </div>
 
       {footer ? (
