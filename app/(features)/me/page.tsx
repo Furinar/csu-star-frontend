@@ -619,6 +619,11 @@ export default function Me() {
             {[
               { key: "overview" as TabKey, label: "概览" },
               {
+                key: "notifications" as TabKey,
+                label: "通知与公告",
+                count: unreadCount,
+              },
+              {
                 key: "resources" as TabKey,
                 label: "我的资源",
                 count: resources.total,
@@ -632,11 +637,6 @@ export default function Me() {
                 key: "evaluations" as TabKey,
                 label: "我的评价",
                 count: teacherEvaluations.total + courseEvaluations.total,
-              },
-              {
-                key: "notifications" as TabKey,
-                label: "通知与公告",
-                count: unreadCount,
               },
             ].map((tab) => {
               const isActive = activeTab === tab.key;
