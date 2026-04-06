@@ -343,7 +343,7 @@ export default function Me() {
         <aside className="w-full flex-shrink-0 md:w-1/3 lg:w-1/4">
           <div className="sticky top-24 space-y-4 md:space-y-6">
             <GlassCard className="flex flex-col items-center p-4 text-center md:p-6 md:items-start md:text-left">
-              <div className="mb-3 flex w-full items-center gap-4 md:mb-4 md:block">
+              <div className="mb-3 flex w-full items-center gap-3 md:mb-4 md:block">
                 <button
                   type="button"
                   onClick={handleOpenProfilePanel}
@@ -351,7 +351,7 @@ export default function Me() {
                   aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
                 >
                   <img
-                    className="h-24 w-24 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
+                    className="h-28 w-28 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
                     src={profile?.avatar_url || "/furina.jpg"}
                     alt="User Avatar"
                   />
@@ -362,7 +362,7 @@ export default function Me() {
                   </div>
                 </button>
 
-                <div className="min-w-0 flex-1 space-y-1.5 text-left md:space-y-2">
+                <div className="min-w-0 flex-1 space-y-1.5 text-right md:space-y-2 md:text-left">
                   <span
                     className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accountPresentation.badgeClassName}`}
                   >
@@ -383,18 +383,108 @@ export default function Me() {
               </div>
 
               <p className="mb-4 text-sm leading-relaxed text-gray-700 md:mb-6">
-                {accountPresentation.hint}
+                {accountMode === "verified"
+                  ? "已完成校园认证，可使用完整个人中心能力。"
+                  : accountPresentation.hint}
               </p>
 
               <button
                 type="button"
                 onClick={() => openProtectedPanel("profile")}
-                className="mb-4 w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:text-base"
+                className="mb-4 min-w-[9.5rem] self-center rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:w-full md:self-auto md:text-base"
               >
                 {accountMode === "guest" ? "登录后完善资料" : "编辑个人资料"}
               </button>
 
-              <div className="w-full space-y-2.5 text-sm text-gray-700 md:space-y-3">
+              <div className="flex w-full items-stretch gap-3 text-sm text-gray-700 md:hidden">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <span>{getDepartmentName(departments, profile?.department_id)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <span>{profile?.grade ? `${profile.grade}级` : "年级未填写"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="h-4 w-4 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8c-3.866 0-7 2.239-7 5v3h14v-3c0-2.761-3.134-5-7-5zm0 0a4 4 0 100-8 4 4 0 000 8z"
+                      />
+                    </svg>
+                    <span>
+                      {accountMode === "guest"
+                        ? "游客模式"
+                        : accountMode === "verified"
+                          ? "已认证"
+                          : "待认证"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="my-1 w-px shrink-0 self-stretch bg-gray-200/80" />
+
+                <div className="flex w-[110px] shrink-0 flex-col items-center justify-center gap-2 text-center">
+                  <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">
+                    STAR
+                  </div>
+                  <div className="hero-gradient-text text-2xl font-black">
+                    {formatNumber(profile?.points)}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={
+                      accountMode === "guest"
+                        ? () => setOpenPanel("guest")
+                        : handleCheckin
+                    }
+                    disabled={isCheckingIn || hasCheckedInToday}
+                    className="w-full rounded-lg bg-first px-3 py-1.5 text-sm font-medium text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {accountMode === "guest"
+                      ? "立即登录"
+                      : hasCheckedInToday
+                        ? "今日已签到"
+                        : isCheckingIn
+                          ? "签到中..."
+                          : "每日签到"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="hidden w-full space-y-2.5 text-sm text-gray-700 md:block md:space-y-3">
                 <div className="hidden items-center gap-2 md:flex">
                   <svg
                     className="h-4 w-4 text-gray-400"
@@ -472,7 +562,7 @@ export default function Me() {
               </div>
             </GlassCard>
 
-            <GlassCard className="p-4 md:p-5">
+            <GlassCard className="hidden p-4 md:block md:p-5">
               <h3 className="mb-3 text-sm font-semibold text-gray-900 md:mb-4">
                 STAR 积分
               </h3>
