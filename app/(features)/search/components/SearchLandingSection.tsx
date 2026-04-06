@@ -184,20 +184,20 @@ export default function SearchLandingSection({
 
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
-      <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-        <div className="flex flex-col gap-2">
+      <div className="flex flex-row items-center justify-between gap-3 md:flex-row md:items-end">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 md:gap-2">
           <h2
-            className="bg-clip-text text-3xl font-bold text-transparent"
+            className="bg-clip-text text-xl font-bold text-transparent md:text-3xl"
             style={{ backgroundImage: "var(--page-accent-gradient)" }}
           >
             {title}
           </h2>
           {description ? (
-            <p className="text-sm text-gray-500">{description}</p>
+            <p className="hidden text-sm text-gray-500 md:block">{description}</p>
           ) : null}
         </div>
 
-        {action ? <div className="w-full self-stretch md:w-auto md:shrink-0 md:self-auto">{action}</div> : null}
+        {action ? <div className="w-auto shrink-0 self-auto">{action}</div> : null}
       </div>
 
       {isLoading ? (

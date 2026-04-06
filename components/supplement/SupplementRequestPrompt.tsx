@@ -44,13 +44,13 @@ export default function SupplementRequestPrompt({
         : "items-start text-left";
   const containerClassName = isCentered
     ? "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center"
-    : "flex w-full items-center justify-between gap-3";
+    : "flex w-auto items-center justify-end gap-2 md:w-full md:justify-between md:gap-3";
 
   return (
     <div
       className={`${containerClassName} ${align === "right" ? "sm:justify-end" : isCentered ? "sm:justify-center" : "sm:justify-between"} ${className}`}
     >
-      <div className={`flex min-w-0 flex-col gap-1 ${justifyClassName}`}>
+      <div className={`hidden min-w-0 flex-col gap-1 md:flex ${justifyClassName}`}>
         <div className="text-sm font-semibold text-slate-700">{copy.title}</div>
         <div className={`text-xs text-slate-500 ${isCentered ? "" : "hidden sm:block"}`}>
           提交补录申请，通过审核后才会正式添加。
@@ -60,7 +60,7 @@ export default function SupplementRequestPrompt({
       <button
         type="button"
         onClick={onClick}
-        className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md ${align === "right" ? "ml-auto" : ""}`}
+        className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md md:px-4 md:py-2 md:text-sm ${align === "right" ? "ml-auto" : ""}`}
       >
         {copy.buttonLabel}
       </button>
