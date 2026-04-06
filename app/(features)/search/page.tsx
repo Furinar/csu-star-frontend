@@ -477,17 +477,17 @@ export default function Search() {
   return (
       <div className="container flex flex-col gap-10 mt-10 mb-20">
         {/* Retained your original Hero and Searchbar UI unchanged */}
-        <div className="w-full flex justify-center items-center flex-col gap-3">
-          <div className="hero-gradient-text text-4xl font-bold">风影情报处</div>
-          <div className="text-gray-600">
+        <div className="w-full flex justify-center items-center flex-col gap-2 md:gap-3 px-4">
+          <div className="hero-gradient-text text-3xl md:text-4xl font-bold">风影情报处</div>
+          <div className="text-sm md:text-base text-gray-600 text-center">
             Explore freely, discover what you need.
           </div>
         </div>
 
-        <div className="flex flex-col gap-5 items-center">
-          <div className="relative flex p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300">
+        <div className="flex flex-col gap-4 md:gap-5 items-center w-full px-2 md:px-0">
+          <div className="relative flex p-1 md:p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 max-w-full overflow-x-auto scrollbar-hide">
             <div
-                className="absolute top-1.5 bottom-1.5 w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
+                className="absolute top-1 bottom-1 md:top-1.5 md:bottom-1.5 w-20 md:w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
                 style={{
                   transform: `translateX(${searchConfig.findIndex((item) => item.type === searchType) * 100}%)`,
                 }}
@@ -496,13 +496,13 @@ export default function Search() {
                 <span
                     key={item.type}
                     onClick={() => handleSearchTypeChange(item.type)}
-                    className={`relative z-10 w-28 flex items-center justify-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
+                    className={`relative z-10 w-20 md:w-28 flex items-center justify-center gap-1 md:gap-2 py-1.5 md:py-2 rounded-full cursor-pointer transition-colors duration-300 text-sm md:text-base whitespace-nowrap ${
                         searchType === item.type
                             ? "text-first-alt font-medium"
                             : "text-gray-500 hover:text-gray-700"
                     }`}
                 >
-              <i className={`uil uil-${item.icon} text-lg`}></i>
+              <i className={`uil uil-${item.icon} text-base md:text-lg`}></i>
                   {item.label}
             </span>
             ))}
