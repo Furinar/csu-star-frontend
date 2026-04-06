@@ -50,17 +50,16 @@ export interface BilibiliCommentItemProps {
   replyComposer?: React.ReactNode;
   forceShowAllReplies?: boolean;
   highlightedReplyId?: string | number | null;
+  shouldFlash?: boolean;
 }
 
 export default function BilibiliCommentItem({
-                                              id,
                                               user,
                                               content,
                                               createdAt,
                                               likes = 0,
                                               isLiked = false,
                                               isAnonymous,
-                                              replyCount = 0,
                                               headerSlot,
                                               afterContentSlot,
                                               replies = [],
@@ -72,9 +71,12 @@ export default function BilibiliCommentItem({
                                               replyComposer,
                                               forceShowAllReplies = false,
                                               highlightedReplyId = null,
+                                              shouldFlash = false,
                                             }: BilibiliCommentItemProps) {
   const [showAllReplies, setShowAllReplies] = useState(false);
+  const [isFlashing, setIsFlashing] = useState(false);
   const replyComposerRef = useRef<HTMLDivElement | null>(null);
+  const commentRef = useRef<HTMLDivElement | null>(null);
 
   const displayUser = isAnonymous
       ? {nickname: "匿名用户", avatar_url: DEFAULT_AVATAR}
@@ -99,9 +101,38 @@ export default function BilibiliCommentItem({
     return () => window.cancelAnimationFrame(frame);
   }, [isReplying, replyComposer]);
 
+  useEffect(() => {
+    if (!shouldFlash) {
+      const resetTimer = window.setTimeout(() => setIsFlashing(false), 0);
+      return () => window.clearTimeout(resetTimer);
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      commentRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    });
+
+    const timers = [
+      window.setTimeout(() => setIsFlashing(true), 0),
+      window.setTimeout(() => setIsFlashing(false), 220),
+      window.setTimeout(() => setIsFlashing(true), 440),
+      window.setTimeout(() => setIsFlashing(false), 660),
+    ];
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      setIsFlashing(false);
+    };
+  }, [shouldFlash]);
+
   return (
       <div
-          className="flex gap-4 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors px-2 rounded-xl">
+          ref={commentRef}
+          className="flex gap-4 py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50/50 transition-colors px-2 rounded-xl"
+          style={{ backgroundColor: isFlashing ? "var(--page-accent-soft-strong)" : "transparent" }}>
         {/* Avatar */}
         <div className="shrink-0 flex-none">
           {avatarActions.length > 0 ? (
