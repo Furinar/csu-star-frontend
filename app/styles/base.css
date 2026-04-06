@@ -68,8 +68,8 @@ img {
   height: auto;
 }
 
-/* 移动端表单默认样式清除 */
-input, textarea, button, select {
+/* 移动端表单默认样式清除，使用零优先级避免覆盖组件自身样式 */
+:where(input, textarea, button, select) {
   -webkit-appearance: none;
   appearance: none;
   border-radius: 0;
