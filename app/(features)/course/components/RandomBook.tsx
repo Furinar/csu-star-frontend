@@ -122,7 +122,7 @@ export default function RandomBook() {
   return (
       <>
         <div
-            className={`random-book h-90 grid grid-cols-[3fr_2fr] p-5 relative ${coursePath ? "cursor-pointer" : ""} ${isAnimating ? "is-switching" : ""}`}
+            className={`random-book h-auto md:h-90 grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-3 md:gap-0 p-3 md:p-5 relative ${coursePath ? "cursor-pointer" : ""} ${isAnimating ? "is-switching" : ""}`}
             onClick={handleBackgroundNavigate}
             style={
               {

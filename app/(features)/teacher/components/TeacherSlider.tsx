@@ -101,7 +101,7 @@ export default function TeacherSlider() {
   return (
     <>
       <div
-        className="teacher-slider-container w-full h-90 md:h-90 grid grid-cols-1 md:grid-cols-[5fr_3fr]"
+        className="teacher-slider-container w-full h-auto min-h-[300px] md:min-h-0 md:h-90 grid grid-cols-1 md:grid-cols-[5fr_3fr]"
         style={{
           background:
             "linear-gradient(145deg, rgba(255, 228, 239, 0.94) 0%, rgba(255, 255, 255, 0.97) 42%, rgba(255, 241, 214, 0.94) 100%)",
@@ -110,7 +110,7 @@ export default function TeacherSlider() {
         }}
       >
         <div className="teacher-slider flex justify-center items-center flex-col">
-          <div className="box h-90 md:h-90">
+          <div className="box h-auto min-h-[300px] md:min-h-0 md:h-90">
             {teachers.length > 0 ? (
               teachers.map((teacher, index) => {
                 const position = getPositionClass(index);

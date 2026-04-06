@@ -154,25 +154,25 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
 
     return (
       <div
-        className="random-book relative grid h-auto min-h-[360px] grid-cols-1 gap-5 p-5 lg:grid-cols-[3fr_2fr]"
+        className="random-book relative grid h-auto min-h-[220px] md:min-h-[360px] grid-cols-1 gap-3 md:gap-5 p-3 md:p-5 lg:grid-cols-[3fr_2fr]"
         style={COURSE_HERO_STYLE}
       >
-        <div className="absolute top-0 left-7 flex flex-col rounded-b-sm bg-first px-1.5 py-1 text-white font-bold shadow-lg">
+        <div className="absolute top-0 left-4 md:left-7 flex flex-col rounded-b-sm bg-first px-1 md:px-1.5 py-0.5 md:py-1 text-white font-bold text-xs md:text-base shadow-lg">
           {courseTypeChars.map((char, index) => (
             <span key={`${course.id}-${index}-${char}`}>{char}</span>
           ))}
         </div>
 
-        <div className="left flex flex-col gap-4">
-          <div className="course-info flex flex-wrap items-center justify-between gap-4">
+        <div className="left flex flex-col gap-2 md:gap-4">
+          <div className="course-info flex flex-wrap items-center justify-between gap-2 md:gap-4 mt-2 md:mt-0">
             <Link
               href={buildCoursePath(course.id)}
-              className="course-name pl-15 pb-1 text-4xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm"
+              className="course-name pl-10 md:pl-15 pb-1 text-2xl md:text-4xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm line-clamp-2 md:line-clamp-none"
             >
               {course.name}
             </Link>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
               {props.headerActions}
               <CollectButton
                 size="sm"
@@ -184,30 +184,31 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
           </div>
 
           <div
-            className={`course-relate flex-1 grid grid-cols-1 gap-6 pt-4 ${
+            className={`course-relate flex-1 grid grid-cols-2 gap-3 md:gap-6 pt-4 ${
               hasResourceCollection ? "md:grid-cols-2" : "md:grid-cols-1"
             }`}
           >
             {hasResourceCollection ? (
               <div
-                className={`resource-card flex flex-col justify-between rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
+                className={`resource-card flex flex-col justify-between rounded-xl md:rounded-2xl p-3 md:p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
               >
-                <div className="mb-2 flex items-center gap-2 text-gray-500">
-                  <i className="uil uil-file-alt text-xl text-[var(--first-color)]"></i>
-                  <span className="text-sm font-medium text-gray-600">
+                <div className="mb-1 md:mb-2 flex items-center gap-1 md:gap-2 text-gray-500">
+                  <i className="uil uil-file-alt text-base md:text-xl text-[var(--first-color)]"></i>
+                  <span className="text-xs md:text-sm font-medium text-gray-600">
                     关联资源
                   </span>
                 </div>
-                <div className="my-2 flex flex-1 items-center justify-center text-5xl font-bold tracking-tight text-gray-800">
+                <div className="my-1 md:my-2 flex flex-1 items-center justify-center text-3xl md:text-5xl font-bold tracking-tight text-gray-800">
                   {course.resource_count ?? 0}
                 </div>
-                <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
-                  <div className="flex items-center gap-1 text-xs font-medium text-gray-400">
-                    <i className="uil uil-import text-sm"></i> 课程资源
+                <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-2 md:pt-3">
+                  <div className="flex items-center gap-1 text-[10px] md:text-xs font-medium text-gray-400">
+                    <i className="uil uil-import text-[10px] md:text-sm"></i>{" "}
+                    课程资源
                   </div>
                   <Link
                     href={resourcePath}
-                    className="rounded-md px-2 py-1 text-xs font-medium text-[var(--first-color)] transition-colors hover:bg-[var(--first-color)] hover:text-white"
+                    className="rounded-md px-1.5 py-1 md:px-2 md:py-1 text-[10px] md:text-xs font-medium text-[var(--first-color)] transition-colors hover:bg-[var(--first-color)] hover:text-white"
                   >
                     资源详情
                   </Link>
@@ -216,12 +217,12 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
             ) : null}
 
             <div
-              className={`teacher-card flex flex-col rounded-2xl p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
+              className={`teacher-card flex flex-col rounded-xl md:rounded-2xl p-3 md:p-5 transition-transform hover:-translate-y-1 ${COURSE_CARD_CLASS}`}
             >
-              <div className="mb-3 flex items-center justify-between gap-3 text-gray-500">
-                <div className="flex items-center gap-2">
-                  <i className="uil uil-user-circle text-xl text-[var(--first-color)]"></i>
-                  <span className="text-sm font-medium text-gray-600">
+              <div className="mb-2 md:mb-3 flex items-center justify-between gap-1 md:gap-3 text-gray-500">
+                <div className="flex items-center gap-1 md:gap-2">
+                  <i className="uil uil-user-circle text-base md:text-xl text-[var(--first-color)]"></i>
+                  <span className="text-xs md:text-sm font-medium text-gray-600">
                     授课教师 {teachers.length ? `(${teachers.length})` : ""}
                   </span>
                 </div>
@@ -230,14 +231,14 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                     type="button"
                     onClick={props.onAddRelation}
                     disabled={props.isAddingRelation}
-                    className="rounded-full border border-sky-200 bg-white px-3 py-1 text-xs font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="rounded-full border border-sky-200 bg-white px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-70 whitespace-nowrap"
                   >
-                    {props.isAddingRelation ? "处理中..." : "添加教师"}
+                    {props.isAddingRelation ? "..." : "+"}
                   </button>
                 ) : null}
               </div>
 
-              <div className="custom-scrollbar content-start flex w-full flex-wrap gap-2 overflow-y-auto pr-1">
+              <div className="custom-scrollbar content-start flex w-full flex-wrap gap-1 md:gap-2 overflow-y-auto pr-1">
                 {teachers.length > 0 ? (
                   teachers.map((teacher) => (
                     <Link

@@ -119,12 +119,12 @@ export default function MeFavorites({favorites}: MeFavoritesProps) {
         </div>
 
         {filteredFavorites.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-2">
               {filteredFavorites.map((item) => {
                 const href = getFavoriteHref(item);
                 const cardContent = (
                     <GlassCard
-                        className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]"
+                        className="p-3 md:p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]"
                     >
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div>

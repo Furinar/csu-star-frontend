@@ -242,7 +242,7 @@ export default function MeOverview({
         <h3 className="mb-3 ml-5 text-md font-normal text-gray-800">
           更多设置
         </h3>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {settingsActions.map((item) => (
             <SettingsActionCard
               key={item.key}

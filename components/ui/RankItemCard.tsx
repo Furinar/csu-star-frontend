@@ -351,7 +351,12 @@ export default function RankItemCard(props: RankItemCardProps) {
             <div
               className="text-xl sm:text-2xl md:text-3xl font-black tabular-nums px-1 text-center truncate w-full"
               style={{
-                color: type === "teacher" ? "#be185d" : type === "resource" ? "#047857" : "#1d4ed8",
+                color:
+                  type === "teacher"
+                    ? "#be185d"
+                    : type === "resource"
+                      ? "#047857"
+                      : "#1d4ed8",
                 textShadow: "0 1px 2px rgba(0,0,0,0.05)",
               }}
               title={

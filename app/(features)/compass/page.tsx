@@ -54,7 +54,7 @@ export default function Compass() {
               生存目录
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {/* 模块1 */}
               <div className="flex flex-col gap-3 p-5 rounded-xl bg-white/40 border border-white/60 shadow-sm hover:shadow-md transition-all">
                 <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">

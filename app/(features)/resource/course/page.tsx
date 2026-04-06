@@ -207,23 +207,23 @@ export default function CourseResourceCollectionPage() {
 
       <SectionCard title="课程资料" subtitle="展示资源文件预览和基础信息。">
         {resourcesWithDetail.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-3">
             {resourcesWithDetail.map((resource) => (
               <Link
                 key={resource.id}
                 href={resource.detail_path ?? buildResourcePath(resource.id)}
-                className="group rounded-3xl border border-gray-100 bg-gradient-to-br from-white via-white to-gray-50 p-5 transition hover:-translate-y-1 hover:shadow-lg"
+                className="group rounded-2xl md:rounded-3xl border border-gray-100 bg-gradient-to-br from-white via-white to-gray-50 p-3 md:p-5 transition hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-1.5 md:gap-3 flex-col sm:flex-row">
                   <div className="min-w-0">
-                    <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">
+                    <span className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs text-gray-600">
                       {getResourceTypeLabel(resource.resource_type)}
                     </span>
-                    <div className="mt-3 text-lg font-semibold text-gray-900 line-clamp-2">
+                    <div className="mt-1.5 md:mt-3 text-sm md:text-lg font-semibold text-gray-900 line-clamp-2">
                       {resource.title}
                     </div>
                     <p
-                      className="mt-2 h-10 overflow-hidden text-sm leading-5 text-gray-500"
+                      className="mt-1 md:mt-2 line-clamp-2 overflow-hidden text-[11px] md:text-sm leading-snug md:leading-5 text-gray-500"
                       style={{
                         display: "-webkit-box",
                         WebkitBoxOrient: "vertical",
@@ -233,7 +233,7 @@ export default function CourseResourceCollectionPage() {
                       {resource.description?.trim() || "暂无资源说明。"}
                     </p>
                   </div>
-                  <div className="shrink-0 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-3 py-2 text-center min-w-20 flex flex-col items-center justify-center">
+                  <div className="shrink-0 rounded-xl md:rounded-2xl border border-emerald-100 bg-emerald-50/80 px-2 py-1 md:px-3 md:py-2 text-center min-w-16 md:min-w-20 self-start sm:self-auto hidden sm:flex flex flex-col items-center justify-center">
                     <div className="text-[11px] text-emerald-600">文件数</div>
                     <div className="mt-1 text-base font-semibold text-emerald-900 leading-none">
                       {resource.file_count ?? 0}
@@ -241,11 +241,11 @@ export default function CourseResourceCollectionPage() {
                   </div>
                 </div>
 
-                <div className="mt-4 rounded-2xl border border-gray-100 bg-white/90 p-4">
+                <div className="mt-2 md:mt-4 rounded-xl md:rounded-2xl border border-gray-100 bg-white/90 p-2 md:p-4">
                   {resource.first_file ? (
                     <div className="flex items-center gap-3">
                       <div
-                        className="h-12 w-12 shrink-0 rounded-2xl bg-gray-50 bg-contain bg-center bg-no-repeat"
+                        className="h-8 w-8 md:h-12 md:w-12 shrink-0 rounded-lg md:rounded-2xl bg-gray-50 bg-contain bg-center bg-no-repeat"
                         style={{ backgroundImage: `url(${getFileIcon(resource.first_file.filename)})` }}
                       />
                       <div className="min-w-0 flex-1">
@@ -267,17 +267,17 @@ export default function CourseResourceCollectionPage() {
                   )}
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
+                <div className="mt-2 md:mt-4 flex flex-wrap items-center gap-2 md:gap-4 text-[10px] md:text-sm font-medium text-slate-600">
                   <div className="flex items-center gap-1.5 transition-colors">
-                    <i className="uil uil-cloud-download text-lg text-blue-500"></i>
+                    <i className="uil uil-cloud-download text-base md:text-lg text-blue-500"></i>
                     <span>下载 {resource.downloads ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-1.5 transition-colors">
-                    <i className="uil uil-eye text-lg text-amber-500"></i>
+                    <i className="uil uil-eye text-base md:text-lg text-amber-500"></i>
                     <span>浏览 {resource.views ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-1.5 transition-colors">
-                    <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                    <i className="uil uil-thumbs-up text-base md:text-lg text-rose-500"></i>
                     <span>点赞 {resource.likes ?? 0}</span>
                   </div>
                   <div className="flex items-center gap-1.5 transition-colors">
