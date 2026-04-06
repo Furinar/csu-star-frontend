@@ -130,7 +130,7 @@ export default function Teacher() {
 
         <TeacherSlider />
 
-        <div className="relative z-10 mt-8 flex w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-5 md:px-10 pt-7">
+        <div className="relative z-10 mt-8 hidden w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-5 pt-7 md:flex md:px-10">
           <div className="absolute top-10 left-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl -z-10" style={{ backgroundColor: teacherTheme.blobColors[0] }}></div>
           <div className="absolute top-0 right-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-2000 -z-10" style={{ backgroundColor: teacherTheme.blobColors[1] }}></div>
           <div className="absolute -bottom-8 left-1/3 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-4000 -z-10" style={{ backgroundColor: teacherTheme.blobColors[2] }}></div>
