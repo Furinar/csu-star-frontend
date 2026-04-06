@@ -77,22 +77,34 @@ function BarRow({
   label,
   value,
   colorClass = "bg-blue-500",
+  hideBarOnMobile = false,
 }: {
   label: string;
   value?: number | null;
   colorClass?: string;
+  hideBarOnMobile?: boolean;
 }) {
   const score = clampScore(value);
   return (
-    <div className="flex items-center gap-2 text-xs">
-      <span className="w-16 text-gray-500 truncate">{label}</span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+    <div
+      className={`flex items-center text-xs ${hideBarOnMobile ? "justify-between md:gap-2" : "gap-2"}`}
+    >
+      <span
+        className={`${hideBarOnMobile ? "min-w-0 flex-1 md:w-16 md:flex-none" : "w-16"} truncate text-gray-500`}
+      >
+        {label}
+      </span>
+      <div
+        className={`${hideBarOnMobile ? "hidden md:block" : ""} h-1.5 flex-1 overflow-hidden rounded-full bg-gray-100`}
+      >
         <div
           className={`h-full rounded-full ${colorClass}`}
           style={{ width: `${(score / 5) * 100}%` }}
         ></div>
       </div>
-      <span className="w-6 text-right text-gray-600 font-medium tabular-nums">
+      <span
+        className={`${hideBarOnMobile ? "ml-3 w-auto shrink-0 md:w-6" : "w-6"} text-right font-medium tabular-nums text-gray-600`}
+      >
         {formatScore(value)}
       </span>
     </div>
@@ -157,16 +169,19 @@ export default function SearchResultCard(props: SearchResultCardProps) {
           label="收获感"
           value={item.avg_gain}
           colorClass={theme.dimensionBarClassNames[0]}
+          hideBarOnMobile
         />
         <BarRow
           label="作业量"
           value={item.avg_homework}
           colorClass={theme.dimensionBarClassNames[1]}
+          hideBarOnMobile
         />
         <BarRow
           label="考试难度"
           value={item.avg_exam_diff}
           colorClass={theme.dimensionBarClassNames[2]}
+          hideBarOnMobile
         />
       </>
     );
@@ -219,16 +234,19 @@ export default function SearchResultCard(props: SearchResultCardProps) {
           label="教学质量"
           value={item.avg_quality}
           colorClass={theme.dimensionBarClassNames[0]}
+          hideBarOnMobile
         />
         <BarRow
           label="给分宽松"
           value={item.avg_grading}
           colorClass={theme.dimensionBarClassNames[1]}
+          hideBarOnMobile
         />
         <BarRow
           label="考勤要求"
           value={item.avg_attendance}
           colorClass={theme.dimensionBarClassNames[2]}
+          hideBarOnMobile
         />
       </>
     );
