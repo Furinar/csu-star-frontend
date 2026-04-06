@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
 import styled from "styled-components";
 
-type DownloadStatus = "idle" | "loading" | "success";
+export type DownloadStatus = "idle" | "loading" | "success";
 
 interface DownloadButtonProps {
   status?: DownloadStatus;
@@ -57,9 +56,15 @@ const StyledWrapper = styled.div`
   .download-button {
     --download-accent: var(--page-accent-text, #047857);
     --download-accent-strong: var(--first-color, #10b981);
-    --download-accent-soft: var(--page-accent-soft-strong, rgba(16, 185, 129, 0.12));
+    --download-accent-soft: var(
+      --page-accent-soft-strong,
+      rgba(16, 185, 129, 0.12)
+    );
     --download-border: var(--page-accent-border, rgba(16, 185, 129, 0.18));
-    --download-gradient: var(--page-accent-gradient, linear-gradient(135deg, #34d399 0%, #10b981 56%, #0f766e 100%));
+    --download-gradient: var(
+      --page-accent-gradient,
+      linear-gradient(135deg, #34d399 0%, #10b981 56%, #0f766e 100%)
+    );
 
     position: relative;
     display: inline-flex;
@@ -142,7 +147,11 @@ const StyledWrapper = styled.div`
   }
 
   .download-button[data-status="idle"]:not(:disabled):hover {
-    border-color: color-mix(in srgb, var(--download-accent-strong) 40%, white);
+    border-color: color-mix(
+      in srgb,
+      var(--download-accent-strong) 40%,
+      white
+    );
     background: rgba(255, 255, 255, 0.98);
   }
 
@@ -186,7 +195,11 @@ const StyledWrapper = styled.div`
 
   .download-button[data-status="success"] {
     width: 138px;
-    border-color: color-mix(in srgb, var(--download-accent-strong) 55%, white);
+    border-color: color-mix(
+      in srgb,
+      var(--download-accent-strong) 55%,
+      white
+    );
   }
 
   .download-button[data-status="success"] .title-idle,
@@ -217,7 +230,8 @@ const StyledWrapper = styled.div`
   @keyframes pulse {
     0% {
       transform: scale(0.96);
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--download-accent-strong) 22%, transparent);
+      box-shadow: 0 0 0 0
+        color-mix(in srgb, var(--download-accent-strong) 22%, transparent);
     }
     70% {
       transform: scale(1);

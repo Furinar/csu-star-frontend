@@ -46,7 +46,7 @@ import { getFileIcon } from "./fileIcons";
 import BilibiliCommentThread from "@/components/ui/BilibiliCommentThread";
 import { useAuthStore } from "@/store/useAuthStore";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
-import DownloadButton from "@/template/download";
+import DownloadButton from "@/components/ui/DownloadButton";
 import type { EntityId } from "@/types/entity";
 
 interface ReplyTarget {
