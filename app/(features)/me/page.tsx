@@ -337,20 +337,20 @@ export default function Me() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white px-4 py-10 transition-colors duration-300 sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white px-3 py-6 transition-colors duration-300 sm:px-6 md:py-10 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-5 md:flex-row md:gap-8">
         {/* ── Sidebar ── */}
         <aside className="w-full flex-shrink-0 md:w-1/3 lg:w-1/4">
-          <div className="sticky top-24 space-y-6">
-            <GlassCard className="flex flex-col items-center p-6 text-center md:items-start md:text-left">
+          <div className="sticky top-24 space-y-4 md:space-y-6">
+            <GlassCard className="flex flex-col items-center p-4 text-center md:p-6 md:items-start md:text-left">
               <button
                 type="button"
                 onClick={handleOpenProfilePanel}
-                className="group relative mb-4 cursor-pointer rounded-full text-left"
+                className="group relative mb-3 cursor-pointer rounded-full text-left md:mb-4"
                 aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
               >
                 <img
-                  className="h-48 w-48 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02]"
+                  className="h-36 w-36 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
                   src={profile?.avatar_url || "/furina.jpg"}
                   alt="User Avatar"
                 />
@@ -361,35 +361,35 @@ export default function Me() {
                 </div>
               </button>
 
-              <div className="mb-4 space-y-2">
+              <div className="mb-3 space-y-1.5 md:mb-4 md:space-y-2">
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accountPresentation.badgeClassName}`}
                 >
                   {accountPresentation.badge}
                 </span>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-xl font-bold text-gray-900 md:text-2xl">
                     {profile?.nickname ?? "游客"}
                   </h1>
-                  <h2 className="text-lg font-light text-gray-500">
+                  <h2 className="text-base font-light text-gray-500 md:text-lg">
                     {accountPresentation.subtitle}
                   </h2>
                 </div>
               </div>
 
-              <p className="mb-6 text-sm leading-relaxed text-gray-700">
+              <p className="mb-4 text-sm leading-relaxed text-gray-700 md:mb-6">
                 {accountPresentation.hint}
               </p>
 
               <button
                 type="button"
                 onClick={() => openProtectedPanel("profile")}
-                className="mb-6 w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80"
+                className="mb-4 w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:text-base"
               >
                 {accountMode === "guest" ? "登录后完善资料" : "编辑个人资料"}
               </button>
 
-              <div className="w-full space-y-3 text-sm text-gray-700">
+              <div className="w-full space-y-2.5 text-sm text-gray-700 md:space-y-3">
                 <div className="flex items-center gap-2">
                   <svg
                     className="h-4 w-4 text-gray-400"
@@ -467,13 +467,13 @@ export default function Me() {
               </div>
             </GlassCard>
 
-            <GlassCard className="p-5">
-              <h3 className="mb-4 text-sm font-semibold text-gray-900">
+            <GlassCard className="p-4 md:p-5">
+              <h3 className="mb-3 text-sm font-semibold text-gray-900 md:mb-4">
                 STAR 积分
               </h3>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-baseline gap-1">
-                  <span className="hero-gradient-text text-3xl font-black">
+                  <span className="hero-gradient-text text-2xl font-black md:text-3xl">
                     {formatNumber(profile?.points)}
                   </span>
                 </div>
@@ -502,7 +502,7 @@ export default function Me() {
 
         {/* ── Main content ── */}
         <main className="w-full flex-1">
-          <div className="mb-6 flex gap-2 overflow-x-auto border-b border-gray-200/50 pb-px hide-scrollbar">
+          <div className="mb-4 flex gap-1.5 overflow-x-auto border-b border-gray-200/50 pb-px hide-scrollbar md:mb-6 md:gap-2">
             {[
               { key: "overview" as TabKey, label: "概览" },
               {
@@ -532,7 +532,7 @@ export default function Me() {
                   key={tab.key}
                   type="button"
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-all ${
+                  className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-1.5 text-sm font-medium transition-all md:gap-2 md:px-4 md:py-2 ${
                     isActive
                       ? "border-first text-gray-900"
                       : "rounded-t-lg border-transparent text-gray-600 hover:bg-gray-100/50 hover:text-gray-800"
@@ -556,7 +556,7 @@ export default function Me() {
           </div>
 
           {loadError ? (
-            <GlassCard className="mb-6 border border-amber-200/70 bg-amber-50/70 p-4">
+            <GlassCard className="mb-4 border border-amber-200/70 bg-amber-50/70 p-4 md:mb-6">
               <div className="flex flex-col gap-2 text-sm text-amber-800 sm:flex-row sm:items-center sm:justify-between">
                 <p>{loadError}</p>
                 <button
@@ -861,7 +861,7 @@ function FloatingPanel({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] px-4 py-6 sm:px-6">
+    <div className="fixed inset-0 z-[1000] px-3 py-4 sm:px-6 sm:py-6">
       <button
         type="button"
         className="absolute inset-0 bg-black/25"
@@ -869,11 +869,11 @@ function FloatingPanel({
         aria-label="关闭设置面板"
       />
       <div className="relative mx-auto flex h-full max-w-3xl items-center">
-        <div className="max-h-[88vh] w-full overflow-hidden rounded-[32px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)]">
-          <div className="flex items-start justify-between gap-4 border-b border-slate-200/80 bg-white/85 px-6 py-5">
+        <div className="max-h-[88vh] w-full overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)] sm:rounded-[32px]">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 py-4 sm:gap-4 sm:px-6 sm:py-5">
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-              <p className="mt-1 text-sm leading-6 text-gray-600">
+              <h3 className="text-lg font-semibold text-gray-900 sm:text-xl">{title}</h3>
+              <p className="mt-1 text-sm leading-5 text-gray-600 sm:leading-6">
                 {description}
               </p>
             </div>
@@ -882,7 +882,7 @@ function FloatingPanel({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-gray-500 shadow-sm transition hover:bg-slate-50 hover:text-gray-800"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-gray-500 shadow-sm transition hover:bg-slate-50 hover:text-gray-800 sm:h-10 sm:w-10"
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                   <path
@@ -895,7 +895,7 @@ function FloatingPanel({
               </button>
             </div>
           </div>
-          <div className="modal-scrollbar max-h-[calc(88vh-5.5rem)] overflow-y-auto bg-white/80 px-6 py-5">
+          <div className="modal-scrollbar max-h-[calc(88vh-5rem)] overflow-y-auto bg-white/80 px-4 py-4 sm:max-h-[calc(88vh-5.5rem)] sm:px-6 sm:py-5">
             {children}
           </div>
         </div>
@@ -921,13 +921,13 @@ function SectionEmptyState({
   description: string;
 }) {
   return (
-    <GlassCard className="border-dashed p-12 text-center">
+    <GlassCard className="border-dashed p-8 text-center sm:p-12">
       <img
         src="/undraw_mcp-server_7kvc.svg"
         alt="空状态插画"
         className="mx-auto mb-4 h-24 w-auto opacity-90"
       />
-      <h3 className="mb-2 text-xl font-medium text-gray-800">{title}</h3>
+      <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-xl">{title}</h3>
       <p className="mx-auto max-w-md text-gray-500">{description}</p>
     </GlassCard>
   );
@@ -941,13 +941,13 @@ function GuestTabState({
   description?: string;
 }) {
   return (
-    <GlassCard className="border-dashed p-12 text-center">
+    <GlassCard className="border-dashed p-8 text-center sm:p-12">
       <img
         src="/undraw_halloween-2025_o47f.svg"
         alt="游客模式插画"
         className="mx-auto mb-4 opacity-90"
       />
-      <h3 className="mb-2 text-xl font-medium text-gray-800">{title}</h3>
+      <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-xl">{title}</h3>
       <p className="mx-auto max-w-md text-gray-500">{description}</p>
     </GlassCard>
   );
