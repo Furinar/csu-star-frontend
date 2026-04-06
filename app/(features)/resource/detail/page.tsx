@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -32,12 +33,10 @@ import ItemActionMenu, {
 import {
   DetailHero,
   DetailPageShell,
-  DetailRibbonTag,
   DetailSection,
   EntityPillLink,
 } from "@/components/detail/DetailScaffold";
 import { buildCoursePath } from "@/lib/paths";
-import { formatDateTimeZh } from "@/lib/date";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useHasMounted } from "@/hooks/useHasMounted";
 import { getFileIcon } from "./fileIcons";
@@ -59,10 +58,6 @@ function commentSortLabel(sort: EvaluationSort) {
   return sort === "likes" ? "按点赞" : "按时间";
 }
 
-function formatDate(value?: string) {
-  return formatDateTimeZh(value);
-}
-
 function formatFileSize(bytes?: number | null) {
   if (!bytes) return "未知大小";
   if (bytes < 1024) return `${bytes} B`;
@@ -75,6 +70,8 @@ export default function ResourceDetailPage() {
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const resourceId = hasMounted ? searchParams.get("id") : null;
+  const targetCommentId = hasMounted ? searchParams.get("comment_id") : null;
+  const targetReplyId = hasMounted ? searchParams.get("reply_id") : null;
 
   const authUser = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.access_token);
@@ -115,6 +112,7 @@ export default function ResourceDetailPage() {
     id: string;
     label: string;
   } | null>(null);
+  const resolvedNotificationTargetRef = useRef<string | null>(null);
   const isDeleted = resource?.status === "deleted";
   const isPrivileged = viewerRole === Role.Admin || viewerRole === Role.Auditor;
   const isUploader = Boolean(
@@ -176,12 +174,13 @@ export default function ResourceDetailPage() {
   };
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const loadedResourceIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!hasMounted) return;
     if (!resourceId) return;
     let mounted = true;
-    const shouldShowPageLoading = resource == null;
+    const shouldShowPageLoading = loadedResourceIdRef.current !== resourceId;
     if (shouldShowPageLoading) {
       setIsLoading(true);
     } else {
@@ -208,6 +207,7 @@ export default function ResourceDetailPage() {
       })
       .finally(() => {
         if (!mounted) return;
+        loadedResourceIdRef.current = resourceId;
         if (shouldShowPageLoading) {
           setIsLoading(false);
         }
@@ -300,6 +300,27 @@ export default function ResourceDetailPage() {
     }, COMMENT_FLASH_RESET_MS);
   }, []);
 
+  const highlightNotificationTarget = useCallback(
+    (commentId: EntityId, replyId?: EntityId | string | null) => {
+      const commentKey = String(commentId);
+      const replyKey = replyId ? String(replyId) : null;
+
+      setHighlightCommentId(commentKey);
+      if (replyKey) {
+        setHighlightReplyMap((prev) => ({
+          ...prev,
+          [commentKey]: replyKey,
+        }));
+      }
+
+      clearCommentHighlight(commentId);
+      if (replyKey) {
+        clearReplyHighlight(commentId, replyKey);
+      }
+    },
+    [clearCommentHighlight, clearReplyHighlight],
+  );
+
   const handleReplySubmit = useCallback(async (parentId: EntityId) => {
     if (!ensureSignedIn("登录后才能回复资源评论。")) {
       return;
@@ -366,6 +387,87 @@ export default function ResourceDetailPage() {
       );
     }
   }, [clearReplyDraft, clearReplyHighlight, clearReplyTarget, ensureSignedIn, isDeleted, replyDraftMap, resourceId, targetMap]);
+
+  useEffect(() => {
+    const targetKey = `${targetCommentId ?? ""}:${targetReplyId ?? ""}:${commentSort}`;
+    if (
+      !resourceId ||
+      (!targetCommentId && !targetReplyId) ||
+      resolvedNotificationTargetRef.current === targetKey
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    resolvedNotificationTargetRef.current = targetKey;
+
+    const findTargetComment = (list: ResourceComment[]) => {
+      if (targetCommentId) {
+        return list.find((comment) => String(comment.id) === targetCommentId) ?? null;
+      }
+      if (targetReplyId) {
+        return (
+          list.find((comment) =>
+            (comment.children || []).some((child) => String(child.id) === targetReplyId),
+          ) ?? null
+        );
+      }
+      return null;
+    };
+
+    const ensureTargetLoaded = async () => {
+      const currentTarget = findTargetComment(comments);
+      if (currentTarget) {
+        highlightNotificationTarget(currentTarget.id, targetReplyId);
+        return;
+      }
+
+      let nextPage = page;
+      let mergedComments = comments;
+      let mergedTotal = totalComments;
+
+      while (!cancelled && mergedComments.length < mergedTotal) {
+        nextPage += 1;
+        const result = await listResourceComments(
+          resourceId,
+          nextPage,
+          10,
+          commentSort,
+        );
+        const existingIds = new Set(mergedComments.map((comment) => String(comment.id)));
+        const appendedComments = result.items.filter(
+          (comment) => !existingIds.has(String(comment.id)),
+        );
+        mergedComments = [...mergedComments, ...appendedComments];
+        mergedTotal = result.total;
+
+        setComments(mergedComments);
+        setTotalComments(result.total);
+        setPage(nextPage);
+
+        const matchedComment = findTargetComment(mergedComments);
+        if (matchedComment) {
+          highlightNotificationTarget(matchedComment.id, targetReplyId);
+          return;
+        }
+      }
+    };
+
+    void ensureTargetLoaded();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    commentSort,
+    comments,
+    highlightNotificationTarget,
+    page,
+    resourceId,
+    targetCommentId,
+    targetReplyId,
+    totalComments,
+  ]);
 
   const handleCreateComment = useCallback(async () => {
     if (!ensureSignedIn("登录后才能发表评论。")) {
@@ -883,16 +985,18 @@ export default function ResourceDetailPage() {
         >
           {resource.files && resource.files.length > 0 ? (
             <div className="grid gap-3">
-              {resource.files.map((file, index) => (
+              {resource.files.map((file) => (
                 <div
                   key={file.id}
                   className="flex flex-col gap-4 rounded-[20px] border border-slate-100 bg-white p-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 md:flex-row md:items-center md:justify-between"
                 >
                   <div className="flex items-center gap-4">
-                    <img
+                    <Image
                       src={getFileIcon(file.filename)}
                       alt={file.filename}
                       className="h-10 w-10 shrink-0 object-contain drop-shadow-sm"
+                      width={40}
+                      height={40}
                     />
                     <div className="min-w-0">
                       <div className="truncate text-base font-semibold text-slate-800">

@@ -30,6 +30,7 @@ import type { ReportTargetType } from "@/types/me";
 import type { EntityId } from "@/types/entity";
 
 const SUBMIT_ANIMATION_MS = 1200;
+const HIGHLIGHT_RESET_MS = 900;
 
 type ThreadEvaluation = TeacherEvaluation | CourseEvaluation;
 type EvaluationType = "teacher" | "course";
@@ -64,6 +65,8 @@ export interface DetailEvaluationSectionProps {
   initialItems: ThreadEvaluation[];
   initialTotal: number;
   initialPage?: number;
+  initialHighlightEvaluationId?: string | null;
+  initialHighlightReplyId?: string | null;
   listEvaluations: (
     page: number,
     size: number,
@@ -126,6 +129,8 @@ export default function DetailEvaluationSection({
   initialItems,
   initialTotal,
   initialPage = 1,
+  initialHighlightEvaluationId = null,
+  initialHighlightReplyId = null,
   listEvaluations,
   onReply,
   onUpdateEvaluation,
@@ -148,6 +153,7 @@ export default function DetailEvaluationSection({
   const [replyAnonymousMap, setReplyAnonymousMap] = useState<Record<string, boolean>>({});
   const [targetMap, setTargetMap] = useState<Record<string, ReplyTarget>>({});
   const [expandedReplyMap, setExpandedReplyMap] = useState<Record<string, boolean>>({});
+  const [highlightEvaluationId, setHighlightEvaluationId] = useState<string | null>(null);
   const [highlightReplyMap, setHighlightReplyMap] = useState<Record<string, string | null>>({});
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const [replyingToId, setReplyingToId] = useState<string | null>(null);
@@ -165,6 +171,7 @@ export default function DetailEvaluationSection({
   } | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const didMountRef = useRef(false);
+  const resolvedNotificationTargetRef = useRef<string | null>(null);
 
   useEffect(() => {
     setItems(initialItems);
@@ -221,6 +228,30 @@ export default function DetailEvaluationSection({
     void reloadEvaluations(sort);
   }, [sort, reloadEvaluations]);
 
+  const highlightNotificationTarget = useCallback(
+    (evaluationId: string, replyId?: string | null) => {
+      setHighlightEvaluationId(evaluationId);
+      if (replyId) {
+        setExpandedReplyMap((prev) => ({ ...prev, [evaluationId]: true }));
+        setHighlightReplyMap((prev) => ({ ...prev, [evaluationId]: replyId }));
+      }
+
+      window.setTimeout(() => {
+        setHighlightEvaluationId((current) =>
+          current === evaluationId ? null : current,
+        );
+        if (replyId) {
+          setHighlightReplyMap((prev) => ({
+            ...prev,
+            [evaluationId]:
+              prev[evaluationId] === replyId ? null : prev[evaluationId],
+          }));
+        }
+      }, HIGHLIGHT_RESET_MS);
+    },
+    [],
+  );
+
   const fetchMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
     try {
@@ -243,6 +274,73 @@ export default function DetailEvaluationSection({
       setIsLoadingMore(false);
     }
   }, [hasMore, isLoadingMore, listEvaluations, page, sort]);
+
+  useEffect(() => {
+    const targetEvaluationId = initialHighlightEvaluationId
+      ? String(initialHighlightEvaluationId)
+      : null;
+    const targetReplyId = initialHighlightReplyId
+      ? String(initialHighlightReplyId)
+      : null;
+    const targetKey = `${targetEvaluationId ?? ""}:${targetReplyId ?? ""}:${sort}`;
+
+    if (!targetEvaluationId || resolvedNotificationTargetRef.current === targetKey) {
+      return;
+    }
+
+    let cancelled = false;
+    resolvedNotificationTargetRef.current = targetKey;
+
+    const ensureTargetLoaded = async () => {
+      const findTarget = (list: ThreadEvaluation[]) =>
+        list.find((item) => String(item.id) === targetEvaluationId);
+
+      const currentTarget = findTarget(items);
+      if (currentTarget) {
+        highlightNotificationTarget(targetEvaluationId, targetReplyId);
+        return;
+      }
+
+      let nextPage = page;
+      let mergedItems = items;
+      let mergedTotal = total;
+
+      while (!cancelled && mergedItems.length < mergedTotal) {
+        nextPage += 1;
+        const result = await listEvaluations(nextPage, 10, sort);
+        const existingIds = new Set(mergedItems.map((item) => String(item.id)));
+        const appendedItems = result.items.filter(
+          (item) => !existingIds.has(String(item.id)),
+        );
+        mergedItems = [...mergedItems, ...appendedItems];
+        mergedTotal = result.total;
+
+        setItems(mergedItems);
+        setTotal(result.total);
+        setPage(nextPage);
+
+        if (findTarget(mergedItems)) {
+          highlightNotificationTarget(targetEvaluationId, targetReplyId);
+          return;
+        }
+      }
+    };
+
+    void ensureTargetLoaded();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    highlightNotificationTarget,
+    initialHighlightEvaluationId,
+    initialHighlightReplyId,
+    items,
+    listEvaluations,
+    page,
+    sort,
+    total,
+  ]);
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -703,6 +801,7 @@ export default function DetailEvaluationSection({
         ),
       })),
       forceShowAllReplies: Boolean(expandedReplyMap[id]),
+      shouldFlash: highlightEvaluationId === id,
       highlightedReplyId: highlightReplyMap[id],
     };
   });

@@ -17,6 +17,7 @@ import type {
   InviteCodeInfo,
   MyProfileUpdateInput,
   MeDashboardData,
+  NotificationMetadata,
   NotificationItem,
   OAuthBindInput,
   OAuthBindResult,
@@ -81,10 +82,42 @@ const toBoolean = (value: unknown): boolean | null => {
   return null;
 };
 
+const normalizeNotificationMetadata = (
+  value: unknown,
+): NotificationMetadata | null => {
+  if (!isRecord(value)) return null;
+
+  const sourceType = toStringSafe(value.source_type);
+  const targetPage = toStringSafe(value.target_page);
+
+  return {
+    source_type:
+      sourceType === "resource" ||
+      sourceType === "teacher_evaluation" ||
+      sourceType === "course_evaluation" ||
+      sourceType === "teacher_evaluation_reply" ||
+      sourceType === "course_evaluation_reply" ||
+      sourceType === "comment"
+        ? sourceType
+        : null,
+    source_id: toStringId(value.source_id),
+    target_page:
+      targetPage === "resource" ||
+      targetPage === "teacher" ||
+      targetPage === "course"
+        ? targetPage
+        : null,
+    target_id: toStringId(value.target_id),
+    evaluation_id: toStringId(value.evaluation_id),
+    comment_id: toStringId(value.comment_id),
+    reply_id: toStringId(value.reply_id),
+  };
+};
+
 const normalizeNotificationItem = (item: unknown): NotificationItem | null => {
   if (!isRecord(item)) return null;
 
-  const metadata = isRecord(item.metadata) ? item.metadata : null;
+  const metadata = normalizeNotificationMetadata(item.metadata);
   const type = toStringSafe(item.type);
   const category = toStringSafe(item.category);
   const result = toStringSafe(item.result);
@@ -117,6 +150,8 @@ const normalizeNotificationItem = (item: unknown): NotificationItem | null => {
       sourceType === "resource" ||
       sourceType === "teacher_evaluation" ||
       sourceType === "course_evaluation" ||
+      sourceType === "teacher_evaluation_reply" ||
+      sourceType === "course_evaluation_reply" ||
       sourceType === "comment" ||
       sourceType === "announcement"
         ? sourceType

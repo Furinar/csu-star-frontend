@@ -1,11 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   listMyNotifications,
   markAllNotificationsRead,
   markNotificationRead,
 } from "@/api/me";
+import {
+  buildCoursePath,
+  buildResourcePath,
+  buildTeacherPath,
+} from "@/lib/paths";
 import GlassCard from "@/components/ui/GlassCard";
 import { feedback } from "@/store/useFeedbackStore";
 import type { NotificationItem, PaginatedData } from "@/types/me";
@@ -25,6 +32,7 @@ interface MeNotificationsProps {
 export default function MeNotifications({
   onUnreadCountChange,
 }: MeNotificationsProps) {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<
     PaginatedData<NotificationItem>
   >(createEmptyPaginated());
@@ -76,6 +84,41 @@ export default function MeNotifications({
       });
     }
   };
+
+  const handleOpenNotification = useCallback(
+    async (item: NotificationItem) => {
+      const targetPath = buildNotificationPath(item);
+      if (!targetPath) {
+        return;
+      }
+
+      if (!item.is_read) {
+        try {
+          await markNotificationRead(item.id);
+          setNotifications((current) => ({
+            ...current,
+            items: current.items.map((currentItem) =>
+              currentItem.id === item.id
+                ? {
+                    ...currentItem,
+                    is_read: true,
+                  }
+                : currentItem,
+            ),
+          }));
+          onUnreadCountChange?.(-1);
+        } catch (error) {
+          feedback.error({
+            title: "已读状态同步失败",
+            description: getErrorMessage(error, "无法更新通知状态"),
+          });
+        }
+      }
+
+      router.push(targetPath);
+    },
+    [onUnreadCountChange, router],
+  );
 
   const handleMarkAllRead = async () => {
     try {
@@ -136,6 +179,7 @@ export default function MeNotifications({
         emptyTitle="暂无公告"
         emptyDescription="新的平台公告会展示在这里。"
         onMarkRead={handleMarkRead}
+        onOpenItem={handleOpenNotification}
       />
 
       <NotificationSection
@@ -145,6 +189,7 @@ export default function MeNotifications({
         emptyTitle="暂无通知"
         emptyDescription="新的系统通知和互动消息会展示在这里。"
         onMarkRead={handleMarkRead}
+        onOpenItem={handleOpenNotification}
       />
     </div>
   );
@@ -157,6 +202,7 @@ function NotificationSection({
   emptyTitle,
   emptyDescription,
   onMarkRead,
+  onOpenItem,
 }: {
   title: string;
   description: string;
@@ -164,6 +210,7 @@ function NotificationSection({
   emptyTitle: string;
   emptyDescription: string;
   onMarkRead: (id: string) => void;
+  onOpenItem: (item: NotificationItem) => void;
 }) {
   return (
     <div className="space-y-3">
@@ -179,6 +226,7 @@ function NotificationSection({
               key={item.id}
               item={item}
               onMarkRead={onMarkRead}
+              onOpen={onOpenItem}
             />
           ))}
         </div>
@@ -192,14 +240,34 @@ function NotificationSection({
 function NotificationCard({
   item,
   onMarkRead,
+  onOpen,
 }: {
   item: NotificationItem;
   onMarkRead: (id: string) => void;
+  onOpen: (item: NotificationItem) => void;
 }) {
   const tone = getNotificationCardTone(item);
+  const targetPath = buildNotificationPath(item);
 
   return (
-    <GlassCard className={`${tone.cardClassName} p-4`}>
+    <GlassCard
+      className={`${tone.cardClassName} p-4 ${
+        targetPath ? "cursor-pointer transition hover:-translate-y-0.5" : ""
+      }`}
+      onClick={targetPath ? () => void onOpen(item) : undefined}
+      role={targetPath ? "button" : undefined}
+      tabIndex={targetPath ? 0 : undefined}
+      onKeyDown={
+        targetPath
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                void onOpen(item);
+              }
+            }
+          : undefined
+      }
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -227,7 +295,10 @@ function NotificationCard({
         {!item.is_read ? (
           <button
             type="button"
-            onClick={() => void onMarkRead(item.id)}
+            onClick={(event) => {
+              event.stopPropagation();
+              void onMarkRead(item.id);
+            }}
             className="rounded-xl border border-gray-200/70 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-white"
           >
             标记已读
@@ -236,6 +307,49 @@ function NotificationCard({
       </div>
     </GlassCard>
   );
+}
+
+function buildNotificationPath(item: NotificationItem) {
+  const metadata = item.metadata;
+
+  if (metadata?.target_page && metadata.target_id) {
+    const extraParams = new URLSearchParams();
+
+    if (metadata.evaluation_id) {
+      extraParams.set("evaluation_id", String(metadata.evaluation_id));
+    }
+    if (metadata.comment_id) {
+      extraParams.set("comment_id", String(metadata.comment_id));
+    }
+    if (metadata.reply_id) {
+      extraParams.set("reply_id", String(metadata.reply_id));
+    }
+    const suffix = extraParams.toString();
+
+    if (metadata.target_page === "resource") {
+      return `${buildResourcePath(metadata.target_id)}${
+        suffix ? `&${suffix}` : ""
+      }${metadata.comment_id || metadata.reply_id ? "#comments" : ""}`;
+    }
+
+    if (metadata.target_page === "teacher") {
+      return `${buildTeacherPath(metadata.target_id)}${
+        suffix ? `&${suffix}` : ""
+      }#evaluations`;
+    }
+
+    if (metadata.target_page === "course") {
+      return `${buildCoursePath(metadata.target_id)}${
+        suffix ? `&${suffix}` : ""
+      }#evaluations`;
+    }
+  }
+
+  if (item.source_type === "resource" && item.source_id) {
+    return buildResourcePath(item.source_id);
+  }
+
+  return null;
 }
 
 function SectionEmptyState({
@@ -247,10 +361,12 @@ function SectionEmptyState({
 }) {
   return (
     <GlassCard className="border-dashed p-12 text-center">
-      <img
+      <Image
         src="/undraw_mcp-server_7kvc.svg"
         alt="空状态插画"
         className="mx-auto mb-4 h-24 w-auto opacity-90"
+        width={160}
+        height={96}
       />
       <h3 className="mb-2 text-xl font-medium text-gray-800">{title}</h3>
       <p className="mx-auto max-w-md text-gray-500">{description}</p>

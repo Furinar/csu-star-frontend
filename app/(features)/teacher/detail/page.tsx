@@ -31,6 +31,10 @@ export default function TeacherDetailPage() {
   const hasMounted = useHasMounted();
   const accessToken = useAuthStore((state) => state.access_token);
   const teacherId = hasMounted ? searchParams.get("id") : null;
+  const highlightEvaluationId = hasMounted
+    ? searchParams.get("evaluation_id")
+    : null;
+  const highlightReplyId = hasMounted ? searchParams.get("reply_id") : null;
 
   const [teacher, setTeacher] = useState<TeacherDetail | null>(null);
   const [evaluations, setEvaluations] = useState<TeacherEvaluation[]>([]);
@@ -185,6 +189,8 @@ export default function TeacherDetailPage() {
             initialItems={evaluations}
             initialTotal={evaluationTotal}
             initialPage={1}
+            initialHighlightEvaluationId={highlightEvaluationId}
+            initialHighlightReplyId={highlightReplyId}
             listEvaluations={(page, size, sort) => listTeacherEvaluations(teacherId, page, size, sort)}
             onReply={createTeacherEvaluationReply}
             onUpdateEvaluation={(evaluationId, payload) =>

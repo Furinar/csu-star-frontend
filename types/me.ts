@@ -205,6 +205,23 @@ export interface CheckinResult {
   already_checked_in: boolean;
 }
 
+export interface NotificationMetadata {
+  source_type?:
+    | "resource"
+    | "teacher_evaluation"
+    | "course_evaluation"
+    | "teacher_evaluation_reply"
+    | "course_evaluation_reply"
+    | "comment"
+    | null;
+  source_id?: EntityId | null;
+  target_page?: "resource" | "teacher" | "course" | null;
+  target_id?: EntityId | null;
+  evaluation_id?: EntityId | null;
+  comment_id?: EntityId | null;
+  reply_id?: EntityId | null;
+}
+
 export interface NotificationItem {
   id: EntityId;
   type: NotificationType;
@@ -213,17 +230,19 @@ export interface NotificationItem {
   title: string;
   content?: string;
   source_type?:
-  | "resource"
-  | "teacher_evaluation"
-  | "course_evaluation"
-  | "comment"
-  | "announcement"
-  | null;
+    | "resource"
+    | "teacher_evaluation"
+    | "course_evaluation"
+    | "teacher_evaluation_reply"
+    | "course_evaluation_reply"
+    | "comment"
+    | "announcement"
+    | null;
   source_id?: EntityId | null;
   related_id?: EntityId | null;
   is_read: boolean;
   is_pinned?: boolean;
-  metadata?: Record<string, unknown> | null;
+  metadata?: NotificationMetadata | null;
   created_at: string;
 }
 

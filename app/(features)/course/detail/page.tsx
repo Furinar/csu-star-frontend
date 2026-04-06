@@ -32,6 +32,10 @@ export default function CourseDetailPage() {
   const hasMounted = useHasMounted();
   const accessToken = useAuthStore((state) => state.access_token);
   const courseId = hasMounted ? searchParams.get("id") : null;
+  const highlightEvaluationId = hasMounted
+    ? searchParams.get("evaluation_id")
+    : null;
+  const highlightReplyId = hasMounted ? searchParams.get("reply_id") : null;
 
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [evaluations, setEvaluations] = useState<CourseEvaluation[]>([]);
@@ -222,6 +226,8 @@ export default function CourseDetailPage() {
             initialItems={evaluations}
             initialTotal={evaluationTotal}
             initialPage={1}
+            initialHighlightEvaluationId={highlightEvaluationId}
+            initialHighlightReplyId={highlightReplyId}
             listEvaluations={(page, size, sort) => listCourseEvaluations(courseId, page, size, sort)}
             onReply={createCourseEvaluationReply}
             onUpdateEvaluation={(evaluationId, payload) =>
