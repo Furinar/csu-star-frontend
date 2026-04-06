@@ -128,15 +128,17 @@ export default function SearchResultCard(props: SearchResultCardProps) {
         {teachers.slice(0, 3).map((teacher) => (
           <span
             key={teacher.id}
-            className="bg-gray-100 px-2 py-0.5 rounded-full text-xs text-gray-600"
+            className="bg-gray-100 px-2 py-0.5 rounded-full text-[11px] text-gray-600"
           >
             {teacher.name}
           </span>
         ))}
         {teacherCount > 0 ? (
-          <span className="text-xs text-gray-400 ml-1">共{teacherCount}位教师</span>
+          <span className="ml-1 text-[11px] text-gray-400">
+            共{teacherCount}位教师
+          </span>
         ) : (
-          <span className="text-xs text-gray-400">暂无教师</span>
+          <span className="text-[11px] text-gray-400">暂无教师</span>
         )}
       </div>
     );
@@ -163,21 +165,21 @@ export default function SearchResultCard(props: SearchResultCardProps) {
     subtitleIcon = "uil-bag";
     subtitleContent = (
       <div className="flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap">
-        <span className="shrink-0 text-xs text-gray-600">
+        <span className="shrink-0 text-[11px] text-gray-600">
           {item.department_name || item.title || "未录入职称"}
         </span>
-        <span className="shrink-0 text-xs text-gray-300">|</span>
+        <span className="shrink-0 text-[11px] text-gray-300">|</span>
         {courses.length > 0 ? (
           <>
             {courses.slice(0, 1).map((course) => (
               <span
                 key={course.id}
-                className="min-w-0 truncate rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                className="min-w-0 truncate rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600"
               >
                 {course.name}
               </span>
             ))}
-            <span className="shrink-0 text-xs text-gray-400">
+            <span className="shrink-0 text-[11px] text-gray-400">
               共{courses.length}门课程
             </span>
           </>
