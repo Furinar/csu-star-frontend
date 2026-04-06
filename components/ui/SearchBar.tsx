@@ -236,7 +236,7 @@ export default function SearchBar({
             e.stopPropagation();
           }}
           placeholder={placeholder}
-          className="flex-1 min-w-0 h-[56px] sm:h-[64px] pr-[70px] sm:pr-[140px] bg-transparent border-none outline-none text-[16px] sm:text-[18px] text-[var(--text-color)] placeholder:text-[var(--text-color-light)] placeholder:opacity-60 transition-all font-medium"
+          className="flex-1 min-w-0 h-[50px] sm:h-[64px] pr-[70px] sm:pr-[140px] bg-transparent border-none outline-none text-[15px] sm:text-[18px] text-[var(--text-color)] placeholder:text-[var(--text-color-light)] placeholder:opacity-60 transition-all font-medium"
           {...props}
         />
 
@@ -291,7 +291,7 @@ export default function SearchBar({
 
       {/* Search History Dropdown */}
       <div
-        className={`absolute top-[70px] sm:top-[80px] w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/90 backdrop-blur-2xl rounded-[20px] overflow-hidden transition-all duration-400 origin-top border border-white/20 z-20 ${
+        className={`absolute top-[64px] sm:top-[80px] w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/90 backdrop-blur-2xl rounded-[20px] overflow-hidden transition-all duration-400 origin-top border border-white/20 z-20 ${
           isFocused
             ? "opacity-100 scale-100 translate-y-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-2 shadow-none pointer-events-none"
