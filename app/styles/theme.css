@@ -1,0 +1,60 @@
+/* ===== Tailwind 主题注册 ===== */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-ice-50: var(--ice-50);
+  --color-ice-100: var(--ice-100);
+  --color-ice-200: var(--ice-200);
+  --color-ice-300: var(--ice-300);
+  --color-ice-400: var(--ice-400);
+  --color-ice-500: var(--ice-500);
+  --color-ice-600: var(--ice-600);
+  --color-ice-700: var(--ice-700);
+  --color-ice-800: var(--ice-800);
+  --color-ice-900: var(--ice-900);
+  --color-star-50: var(--star-50);
+  --color-star-100: var(--star-100);
+  --color-star-200: var(--star-200);
+  --color-star-300: var(--star-300);
+  --color-star-400: var(--star-400);
+  --color-star-500: var(--star-500);
+  --color-star-600: var(--star-600);
+  --color-star-700: var(--star-700);
+  --color-star-800: var(--star-800);
+  --color-star-900: var(--star-900);
+  --color-glow-300: var(--glow-300);
+  --color-glow-400: var(--glow-400);
+  --color-glow-500: var(--glow-500);
+  --color-abyss-800: var(--abyss-800);
+  --color-abyss-900: var(--abyss-900);
+  --color-abyss-950: var(--abyss-950);
+
+  /* 语义主题色 */
+  --color-first: var(--first-color);
+  --color-first-alt: var(--first-color-alt);
+  --color-first-lighter: var(--first-color-lighter);
+  --color-first-second: var(--first-color-second);
+  --color-title: var(--title-color);
+  --color-text: var(--text-color);
+  --color-text-light: var(--text-color-light);
+  --color-body: var(--body-color);
+  --color-input: var(--input-color);
+  --color-container: var(--container-color);
+
+  /* z-index */
+  --z-index-tooltip: 10;
+  --z-index-fixed: 100;
+  --z-index-modal: 1000;
+
+  /* 布局变量 */
+  --header-height: 3rem;
+}

@@ -1,0 +1,544 @@
+.page {
+    --vp-c-bg: #ffffff;
+    --vp-c-bg-soft: #f6f6f7;
+    --vp-c-divider: #e2e2e3;
+    --vp-c-text-1: #3c3c43;
+    --vp-c-text-2: #67676c;
+    --vp-c-brand-1: #42b883;
+    --vp-c-brand-2: #33a06f;
+    background: var(--vp-c-bg);
+    color: var(--vp-c-text-1);
+    min-height: 100vh;
+}
+
+.teamPage {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.teamHero {
+    border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.container {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.teamHero .container {
+    padding-top: 56px;
+    padding-bottom: 56px;
+}
+
+.heroHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.heroHeader .title {
+    flex: 1;
+    min-width: 0;
+}
+
+.githubEntry {
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    position: relative;
+    background-color: rgb(31, 31, 31);
+    overflow: hidden;
+    text-decoration: none;
+    flex: 0 0 auto;
+}
+
+.githubEntryIcon {
+    width: auto;
+    transition-duration: 0.3s;
+    color: #ffffff;
+}
+
+.githubEntryIcon path {
+    fill: currentColor;
+}
+
+.githubEntryText {
+    position: absolute;
+    color: rgb(255, 255, 255);
+    width: 120px;
+    font-weight: 600;
+    opacity: 0;
+    transition-duration: 0.4s;
+}
+
+.githubEntry:hover {
+    width: 110px;
+    border-radius: 30px;
+}
+
+.githubEntry:hover .githubEntryText {
+    opacity: 1;
+}
+
+.githubEntry:hover .githubEntryIcon {
+    opacity: 0;
+}
+
+.title {
+    margin: 0;
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    line-height: 1.2;
+    color: #1f2328;
+}
+
+.lead {
+    margin: 16px 0 0;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--vp-c-text-2);
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.action {
+    margin-top: 18px;
+}
+
+.link,
+.descLink,
+.company,
+.socialLink {
+    color: var(--vp-c-brand-2);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.link:hover,
+.descLink:hover,
+.company:hover,
+.socialLink:hover {
+    color: var(--vp-c-brand-1);
+    text-decoration: underline;
+}
+
+.teamList {
+    padding-top: 36px;
+}
+
+.teamGrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+}
+
+.info {
+    position: sticky;
+    top: 108px;
+}
+
+.members {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 760px;
+}
+
+.member {
+    display: block;
+}
+
+.teamMember {
+    position: relative;
+    display: flex;
+    column-gap: 22px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    background: var(--vp-c-bg-soft);
+    padding: 24px;
+}
+
+.githubTopRight {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--vp-c-text-2);
+}
+
+.githubTopRight:hover {
+    color: var(--vp-c-brand-1);
+}
+
+.avatar {
+    margin: 0;
+    flex: 0 0 120px;
+    width: 120px;
+    height: 120px;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.avatarImg {
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    object-fit: cover;
+}
+
+.data {
+    flex: 1;
+    min-width: 0;
+}
+
+.name {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 32px;
+    color: var(--vp-c-text-1);
+}
+
+.org {
+    margin: 0;
+    padding-top: 4px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--vp-c-text-2);
+}
+
+.profiles {
+    padding-top: 12px;
+    display: grid;
+    row-gap: 10px;
+}
+
+.desc {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.descTitle {
+    display: flex;
+    align-items: center;
+    min-height: auto;
+    flex: 0 0 auto;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.descIcon {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    fill: var(--vp-c-text-2);
+}
+
+.code {
+    width: 20px;
+    margin-left: -2px;
+}
+
+.descList {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.descItem,
+.descText {
+    margin: 0;
+    font-size: 14px;
+    line-height: 24px;
+    color: var(--vp-c-text-2);
+}
+
+.descItem + .descItem {
+    margin-top: 0;
+}
+
+.descText {
+    margin: 0;
+}
+
+.socialList {
+    margin: 2px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 12px;
+}
+
+.socialItem {
+    margin: 0;
+}
+
+.socialLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    color: var(--vp-c-text-2);
+}
+
+.socialLink:hover {
+    color: var(--vp-c-brand-1);
+}
+
+.socialIcon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.descLink {
+    overflow-wrap: anywhere;
+}
+
+.company {
+    font-weight: 500;
+}
+
+.footer {
+    margin-top: 56px;
+    border-top: 1px solid var(--vp-c-divider);
+}
+
+.footerInner {
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding: 20px 24px 28px;
+}
+
+.footerText {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--vp-c-text-2);
+}
+
+@media (max-width: 1023px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .teamHero .container {
+        padding-top: 44px;
+        padding-bottom: 44px;
+    }
+
+    .title {
+        font-size: clamp(1.7rem, 5.4vw, 2.2rem);
+        line-height: 1.2;
+    }
+
+    .lead {
+        margin-top: 12px;
+        font-size: 0.95rem;
+        line-height: 1.72;
+    }
+
+    .teamList {
+        padding-top: 28px;
+    }
+
+    .teamGrid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .info {
+        position: static;
+    }
+
+    .members {
+        max-width: none;
+        gap: 14px;
+    }
+
+    .teamMember {
+        padding: 20px;
+        column-gap: 16px;
+    }
+
+    .name {
+        font-size: 22px;
+        line-height: 30px;
+    }
+
+    .org {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .profiles {
+        padding-top: 10px;
+        row-gap: 8px;
+    }
+
+    .descItem,
+    .descText {
+        font-size: 13px;
+        line-height: 20px;
+    }
+
+    .footer {
+        margin-top: 40px;
+    }
+
+    .footerInner {
+        padding: 18px 20px 24px;
+    }
+
+    .footerText {
+        font-size: 0.86rem;
+        line-height: 1.7;
+    }
+}
+
+@media (max-width: 767px) {
+    .container {
+        padding: 0 16px;
+    }
+
+    .teamHero .container {
+        padding-top: 34px;
+        padding-bottom: 34px;
+    }
+
+    .heroHeader {
+        gap: 10px;
+    }
+
+    .githubEntry {
+        width: 40px;
+        height: 40px;
+    }
+
+    .lead {
+        margin-top: 10px;
+        font-size: 0.92rem;
+        line-height: 1.65;
+    }
+
+    .teamList {
+        padding-top: 22px;
+    }
+
+    .teamGrid {
+        gap: 14px;
+    }
+
+    .members {
+        gap: 12px;
+    }
+
+    .teamMember {
+        padding: 16px;
+        column-gap: 12px;
+    }
+
+    .avatar {
+        flex: 0 0 88px;
+        width: 88px;
+        height: 88px;
+    }
+
+    .name {
+        font-size: 20px;
+        line-height: 27px;
+    }
+
+    .org {
+        padding-top: 2px;
+        font-size: 12px;
+        line-height: 17px;
+    }
+
+    .profiles {
+        padding-top: 8px;
+        row-gap: 6px;
+    }
+
+    .desc {
+        gap: 6px;
+    }
+
+    .descIcon {
+        width: 14px;
+        height: 14px;
+    }
+
+    .descItem,
+    .descText {
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .footer {
+        margin-top: 30px;
+    }
+
+    .footerInner {
+        padding: 14px 16px 20px;
+    }
+
+    .footerText {
+        font-size: 0.82rem;
+        line-height: 1.65;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .lead {
+        font-size: 0.88rem;
+        line-height: 1.6;
+    }
+
+    .teamMember {
+        padding: 14px;
+        column-gap: 10px;
+    }
+
+    .avatar {
+        flex: 0 0 76px;
+        width: 76px;
+        height: 76px;
+    }
+
+    .name {
+        font-size: 18px;
+        line-height: 24px;
+    }
+}

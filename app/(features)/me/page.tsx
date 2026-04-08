@@ -1,0 +1,1068 @@
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
+import Link from "next/link";
+import type {ReactNode} from "react";
+import {useCallback, useEffect, useState} from "react";
+import {useSearchParams} from "next/navigation";
+import {dailyCheckin, getMeDashboard, getMyDownloads, getMyInviteCode,} from "@/api/me";
+import GlassCard from "@/components/ui/GlassCard";
+import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
+import {useHasMounted} from "@/hooks/useHasMounted";
+import {feedback} from "@/store/useFeedbackStore";
+import {useAuthStore} from "@/store/useAuthStore";
+import type {UserProfile} from "@/types/auth";
+import type {
+  CourseEvaluation,
+  DownloadRecord,
+  FavoriteItem,
+  InviteCodeInfo,
+  MeDashboardData,
+  PaginatedData,
+  PointsRecord,
+  ResourceItem,
+  TeacherEvaluation,
+} from "@/types/me";
+import MeEvaluations from "./components/MeEvaluations";
+import MeFavorites from "./components/MeFavorites";
+import MeNotifications from "./components/MeNotifications";
+import MeOverview from "./components/MeOverview";
+import MeResources from "./components/MeResources";
+import ContributionPanel from "./components/panels/ContributionPanel";
+import DownloadsPanel from "./components/panels/DownloadsPanel";
+import EmailPanel from "./components/panels/EmailPanel";
+import FeedbackPanel from "./components/panels/FeedbackPanel";
+import OAuthPanel from "./components/panels/OAuthPanel";
+import PasswordPanel from "./components/panels/PasswordPanel";
+import PointsPanel from "./components/panels/PointsPanel";
+import ProfilePanel from "./components/panels/ProfilePanel";
+import {
+  buildFallbackEmailStatus,
+  createEmptyContributionSummary,
+  createEmptyPaginated,
+  formatNumber,
+  getAccountMode,
+  getAccountPresentation,
+  getDateKey,
+  getDepartmentName,
+  getErrorMessage,
+} from "./components/shared/helpers";
+import {OAUTH_BIND_ERROR_STORAGE_KEY} from "@/lib/oauth";
+
+type TabKey =
+    | "overview"
+    | "resources"
+    | "favorites"
+    | "evaluations"
+    | "notifications";
+type PanelKey =
+    | "guest"
+    | "profile"
+    | "password"
+    | "email"
+    | "oauth"
+    | "points"
+    | "invite"
+    | "downloads"
+    | "feedback"
+    | "correction"
+    | "contribution";
+
+export default function Me() {
+  const hasMounted = useHasMounted();
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabKey>("overview");
+  const [openPanel, setOpenPanel] = useState<PanelKey | null>(null);
+  const [dashboard, setDashboard] = useState<MeDashboardData | null>(null);
+  const [downloads, setDownloads] = useState<PaginatedData<DownloadRecord>>(
+      createEmptyPaginated(),
+  );
+  const [inviteCode, setInviteCode] = useState<InviteCodeInfo | null>(null);
+  const [loadError, setLoadError] = useState("");
+  const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
+  const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
+  const [isLoadingInvite, setIsLoadingInvite] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+
+  const accessToken = useAuthStore((state) => state.access_token);
+  const storedUser = useAuthStore((state) => state.user);
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const profile = dashboard?.profile ?? storedUser;
+  const emailStatus =
+      dashboard?.emailStatus ?? buildFallbackEmailStatus(storedUser);
+  const departments = dashboard?.departments ?? [];
+  const resources =
+      dashboard?.resources ?? createEmptyPaginated<ResourceItem>();
+  const favorites =
+      dashboard?.favorites ?? createEmptyPaginated<FavoriteItem>();
+  const teacherEvaluations =
+      dashboard?.teacherEvaluations ?? createEmptyPaginated<TeacherEvaluation>();
+  const courseEvaluations =
+      dashboard?.courseEvaluations ?? createEmptyPaginated<CourseEvaluation>();
+  const points = dashboard?.points ?? createEmptyPaginated<PointsRecord>();
+  const contributionSummary =
+      dashboard?.contributions ?? createEmptyContributionSummary();
+  const unreadCount = dashboard?.unreadCount ?? 0;
+  const accountMode = getAccountMode(profile, emailStatus);
+  const accountPresentation = getAccountPresentation(
+      accountMode,
+      emailStatus,
+      profile,
+  );
+  const isVerifiedCampusEmail = Boolean(
+      emailStatus.email_verified || profile?.email_verified,
+  );
+  const todayKey = hasMounted ? getDateKey(new Date()) : "";
+  const hasCheckedInToday = todayKey
+      ? (contributionSummary.weeks
+          .flat()
+          .find((item) => item.date === todayKey)
+          ?.actions.some((item) => item.type === "daily_checkin") ?? false)
+      : false;
+
+  const loadDashboard = useCallback(
+      async (showToast = false) => {
+        if (!accessToken) {
+          setDashboard(null);
+          setLoadError("");
+          return;
+        }
+        setIsLoadingDashboard(true);
+        setLoadError("");
+        try {
+          const data = await getMeDashboard();
+          setDashboard(data);
+          setUser(data.profile);
+        } catch (error) {
+          const message = getErrorMessage(error, "个人中心数据加载失败");
+          setLoadError(message);
+          if (showToast) {
+            feedback.error({title: "个人中心加载失败", description: message});
+          }
+        } finally {
+          setIsLoadingDashboard(false);
+        }
+      },
+      [accessToken, setUser],
+  );
+
+  useEffect(() => {
+    if (!hasHydrated) return;
+    if (!accessToken) {
+      setDashboard(null);
+      setDownloads(createEmptyPaginated());
+      setInviteCode(null);
+      setLoadError("");
+      return;
+    }
+    void loadDashboard();
+  }, [accessToken, hasHydrated, loadDashboard]);
+
+  useEffect(() => {
+    const nextTab = searchParams.get("tab");
+    if (
+        nextTab === "overview" ||
+        nextTab === "resources" ||
+        nextTab === "favorites" ||
+        nextTab === "evaluations" ||
+        nextTab === "notifications"
+    ) {
+      setActiveTab(nextTab);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!hasMounted) return;
+    const message = sessionStorage.getItem(OAUTH_BIND_ERROR_STORAGE_KEY);
+    if (!message) return;
+    sessionStorage.removeItem(OAUTH_BIND_ERROR_STORAGE_KEY);
+    feedback.error({
+      title: "第三方账号绑定失败",
+      description: message,
+    });
+    setOpenPanel("oauth");
+  }, [hasMounted]);
+
+  const loadDownloadsData = async () => {
+    if (!accessToken) return;
+    setIsLoadingDownloads(true);
+    try {
+      const data = await getMyDownloads({page: 1, size: 20});
+      setDownloads(data);
+    } catch (error) {
+      feedback.error({
+        title: "下载记录加载失败",
+        description: getErrorMessage(error, "暂时无法获取下载记录"),
+      });
+    } finally {
+      setIsLoadingDownloads(false);
+    }
+  };
+
+  const loadInviteCodeData = async () => {
+    if (!accessToken) return;
+    setIsLoadingInvite(true);
+    try {
+      const data = await getMyInviteCode();
+      setInviteCode(data);
+    } catch (error) {
+      feedback.error({
+        title: "邀请码加载失败",
+        description: getErrorMessage(error, "暂时无法获取邀请码"),
+      });
+    } finally {
+      setIsLoadingInvite(false);
+    }
+  };
+
+  const openProtectedPanel = (panel: PanelKey) => {
+    const noAuthRequiredPanels: PanelKey[] = ["contribution"];
+    if (noAuthRequiredPanels.includes(panel)) {
+      setOpenPanel(panel);
+      return;
+    }
+
+    if (!profile || !accessToken) {
+      setOpenPanel("guest");
+      return;
+    }
+    if (panel === "password" && !isVerifiedCampusEmail) {
+      return;
+    }
+    if (panel === "email" && isVerifiedCampusEmail) {
+      return;
+    }
+    if (panel === "downloads") void loadDownloadsData();
+    if (panel === "invite") void loadInviteCodeData();
+    setOpenPanel(panel);
+  };
+
+  const handleCheckin = async () => {
+    if (!profile || !accessToken) {
+      setOpenPanel("guest");
+      return;
+    }
+    if (hasCheckedInToday || isCheckingIn) return;
+    setIsCheckingIn(true);
+    try {
+      const result = await dailyCheckin();
+      if (result.already_checked_in) {
+        feedback.info({
+          title: "今天已经签到过了",
+          description: "明天再来领取新的签到积分。",
+        });
+        void loadDashboard();
+        return;
+      }
+
+      const currentPoints = profile.points ?? 0;
+      const nextBalance = result.balance_after ?? currentPoints;
+      const gainedPoints =
+          result.points_gained ?? Math.max(0, nextBalance - currentPoints);
+
+      setDashboard((current) => {
+        if (!current) return current;
+        const nextProfile = {
+          ...current.profile,
+          points: nextBalance,
+        };
+        const syntheticRecord: PointsRecord = {
+          id: String(Date.now()),
+          change_amount: gainedPoints,
+          balance_after: nextBalance,
+          reason: "daily_checkin",
+          created_at: new Date().toISOString(),
+        };
+        const nextPoints = {
+          total: current.points.total + 1,
+          items: [syntheticRecord, ...current.points.items],
+        };
+        return {...current, profile: nextProfile, points: nextPoints};
+      });
+      setUser({...profile, points: nextBalance});
+      void loadDashboard();
+      feedback.success({
+        title: "签到成功",
+        description:
+            gainedPoints > 0
+                ? `本次获得 ${gainedPoints} 积分，当前余额 ${nextBalance}。`
+                : `当前积分余额 ${nextBalance}。`,
+      });
+    } catch (error) {
+      feedback.error({
+        title: "签到失败",
+        description: getErrorMessage(error, "请稍后重试"),
+      });
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
+  const handleProfileUpdated = (
+      nextProfile: UserProfile,
+      updater: (current: MeDashboardData | null) => MeDashboardData | null,
+  ) => {
+    setDashboard(updater);
+    setUser(nextProfile);
+  };
+
+  const handleEmailVerified = (
+      nextProfile: UserProfile,
+      updater: (current: MeDashboardData | null) => MeDashboardData | null,
+  ) => {
+    setDashboard(updater);
+    setUser(nextProfile);
+  };
+
+  const handleCopyInviteCode = async () => {
+    if (!inviteCode?.invite_code) return;
+    try {
+      const inviteLink = `${window.location.origin}/login?type=true&invite_code=${encodeURIComponent(inviteCode.invite_code)}`;
+      await navigator.clipboard.writeText(inviteLink);
+      feedback.success({
+        title: "邀请链接已复制",
+        description: "好友打开链接后会自动填充邀请码。",
+      });
+    } catch {
+      feedback.warning({
+        title: "复制失败",
+        description: "浏览器未授予剪贴板权限，请手动复制邀请链接。",
+      });
+    }
+  };
+
+  const handleNotificationUnreadChange = (delta: number) => {
+    setDashboard((current) =>
+        current
+            ? {...current, unreadCount: Math.max(0, current.unreadCount + delta)}
+            : current,
+    );
+  };
+
+  const handleOpenProfilePanel = () => {
+    openProtectedPanel("profile");
+  };
+
+  return (
+      <div
+          className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white px-3 py-6 transition-colors duration-300 sm:px-6 md:py-10 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 md:flex-row md:gap-8">
+          {/* ── Sidebar ── */}
+          <aside className="w-full flex-shrink-0 md:w-1/3 lg:w-1/4">
+            <div className="sticky top-24 space-y-4 md:space-y-6">
+              <GlassCard className="flex flex-col items-center p-4 text-center md:p-6 md:items-start md:text-left">
+                <div className="mb-3 flex w-full items-center gap-3 md:mb-4 md:block">
+                  <button
+                      type="button"
+                      onClick={handleOpenProfilePanel}
+                      className="group relative shrink-0 cursor-pointer rounded-full text-left md:mb-4"
+                      aria-label={accountMode === "guest" ? "登录后编辑个人资料" : "打开编辑个人资料面板"}
+                  >
+                    <img
+                        className="h-28 w-28 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
+                        src={profile?.avatar_url || "https://picui.ogmua.cn/s1/2026/04/08/69d645c706367.webp"}
+                        alt="User Avatar"
+                    />
+                    <div
+                        className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="text-sm text-white">
+                      {accountMode === "guest" ? "登录后编辑资料" : "点击编辑资料"}
+                    </span>
+                    </div>
+                  </button>
+
+                  <div className="min-w-0 flex-1 space-y-1.5 text-right md:space-y-2 md:text-left">
+                  <span
+                      className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${accountPresentation.badgeClassName}`}
+                  >
+                    {accountPresentation.badge}
+                  </span>
+                    <div>
+                      <h1 className="text-xl font-bold text-gray-900 md:text-2xl">
+                        {profile?.nickname ?? "游客"}
+                      </h1>
+                      <h2 className="text-base font-light text-gray-500 md:text-lg">
+                        {accountPresentation.subtitle}
+                      </h2>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mb-4 hidden text-sm leading-relaxed text-gray-700 md:mb-6 md:block">
+                  {accountPresentation.hint}
+                </p>
+
+                <button
+                    type="button"
+                    onClick={() => openProtectedPanel("profile")}
+                    className="mb-3 w-full rounded-xl border border-gray-200/50 bg-white/50 px-4 py-1.5 text-sm font-medium text-gray-800 shadow-sm transition-all hover:bg-white/80 md:mb-6 md:text-base"
+                >
+                  {accountMode === "guest" ? "登录后完善资料" : "编辑个人资料"}
+                </button>
+
+                <div className="mb-3 flex items-center gap-2 text-sm text-gray-700 md:hidden">
+                  <svg
+                      className="h-4 w-4 shrink-0 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                  >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <span className="truncate">
+                  {emailStatus.email ?? "尚未绑定校园邮箱"}
+                </span>
+                </div>
+
+                <div className="flex w-full items-stretch text-sm text-gray-700 md:hidden">
+                  <div className="flex min-w-0 basis-1/2 items-center pr-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <svg
+                            className="h-4 w-4 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                          <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
+                        <span>{getDepartmentName(departments, profile?.department_id)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg
+                            className="h-4 w-4 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                          <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                          />
+                        </svg>
+                        <span>{profile?.grade ? `${profile.grade}级` : "年级未填写"}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg
+                            className="h-4 w-4 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                          <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8c-3.866 0-7 2.239-7 5v3h14v-3c0-2.761-3.134-5-7-5zm0 0a4 4 0 100-8 4 4 0 000 8z"
+                          />
+                        </svg>
+                        <span>
+                        {accountMode === "guest"
+                            ? "游客模式"
+                            : accountMode === "verified"
+                                ? "已认证"
+                                : "待认证"}
+                      </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="my-1 h-auto w-px shrink-0 self-stretch bg-gray-200/80"/>
+
+                  <div className="basis-1/2 pl-3">
+                    <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                      <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-gray-400">
+                        STAR
+                      </div>
+                      <div className="hero-gradient-text text-2xl font-black">
+                        {formatNumber(profile?.points)}
+                      </div>
+                      <button
+                          type="button"
+                          onClick={
+                            accountMode === "guest"
+                                ? () => setOpenPanel("guest")
+                                : handleCheckin
+                          }
+                          disabled={isCheckingIn || hasCheckedInToday}
+                          className="min-w-[84px] rounded-lg bg-first px-3 py-1.5 text-sm font-medium text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {accountMode === "guest"
+                            ? "立即登录"
+                            : hasCheckedInToday
+                                ? "已签到"
+                                : isCheckingIn
+                                    ? "签到中"
+                                    : "签到"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden w-full space-y-2.5 text-sm text-gray-700 md:block md:space-y-3">
+                  <div className="hidden items-center gap-2 md:flex">
+                    <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                      <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>{emailStatus.email ?? "尚未绑定校园邮箱"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                      <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <span>
+                    {getDepartmentName(departments, profile?.department_id)}
+                  </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                      <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                      />
+                    </svg>
+                    <span>
+                    {profile?.grade ? `${profile.grade}级` : "年级未填写"}
+                  </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                        className="h-4 w-4 text-gray-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                      <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8c-3.866 0-7 2.239-7 5v3h14v-3c0-2.761-3.134-5-7-5zm0 0a4 4 0 100-8 4 4 0 000 8z"
+                      />
+                    </svg>
+                    <span>
+                    {accountMode === "guest"
+                        ? "登录后可查看完整账号能力"
+                        : accountMode === "verified"
+                            ? "校园认证身份已生效"
+                            : "第三方登录，可继续完成校园邮箱认证"}
+                  </span>
+                  </div>
+                </div>
+              </GlassCard>
+
+              <GlassCard className="hidden p-4 md:block md:p-5">
+                <h3 className="mb-3 text-sm font-semibold text-gray-900 md:mb-4">
+                  STAR 积分
+                </h3>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-baseline gap-1">
+                  <span className="hero-gradient-text text-2xl font-black md:text-3xl">
+                    {formatNumber(profile?.points)}
+                  </span>
+                  </div>
+                  <button
+                      type="button"
+                      onClick={
+                        accountMode === "guest"
+                            ? () => setOpenPanel("guest")
+                            : handleCheckin
+                      }
+                      disabled={isCheckingIn || hasCheckedInToday}
+                      className="rounded-lg bg-first px-3 py-1.5 text-sm font-medium text-white shadow-md transition-all disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {accountMode === "guest"
+                        ? "立即登录"
+                        : hasCheckedInToday
+                            ? "今日已签到"
+                            : isCheckingIn
+                                ? "签到中..."
+                                : "每日签到"}
+                  </button>
+                </div>
+              </GlassCard>
+            </div>
+          </aside>
+
+          {/* ── Main content ── */}
+          <main className="w-full flex-1">
+            <div
+                className="mb-4 flex gap-1.5 overflow-x-auto border-b border-gray-200/50 pb-px hide-scrollbar md:mb-6 md:gap-2">
+              {[
+                {key: "overview" as TabKey, label: "概览"},
+                {
+                  key: "notifications" as TabKey,
+                  label: "通知与公告",
+                  count: unreadCount,
+                },
+                {
+                  key: "resources" as TabKey,
+                  label: "我的资源",
+                  count: resources.total,
+                },
+                {
+                  key: "favorites" as TabKey,
+                  label: "收藏夹",
+                  count: favorites.total,
+                },
+                {
+                  key: "evaluations" as TabKey,
+                  label: "我的评价",
+                  count: teacherEvaluations.total + courseEvaluations.total,
+                },
+              ].map((tab) => {
+                const isActive = activeTab === tab.key;
+                return (
+                    <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-1.5 text-sm font-medium transition-all md:gap-2 md:px-4 md:py-2 ${
+                            isActive
+                                ? "border-first text-gray-900"
+                                : "rounded-t-lg border-transparent text-gray-600 hover:bg-gray-100/50 hover:text-gray-800"
+                        }`}
+                    >
+                      {tab.label}
+                      {typeof tab.count === "number" && tab.count > 0 ? (
+                          <span
+                              className={`rounded-full px-2 py-0.5 text-xs ${
+                                  tab.key === "notifications"
+                                      ? "bg-rose-500/12 text-rose-600"
+                                      : "bg-gray-200/50 text-gray-600"
+                              }`}
+                          >
+                      {formatNumber(tab.count)}
+                    </span>
+                      ) : null}
+                    </button>
+                );
+              })}
+            </div>
+
+            {loadError ? (
+                <GlassCard className="mb-4 border border-amber-200/70 bg-amber-50/70 p-4 md:mb-6">
+                  <div
+                      className="flex flex-col gap-2 text-sm text-amber-800 sm:flex-row sm:items-center sm:justify-between">
+                    <p>{loadError}</p>
+                    <button
+                        type="button"
+                        onClick={() => void loadDashboard(true)}
+                        className="rounded-lg bg-white/70 px-3 py-1.5 font-medium text-amber-700 transition hover:bg-white"
+                    >
+                      重新加载
+                    </button>
+                  </div>
+                </GlassCard>
+            ) : null}
+
+            {activeTab === "overview" ? (
+                <MeOverview
+                    profile={profile}
+                    accountMode={accountMode}
+                    contributionData={contributionSummary}
+                    onOpenPanel={openProtectedPanel}
+                />
+            ) : null}
+
+            {activeTab === "resources" ? (
+                profile ? (
+                    <MeResources resources={resources}/>
+                ) : (
+                    <GuestTabState/>
+                )
+            ) : null}
+
+            {activeTab === "favorites" ? (
+                profile ? (
+                    <MeFavorites favorites={favorites}/>
+                ) : (
+                    <GuestTabState/>
+                )
+            ) : null}
+
+            {activeTab === "evaluations" ? (
+                profile ? (
+                    <MeEvaluations
+                        teacherEvaluations={teacherEvaluations}
+                        courseEvaluations={courseEvaluations}
+                    />
+                ) : (
+                    <GuestTabState/>
+                )
+            ) : null}
+
+            {activeTab === "notifications" ? (
+                profile ? (
+                    <MeNotifications
+                        onUnreadCountChange={handleNotificationUnreadChange}
+                    />
+                ) : (
+                    <GuestTabState
+                        title="登录后查看通知与公告"
+                        description="系统公告、审核提醒和互动通知会在登录后展示。"
+                    />
+                )
+            ) : null}
+          </main>
+        </div>
+
+        {/* ── Floating Panels ── */}
+        <FloatingPanel
+            open={openPanel === "guest"}
+            title="登录后可解锁完整个人中心"
+            description="登录后即可继续使用资料编辑、校园认证、积分与通知等个人功能。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <div className="space-y-4">
+            <p className="text-sm leading-6 text-gray-600">
+              登录后即可管理你的个人信息、进行校园认证、查看积分和消息通知，并解锁社区的完整功能。
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                  href="/login"
+                  className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              >
+                前往登录
+              </Link>
+              <Link
+                  href="/login?type=true"
+                  className="rounded-xl border border-gray-200/70 bg-white/70 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-white"
+              >
+                前往注册
+              </Link>
+            </div>
+          </div>
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "profile"}
+            title="编辑个人资料"
+            description="修改你的昵称、学院和年级信息，头像通过第三方账号同步。"
+            onClose={() => setOpenPanel(null)}
+        >
+          {profile ? (
+              <ProfilePanel
+                  profile={profile}
+                  departments={departments}
+                  onClose={() => setOpenPanel(null)}
+                  onProfileUpdated={handleProfileUpdated}
+              />
+          ) : null}
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "password" && isVerifiedCampusEmail}
+            title="修改密码"
+            description="通过校园邮箱验证码来重置你的登录密码。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <PasswordPanel
+              initialEmail={emailStatus.email ?? profile?.email ?? ""}
+              emailLocked={isVerifiedCampusEmail}
+              onClose={() => setOpenPanel(null)}
+          />
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "email" && !isVerifiedCampusEmail}
+            title="绑定校园邮箱"
+            description="绑定校园邮箱以获取在中南星的完整访问权限。"
+            onClose={() => setOpenPanel(null)}
+        >
+          {profile ? (
+              <EmailPanel
+                  profile={profile}
+                  emailStatus={emailStatus}
+                  accountMode={accountMode}
+                  onClose={() => setOpenPanel(null)}
+                  onEmailVerified={handleEmailVerified}
+              />
+          ) : null}
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "oauth"}
+            title="绑定第三方账号"
+            description="绑定你的其他账号，以后可以使用它们一键快捷登录。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <OAuthPanel
+              accountMode={accountMode}
+              bindings={profile?.oauth_bindings ?? null}
+              onClose={() => setOpenPanel(null)}
+          />
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "points"}
+            title="积分流水"
+            description="你在资源上传、签到、邀请等行为产生的积分变化都会记录在这里。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <PointsPanel points={points.items}/>
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "invite"}
+            title="分享邀请码"
+            description="邀请身边的好友加入中南星社区，获取丰厚奖励。"
+            onClose={() => setOpenPanel(null)}
+        >
+          {isLoadingInvite ? (
+              <SectionEmptyState title="邀请码加载中..." description="请稍候。"/>
+          ) : inviteCode ? (
+              <div className="space-y-4">
+                <GlassCard className="border border-white/50 p-5">
+                  <p className="text-sm text-gray-500">你的专属邀请码</p>
+                  <p className="mt-2 text-3xl font-black tracking-[0.18em] hero-gradient-text">
+                    {inviteCode.invite_code}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm text-gray-600">
+                    <StatPill
+                        label="成功邀请"
+                        value={`${inviteCode.used_count} 人`}
+                    />
+                  </div>
+                </GlassCard>
+                <div className="flex justify-end">
+                  <button
+                      type="button"
+                      onClick={handleCopyInviteCode}
+                      className="rounded-xl bg-first px-4 py-2 text-sm font-medium text-white"
+                  >
+                    复制邀请链接
+                  </button>
+                </div>
+              </div>
+          ) : (
+              <SectionEmptyState title="暂无邀请码" description="请稍后再试。"/>
+          )}
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "downloads"}
+            title="下载记录"
+            description="查看你曾下载过的全部资源记录。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <DownloadsPanel
+              downloads={downloads.items}
+              isLoading={isLoadingDownloads}
+          />
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "feedback"}
+            title="意见反馈"
+            description="如果你有任何建议或遇到了问题，请告诉我们。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <FeedbackPanel mode="feedback" onClose={() => setOpenPanel(null)}/>
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "correction"}
+            title="信息纠错"
+            description="如果课程或教师信息有误，可以在这里提交更正建议。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <FeedbackPanel mode="correction" onClose={() => setOpenPanel(null)}/>
+        </FloatingPanel>
+
+        <FloatingPanel
+            open={openPanel === "contribution"}
+            title="贡献度策略"
+            description="了解你在社区的活跃度与贡献是如何计算的。"
+            onClose={() => setOpenPanel(null)}
+        >
+          <ContributionPanel/>
+        </FloatingPanel>
+
+        {!hasHydrated || (accessToken && !dashboard && isLoadingDashboard) ? (
+            <div className="pointer-events-none fixed inset-x-0 top-24 z-[5] flex justify-center">
+              <div className="rounded-full bg-white/70 px-4 py-2 text-sm text-gray-500 shadow-sm backdrop-blur-sm">
+                个人中心数据加载中...
+              </div>
+            </div>
+        ) : null}
+
+        <style jsx global>{`
+            .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+
+            .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .modal-scrollbar {
+                scrollbar-gutter: stable;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(148, 163, 184, 0.78) transparent;
+            }
+
+            .modal-scrollbar::-webkit-scrollbar {
+                width: 12px;
+                height: 12px;
+            }
+
+            .modal-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+                border-radius: 999px;
+            }
+
+            .modal-scrollbar::-webkit-scrollbar-thumb {
+                border: 3px solid transparent;
+                border-radius: 999px;
+                background-clip: content-box;
+                background-color: rgba(148, 163, 184, 0.78);
+            }
+
+            .modal-scrollbar::-webkit-scrollbar-thumb:hover {
+                background-color: rgba(100, 116, 139, 0.92);
+            }
+        `}</style>
+      </div>
+  );
+}
+
+function FloatingPanel({
+                         open,
+                         title,
+                         description,
+                         children,
+                         onClose,
+                         headerAction,
+                       }: {
+  open: boolean;
+  title: string;
+  description: string;
+  children: ReactNode;
+  onClose: () => void;
+  headerAction?: ReactNode;
+}) {
+  if (!open) return null;
+
+  return (
+      <div className="fixed inset-0 z-[1000] bg-black/25 px-2 py-2 sm:px-4 sm:py-4 md:px-6 md:py-6">
+        <button
+            type="button"
+            className="absolute inset-0"
+            onClick={onClose}
+            aria-label="关闭设置面板"
+        />
+        <div className="relative mx-auto flex min-h-full max-w-3xl items-end md:items-center">
+          <div
+              className="relative flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-[24px] border border-white/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 shadow-[0_30px_110px_rgba(15,23,42,0.16)] sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] sm:rounded-[28px] md:rounded-[32px]">
+            <FloatingCloseButton onClick={onClose} ariaLabel="关闭设置面板"/>
+            <div
+                className="flex items-start justify-between gap-3 border-b border-slate-200/80 bg-white/85 px-4 pb-4 pt-5 pr-14 sm:gap-4 sm:px-6 sm:pb-5 sm:pt-6 sm:pr-16">
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-gray-900 sm:text-xl">{title}</h3>
+                <p className="mt-1 text-sm leading-5 text-gray-600 sm:leading-6">
+                  {description}
+                </p>
+              </div>
+              {headerAction ? (
+                  <div className="flex items-center gap-3">{headerAction}</div>
+              ) : null}
+            </div>
+            <div className="modal-scrollbar flex-1 overflow-y-auto bg-white/80 px-4 py-4 sm:px-6 sm:py-5">
+              {children}
+            </div>
+          </div>
+        </div>
+      </div>
+  );
+}
+
+function StatPill({label, value}: { label: string; value: string }) {
+  return (
+      <div className="rounded-full border border-gray-200/70 bg-white/55 px-3 py-1.5 text-xs text-gray-600">
+        <span className="mr-2 text-gray-400">{label}</span>
+        <span className="font-medium text-gray-800">{value}</span>
+      </div>
+  );
+}
+
+function SectionEmptyState({
+                             title,
+                             description,
+                           }: {
+  title: string;
+  description: string;
+}) {
+  return (
+      <GlassCard className="border-dashed p-8 text-center sm:p-12">
+        <img
+            src="/undraw_mcp-server_7kvc.svg"
+            alt="空状态插画"
+            className="mx-auto mb-4 h-24 w-auto opacity-90"
+        />
+        <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-xl">{title}</h3>
+        <p className="mx-auto max-w-md text-gray-500">{description}</p>
+      </GlassCard>
+  );
+}
+
+function GuestTabState({
+                         title = "登录后查看个人内容",
+                         description = "登录后即可查看你的资源、收藏和评价记录。",
+                       }: {
+  title?: string;
+  description?: string;
+}) {
+  return (
+      <GlassCard className="border-dashed p-8 text-center sm:p-12">
+        <img
+            src="/undraw_halloween-2025_o47f.svg"
+            alt="游客模式插画"
+            className="mx-auto mb-4 opacity-90"
+        />
+        <h3 className="mb-2 text-lg font-medium text-gray-800 sm:text-xl">{title}</h3>
+        <p className="mx-auto max-w-md text-gray-500">{description}</p>
+      </GlassCard>
+  );
+}

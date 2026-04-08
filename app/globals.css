@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* CSS 自定义属性（颜色、字体、间距等） */
+@import "./styles/variables.css";
+
+/* Tailwind @theme 注册 */
+@import "./styles/theme.css";
+
+/* 基础重置样式 */
+@import "./styles/base.css";
+
+/* 可复用工具类（section、container、button、scrollbar、响应式） */
+@import "./styles/utilities.css";
+
+/* 动画、特效与渐变工具类 */
+@import "./styles/animations.css";
