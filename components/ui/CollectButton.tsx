@@ -125,7 +125,7 @@ export default function CollectButton({
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className={`group relative flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${s.button} ${
+      className={`group relative z-0 isolate flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${s.button} ${
         mobileIconOnly ? "w-full md:w-[100px]" : ""
       } ${className}`}
     >

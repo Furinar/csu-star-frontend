@@ -15,7 +15,7 @@ export default function FloatingCloseButton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
-      className={`absolute right-3 top-3 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/80 bg-white/88 text-slate-500 shadow-[0_12px_28px_rgba(15,23,42,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:right-4 sm:top-4 sm:h-11 sm:w-11 ${className}`.trim()}
+      className={`absolute right-3 top-3 z-30 inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/80 bg-white/88 text-slate-500 shadow-[0_12px_28px_rgba(15,23,42,0.14)] backdrop-blur-sm transition hover:bg-white hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-60 sm:right-4 sm:top-4 sm:h-11 sm:w-11 ${className}`.trim()}
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
         <path
