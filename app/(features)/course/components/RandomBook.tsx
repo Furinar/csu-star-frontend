@@ -86,19 +86,21 @@ function CourseScoreCard({
           <div className={`self-end whitespace-nowrap text-gray-500 ${compact ? "text-[11px]" : "text-base"}`}>/ 5.0</div>
         </div>
 
-        <div className={`flex shrink-0 flex-col whitespace-nowrap ${compact ? "items-end" : ""}`}>
-          <div className={compact ? "mb-0.5" : "mb-1"}>
-            <StarRating
-              score={normalizeRating(avgScore)}
-              size={compact ? "14px" : "18px"}
-              fillClassName="text-[var(--first-color)]"
-            />
-          </div>
+        {!compact ? (
+          <div className="flex shrink-0 flex-col whitespace-nowrap">
+            <div className="mb-1">
+              <StarRating
+                score={normalizeRating(avgScore)}
+                size="18px"
+                fillClassName="text-[var(--first-color)]"
+              />
+            </div>
 
-          <div className={`whitespace-nowrap text-gray-500 ${compact ? "text-[10px]" : "text-sm"}`}>
-            基于 <strong>{evalCount ?? 0}</strong> 条评价
+            <div className="whitespace-nowrap text-sm text-gray-500">
+              基于 <strong>{evalCount ?? 0}</strong> 条评价
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       <div className={`mt-2 flex w-full flex-1 flex-col items-start justify-evenly text-center ${compact ? "gap-0.5" : "gap-1"}`}>
@@ -246,7 +248,7 @@ export default function RandomBook() {
           )}
 
           <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap md:ml-0 md:gap-3">
-            <div className="shrink-0 rounded-full border border-white/70 bg-white/75 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-slate-500 shadow-sm md:px-3 md:text-xs">
+            <div className="hidden shrink-0 rounded-full border border-white/70 bg-white/75 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-slate-500 shadow-sm md:block md:px-3 md:text-xs">
               {countdown}s 后切换
             </div>
             <CollectButton
@@ -256,6 +258,7 @@ export default function RandomBook() {
               targetId={course.id}
               targetType="course"
               initialStatus={false}
+              mobileIconOnly
             />
           </div>
         </div>

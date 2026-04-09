@@ -298,11 +298,10 @@ export default function Rank() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-3 md:gap-5">
-        <div className="flex gap-5 w-full justify-center overflow-x-auto pb-1">
-          <div className="relative flex min-w-max p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 ">
+      <div className="flex w-full flex-col items-center gap-3 px-1 md:gap-5 md:px-0">
+        <div className="relative flex max-w-full overflow-x-auto rounded-full bg-gray-100 p-1 shadow-inner shadow-gray-300 scrollbar-hide md:p-1.5">
             <div
-              className="absolute bg-white top-1.5 bottom-1.5 w-28 rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.44)]"
+              className="absolute top-1 bottom-1 z-0 w-20 rounded-full bg-white shadow-md transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)] md:top-1.5 md:bottom-1.5 md:w-28"
               style={{
                 transform: `translateX(${rankConfig.findIndex((item) => item.category === rankCategory) * 100}%)`,
               }}
@@ -315,17 +314,16 @@ export default function Rank() {
                   setRankCategory(item.category);
                   setFilterType(item.filters[0].type as FilterType);
                 }}
-                className={`relative z-10 w-28 flex justify-center items-center gap-2 py-2 rounded-full cursor-pointer transition-colors duration-300 ${
+                className={`relative z-10 flex w-20 items-center justify-center gap-1 rounded-full py-1.5 text-sm whitespace-nowrap cursor-pointer transition-colors duration-300 md:w-28 md:gap-2 md:py-2 md:text-base ${
                   rankCategory === item.category
                     ? "text-first-alt font-medium"
                     : "text-gray-500 hover:text-gray-700"
                 }`}
               >
-                <i className={`uil uil-${item.icon}`}></i>
+                <i className={`uil uil-${item.icon} text-base md:text-lg`}></i>
                 {item.label}
               </span>
             ))}
-          </div>
         </div>
       </div>
 
