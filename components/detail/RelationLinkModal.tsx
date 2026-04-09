@@ -269,6 +269,7 @@ export default function RelationLinkModal(props: RelationLinkModalProps) {
                   </>
                 }
                 value={query}
+                maxLength={50}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder={isCourseVariant ? "搜索教师姓名" : "搜索课程名称"}
               />

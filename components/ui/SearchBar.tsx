@@ -236,6 +236,7 @@ export default function SearchBar({
             e.stopPropagation();
           }}
           placeholder={placeholder}
+          maxLength={props.maxLength ?? 50}
           className="flex-1 min-w-0 h-[46px] sm:h-[64px] pr-[70px] sm:pr-[140px] bg-transparent border-none outline-none text-[14px] sm:text-[18px] text-[var(--text-color)] placeholder:text-[var(--text-color-light)] placeholder:opacity-60 transition-all font-medium"
           {...props}
         />

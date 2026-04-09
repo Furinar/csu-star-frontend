@@ -168,6 +168,10 @@ export async function abortResourceUpload(uploadSessionId: string) {
 }
 
 export async function searchCourseSuggestions(query: string) {
+  if (query && query.length > 50) {
+    throw new Error("搜索关键词长度不能超过 50 个字符");
+  }
+
   const response = await service.get<ApiEnvelope<unknown>>("/courses/simple", {
     params: { q: query },
   });
@@ -181,6 +185,10 @@ export async function searchCourseSuggestions(query: string) {
 }
 
 export async function searchTeacherSuggestions(query: string) {
+  if (query && query.length > 50) {
+    throw new Error("搜索关键词长度不能超过 50 个字符");
+  }
+
   const response = await service.get<ApiEnvelope<unknown>>("/teachers/simple", {
     params: { q: query },
   });

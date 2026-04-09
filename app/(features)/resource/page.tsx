@@ -11,10 +11,16 @@ import SupplementRequestModal from "@/components/supplement/SupplementRequestMod
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import { useAuthStore } from "@/store/useAuthStore";
 import { requireAuthAction } from "@/lib/requireAuthAction";
+import { requireVerifiedCampusAction } from "@/lib/requireVerifiedCampusAction";
 
 export default function Resource() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
+  const user = useAuthStore((state) => state.user);
+  const canUpload = Boolean(accessToken) && Boolean(user?.email_verified);
+  const uploadDisabledTooltip = !accessToken
+    ? "登录后才能上传资源"
+    : "完成校园邮箱验证后才能上传资源";
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
 
@@ -34,10 +40,10 @@ export default function Resource() {
 
   const handleOpenUploadModal = () => {
     if (
-      !requireAuthAction({
+      !requireVerifiedCampusAction({
         isSignedIn: Boolean(accessToken),
+        user,
         router,
-        description: "登录后才能上传资源。",
       })
     ) {
       return;
@@ -81,6 +87,8 @@ export default function Resource() {
         label="上传资源"
         tone="resource"
         onClick={handleOpenUploadModal}
+        disabled={!canUpload}
+        disabledTooltip={uploadDisabledTooltip}
       />
 
       <ResourceUploaderModal

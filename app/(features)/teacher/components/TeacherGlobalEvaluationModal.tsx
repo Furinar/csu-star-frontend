@@ -147,6 +147,7 @@ export default function TeacherGlobalEvaluationModal({
                 </>
               }
               value={query}
+              maxLength={50}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="搜索教师姓名"
             />

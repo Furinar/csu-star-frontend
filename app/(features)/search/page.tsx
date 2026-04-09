@@ -3,19 +3,15 @@
 import {searchEverything} from "@/api/search";
 import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsGrid";
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
+import type {SupplementRequestPromptVariant} from "@/components/supplement/SupplementRequestPrompt";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import SearchBar from "@/components/ui/SearchBar";
 import {useAuthStore} from "@/store/useAuthStore";
 import {feedback} from "@/store/useFeedbackStore";
-import type {
-  SearchResponse,
-  SearchScope,
-} from "@/types/search";
+import type {SearchResponse, SearchScope,} from "@/types/search";
 import type {SupplementRequestType} from "@/types/supplement";
-import type { SupplementRequestPromptVariant } from "@/components/supplement/SupplementRequestPrompt";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {useRouter} from "next/navigation";
-import {useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 
 const PAGE_SIZE = 24;
 
@@ -65,7 +61,7 @@ function dedupeUnifiedItems(items: SearchResponse["all"]["items"]) {
 
   return items.filter((entry) => {
     const entityId =
-      entry.type === "resource" ? entry.item.course_id : entry.item.id;
+        entry.type === "resource" ? entry.item.course_id : entry.item.id;
     const key = `${entry.type}-${entityId}`;
 
     if (seen.has(key)) {
@@ -181,11 +177,11 @@ export default function Search() {
   const supplementInitialType: SupplementRequestType =
       searchType === "teacher" ? "teacher" : "course";
   const supplementPromptVariant: SupplementRequestPromptVariant =
-    searchType === "teacher"
-      ? "teacher"
-      : searchType === "all"
-        ? "mixed"
-        : "course";
+      searchType === "teacher"
+          ? "teacher"
+          : searchType === "all"
+              ? "mixed"
+              : "course";
 
   const currentSearchType = useMemo(() => {
     return (
@@ -196,13 +192,13 @@ export default function Search() {
 
   const summary = useMemo(() => {
     const counts =
-      searchType === "all"
-        ? globalTypeCounts
-        : {
-            resource: results.resources.total,
-            course: results.courses.total,
-            teacher: results.teachers.total,
-          };
+        searchType === "all"
+            ? globalTypeCounts
+            : {
+              resource: results.resources.total,
+              course: results.courses.total,
+              teacher: results.teachers.total,
+            };
 
     if (searchType === "all") {
       return {
@@ -284,7 +280,7 @@ export default function Search() {
       setSubmittedQuery("");
       setCurrentPage(1);
       setResults(createEmptyResults());
-      setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+      setGlobalTypeCounts({resource: 0, course: 0, teacher: 0});
       return;
     }
 
@@ -318,9 +314,9 @@ export default function Search() {
         if (type === "all") {
           try {
             const [resourceData, courseData, teacherData] = await Promise.all([
-              searchEverything({ q: trimmedQuery, type: "resource", page: 1, size: 1 }),
-              searchEverything({ q: trimmedQuery, type: "course", page: 1, size: 1 }),
-              searchEverything({ q: trimmedQuery, type: "teacher", page: 1, size: 1 }),
+              searchEverything({q: trimmedQuery, type: "resource", page: 1, size: 1}),
+              searchEverything({q: trimmedQuery, type: "course", page: 1, size: 1}),
+              searchEverything({q: trimmedQuery, type: "teacher", page: 1, size: 1}),
             ]);
 
             if (requestIdRef.current !== currentRequestId) return;
@@ -332,10 +328,10 @@ export default function Search() {
             });
           } catch {
             if (requestIdRef.current !== currentRequestId) return;
-            setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+            setGlobalTypeCounts({resource: 0, course: 0, teacher: 0});
           }
         } else {
-          setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+          setGlobalTypeCounts({resource: 0, course: 0, teacher: 0});
         }
       }
 
@@ -423,7 +419,7 @@ export default function Search() {
       setError(null);
       setCurrentPage(1);
       setSubmittedQuery("");
-      setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+      setGlobalTypeCounts({resource: 0, course: 0, teacher: 0});
     }
   }, [searchParams]);
 
@@ -485,7 +481,8 @@ export default function Search() {
         </div>
 
         <div className="flex w-full flex-col items-center gap-3 px-1 md:gap-5 md:px-0">
-          <div className="relative flex p-1 md:p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 max-w-full overflow-x-auto scrollbar-hide">
+          <div
+              className="relative flex p-1 md:p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 max-w-full overflow-x-auto scrollbar-hide overflow-x-hidden">
             <div
                 className="absolute top-1 bottom-1 md:top-1.5 md:bottom-1.5 w-20 md:w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
                 style={{
@@ -589,24 +586,27 @@ export default function Search() {
                   条结果
                 </div>
                 {searchType === "all" ? (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-700">
-                      <span className="h-2 w-2 rounded-full bg-sky-500" />
-                      <span>课程 {summary.counts.course}</span>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div
+                          className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs text-sky-700">
+                        <span className="h-2 w-2 rounded-full bg-sky-500"/>
+                        <span>课程 {summary.counts.course}</span>
+                      </div>
+                      <div
+                          className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700">
+                        <span className="h-2 w-2 rounded-full bg-rose-500"/>
+                        <span>教师 {summary.counts.teacher}</span>
+                      </div>
+                      <div
+                          className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500"/>
+                        <span>资源 {summary.counts.resource}</span>
+                      </div>
                     </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs text-rose-700">
-                      <span className="h-2 w-2 rounded-full bg-rose-500" />
-                      <span>教师 {summary.counts.teacher}</span>
-                    </div>
-                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-700">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                      <span>资源 {summary.counts.resource}</span>
-                    </div>
-                  </div>
                 ) : null}
               </div>
 
-              <SearchResultsGrid items={displayedItems} />
+              <SearchResultsGrid items={displayedItems}/>
 
               {isLoadingMore ? (
                   <div className="flex items-center justify-center py-5 text-gray-500 md:py-8">

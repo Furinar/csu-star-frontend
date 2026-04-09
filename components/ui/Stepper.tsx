@@ -84,7 +84,7 @@ export default function Stepper({
             setIsLoading(false);
             return;
           }
-        } catch (error) {
+        } catch {
           setIsLoading(false);
           return;
         }
@@ -104,7 +104,7 @@ export default function Stepper({
           setIsLoading(false);
           return;
         }
-      } catch (error) {
+      } catch {
         setIsLoading(false);
         return;
       }

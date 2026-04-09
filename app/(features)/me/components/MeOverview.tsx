@@ -365,14 +365,14 @@ function SettingsActionCard({
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
-          className="absolute inset-0 z-10 rounded-xl sm:rounded-2xl"
+          className="absolute inset-0 z-10 cursor-pointer rounded-xl sm:rounded-2xl"
           aria-label={title}
         />
       ) : (
         <button
           type="button"
           onClick={onClick}
-          className="absolute inset-0 z-10 rounded-xl sm:rounded-2xl"
+          className="absolute inset-0 z-10 cursor-pointer rounded-xl sm:rounded-2xl"
           aria-label={title}
         />
       )}

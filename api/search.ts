@@ -267,6 +267,10 @@ const splitUnifiedSearchItems = (items: unknown[]) => {
 };
 
 export async function searchEverything(params: SearchQuery): Promise<SearchResponse> {
+  if (params.q && params.q.length > 50) {
+    throw new Error("搜索关键词长度不能超过 50 个字符");
+  }
+
   const response = await service.get<ApiEnvelope<unknown>>("/search", {
     params: {
       q: params.q,

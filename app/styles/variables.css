@@ -99,7 +99,7 @@
       --title-color: #0a0a0a;
       --text-color: #1a1a1a;
       --text-color-light: #4a4a4a;
-      --input-color: var(--ice-100);
+      --input-color: var(--color-gray-100, #f3f4f6);
       --body-color: #ffffff;
       --container-color: #ffffff;
       --scroll-bar-color: var(--star-50);

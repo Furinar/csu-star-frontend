@@ -453,6 +453,7 @@ function CorrectionForm({ onClose }: { onClose: () => void }) {
                 </>
               }
               value={targetQuery}
+              maxLength={50}
               onChange={(event) => setTargetQuery(event.target.value)}
               placeholder={
                 correctionForm.target_type === "course"

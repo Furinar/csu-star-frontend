@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
 import ResourceUploader, { ResourceUploaderProps } from "./ResourceUploader";
-import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
+import { requireVerifiedCampusAction } from "@/lib/requireVerifiedCampusAction";
 
 export interface ResourceUploaderModalProps extends ResourceUploaderProps {
   isOpen: boolean;
@@ -20,15 +20,16 @@ export default function ResourceUploaderModal({
 }: ResourceUploaderModalProps) {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
+  const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
     if (!isOpen) return;
 
     if (
-      !requireAuthAction({
+      !requireVerifiedCampusAction({
         isSignedIn: Boolean(accessToken),
+        user,
         router,
-        description: "登录后才能上传资源。",
       })
     ) {
       onClose();
@@ -44,7 +45,7 @@ export default function ResourceUploaderModal({
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
-  }, [accessToken, isOpen, onClose, router]);
+  }, [accessToken, isOpen, onClose, router, user]);
 
   if (!isOpen) return null;
 

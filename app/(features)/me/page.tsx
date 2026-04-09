@@ -5,9 +5,22 @@ import Link from "next/link";
 import type {ReactNode} from "react";
 import {useCallback, useEffect, useState} from "react";
 import {useSearchParams} from "next/navigation";
-import {dailyCheckin, getMeDashboard, getMyDownloads, getMyInviteCode,} from "@/api/me";
+import {
+  dailyCheckin,
+  getMyContributions,
+  getMyCourseEvaluations,
+  getMyDownloads,
+  getMyEmailStatus,
+  getMyFavorites,
+  getMyInviteCode,
+  getMyProfile,
+  getMyResources,
+  getMyTeacherEvaluations,
+  getUnreadNotificationCount,
+} from "@/api/me";
 import GlassCard from "@/components/ui/GlassCard";
 import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
+import {DEPARTMENTS} from "@/data/departments";
 import {useHasMounted} from "@/hooks/useHasMounted";
 import {feedback} from "@/store/useFeedbackStore";
 import {useAuthStore} from "@/store/useAuthStore";
@@ -15,6 +28,7 @@ import type {UserProfile} from "@/types/auth";
 import type {
   CourseEvaluation,
   DownloadRecord,
+  EmailStatus,
   FavoriteItem,
   InviteCodeInfo,
   MeDashboardData,
@@ -80,9 +94,18 @@ export default function Me() {
   const [inviteCode, setInviteCode] = useState<InviteCodeInfo | null>(null);
   const [loadError, setLoadError] = useState("");
   const [isLoadingDashboard, setIsLoadingDashboard] = useState(false);
+  const [isLoadingResources, setIsLoadingResources] = useState(false);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+  const [isLoadingEvaluations, setIsLoadingEvaluations] = useState(false);
   const [isLoadingDownloads, setIsLoadingDownloads] = useState(false);
   const [isLoadingInvite, setIsLoadingInvite] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const [resourcesLoaded, setResourcesLoaded] = useState(false);
+  const [favoritesLoaded, setFavoritesLoaded] = useState(false);
+  const [evaluationsLoaded, setEvaluationsLoaded] = useState(false);
+  const [resourcesError, setResourcesError] = useState("");
+  const [favoritesError, setFavoritesError] = useState("");
+  const [evaluationsError, setEvaluationsError] = useState("");
 
   const accessToken = useAuthStore((state) => state.access_token);
   const storedUser = useAuthStore((state) => state.user);
@@ -122,6 +145,22 @@ export default function Me() {
           ?.actions.some((item) => item.type === "daily_checkin") ?? false)
       : false;
 
+  const createBaseDashboard = useCallback(
+      (profileData: UserProfile, emailStatusData: EmailStatus): MeDashboardData => ({
+        profile: profileData,
+        emailStatus: emailStatusData,
+        departments: DEPARTMENTS,
+        unreadCount: 0,
+        contributions: createEmptyContributionSummary(),
+        resources: createEmptyPaginated<ResourceItem>(),
+        favorites: createEmptyPaginated<FavoriteItem>(),
+        teacherEvaluations: createEmptyPaginated<TeacherEvaluation>(),
+        courseEvaluations: createEmptyPaginated<CourseEvaluation>(),
+        points: createEmptyPaginated<PointsRecord>(),
+      }),
+      [],
+  );
+
   const loadDashboard = useCallback(
       async (showToast = false) => {
         if (!accessToken) {
@@ -132,9 +171,53 @@ export default function Me() {
         setIsLoadingDashboard(true);
         setLoadError("");
         try {
-          const data = await getMeDashboard();
-          setDashboard(data);
-          setUser(data.profile);
+          const [
+            profileResult,
+            emailStatusResult,
+            contributionsResult,
+            unreadCountResult,
+          ] = await Promise.allSettled([
+            getMyProfile(),
+            getMyEmailStatus(),
+            getMyContributions(),
+            getUnreadNotificationCount(),
+          ]);
+
+          if (profileResult.status !== "fulfilled") {
+            throw profileResult.reason;
+          }
+
+          if (emailStatusResult.status !== "fulfilled") {
+            throw emailStatusResult.reason;
+          }
+
+          const baseDashboard = createBaseDashboard(
+              profileResult.value,
+              emailStatusResult.value,
+          );
+          const data: MeDashboardData = {
+            ...baseDashboard,
+            unreadCount:
+                unreadCountResult.status === "fulfilled"
+                    ? unreadCountResult.value
+                    : 0,
+            contributions:
+                contributionsResult.status === "fulfilled"
+                    ? contributionsResult.value
+                    : createEmptyContributionSummary(),
+          };
+
+          setDashboard((current) => ({
+            ...data,
+            resources: current?.resources ?? data.resources,
+            favorites: current?.favorites ?? data.favorites,
+            teacherEvaluations:
+                current?.teacherEvaluations ?? data.teacherEvaluations,
+            courseEvaluations:
+                current?.courseEvaluations ?? data.courseEvaluations,
+            points: current?.points ?? data.points,
+          }));
+          setUser(profileResult.value);
         } catch (error) {
           const message = getErrorMessage(error, "个人中心数据加载失败");
           setLoadError(message);
@@ -145,8 +228,84 @@ export default function Me() {
           setIsLoadingDashboard(false);
         }
       },
-      [accessToken, setUser],
+      [accessToken, createBaseDashboard, setUser],
   );
+
+  const loadResources = useCallback(async () => {
+    if (!accessToken || isLoadingResources || resourcesLoaded) return;
+
+    setIsLoadingResources(true);
+    setResourcesError("");
+    try {
+      const data = await getMyResources({page: 1, size: 100});
+      setDashboard((current) =>
+          current
+              ? {
+                ...current,
+                resources: data,
+              }
+              : current,
+      );
+      setResourcesLoaded(true);
+    } catch (error) {
+      const message = getErrorMessage(error, "资源列表加载失败");
+      setResourcesError(message);
+    } finally {
+      setIsLoadingResources(false);
+    }
+  }, [accessToken, isLoadingResources, resourcesLoaded]);
+
+  const loadFavorites = useCallback(async () => {
+    if (!accessToken || isLoadingFavorites || favoritesLoaded) return;
+
+    setIsLoadingFavorites(true);
+    setFavoritesError("");
+    try {
+      const data = await getMyFavorites({page: 1, size: 100});
+      setDashboard((current) =>
+          current
+              ? {
+                ...current,
+                favorites: data,
+              }
+              : current,
+      );
+      setFavoritesLoaded(true);
+    } catch (error) {
+      const message = getErrorMessage(error, "收藏列表加载失败");
+      setFavoritesError(message);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  }, [accessToken, favoritesLoaded, isLoadingFavorites]);
+
+  const loadEvaluations = useCallback(async () => {
+    if (!accessToken || isLoadingEvaluations || evaluationsLoaded) return;
+
+    setIsLoadingEvaluations(true);
+    setEvaluationsError("");
+    try {
+      const [teacherData, courseData] = await Promise.all([
+        getMyTeacherEvaluations({page: 1, size: 100}),
+        getMyCourseEvaluations({page: 1, size: 100}),
+      ]);
+      setDashboard((current) =>
+          current
+              ? {
+                ...current,
+                teacherEvaluations: teacherData,
+                courseEvaluations: courseData,
+              }
+              : current,
+      );
+      setEvaluationsLoaded(true);
+    } catch (error) {
+      const message = getErrorMessage(error, "评价列表加载失败");
+      setEvaluationsError(message);
+    } finally {
+      setIsLoadingEvaluations(false);
+    }
+  }, [accessToken, evaluationsLoaded, isLoadingEvaluations]);
 
   useEffect(() => {
     if (!hasHydrated) return;
@@ -155,10 +314,40 @@ export default function Me() {
       setDownloads(createEmptyPaginated());
       setInviteCode(null);
       setLoadError("");
+      setResourcesLoaded(false);
+      setFavoritesLoaded(false);
+      setEvaluationsLoaded(false);
+      setResourcesError("");
+      setFavoritesError("");
+      setEvaluationsError("");
       return;
     }
     void loadDashboard();
   }, [accessToken, hasHydrated, loadDashboard]);
+
+  useEffect(() => {
+    if (!accessToken) return;
+
+    if (activeTab === "resources") {
+      void loadResources();
+      return;
+    }
+
+    if (activeTab === "favorites") {
+      void loadFavorites();
+      return;
+    }
+
+    if (activeTab === "evaluations") {
+      void loadEvaluations();
+    }
+  }, [
+    accessToken,
+    activeTab,
+    loadEvaluations,
+    loadFavorites,
+    loadResources,
+  ]);
 
   useEffect(() => {
     const nextTab = searchParams.get("tab");
@@ -707,7 +896,19 @@ export default function Me() {
 
             {activeTab === "resources" ? (
                 profile ? (
-                    <MeResources resources={resources}/>
+                    isLoadingResources ? (
+                        <SectionLoadingState label="资源列表加载中..."/>
+                    ) : resourcesError ? (
+                        <InlineRetryState
+                            message={resourcesError}
+                            onRetry={() => {
+                              setResourcesLoaded(false);
+                              void loadResources();
+                            }}
+                        />
+                    ) : (
+                        <MeResources resources={resources}/>
+                    )
                 ) : (
                     <GuestTabState/>
                 )
@@ -715,7 +916,19 @@ export default function Me() {
 
             {activeTab === "favorites" ? (
                 profile ? (
-                    <MeFavorites favorites={favorites}/>
+                    isLoadingFavorites ? (
+                        <SectionLoadingState label="收藏列表加载中..."/>
+                    ) : favoritesError ? (
+                        <InlineRetryState
+                            message={favoritesError}
+                            onRetry={() => {
+                              setFavoritesLoaded(false);
+                              void loadFavorites();
+                            }}
+                        />
+                    ) : (
+                        <MeFavorites favorites={favorites}/>
+                    )
                 ) : (
                     <GuestTabState/>
                 )
@@ -723,10 +936,22 @@ export default function Me() {
 
             {activeTab === "evaluations" ? (
                 profile ? (
-                    <MeEvaluations
-                        teacherEvaluations={teacherEvaluations}
-                        courseEvaluations={courseEvaluations}
-                    />
+                    isLoadingEvaluations ? (
+                        <SectionLoadingState label="评价列表加载中..."/>
+                    ) : evaluationsError ? (
+                        <InlineRetryState
+                            message={evaluationsError}
+                            onRetry={() => {
+                              setEvaluationsLoaded(false);
+                              void loadEvaluations();
+                            }}
+                        />
+                    ) : (
+                        <MeEvaluations
+                            teacherEvaluations={teacherEvaluations}
+                            courseEvaluations={courseEvaluations}
+                        />
+                    )
                 ) : (
                     <GuestTabState/>
                 )
@@ -1024,6 +1249,38 @@ function StatPill({label, value}: { label: string; value: string }) {
         <span className="mr-2 text-gray-400">{label}</span>
         <span className="font-medium text-gray-800">{value}</span>
       </div>
+  );
+}
+
+function SectionLoadingState({label}: { label: string }) {
+  return (
+      <GlassCard className="border-dashed p-8 text-center sm:p-12">
+        <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-first"/>
+        <p className="text-sm text-gray-500">{label}</p>
+      </GlassCard>
+  );
+}
+
+function InlineRetryState({
+                            message,
+                            onRetry,
+                          }: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+      <GlassCard className="border border-amber-200/70 bg-amber-50/70 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 text-sm text-amber-800 sm:flex-row sm:items-center sm:justify-between">
+          <p>{message}</p>
+          <button
+              type="button"
+              onClick={onRetry}
+              className="rounded-lg bg-white/80 px-3 py-1.5 font-medium text-amber-700 transition hover:bg-white"
+          >
+            重新加载
+          </button>
+        </div>
+      </GlassCard>
   );
 }
 

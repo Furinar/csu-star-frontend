@@ -1,7 +1,6 @@
 "use client";
 
 import CollegeLoop from "@/components/ui/CollegeLoop";
-import SearchBar from "@/components/ui/SearchBar";
 import Reveal from "@/components/effects/Reveal";
 import Link from "next/link";
 

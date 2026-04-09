@@ -87,6 +87,16 @@
   color: var(--text-color);
   font-weight: 500;  transition: background-color 1.8s ease, color 1.8s ease;}
 
+.input-box input:-webkit-autofill,
+.input-box input:-webkit-autofill:hover,
+.input-box input:-webkit-autofill:focus,
+.input-box input:-webkit-autofill:active{
+  -webkit-text-fill-color: var(--text-color);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-gray-100) inset;
+  box-shadow: 0 0 0 1000px var(--color-gray-100) inset;
+  transition: background-color 9999s ease-in-out 0s, color 1.8s ease;
+}
+
 .input-box input::placeholder{
   color: var(--text-color-light);
   font-weight: 400;

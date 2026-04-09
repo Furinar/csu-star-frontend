@@ -13,11 +13,15 @@ export default function DetailFloatingActionButton({
   tone,
   href,
   onClick,
+  disabled = false,
+  disabledTooltip,
 }: {
   label: string;
   tone: keyof typeof toneMap;
   href?: string;
   onClick?: () => void;
+  disabled?: boolean;
+  disabledTooltip?: string;
 }) {
   const content = (
     <>
@@ -25,14 +29,18 @@ export default function DetailFloatingActionButton({
         {label}
       </span>
       <span
-        className={`relative z-0 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br text-3xl text-white shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition duration-200 hover:scale-[1.12] ${toneMap[tone]}`}
+        className={`relative z-0 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br text-3xl text-white shadow-[0_20px_45px_rgba(15,23,42,0.18)] transition duration-200 ${toneMap[tone]} ${
+          disabled
+            ? "cursor-not-allowed opacity-55"
+            : "cursor-pointer hover:scale-[1.12]"
+        }`}
       >
         +
       </span>
     </>
   );
 
-  if (href) {
+  if (href && !disabled) {
     return (
       <Link
         href={href}
@@ -49,7 +57,9 @@ export default function DetailFloatingActionButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="fixed bottom-6 right-6 z-[1050] isolate cursor-pointer md:bottom-8 md:right-8"
+      disabled={disabled}
+      title={disabled ? disabledTooltip : undefined}
+      className="fixed bottom-6 right-6 z-[1050] isolate md:bottom-8 md:right-8"
     >
       {content}
     </button>
