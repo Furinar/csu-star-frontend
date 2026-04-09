@@ -18,6 +18,11 @@
 /out/
 .claude/
 CLAUDE.md
+/api.openapi.json
+/changeApi.md
+/.test.css
+/out.css
+/scripts/
 # production
 /build
 
@@ -44,3 +49,4 @@ CLAUDE.md
 e .claude
 /LoginCode
 /.idea/
+/.vscode/
