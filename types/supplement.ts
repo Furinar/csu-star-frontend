@@ -9,8 +9,10 @@ export interface CreateSupplementRequestInput {
   contact: string;
   teacher_name?: string;
   department_id?: number;
+  related_course_ids?: string[];
   related_course_name?: string;
   related_course_names?: string[];
+  related_teacher_ids?: string[];
   related_teacher_names?: string[];
   course_name?: string;
   course_type?: SupplementCourseType;
@@ -31,8 +33,10 @@ export interface SupplementRequestItem {
   teacher_name?: string | null;
   department_id?: number | null;
   department_name?: string | null;
+  related_course_ids?: string[] | null;
   related_course_name?: string | null;
   related_course_names?: string[] | null;
+  related_teacher_ids?: string[] | null;
   related_teacher_names?: string[] | null;
   course_name?: string | null;
   course_type?: SupplementCourseType | null;

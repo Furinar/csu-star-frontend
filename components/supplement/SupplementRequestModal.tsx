@@ -214,6 +214,9 @@ export default function SupplementRequestModal({
         contact,
         teacher_name: teacherName,
         department_id: departmentId,
+        related_course_ids: selectedRelatedCourses.map((course) =>
+          String(course.id),
+        ),
         related_course_names: selectedRelatedCourses.map((course) =>
           course.name.trim(),
         ),
@@ -235,6 +238,9 @@ export default function SupplementRequestModal({
       contact,
       course_name: courseName,
       course_type: form.course_type,
+      related_teacher_ids: selectedRelatedTeachers.map((teacher) =>
+        String(teacher.id),
+      ),
       related_teacher_names: selectedRelatedTeachers.map((teacher) =>
         teacher.name.trim(),
       ),
