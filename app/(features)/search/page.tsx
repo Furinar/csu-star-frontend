@@ -6,8 +6,8 @@ import SupplementRequestModal from "@/components/supplement/SupplementRequestMod
 import type {SupplementRequestPromptVariant} from "@/components/supplement/SupplementRequestPrompt";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import SearchBar from "@/components/ui/SearchBar";
+import {requireAuthAction} from "@/lib/requireAuthAction";
 import {useAuthStore} from "@/store/useAuthStore";
-import {feedback} from "@/store/useFeedbackStore";
 import type {SearchResponse, SearchScope,} from "@/types/search";
 import type {SupplementRequestType} from "@/types/supplement";
 import {useEffect, useMemo, useRef, useState} from "react";
@@ -155,7 +155,7 @@ function mergeResults(
 export default function Search() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const authUser = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.access_token);
   const [searchType, setSearchType] = useState<SearchScope>("all");
   const [keyword, setKeyword] = useState("");
   const [, setSubmittedQuery] = useState("");
@@ -458,12 +458,13 @@ export default function Search() {
   ]);
 
   const handleOpenSupplementModal = () => {
-    if (!authUser) {
-      feedback.warning({
-        title: "请先登录",
+    if (
+      !requireAuthAction({
+        isSignedIn: Boolean(accessToken),
+        router,
         description: "登录后才能提交补录申请。",
-      });
-      router.push("/login");
+      })
+    ) {
       return;
     }
 
