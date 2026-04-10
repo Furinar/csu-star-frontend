@@ -10,6 +10,7 @@ export interface CreateSupplementRequestInput {
   teacher_name?: string;
   department_id?: number;
   related_course_name?: string;
+  related_course_names?: string[];
   related_teacher_names?: string[];
   course_name?: string;
   course_type?: SupplementCourseType;
@@ -31,6 +32,7 @@ export interface SupplementRequestItem {
   department_id?: number | null;
   department_name?: string | null;
   related_course_name?: string | null;
+  related_course_names?: string[] | null;
   related_teacher_names?: string[] | null;
   course_name?: string | null;
   course_type?: SupplementCourseType | null;

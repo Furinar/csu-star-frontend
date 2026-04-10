@@ -88,6 +88,7 @@ const normalizeSupplementRequestItem = (
     department_id: toNumber(raw.department_id),
     department_name: toStringSafe(raw.department_name),
     related_course_name: toStringSafe(raw.related_course_name),
+    related_course_names: toStringArray(raw.related_course_names),
     related_teacher_names: toStringArray(raw.related_teacher_names),
     course_name: toStringSafe(raw.course_name),
     course_type: normalizeCourseType(toStringSafe(raw.course_type)),
