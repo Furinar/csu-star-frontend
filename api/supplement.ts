@@ -48,6 +48,13 @@ const toNumber = (value: unknown): number | null => {
 const toStringSafe = (value: unknown): string | null =>
   typeof value === "string" ? value : null;
 
+const toStringArray = (value: unknown): string[] | null => {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => (typeof item === "string" ? [item] : []));
+  }
+  return null;
+};
+
 const toStringId = (value: unknown): string | null => {
   const numeric = toNumber(value);
   if (numeric !== null) return String(numeric);
@@ -81,6 +88,7 @@ const normalizeSupplementRequestItem = (
     department_id: toNumber(raw.department_id),
     department_name: toStringSafe(raw.department_name),
     related_course_name: toStringSafe(raw.related_course_name),
+    related_teacher_names: toStringArray(raw.related_teacher_names),
     course_name: toStringSafe(raw.course_name),
     course_type: normalizeCourseType(toStringSafe(raw.course_type)),
     remark: toStringSafe(raw.remark),

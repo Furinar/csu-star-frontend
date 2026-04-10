@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { searchCourseSuggestions } from "@/api/resource";
+import { searchCourseSuggestions, searchTeacherSuggestions } from "@/api/resource";
 import { createSupplementRequest } from "@/api/supplement";
 import {
   AdvancedInput,
@@ -14,7 +14,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-import type { CourseSuggestionItem } from "@/types/resource";
+import type { CourseSuggestionItem, TeacherSuggestionItem } from "@/types/resource";
 import type {
   CreateSupplementRequestInput,
   SupplementRequestType,
@@ -67,7 +67,12 @@ export default function SupplementRequestModal({
   const [relatedCourseOptions, setRelatedCourseOptions] = useState<CourseSuggestionItem[]>([]);
   const [selectedRelatedCourse, setSelectedRelatedCourse] = useState<CourseSuggestionItem | null>(null);
   const [isSearchingRelatedCourse, setIsSearchingRelatedCourse] = useState(false);
+  const [relatedTeacherQuery, setRelatedTeacherQuery] = useState("");
+  const [relatedTeacherOptions, setRelatedTeacherOptions] = useState<TeacherSuggestionItem[]>([]);
+  const [selectedRelatedTeachers, setSelectedRelatedTeachers] = useState<TeacherSuggestionItem[]>([]);
+  const [isSearchingRelatedTeachers, setIsSearchingRelatedTeachers] = useState(false);
   const debouncedRelatedCourseQuery = useDebounce(form.related_course_name, 300);
+  const debouncedRelatedTeacherQuery = useDebounce(relatedTeacherQuery, 300);
   const currentType = form.request_type;
 
   useEffect(() => {
@@ -76,6 +81,10 @@ export default function SupplementRequestModal({
       setRelatedCourseOptions([]);
       setSelectedRelatedCourse(null);
       setIsSearchingRelatedCourse(false);
+      setRelatedTeacherQuery("");
+      setRelatedTeacherOptions([]);
+      setSelectedRelatedTeachers([]);
+      setIsSearchingRelatedTeachers(false);
       setIsSubmitting(false);
       return;
     }
@@ -125,6 +134,43 @@ export default function SupplementRequestModal({
       isActive = false;
     };
   }, [form.request_type, debouncedRelatedCourseQuery, selectedRelatedCourse]);
+
+  useEffect(() => {
+    if (form.request_type !== "course") {
+      setRelatedTeacherOptions([]);
+      setIsSearchingRelatedTeachers(false);
+      return;
+    }
+
+    if (!debouncedRelatedTeacherQuery.trim()) {
+      setRelatedTeacherOptions([]);
+      setIsSearchingRelatedTeachers(false);
+      return;
+    }
+
+    let isActive = true;
+    setIsSearchingRelatedTeachers(true);
+
+    searchTeacherSuggestions(debouncedRelatedTeacherQuery)
+      .then((items) => {
+        if (!isActive) return;
+        const selectedIds = new Set(selectedRelatedTeachers.map((teacher) => teacher.id));
+        setRelatedTeacherOptions(items.filter((teacher) => !selectedIds.has(teacher.id)));
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!isActive) return;
+        setRelatedTeacherOptions([]);
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setIsSearchingRelatedTeachers(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [form.request_type, debouncedRelatedTeacherQuery, selectedRelatedTeachers]);
 
   const accent = currentType === "teacher" ? "teacher" : "course";
   const modalTitle =
@@ -189,6 +235,9 @@ export default function SupplementRequestModal({
       contact,
       course_name: courseName,
       course_type: form.course_type,
+      related_teacher_names: selectedRelatedTeachers.map((teacher) =>
+        teacher.name.trim(),
+      ),
       remark: form.remark.trim() || null,
     };
   };
@@ -436,6 +485,79 @@ export default function SupplementRequestModal({
                 <option value="公选课">公选课</option>
                 <option value="非公选课">非公选课</option>
               </AdvancedSelect>
+
+              <div className="relative md:col-span-2">
+                <AdvancedInput
+                  label="关联教师（可选，可多选）"
+                  value={relatedTeacherQuery}
+                  maxLength={50}
+                  onChange={(event) => setRelatedTeacherQuery(event.target.value)}
+                  placeholder="搜索并选择已有教师"
+                />
+                {isSearchingRelatedTeachers ? (
+                  <div className="mt-2 text-sm text-slate-400">搜索中...</div>
+                ) : null}
+                {!isSearchingRelatedTeachers && relatedTeacherOptions.length > 0 ? (
+                  <div className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                    {relatedTeacherOptions.map((teacher) => (
+                      <button
+                        key={teacher.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedRelatedTeachers((current) => [...current, teacher]);
+                          setRelatedTeacherOptions([]);
+                          setRelatedTeacherQuery("");
+                        }}
+                        className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
+                      >
+                        <div className="min-w-0">
+                          <div className="font-medium text-slate-800">
+                            {teacher.name}
+                          </div>
+                          {teacher.department ? (
+                            <div className="mt-1 text-xs text-slate-400">
+                              {teacher.department}
+                            </div>
+                          ) : null}
+                        </div>
+                        <span className="mt-0.5 text-xs font-medium text-sky-500/80">
+                          添加
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                {!isSearchingRelatedTeachers &&
+                relatedTeacherQuery.trim() &&
+                relatedTeacherOptions.length === 0 ? (
+                  <div className="mt-2 text-sm text-slate-400">未找到相关教师</div>
+                ) : null}
+              </div>
+
+              {selectedRelatedTeachers.length > 0 ? (
+                <div className="md:col-span-2">
+                  <label className="mb-2 block text-sm font-medium text-black">
+                    已选关联教师
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedRelatedTeachers.map((teacher) => (
+                      <button
+                        key={teacher.id}
+                        type="button"
+                        onClick={() =>
+                          setSelectedRelatedTeachers((current) =>
+                            current.filter((item) => item.id !== teacher.id),
+                          )
+                        }
+                        className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-900 transition hover:border-sky-300 hover:bg-sky-100"
+                      >
+                        <span>{teacher.name}</span>
+                        <span className="text-sky-500">移除</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </>
           )}
 
