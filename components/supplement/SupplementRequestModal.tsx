@@ -374,7 +374,7 @@ export default function SupplementRequestModal({
               <div className="md:col-span-2">
                 <div className="relative">
                   <AdvancedInput
-                    label="关联课程（可选，可多选）"
+                    label="关联课程（可选）"
                     value={relatedCourseQuery}
                     maxLength={50}
                     onChange={(event) => setRelatedCourseQuery(event.target.value)}
@@ -482,7 +482,7 @@ export default function SupplementRequestModal({
 
               <div className="relative md:col-span-2">
                 <AdvancedInput
-                  label="关联教师（可选，可多选）"
+                  label="关联教师（可选）"
                   value={relatedTeacherQuery}
                   maxLength={50}
                   onChange={(event) => setRelatedTeacherQuery(event.target.value)}
