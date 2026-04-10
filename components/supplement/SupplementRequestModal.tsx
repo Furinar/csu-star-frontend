@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { searchCourseSuggestions } from "@/api/resource";
 import { createSupplementRequest } from "@/api/supplement";
 import {
   AdvancedInput,
@@ -9,9 +10,11 @@ import {
 } from "@/app/(features)/resource/components/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { DEPARTMENTS } from "@/data/departments";
+import { useDebounce } from "@/hooks/useDebounce";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
+import type { CourseSuggestionItem } from "@/types/resource";
 import type {
   CreateSupplementRequestInput,
   SupplementRequestType,
@@ -61,10 +64,18 @@ export default function SupplementRequestModal({
     createInitialForm(initialRequestType),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [relatedCourseOptions, setRelatedCourseOptions] = useState<CourseSuggestionItem[]>([]);
+  const [selectedRelatedCourse, setSelectedRelatedCourse] = useState<CourseSuggestionItem | null>(null);
+  const [isSearchingRelatedCourse, setIsSearchingRelatedCourse] = useState(false);
+  const debouncedRelatedCourseQuery = useDebounce(form.related_course_name, 300);
+  const currentType = form.request_type;
 
   useEffect(() => {
     if (!isOpen) {
       setForm(createInitialForm(initialRequestType));
+      setRelatedCourseOptions([]);
+      setSelectedRelatedCourse(null);
+      setIsSearchingRelatedCourse(false);
       setIsSubmitting(false);
       return;
     }
@@ -79,7 +90,42 @@ export default function SupplementRequestModal({
     );
   }, [initialRequestType, isOpen]);
 
-  const currentType = form.request_type;
+  useEffect(() => {
+    if (form.request_type !== "teacher" || selectedRelatedCourse) {
+      setRelatedCourseOptions([]);
+      setIsSearchingRelatedCourse(false);
+      return;
+    }
+
+    if (!debouncedRelatedCourseQuery.trim()) {
+      setRelatedCourseOptions([]);
+      setIsSearchingRelatedCourse(false);
+      return;
+    }
+
+    let isActive = true;
+    setIsSearchingRelatedCourse(true);
+
+    searchCourseSuggestions(debouncedRelatedCourseQuery)
+      .then((items) => {
+        if (!isActive) return;
+        setRelatedCourseOptions(items);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (!isActive) return;
+        setRelatedCourseOptions([]);
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setIsSearchingRelatedCourse(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [form.request_type, debouncedRelatedCourseQuery, selectedRelatedCourse]);
+
   const accent = currentType === "teacher" ? "teacher" : "course";
   const modalTitle =
     currentType === "teacher" ? "提交老师补录申请" : "提交课程补录申请";
@@ -104,13 +150,17 @@ export default function SupplementRequestModal({
 
     if (currentType === "teacher") {
       const teacherName = form.teacher_name.trim();
-      const relatedCourseName = form.related_course_name.trim();
       const departmentId = Number(form.department_id);
 
-      if (!teacherName || !form.department_id || !Number.isFinite(departmentId) || !relatedCourseName) {
+      if (
+        !teacherName ||
+        !form.department_id ||
+        !Number.isFinite(departmentId) ||
+        !selectedRelatedCourse
+      ) {
         feedback.warning({
           title: "教师补录信息不完整",
-          description: "请填写老师姓名、学院和相关课程。",
+          description: "请填写老师姓名、学院，并从列表中选择一门相关课程。",
         });
         return null;
       }
@@ -120,7 +170,7 @@ export default function SupplementRequestModal({
         contact,
         teacher_name: teacherName,
         department_id: departmentId,
-        related_course_name: relatedCourseName,
+        related_course_name: selectedRelatedCourse.name.trim(),
         remark: form.remark.trim() || null,
       };
     }
@@ -267,18 +317,90 @@ export default function SupplementRequestModal({
               </AdvancedSelect>
 
               <div className="md:col-span-2">
-                <AdvancedInput
-                  label={
+                <div className="relative">
+                  {selectedRelatedCourse ? (
                     <>
-                      相关课程 <span className="text-red-500">*</span>
+                      <label className="mb-1 block text-sm font-medium text-black">
+                        相关课程 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-start justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="break-words">{selectedRelatedCourse.name}</div>
+                          {selectedRelatedCourse.course_type ? (
+                            <div className="mt-1 text-xs text-rose-500/80">
+                              {selectedRelatedCourse.course_type}
+                            </div>
+                          ) : null}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedRelatedCourse(null);
+                            setRelatedCourseOptions([]);
+                            updateForm("related_course_name", "");
+                          }}
+                          className="shrink-0 text-sm text-rose-500 transition hover:text-rose-700"
+                        >
+                          重新选择
+                        </button>
+                      </div>
                     </>
-                  }
-                  value={form.related_course_name}
-                  onChange={(event) =>
-                    updateForm("related_course_name", event.target.value)
-                  }
-                  placeholder="例如：高等数学、数据结构"
-                />
+                  ) : (
+                    <>
+                      <AdvancedInput
+                        label={
+                          <>
+                            相关课程 <span className="text-red-500">*</span>
+                          </>
+                        }
+                        value={form.related_course_name}
+                        maxLength={50}
+                        onChange={(event) =>
+                          updateForm("related_course_name", event.target.value)
+                        }
+                        placeholder="搜索并选择一门已存在课程"
+                      />
+                      {isSearchingRelatedCourse ? (
+                        <div className="mt-2 text-sm text-slate-400">搜索中...</div>
+                      ) : null}
+                      {!isSearchingRelatedCourse && relatedCourseOptions.length > 0 ? (
+                        <div className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
+                          {relatedCourseOptions.map((course) => (
+                            <button
+                              key={course.id}
+                              type="button"
+                              onClick={() => {
+                                setSelectedRelatedCourse(course);
+                                setRelatedCourseOptions([]);
+                                updateForm("related_course_name", course.name);
+                              }}
+                              className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
+                            >
+                              <div className="min-w-0">
+                                <div className="font-medium text-slate-800">
+                                  {course.name}
+                                </div>
+                                {course.course_type ? (
+                                  <div className="mt-1 text-xs text-slate-400">
+                                    {course.course_type}
+                                  </div>
+                                ) : null}
+                              </div>
+                              <span className="mt-0.5 text-xs font-medium text-rose-500/80">
+                                选择
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                      {!isSearchingRelatedCourse &&
+                      form.related_course_name.trim() &&
+                      relatedCourseOptions.length === 0 ? (
+                        <div className="mt-2 text-sm text-slate-400">未找到相关课程</div>
+                      ) : null}
+                    </>
+                  )}
+                </div>
               </div>
             </>
           ) : (
