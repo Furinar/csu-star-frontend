@@ -46,6 +46,7 @@ export const useFeedbackStore = create<FeedbackState>((set) => ({
       description: options.description,
       actionLabel: options.actionLabel,
       onAction: options.onAction,
+      dismissOnAction: options.dismissOnAction,
       type: options.type ?? "info",
       duration: options.duration ?? DEFAULT_FEEDBACK_DURATION,
       createdAt: Date.now(),

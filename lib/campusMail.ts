@@ -3,8 +3,19 @@
 import { feedback } from "@/store/useFeedbackStore";
 
 export const CAMPUS_MAIL_URL = "https://mail.csu.edu.cn/";
+export const ADMIN_MAIL_ADDRESS = "csustar@foxmail.com";
 const CAPTCHA_SEND_FAILURE_STORAGE_KEY = "campus-mail-captcha-send-failure-count";
 const CAPTCHA_SEND_FAILURE_THRESHOLD = 3;
+
+type CaptchaFailureKind = "unregistered_mailbox" | "sender_issue" | "contact_admin";
+
+type CaptchaFailureFeedback = {
+  kind: CaptchaFailureKind;
+  title: string;
+  description: string;
+  actionLabel: string;
+  onAction: () => void;
+};
 
 export function openCampusMail() {
   if (typeof window === "undefined") {
@@ -12,6 +23,14 @@ export function openCampusMail() {
   }
 
   window.open(CAMPUS_MAIL_URL, "_blank", "noopener,noreferrer");
+}
+
+export function contactAdminMail() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.location.href = `mailto:${ADMIN_MAIL_ADDRESS}`;
 }
 
 export function showCaptchaSentFeedback(description: string) {
@@ -66,21 +85,100 @@ export function showCaptchaSendFailureFeedback(
   const errorDescription =
     error instanceof Error && error.message.trim() ? error.message : fallbackDescription;
 
-  if (nextCount >= CAPTCHA_SEND_FAILURE_THRESHOLD) {
-    const description = "请检查您的邮箱是否注册或稍后重试";
-    feedback.error({
-      title: options?.title ?? "验证码发送失败",
-      description,
-      duration: 0,
-      actionLabel: "打开校园邮箱官网",
-      onAction: openCampusMail,
-    });
-    return description;
-  }
+  const failureFeedback = resolveCaptchaFailureFeedback(
+    errorDescription,
+    nextCount >= CAPTCHA_SEND_FAILURE_THRESHOLD,
+    options?.title,
+  );
 
   feedback.error({
-    title: options?.title ?? "验证码发送失败",
-    description: errorDescription,
+    title: failureFeedback.title,
+    description: failureFeedback.description,
+    duration: 0,
+    actionLabel: failureFeedback.actionLabel,
+    onAction: failureFeedback.onAction,
+    dismissOnAction: false,
   });
-  return errorDescription;
+
+  return failureFeedback.description;
+}
+
+function resolveCaptchaFailureFeedback(
+  message: string,
+  hasRepeatedFailures: boolean,
+  customTitle?: string,
+): CaptchaFailureFeedback {
+  const normalizedMessage = message.toLowerCase();
+
+  if (isUnregisteredMailboxError(normalizedMessage)) {
+    return {
+      kind: "unregistered_mailbox",
+      title: customTitle ?? "校园邮箱可能还未注册",
+      description:
+        "系统没能把验证码投递到这个校园邮箱。请先确认该邮箱已开通；如果还没注册，请先注册校园邮箱后再重试。",
+      actionLabel: "打开校园邮箱",
+      onAction: openCampusMail,
+    };
+  }
+
+  if (isSenderIssueError(normalizedMessage)) {
+    return {
+      kind: "sender_issue",
+      title: customTitle ?? "发件通道暂时异常",
+      description:
+        `验证码发送失败，当前更像是发件邮箱或 SMTP 通道异常。请稍后重试，或联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
+      actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
+      onAction: contactAdminMail,
+    };
+  }
+
+  if (hasRepeatedFailures) {
+    return {
+      kind: "contact_admin",
+      title: customTitle ?? "验证码发送失败",
+      description:
+        `多次发送仍未成功。若你确认校园邮箱已注册，可能是发件通道异常，请联系管理员 ${ADMIN_MAIL_ADDRESS} 处理。`,
+      actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
+      onAction: contactAdminMail,
+    };
+  }
+
+  return {
+    kind: "contact_admin",
+    title: customTitle ?? "验证码发送失败",
+    description: `${message}。如果持续失败，请联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
+    actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
+    onAction: contactAdminMail,
+  };
+}
+
+function isUnregisteredMailboxError(message: string) {
+  return (
+    message.includes("用户不存在") ||
+    message.includes("请先注册") ||
+    message.includes("邮箱未注册") ||
+    message.includes("邮箱不存在") ||
+    message.includes("mailbox not found") ||
+    message.includes("user not found")
+  );
+}
+
+function isSenderIssueError(message: string) {
+  return (
+    message.includes("smtp") ||
+    message.includes("auth") ||
+    message.includes("535") ||
+    message.includes("550") ||
+    message.includes("554") ||
+    message.includes("mail from") ||
+    message.includes("rcpt") ||
+    message.includes("dial tcp") ||
+    message.includes("connection refused") ||
+    message.includes("timeout") ||
+    message.includes("tls") ||
+    message.includes("发件") ||
+    message.includes("邮件发送") ||
+    message.includes("验证码邮件") ||
+    message.includes("no smtp providers configured")
+  );
 }

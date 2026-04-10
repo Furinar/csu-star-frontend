@@ -7,6 +7,7 @@ export interface FeedbackOptions {
   duration?: number;
   actionLabel?: string;
   onAction?: () => void;
+  dismissOnAction?: boolean;
 }
 
 export interface FeedbackToast extends FeedbackOptions {

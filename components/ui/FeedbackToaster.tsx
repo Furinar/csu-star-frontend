@@ -51,6 +51,18 @@ export default function FeedbackToaster() {
 
 function ToastCard({ toast }: { toast: FeedbackToast }) {
   const tone = TONE_CONFIG[toast.type];
+  const isActionable = Boolean(toast.onAction);
+
+  const handleAction = () => {
+    if (!toast.onAction) {
+      return;
+    }
+
+    toast.onAction();
+    if (toast.dismissOnAction !== false) {
+      feedback.dismiss(toast.id);
+    }
+  };
 
   useEffect(() => {
     if (toast.duration <= 0) {
@@ -75,8 +87,9 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
         ease: [0.25, 1, 0.5, 1],
         duration: 0.4,
       }}
+      onClick={isActionable ? handleAction : undefined}
       className={`pointer-events-auto relative w-full overflow-hidden shadow-lg ${
-        toast.onAction ? "cursor-pointer" : ""
+        isActionable ? "cursor-pointer" : ""
       } ${tone.backgroundClass}`}
     >
       <div className="flex gap-2.5 p-3 sm:gap-4 sm:p-5">
@@ -113,9 +126,9 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
             <button
               type="button"
               className="mt-1.5 cursor-pointer text-[11px] font-medium underline underline-offset-2 opacity-80 transition-opacity hover:opacity-100 sm:mt-3 sm:text-sm"
-              onClick={() => {
-                toast.onAction?.();
-                feedback.dismiss(toast.id);
+              onClick={(event) => {
+                event.stopPropagation();
+                handleAction();
               }}
             >
               {toast.actionLabel}
