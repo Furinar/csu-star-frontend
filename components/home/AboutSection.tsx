@@ -2,12 +2,13 @@
 
 import Image from "next/image";
 import Reveal from "@/components/effects/Reveal";
+import FaSvgIcon, { type FaSvgIconName } from "@/components/ui/FaSvgIcon";
 
 const stats = [
-  { value: "32", label: "覆盖学院", icon: "fa-solid fa-building-columns" },
-  { value: "2500+", label: "收录教师", icon: "fa-solid fa-chalkboard-user" },
-  { value: "7500+", label: "收录课程", icon: "fa-solid fa-book-open" },
-];
+  { value: "32", label: "覆盖学院", icon: "building-columns" },
+  { value: "2500+", label: "收录教师", icon: "chalkboard-user" },
+  { value: "7500+", label: "收录课程", icon: "book-open" },
+] satisfies Array<{ value: string; label: string; icon: FaSvgIconName }>;
 
 const tags = ["免费使用", "全校覆盖", "持续更新", "安全可靠"];
 
@@ -55,7 +56,7 @@ export default function AboutSection() {
                     key={tag}
                     className="inline-flex items-center gap-1.5 text-first text-[11px] md:text-sm font-medium"
                   >
-                    <i className="fa-solid fa-check text-[0.55rem]" />
+                    <FaSvgIcon name="check" className="text-[0.55rem]" />
                     {tag}
                   </span>
                 ))}
@@ -67,8 +68,9 @@ export default function AboutSection() {
             {stats.map((stat, i) => (
               <Reveal key={stat.label} direction="right" delay={200 + i * 120}>
                 <div className="group text-center md:text-right">
-                  <i
-                    className={`${stat.icon} text-first text-sm md:text-lg mb-1 block transition-transform duration-300 group-hover:scale-110`}
+                  <FaSvgIcon
+                    name={stat.icon}
+                    className="text-first text-sm md:text-lg mb-1 block transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="text-2xl md:text-5xl lg:text-6xl font-black text-title leading-none tracking-tighter">
                     {stat.value}

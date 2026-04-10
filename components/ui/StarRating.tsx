@@ -1,3 +1,5 @@
+import FaSvgIcon from "@/components/ui/FaSvgIcon";
+
 export default function StarRating({
   score,
   size = "10px",
@@ -11,23 +13,23 @@ export default function StarRating({
 
   return (
     <div
-      className="star-rating relative inline-block shrink-0 whitespace-nowrap leading-none text-gray-400"
+      className="relative inline-block shrink-0 whitespace-nowrap leading-none text-gray-400"
       style={{ fontSize: size || "10px" }}
     >
-      <i className="fa fa-star" />
-      <i className="fa fa-star" />
-      <i className="fa fa-star" />
-      <i className="fa fa-star" />
-      <i className="fa fa-star" />
+      <FaSvgIcon name="star" />
+      <FaSvgIcon name="star" />
+      <FaSvgIcon name="star" />
+      <FaSvgIcon name="star" />
+      <FaSvgIcon name="star" />
       <div
-        className={`star-fill absolute top-0 left-0 h-full overflow-hidden ${fillClassName}`}
+        className={`absolute top-0 left-0 h-full overflow-hidden ${fillClassName}`}
         style={{ width: fillWidth }}
       >
-        <i className="fa fa-star" />
-        <i className="fa fa-star" />
-        <i className="fa fa-star" />
-        <i className="fa fa-star" />
-        <i className="fa fa-star" />
+        <FaSvgIcon name="star" />
+        <FaSvgIcon name="star" />
+        <FaSvgIcon name="star" />
+        <FaSvgIcon name="star" />
+        <FaSvgIcon name="star" />
       </div>
     </div>
   );

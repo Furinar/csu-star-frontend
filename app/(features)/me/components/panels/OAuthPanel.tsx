@@ -4,6 +4,7 @@ import { useState } from "react";
 import { feedback } from "@/store/useFeedbackStore";
 import type { OAuthBindProvider } from "@/types/me";
 import type { OAuthBindingStatus } from "@/types/auth";
+import FaSvgIcon from "@/components/ui/FaSvgIcon";
 import { type AccountMode } from "../shared/helpers";
 import {
   buildAuthUrl,
@@ -94,7 +95,7 @@ export default function OAuthPanel({
             disabled={isBinding || Boolean(bindings?.qq)}
             className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-[#12b7f5] text-white font-medium hover:bg-[#0e9kcc] transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
           >
-            <i className="fa-brands fa-qq text-lg" />
+            <FaSvgIcon name="qq" className="text-lg" />
             {bindings?.qq ? "QQ 已绑定" : "绑定 QQ 账号"}
           </button>
           <button
@@ -103,7 +104,7 @@ export default function OAuthPanel({
             disabled={isBinding || Boolean(bindings?.github)}
             className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-gray-900 text-white font-medium hover:bg-gray-800 transition shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2)]"
           >
-            <i className="fa-brands fa-github text-lg" />
+            <FaSvgIcon name="github" className="text-lg" />
             {bindings?.github ? "GitHub 已绑定" : "绑定 GitHub 账号"}
           </button>
           <button

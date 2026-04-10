@@ -9,6 +9,7 @@ import CryptoJS from "crypto-js";
 import {useTimer} from "@/hooks/useTimer";
 import {useAuthStore} from "@/store/useAuthStore";
 import {feedback} from "@/store/useFeedbackStore";
+import FaSvgIcon from "@/components/ui/FaSvgIcon";
 import {showCaptchaSendFailureFeedback, showCaptchaSentFeedback} from "@/lib/campusMail";
 import {
   type AuthPlatform,
@@ -284,21 +285,21 @@ export default function Login() {
                     onClick={() => handleOAuthLogin("qq")}
                     aria-label="使用 QQ 登录"
                 >
-                  <i className="fa-brands fa-qq"></i>
+                  <FaSvgIcon name="qq" />
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
                     aria-label="使用 GitHub 登录"
                 >
-                  <i className="fa-brands fa-github"></i>
+                  <FaSvgIcon name="github" />
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
                     aria-label="使用 Google 登录"
                 >
-                  <i className="fa-brands fa-google"></i>
+                  <FaSvgIcon name="google" />
                 </button>
               </div>
             </form>
@@ -396,21 +397,21 @@ export default function Login() {
                     onClick={() => handleOAuthLogin("qq")}
                     aria-label="使用 QQ 登录"
                 >
-                  <i className="fa-brands fa-qq"></i>
+                  <FaSvgIcon name="qq" />
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
                     aria-label="使用 GitHub 登录"
                 >
-                  <i className="fa-brands fa-github"></i>
+                  <FaSvgIcon name="github" />
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
                     aria-label="使用 Google 登录"
                 >
-                  <i className="fa-brands fa-google"></i>
+                  <FaSvgIcon name="google" />
                 </button>
               </div>
             </form>

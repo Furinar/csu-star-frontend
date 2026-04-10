@@ -1,27 +1,32 @@
 "use client";
 
 import Reveal from "@/components/effects/Reveal";
+import FaSvgIcon, { type FaSvgIconName } from "@/components/ui/FaSvgIcon";
 
 const skillGroups = [
   {
     title: "前端",
     subtitle: "Frontend",
     skills: [
-      { name: "React / Next.js", icon: "fa-brands fa-react" },
-      { name: "TypeScript", icon: "fa-brands fa-js" },
-      { name: "Tailwind CSS", icon: "fa-brands fa-css3-alt" },
+      { name: "React / Next.js", icon: "react" },
+      { name: "TypeScript", icon: "js" },
+      { name: "Tailwind CSS", icon: "css3-alt" },
     ],
   },
   {
     title: "后端",
     subtitle: "Backend",
     skills: [
-      { name: "Go / Gin", icon: "fa-brands fa-golang" },
-      { name: "Python / Qdrant", icon: "fa-brands fa-python" },
-      { name: "PostgreSQL / Redis", icon: "fa-solid fa-database" },
+      { name: "Go / Gin", icon: "golang" },
+      { name: "Python / Qdrant", icon: "python" },
+      { name: "PostgreSQL / Redis", icon: "database" },
     ],
   },
-];
+] satisfies Array<{
+  title: string;
+  subtitle: string;
+  skills: Array<{ name: string; icon: FaSvgIconName }>;
+}>;
 
 export default function SkillsAccordion() {
   return (
@@ -63,8 +68,9 @@ export default function SkillsAccordion() {
                         key={skill.name}
                         className="group flex items-center gap-3 md:gap-4 py-1.5 md:py-2 cursor-default transition-all duration-300 hover:translate-x-2"
                       >
-                        <i
-                          className={`${skill.icon} text-first text-sm md:text-lg w-5 text-center shrink-0 transition-transform duration-300 group-hover:scale-125`}
+                        <FaSvgIcon
+                          name={skill.icon}
+                          className="text-first text-sm md:text-lg w-5 transition-transform duration-300 group-hover:scale-125"
                         />
                         <span className="text-base md:text-2xl lg:text-3xl font-bold text-title tracking-tight transition-colors duration-300 group-hover:text-first">
                           {skill.name}

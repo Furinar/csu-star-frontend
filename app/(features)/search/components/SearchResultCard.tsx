@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import StarRating from "@/components/ui/StarRating";
 import { isPublicCourseType } from "@/lib/courseType";
 import { getEntityTheme } from "@/lib/entityTheme";
 import type {
@@ -40,37 +41,6 @@ function clampScore(value?: number | null) {
 function formatScore(value?: number | null, digits = 2) {
   if (value === null || typeof value === "undefined") return "--";
   return value.toFixed(digits);
-}
-
-function StarRating({
-  value,
-  fullClassName,
-}: {
-  value?: number | null;
-  fullClassName: string;
-}) {
-  const score = clampScore(value);
-
-  return (
-    <div className="flex items-center gap-0.5 text-xs">
-      {Array.from({ length: 5 }).map((_, i) => {
-        const fill =
-          score >= i + 1 ? 100 : score > i ? Math.round((score - i) * 100) : 0;
-
-        return (
-          <span key={i} className="relative inline-flex text-sm leading-none">
-            <span className="text-gray-200">★</span>
-            <span
-              className={`absolute inset-y-0 left-0 overflow-hidden ${fullClassName}`}
-              style={{ width: `${fill}%` }}
-            >
-              ★
-            </span>
-          </span>
-        );
-      })}
-    </div>
-  );
 }
 
 function BarRow({
@@ -352,8 +322,8 @@ export default function SearchResultCard(props: SearchResultCardProps) {
             </div>
             <div className="mt-1 md:mt-1.5 transform scale-75 origin-center md:scale-100">
               <StarRating
-                value={leftScoreValue}
-                fullClassName={theme.starFillClassName}
+                score={clampScore(leftScoreValue)}
+                fillClassName={theme.starFillClassName}
               />
             </div>
           </div>

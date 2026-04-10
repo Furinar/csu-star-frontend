@@ -1,5 +1,5 @@
-import type { Metadata, Viewport } from "next";
-import { Poppins } from "next/font/google";
+import type {Metadata, Viewport} from "next";
+import {Poppins} from "next/font/google";
 import AuthBootstrap from "@/components/auth/AuthBootstrap";
 import FeedbackToaster from "@/components/ui/FeedbackToaster";
 import "./globals.css";
@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "南极星(中南指北)",
+  title: "南极星 | CSU Star",
   description: "中南大学一站式综合平台",
   icons: {
     icon: "/csustar.svg",
@@ -28,27 +28,27 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
+                                     children,
+                                   }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+      <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <link
-          rel="stylesheet"
-          href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            rel="stylesheet"
+            href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
         />
         <link
-          rel="stylesheet"
-          href="https://cdn.jsdmirror.com/npm/@iconscout/unicons@3.0.6/css/line.css"
+            rel="stylesheet"
+            href="https://cdn.jsdmirror.com/npm/@iconscout/unicons@3.0.6/css/line.css"
         />
       </head>
       <body className={poppins.className}>
-        <AuthBootstrap />
-        {children}
-        <FeedbackToaster />
+      <AuthBootstrap/>
+      {children}
+      <FeedbackToaster/>
       </body>
-    </html>
+      </html>
   );
 }

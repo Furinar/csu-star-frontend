@@ -1,34 +1,41 @@
 "use client";
 
 import Reveal from "@/components/effects/Reveal";
+import FaSvgIcon, { type FaSvgIconName } from "@/components/ui/FaSvgIcon";
 
 const portfolioItems = [
   {
     title: "课程评价",
     desc: "覆盖全校 32 个学院、7500+ 门课程的评分与评价系统，帮你了解课程真实体验",
-    icon: "fa-solid fa-graduation-cap",
+    icon: "graduation-cap",
     features: ["课程评分", "学生评价", "选课参考"],
   },
   {
     title: "教师评分",
     desc: "2500+ 名教师的多维度评分与口碑，助你找到最适合自己的老师",
-    icon: "fa-solid fa-chalkboard-user",
+    icon: "chalkboard-user",
     features: ["教师评分", "教学风格", "口碑推荐"],
   },
   {
     title: "学习资源",
     desc: "汇集课件、笔记、历年试题等学习资料，全校师生共建共享的资源库",
-    icon: "fa-solid fa-book-open",
+    icon: "book-open",
     features: ["课件资料", "历年试题", "学习笔记"],
   },
   {
     title: "更多功能",
     desc: "校园资讯、课表管理、个性化推荐……更多功能正在路上",
-    icon: "fa-solid fa-rocket",
+    icon: "rocket",
     features: ["校园资讯", "课表管理", "敬请期待"],
     comingSoon: true,
   },
-];
+] satisfies Array<{
+  title: string;
+  desc: string;
+  icon: FaSvgIconName;
+  features: string[];
+  comingSoon?: boolean;
+}>;
 
 export default function PortfolioGrid() {
   return (
@@ -61,14 +68,16 @@ export default function PortfolioGrid() {
                 className={`group relative py-6 md:py-8 px-1 md:px-8 border-b border-border/40 ${i % 2 === 0 ? "md:border-r" : ""} ${i >= 2 ? "md:border-b-0" : ""}`}
               >
                 {/* 水印图标 */}
-                <i
-                  className={`${item.icon} absolute right-3 md:right-6 top-4 md:top-6 text-[2.5rem] md:text-[4.5rem] text-title/8 pointer-events-none`}
+                <FaSvgIcon
+                  name={item.icon}
+                  className="absolute right-3 md:right-6 top-4 md:top-6 text-[2.5rem] md:text-[4.5rem] text-title/8 pointer-events-none"
                 />
 
                 <div className="relative flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg bg-first/10 flex items-center justify-center shrink-0 group-hover:bg-first/15 transition-colors duration-300">
-                    <i
-                      className={`${item.icon} text-first text-lg group-hover:scale-110 transition-transform duration-300`}
+                    <FaSvgIcon
+                      name={item.icon}
+                      className="text-first text-lg group-hover:scale-110 transition-transform duration-300"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
