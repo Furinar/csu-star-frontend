@@ -4,7 +4,7 @@ import {useState} from "react";
 import {recoverPwd, sendCaptcha} from "@/api/auth";
 import {useRouter} from "next/navigation";
 import CryptoJS from "crypto-js";
-import { showCaptchaSentFeedback } from "@/lib/campusMail";
+import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
 
 export default function Forget() {
 
@@ -29,7 +29,10 @@ export default function Forget() {
           showCaptchaSentFeedback(`请查收 ${email.trim()} 的邮件。`);
           return true;
         } catch (err) {
-          const errMsg = err instanceof Error ? err.message : "发送验证码失败，请重试";
+          const errMsg = showCaptchaSendFailureFeedback(err, {
+            title: "验证码发送失败",
+            defaultDescription: "发送验证码失败，请重试",
+          });
           setErrorInfo(errMsg);
           return false;
         }

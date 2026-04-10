@@ -6,7 +6,7 @@ import { recoverPwd, sendCaptcha } from "@/api/auth";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { feedback } from "@/store/useFeedbackStore";
-import { showCaptchaSentFeedback } from "@/lib/campusMail";
+import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
 import {
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
@@ -62,9 +62,9 @@ export default function PasswordPanel({
       }));
       showCaptchaSentFeedback("请前往邮箱查收后继续完成密码修改。");
     } catch (error) {
-      feedback.error({
+      showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
-        description: getErrorMessage(error, "请稍后再试"),
+        defaultDescription: getErrorMessage(error, "请稍后再试"),
       });
     } finally {
       setIsSendingCode(false);

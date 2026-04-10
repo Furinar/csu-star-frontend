@@ -5,7 +5,7 @@ import { bindCampusEmail, sendCampusEmailCaptcha } from "@/api/me";
 import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import { feedback } from "@/store/useFeedbackStore";
-import { showCaptchaSentFeedback } from "@/lib/campusMail";
+import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
 import type { UserProfile } from "@/types/auth";
 import type { EmailStatus, MeDashboardData } from "@/types/me";
 import {
@@ -83,9 +83,9 @@ export default function EmailPanel({
       }));
       showCaptchaSentFeedback(message);
     } catch (error) {
-      feedback.error({
+      showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
-        description: getErrorMessage(error, "请检查邮箱后重试"),
+        defaultDescription: getErrorMessage(error, "请检查邮箱后重试"),
       });
     } finally {
       setIsSendingCode(false);
