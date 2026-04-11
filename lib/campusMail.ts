@@ -126,9 +126,9 @@ function resolveCaptchaFailureFeedback(
   if (isUnregisteredMailboxError(normalizedMessage)) {
     return {
       kind: "unregistered_mailbox",
-      title: customTitle ?? "校园邮箱可能还未注册",
+      title: customTitle ?? "暂时收不到验证码",
       description:
-        "系统没能把验证码投递到这个校园邮箱。请先确认该邮箱已开通；如果还没注册，请先注册校园邮箱后再重试。",
+        "这个校园邮箱暂时还收不到验证码。可以先确认邮箱是否已经开通，再稍后重试。",
       actionLabel: "打开校园邮箱",
       onAction: openCampusMail,
     };
@@ -152,9 +152,9 @@ function resolveCaptchaFailureFeedback(
   if (isSenderIssueError(normalizedMessage)) {
     return {
       kind: "sender_issue",
-      title: customTitle ?? "发件通道暂时异常",
+      title: customTitle ?? "验证码暂时发不出去",
       description:
-        `验证码发送失败，当前更像是发件邮箱或 SMTP 通道异常。请稍后重试，或联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
+        `现在发送验证码的人有点多，邮件通道有些忙。你可以稍后再试；如果一直不成功，再联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
       actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
       onAction: contactAdminMail,
     };
@@ -165,7 +165,7 @@ function resolveCaptchaFailureFeedback(
       kind: "contact_admin",
       title: customTitle ?? "验证码发送失败",
       description:
-        `多次发送仍未成功。若你确认校园邮箱已注册，可能是发件通道异常，请联系管理员 ${ADMIN_MAIL_ADDRESS} 处理。`,
+        `试了几次还是没有成功。如果你确认校园邮箱已经开通，可以联系管理员 ${ADMIN_MAIL_ADDRESS} 帮你看一下。`,
       actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
       onAction: contactAdminMail,
     };
@@ -183,14 +183,14 @@ function resolveCaptchaFailureFeedback(
 function getPendingActivationDescription(scene?: CaptchaFailureScene) {
   switch (scene) {
     case "bind_email":
-      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+      return "这个校园邮箱可能刚开通不久，系统暂时还收不到验证码。建议先等 1 小时左右再来绑定；如果着急使用，也可以先用 QQ 登录，稍后再到账号里绑定校园邮箱。";
     case "forget_password":
-      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请先等待邮箱生效后再找回密码；如你原本通过QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+      return "这个校园邮箱可能刚开通不久，暂时还收不到验证码。建议先等 1 小时左右，等邮箱生效后再找回密码；如果你原本是用 QQ 登录的，也可以先用 QQ 登录。";
     case "reset_password":
-      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请稍后再试；如当前账号支持QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+      return "这个校园邮箱可能刚开通不久，暂时还收不到验证码。建议先等 1 小时左右再试；如果当前账号支持 QQ 登录，也可以先用 QQ 登录，之后再绑定校园邮箱。";
     case "register":
     default:
-      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+      return "这个校园邮箱可能刚开通不久，暂时还收不到验证码。建议先等 1 小时左右再试；如果你想先进入系统，也可以先用 QQ 登录，之后再绑定校园邮箱。";
   }
 }
 
