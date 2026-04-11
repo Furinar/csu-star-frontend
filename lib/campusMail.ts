@@ -7,7 +7,11 @@ export const ADMIN_MAIL_ADDRESS = "csustar@foxmail.com";
 const CAPTCHA_SEND_FAILURE_STORAGE_KEY = "campus-mail-captcha-send-failure-count";
 const CAPTCHA_SEND_FAILURE_THRESHOLD = 3;
 
-type CaptchaFailureKind = "unregistered_mailbox" | "sender_issue" | "contact_admin";
+type CaptchaFailureKind =
+  | "unregistered_mailbox"
+  | "campus_mailbox_pending_activation"
+  | "sender_issue"
+  | "contact_admin";
 
 type CaptchaFailureFeedback = {
   kind: CaptchaFailureKind;
@@ -121,6 +125,22 @@ function resolveCaptchaFailureFeedback(
     };
   }
 
+  if (isCampusMailboxPendingActivationError(normalizedMessage)) {
+    return {
+      kind: "campus_mailbox_pending_activation",
+      title: customTitle ?? "校园邮箱暂不可用",
+      description:
+        "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.",
+      actionLabel: "改用 QQ 登录",
+      onAction: () => {
+        if (typeof window === "undefined") {
+          return;
+        }
+        window.location.href = "/login";
+      },
+    };
+  }
+
   if (isSenderIssueError(normalizedMessage)) {
     return {
       kind: "sender_issue",
@@ -163,12 +183,20 @@ function isUnregisteredMailboxError(message: string) {
   );
 }
 
+function isCampusMailboxPendingActivationError(message: string) {
+  return (
+    message.includes("注册时间是否已满1小时") ||
+    message.includes("请先采用qq登录") ||
+    message.includes("1小时后在账号内进行邮箱绑定") ||
+    message.includes("campus mailbox not found")
+  );
+}
+
 function isSenderIssueError(message: string) {
   return (
     message.includes("smtp") ||
     message.includes("auth") ||
     message.includes("535") ||
-    message.includes("550") ||
     message.includes("554") ||
     message.includes("mail from") ||
     message.includes("rcpt") ||
