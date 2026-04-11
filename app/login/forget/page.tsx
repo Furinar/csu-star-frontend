@@ -26,7 +26,7 @@ export default function Forget() {
         setErrorInfo("");
         try {
           await sendCaptcha(email.trim());
-          showCaptchaSentFeedback(`请查收 ${email.trim()} 的邮件。`);
+          showCaptchaSentFeedback(`请查收 ${email.trim()} 的邮件。`, "forget_password");
           return true;
         } catch (err) {
           const errMsg = showCaptchaSendFailureFeedback(err, {

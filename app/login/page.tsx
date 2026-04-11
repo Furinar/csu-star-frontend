@@ -87,7 +87,7 @@ export default function Login() {
 
     try {
       await sendCaptcha(toCsuEmail(emailPrefix));
-      showCaptchaSentFeedback(`请查收 ${toCsuEmail(emailPrefix)} 的邮件。`);
+      showCaptchaSentFeedback(`请查收 ${toCsuEmail(emailPrefix)} 的邮件。`, "register");
     } catch (error) {
       const message = showCaptchaSendFailureFeedback(error, {
         title: "验证码发送失败",

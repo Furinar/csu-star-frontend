@@ -81,7 +81,7 @@ export default function EmailPanel({
         ...current,
         email,
       }));
-      showCaptchaSentFeedback(message);
+      showCaptchaSentFeedback(message, "bind_email");
     } catch (error) {
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",

@@ -60,7 +60,7 @@ export default function PasswordPanel({
         ...current,
         email,
       }));
-      showCaptchaSentFeedback("请前往邮箱查收后继续完成密码修改。");
+      showCaptchaSentFeedback("请前往邮箱查收后继续完成密码修改。", "reset_password");
     } catch (error) {
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",

@@ -19,6 +19,12 @@ type CaptchaFailureScene =
   | "forget_password"
   | "reset_password";
 
+type CaptchaSuccessScene =
+  | "register"
+  | "bind_email"
+  | "forget_password"
+  | "reset_password";
+
 type CaptchaFailureFeedback = {
   kind: CaptchaFailureKind;
   title: string;
@@ -43,15 +49,34 @@ export function contactAdminMail() {
   window.location.href = `mailto:${ADMIN_MAIL_ADDRESS}`;
 }
 
-export function showCaptchaSentFeedback(description: string) {
+export function showCaptchaSentFeedback(
+  description: string,
+  scene?: CaptchaSuccessScene,
+) {
   resetCaptchaSendFailureCount();
   feedback.success({
     title: "验证码已发送",
-    description,
+    description: formatCaptchaSuccessDescription(description, scene),
     duration: 0,
     actionLabel: "打开校园邮箱",
     onAction: openCampusMail,
   });
+}
+
+function formatCaptchaSuccessDescription(
+  description: string,
+  scene?: CaptchaSuccessScene,
+) {
+  switch (scene) {
+    case "register":
+    case "bind_email":
+      return `${description} 请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.`;
+    case "forget_password":
+    case "reset_password":
+      return `${description} 请确保你的邮箱注册已满1小时.`;
+    default:
+      return description;
+  }
 }
 
 function getCaptchaSendFailureCount() {
