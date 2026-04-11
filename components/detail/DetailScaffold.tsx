@@ -41,7 +41,7 @@ export function DetailPageShell({
 }: {
   children: ReactNode;
 }) {
-  return <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 pt-4 pb-12 px-4 md:gap-8 md:pt-8 md:pb-24 md:px-6 lg:px-8">{children}</div>;
+  return <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-3 pt-4 pb-12 md:gap-8 md:px-6 md:pt-8 md:pb-24 lg:px-8">{children}</div>;
 }
 
 export function DetailHero({
@@ -175,7 +175,7 @@ export function DetailSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-slate-200/80 bg-white/90 p-4 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:rounded-[32px] md:p-7">
+    <section className="rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:rounded-[32px] md:p-7">
       <div className="flex flex-col gap-2.5 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between md:gap-3 md:pb-5">
         <div>
           <h2 className="text-xl font-semibold tracking-[-0.04em] text-slate-950 md:text-2xl">{title}</h2>
@@ -183,7 +183,7 @@ export function DetailSection({
         </div>
         {action}
       </div>
-      <div className="pt-4 md:pt-6">{children}</div>
+      <div className="pt-3 md:pt-6">{children}</div>
     </section>
   );
 }

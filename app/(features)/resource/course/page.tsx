@@ -46,6 +46,7 @@ export default function CourseResourceCollectionPage() {
   const statCards = [
     {
       label: "资源总数",
+      mobileLabel: "资源",
       value: detail?.resource_count ?? 0,
       icon: "uil-file-alt",
       iconClassName: "text-emerald-500",
@@ -53,6 +54,7 @@ export default function CourseResourceCollectionPage() {
     },
     {
       label: "累计下载",
+      mobileLabel: "下载",
       value: detail?.download_total ?? 0,
       icon: "uil-cloud-download",
       iconClassName: "text-sky-500",
@@ -60,6 +62,7 @@ export default function CourseResourceCollectionPage() {
     },
     {
       label: "累计点赞",
+      mobileLabel: "点赞",
       value: detail?.like_total ?? 0,
       icon: "uil-thumbs-up",
       iconClassName: "text-rose-500",
@@ -67,6 +70,7 @@ export default function CourseResourceCollectionPage() {
     },
     {
       label: "累计收藏",
+      mobileLabel: "收藏",
       value: detail?.favorite_count ?? 0,
       icon: "uil-bookmark",
       iconClassName: "text-amber-500",
@@ -182,16 +186,11 @@ export default function CourseResourceCollectionPage() {
               className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-200/40 blur-3xl md:-bottom-10 md:left-10 md:h-40 md:w-40"></div>
           <div className="relative flex items-stretch gap-3 md:gap-6 lg:items-end lg:justify-between">
             <div
-                className="flex min-w-0 flex-1 flex-col justify-between rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:space-y-4 md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
+                className="flex min-w-0 flex-1 flex-col justify-between rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:justify-start md:space-y-4 md:self-start md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
               <div className="space-y-3 md:space-y-4">
-                <div
-                    className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-white/90 px-3 py-1.5 text-[11px] font-medium text-emerald-700 shadow-sm md:px-4 md:py-2 md:text-sm">
-                  <i className="uil uil-folder-open"></i>
-                  课程资源合集
-                </div>
                 <div>
                   <div className="text-[11px] font-medium tracking-[0.18em] text-gray-400 md:text-sm">
-                    课程信息
+                    资源合集信息
                   </div>
                   <h1 className="mt-1.5 line-clamp-2 pr-1 text-xl font-bold leading-tight text-gray-900 md:mt-2 md:text-4xl">
                     {detail.course.name}
@@ -215,15 +214,17 @@ export default function CourseResourceCollectionPage() {
                       key={stat.label}
                       className={`rounded-[14px] border border-white/80 bg-gradient-to-br ${stat.panelClassName} px-2.5 py-2 shadow-sm md:rounded-2xl md:px-4 md:py-3`}
                   >
-                    <div
-                        className="flex flex-col items-center justify-center gap-1 md:flex-row md:items-center md:gap-2">
-                      <i className={`uil ${stat.icon} text-base ${stat.iconClassName} md:text-base`}></i>
-                      <div className="min-w-0 text-center md:text-left">
+                    <div className="flex h-full flex-col items-center justify-center gap-1 md:items-start md:gap-2">
+                      <div className="text-[11px] font-medium text-gray-500 md:hidden">
+                        {stat.mobileLabel}
+                      </div>
+                      <div className="hidden text-xs font-medium text-gray-500 md:block">
+                        {stat.label}
+                      </div>
+                      <div className="flex items-center justify-center gap-1 md:justify-start md:gap-2">
+                        <i className={`uil ${stat.icon} text-base ${stat.iconClassName} md:text-base`}></i>
                         <div className="text-sm font-semibold leading-none text-gray-900 md:text-lg">
                           {stat.value}
-                        </div>
-                        <div className="mt-1 hidden text-xs font-medium text-gray-500 md:flex md:items-center">
-                          {stat.label}
                         </div>
                       </div>
                     </div>

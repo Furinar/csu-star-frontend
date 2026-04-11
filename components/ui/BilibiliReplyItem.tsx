@@ -61,7 +61,7 @@ export default function BilibiliReplyItem({
 
   return (
     <div
-      className="group/reply flex gap-2 rounded-xl px-1.5 py-1.5 transition-colors duration-200 md:gap-3 md:px-2 md:py-2"
+      className="group/reply flex gap-1.5 rounded-xl px-1 py-1 transition-colors duration-200 md:gap-3 md:px-2 md:py-2"
       style={{ backgroundColor: isFlashing ? "var(--page-accent-soft-strong)" : "transparent" }}
     >
       {/* Avatar */}
@@ -72,26 +72,26 @@ export default function BilibiliReplyItem({
             align="left"
             triggerClassName="block rounded-full"
             trigger={
-              <div className="relative h-5 w-5 cursor-pointer overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
+              <div className="relative h-4.5 w-4.5 cursor-pointer overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
                 <Image
                   src={displayUser.avatar_url || DEFAULT_AVATAR}
                   alt={displayUser.nickname}
                   fill
                   className="object-cover"
-                  sizes="(max-width: 767px) 20px, 24px"
+                  sizes="(max-width: 767px) 18px, 24px"
                   unoptimized
                 />
               </div>
             }
           />
         ) : (
-          <div className="relative h-5 w-5 overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
+          <div className="relative h-4.5 w-4.5 overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
             <Image
               src={displayUser.avatar_url || DEFAULT_AVATAR}
               alt={displayUser.nickname}
               fill
               className="object-cover"
-              sizes="(max-width: 767px) 20px, 24px"
+              sizes="(max-width: 767px) 18px, 24px"
               unoptimized
             />
           </div>

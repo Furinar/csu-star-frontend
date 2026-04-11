@@ -131,7 +131,7 @@ export default function BilibiliCommentItem({
   return (
       <div
           ref={commentRef}
-          className="flex gap-2.5 rounded-xl border-b border-gray-100 px-1.5 py-3 transition-colors last:border-0 hover:bg-gray-50/50 md:gap-4 md:px-2 md:py-4"
+          className="flex gap-2 rounded-xl border-b border-gray-100 px-1 py-3 transition-colors last:border-0 hover:bg-gray-50/50 md:gap-4 md:px-2 md:py-4"
           style={{ backgroundColor: isFlashing ? "var(--page-accent-soft-strong)" : "transparent" }}>
         {/* Avatar */}
         <div className="shrink-0 flex-none">
@@ -141,26 +141,26 @@ export default function BilibiliCommentItem({
               align="left"
               triggerClassName="block rounded-full"
               trigger={
-                <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 bg-gray-50 transition hover:border-gray-300 md:h-12 md:w-12">
+                <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-200 bg-gray-50 transition hover:border-gray-300 md:h-12 md:w-12">
                   <Image
                     src={displayUser.avatar_url || DEFAULT_AVATAR}
                     alt={displayUser.nickname}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 767px) 40px, 48px"
+                    sizes="(max-width: 767px) 36px, 48px"
                     unoptimized
                   />
                 </div>
               }
             />
           ) : (
-            <div className="relative h-10 w-10 overflow-hidden rounded-full border border-gray-200 bg-gray-50 md:h-12 md:w-12">
+            <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-200 bg-gray-50 md:h-12 md:w-12">
               <Image
                 src={displayUser.avatar_url || DEFAULT_AVATAR}
                 alt={displayUser.nickname}
                 fill
                 className="object-cover"
-                sizes="(max-width: 767px) 40px, 48px"
+                sizes="(max-width: 767px) 36px, 48px"
                 unoptimized
               />
             </div>
@@ -217,8 +217,8 @@ export default function BilibiliCommentItem({
 
           {/* Replies Section - Bilibili Style Box */}
           {(replies.length > 0 || isReplying) && (
-              <div className="mt-2.5 rounded-xl bg-gray-50 p-2.5 text-[13px] sm:p-4 md:mt-3 md:text-[14px]">
-                <div className="flex flex-col gap-2">
+              <div className="mt-2.5 rounded-xl bg-gray-50 p-2 text-[13px] sm:p-4 md:mt-3 md:text-[14px]">
+                <div className="flex flex-col gap-1.5 md:gap-2">
                   {displayedReplies.map((reply) => (
                       <BilibiliReplyItem
                           key={reply.id}

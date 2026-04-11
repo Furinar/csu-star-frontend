@@ -92,10 +92,10 @@ const StyledWrapper = styled.div`
   }
   @media (max-width: 767px) {
     .button {
-      min-width: 124px;
-      height: 40px;
-      padding: 0 14px;
-      font-size: 13px;
+      min-width: 108px;
+      height: 36px;
+      padding: 0 12px;
+      font-size: 12px;
       --radius: 12px;
     }
     .button::before {

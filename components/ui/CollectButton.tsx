@@ -16,6 +16,7 @@ interface CollectButtonProps {
   className?: string;
   activeColor?: string;
   mobileIconOnly?: boolean;
+  mobileStack?: boolean;
 }
 
 export default function CollectButton({
@@ -29,15 +30,37 @@ export default function CollectButton({
   className = "",
   activeColor = "text-white",
   mobileIconOnly = false,
+  mobileStack = false,
 }: CollectButtonProps) {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
   const [collected, setCollected] = React.useState(initialStatus ?? isCollected);
   const [loading, setLoading] = React.useState(false);
+  const [supportsHover, setSupportsHover] = React.useState(true);
+  const [tapAnimating, setTapAnimating] = React.useState(false);
 
   React.useEffect(() => {
     setCollected(initialStatus ?? isCollected);
   }, [initialStatus, isCollected]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(hover: hover)");
+    const syncHoverCapability = () => setSupportsHover(mediaQuery.matches);
+
+    syncHoverCapability();
+
+    if (typeof mediaQuery.addEventListener === "function") {
+      mediaQuery.addEventListener("change", syncHoverCapability);
+      return () => mediaQuery.removeEventListener("change", syncHoverCapability);
+    }
+
+    mediaQuery.addListener(syncHoverCapability);
+    return () => mediaQuery.removeListener(syncHoverCapability);
+  }, []);
 
   const sizeStyles = {
     sm: {
@@ -76,9 +99,26 @@ export default function CollectButton({
       : size === "lg"
         ? "md:group-hover:w-[108px]"
         : "md:group-hover:w-[90px]";
+  const desktopButton =
+    size === "sm"
+      ? "md:w-[80px] md:h-[32px]"
+      : size === "lg"
+        ? "md:w-[120px] md:h-[48px]"
+        : "md:w-[100px] md:h-[40px]";
+  const desktopText =
+    size === "sm"
+      ? "md:w-[48px] md:text-[0.8em]"
+      : size === "lg"
+        ? "md:w-[72px] md:text-[1.2em]"
+        : "md:w-[60px] md:text-[1.04em]";
 
   const handleClick = async () => {
     if (loading) return;
+
+    if (!supportsHover) {
+      setTapAnimating(true);
+      window.setTimeout(() => setTapAnimating(false), 320);
+    }
 
     if (!targetId || !targetType) {
       onClick?.();
@@ -125,15 +165,29 @@ export default function CollectButton({
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className={`group relative z-0 isolate flex items-center justify-center rounded-full border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${s.button} ${
+      className={`group relative z-0 isolate flex items-center justify-center border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${
+        mobileStack
+          ? `h-8 w-auto min-w-[88px] flex-row gap-1.5 rounded-full px-1 pr-3 ${desktopButton}`
+          : `${s.button} rounded-full`
+      } ${
         mobileIconOnly ? "w-full md:w-[100px]" : ""
       } ${className}`}
     >
       <span
         className={`z-10 flex items-center justify-center rounded-full overflow-hidden transition-all duration-300 ${
-          mobileIconOnly
+          mobileStack
+            ? `h-[24px] w-[24px] shrink-0 md:absolute md:left-[4px] ${desktopIconCont} ${desktopIconHover}`
+            : mobileIconOnly
             ? `h-[28px] w-[28px] md:absolute md:left-[4px] ${desktopIconCont} ${desktopIconHover}`
             : `absolute left-[4px] ${s.iconCont} ${s.iconContHover}`
+        } ${
+          !supportsHover && tapAnimating && !mobileStack && !mobileIconOnly
+            ? size === "sm"
+              ? "w-[72px]"
+              : size === "lg"
+                ? "w-[108px]"
+                : "w-[90px]"
+            : ""
         } ${collected ? "bg-[image:var(--page-accent-gradient)] shadow-[0_10px_24px_var(--page-accent-soft-strong)]" : "bg-gray-300"}`}
       >
         <svg
@@ -146,9 +200,15 @@ export default function CollectButton({
       </span>
       <p
         className={`z-0 flex h-full items-center justify-center text-gray-800 transition-all duration-300 ${
-          mobileIconOnly
+          mobileStack
+            ? `text-[12px] font-medium leading-none md:ml-auto md:mr-[4px] ${desktopText} md:group-hover:w-0 md:group-hover:text-[0px] ${s.textHover}`
+            : mobileIconOnly
             ? `hidden md:flex md:ml-auto md:mr-[4px] ${s.text} group-hover:w-0 group-hover:text-[0px] ${s.textHover}`
             : `ml-auto mr-[4px] ${s.text} group-hover:w-0 group-hover:text-[0px] ${s.textHover}`
+        } ${
+          !supportsHover && tapAnimating && !mobileStack && !mobileIconOnly
+            ? `w-0 text-[0px] ${size === "sm" ? "translate-x-[6px]" : size === "lg" ? "translate-x-[14px]" : "translate-x-[10px]"}`
+            : ""
         }`}
       >
         {loading ? "..." : collected ? "已收藏" : "收藏"}

@@ -221,6 +221,20 @@
     color: var(--vp-c-text-2);
 }
 
+.bioRow {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bio {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--vp-c-text-2);
+}
+
 .profiles {
     padding-top: 12px;
     display: grid;

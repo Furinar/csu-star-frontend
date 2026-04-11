@@ -214,11 +214,17 @@ function MobileResourceLink({ href, count }: MobileResourceLinkProps) {
   return (
     <Link
       href={href}
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-sky-200 bg-white text-xs font-semibold text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 md:hidden"
+      className="group relative inline-flex h-8 w-[96px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-sky-200 bg-white px-1 pr-3 text-[12px] font-medium text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 active:scale-95 md:hidden"
     >
-      <i className="uil uil-file-alt text-sm text-[var(--first-color)]"></i>
-      <span className="hidden">关联资源</span>
-      <span className="hidden rounded-full bg-sky-50 px-1.5 py-0.5 text-[11px] text-sky-600">{count}</span>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-50 text-[var(--first-color)] shadow-[0_6px_16px_rgba(125,163,214,0.18)]">
+        <i className="uil uil-file-alt text-sm"></i>
+      </span>
+      <span className="flex items-center justify-center gap-1.5 leading-none text-gray-800">
+        <span>资源</span>
+        <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[11px] leading-none text-sky-600">
+          {count}
+        </span>
+      </span>
     </Link>
   );
 }
@@ -248,19 +254,19 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
           <div className="course-info mt-2 flex flex-nowrap items-center justify-between gap-2 overflow-hidden md:mt-0 md:gap-4">
             <Link
               href={buildCoursePath(course.id)}
-              className="course-name min-w-0 flex-1 truncate whitespace-nowrap pl-10 pb-1 text-2xl font-extrabold tracking-tight text-slate-950 drop-shadow-sm md:pl-15 md:text-4xl"
+              className="course-name min-w-0 flex-1 break-words pl-10 pb-1 text-2xl font-extrabold leading-tight tracking-tight text-slate-950 drop-shadow-sm md:pl-15 md:text-4xl"
             >
               {course.name}
             </Link>
 
-            <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap md:ml-0 md:gap-3">
+            <div className="ml-auto flex shrink-0 flex-col items-center gap-2 whitespace-nowrap md:ml-0 md:flex-row md:gap-3">
               <MobileResourceLink href={resourcePath} count={resourceCount} />
               <CollectButton
                 size="sm"
                 targetId={course.id}
                 targetType="course"
                 initialStatus={course.is_favorited ?? false}
-                mobileIconOnly
+                className="w-[96px] md:w-[80px]"
               />
             </div>
           </div>
@@ -290,48 +296,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               </div>
             </div>
 
-            <div className="flex min-h-[176px] gap-3 md:contents md:min-h-0">
-              <div
-                className={`teacher-card flex min-w-0 flex-1 flex-col rounded-xl p-3 transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5 ${COURSE_CARD_CLASS}`}
-              >
-                <div className="mb-2 flex items-center justify-between gap-2 text-gray-500 md:mb-3 md:gap-3">
-                  <div className="flex items-center gap-1 md:gap-2">
-                    <i className="uil uil-user-circle text-base text-[var(--first-color)] md:text-xl"></i>
-                    <span className="text-xs font-medium text-gray-600 md:text-sm">
-                      授课教师 {teachers.length ? `(${teachers.length})` : ""}
-                    </span>
-                  </div>
-                  {props.onAddRelation ? (
-                    <button
-                      type="button"
-                      onClick={props.onAddRelation}
-                      disabled={props.isAddingRelation}
-                      className="whitespace-nowrap rounded-full border border-sky-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-70 md:px-3 md:py-1 md:text-xs"
-                    >
-                      {props.isAddingRelation ? "..." : "+"}
-                    </button>
-                  ) : null}
-                </div>
-
-                <div className="custom-scrollbar content-start flex w-full flex-wrap gap-1.5 overflow-y-auto pr-1 md:gap-2">
-                  {teachers.length > 0 ? (
-                    teachers.map((teacher) => (
-                      <Link
-                        key={`${course.id}-${teacher.id}`}
-                        href={buildTeacherPath(teacher.id)}
-                        className="whitespace-nowrap rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600 transition-colors hover:bg-[var(--first-color)] hover:text-white md:px-3 md:text-xs"
-                      >
-                        {teacher.name}
-                      </Link>
-                    ))
-                  ) : (
-                    <div className="rounded-full border border-dashed border-gray-200 px-2.5 py-1 text-[11px] text-gray-400 md:px-3 md:text-xs">
-                      暂无授课教师
-                    </div>
-                  )}
-                </div>
-              </div>
-
+            <div className="flex min-h-[176px] flex-col gap-3 md:contents md:min-h-0">
               <div className={`right flex min-w-0 flex-1 flex-col rounded-xl p-3 md:hidden ${COURSE_CARD_CLASS}`}>
                 <HeroScoreCard
                   avgScore={course.avg_score}
@@ -360,6 +325,47 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                     },
                   ]}
                 />
+              </div>
+
+              <div
+                className={`teacher-card flex min-w-0 flex-1 flex-col rounded-xl p-3 transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5 ${COURSE_CARD_CLASS}`}
+              >
+                <div className="mb-2 flex items-center justify-between gap-2 text-gray-500 md:mb-3 md:gap-3">
+                  <div className="flex items-center gap-1 md:gap-2">
+                    <i className="uil uil-user-circle text-base text-[var(--first-color)] md:text-xl"></i>
+                    <span className="text-xs font-medium text-gray-600 md:text-sm">
+                      授课教师 {teachers.length ? `(${teachers.length})` : ""}
+                    </span>
+                  </div>
+                  {props.onAddRelation ? (
+                    <button
+                      type="button"
+                      onClick={props.onAddRelation}
+                      disabled={props.isAddingRelation}
+                      className="whitespace-nowrap rounded-full border border-sky-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-sky-600 transition hover:border-sky-300 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-70 md:px-3 md:py-1 md:text-xs"
+                    >
+                      {props.isAddingRelation ? "..." : "添加教师"}
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className="custom-scrollbar content-start flex w-full flex-wrap gap-1.5 overflow-y-auto pr-1 md:gap-2">
+                  {teachers.length > 0 ? (
+                    teachers.map((teacher) => (
+                      <Link
+                        key={`${course.id}-${teacher.id}`}
+                        href={buildTeacherPath(teacher.id)}
+                        className="whitespace-nowrap rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600 transition-colors hover:bg-[var(--first-color)] hover:text-white md:px-3 md:text-xs"
+                      >
+                        {teacher.name}
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="rounded-full border border-dashed border-gray-200 px-2.5 py-1 text-[11px] text-gray-400 md:px-3 md:text-xs">
+                      暂无授课教师
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -481,7 +487,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-2 md:ml-0 md:gap-3">
+          <div className="ml-auto flex flex-col items-center gap-2 md:ml-0 md:flex-row md:gap-3">
             <CollectButton
               size="sm"
               targetId={teacher.id}
@@ -492,55 +498,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
         </div>
 
         <div className="course-relate flex-1 grid grid-cols-1 gap-3 pt-3 md:gap-6 md:pt-4">
-          <div className="flex min-h-[176px] gap-3 md:contents md:min-h-0">
-            <div
-              className={`teacher-card flex min-w-0 flex-1 flex-col rounded-xl p-3 transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5 ${TEACHER_CARD_CLASS}`}
-            >
-              <div className="mb-2 flex items-center justify-between gap-2 text-gray-500 md:mb-3 md:gap-3">
-                <div className="flex items-center gap-1 md:gap-2">
-                  <i className="uil uil-book-open text-base text-rose-500 md:text-xl"></i>
-                  <span className="text-xs font-medium text-gray-600 md:text-sm">
-                    授课课程 {courses.length ? `(${courses.length})` : ""}
-                  </span>
-                </div>
-                {props.onAddRelation ? (
-                  <button
-                    type="button"
-                    onClick={props.onAddRelation}
-                    disabled={props.isAddingRelation}
-                    className="whitespace-nowrap rounded-full border border-rose-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70 md:px-3 md:py-1 md:text-xs"
-                  >
-                    {props.isAddingRelation ? (
-                      "..."
-                    ) : (
-                      <>
-                        <span className="md:hidden">+</span>
-                        <span className="hidden md:inline">添加课程</span>
-                      </>
-                    )}
-                  </button>
-                ) : null}
-              </div>
-
-              <div className="custom-scrollbar content-start flex w-full flex-wrap gap-1.5 overflow-y-auto pr-1 md:gap-2">
-                {courses.length > 0 ? (
-                  courses.map((course) => (
-                    <Link
-                      key={`${teacher.id}-${course.id}`}
-                      href={buildCoursePath(course.id)}
-                      className="whitespace-nowrap rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600 transition-colors hover:bg-rose-500 hover:text-white md:px-3 md:text-xs"
-                    >
-                      {course.name}
-                    </Link>
-                  ))
-                ) : (
-                  <div className="rounded-full border border-dashed border-gray-200 px-2.5 py-1 text-[11px] text-gray-400 md:px-3 md:text-xs">
-                    暂无授课课程
-                  </div>
-                )}
-              </div>
-            </div>
-
+          <div className="flex min-h-[176px] flex-col gap-3 md:contents md:min-h-0">
             <div className={`right flex min-w-0 flex-1 flex-col rounded-xl p-3 md:hidden ${TEACHER_CARD_CLASS}`}>
               <HeroScoreCard
                 avgScore={teacher.avg_score}
@@ -565,6 +523,53 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 ]}
               />
             </div>
+
+            <div
+              className={`teacher-card flex min-w-0 flex-1 flex-col rounded-xl p-3 transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5 ${TEACHER_CARD_CLASS}`}
+            >
+              <div className="mb-2 flex items-center justify-between gap-2 text-gray-500 md:mb-3 md:gap-3">
+                <div className="flex items-center gap-1 md:gap-2">
+                  <i className="uil uil-book-open text-base text-rose-500 md:text-xl"></i>
+                  <span className="text-xs font-medium text-gray-600 md:text-sm">
+                    授课课程 {courses.length ? `(${courses.length})` : ""}
+                  </span>
+                </div>
+                {props.onAddRelation ? (
+                  <button
+                    type="button"
+                    onClick={props.onAddRelation}
+                    disabled={props.isAddingRelation}
+                    className="whitespace-nowrap rounded-full border border-rose-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-rose-500 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-70 md:px-3 md:py-1 md:text-xs"
+                    >
+                      {props.isAddingRelation ? (
+                        "..."
+                      ) : (
+                        <>
+                        <span>添加课程</span>
+                      </>
+                    )}
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="custom-scrollbar content-start flex w-full flex-wrap gap-1.5 overflow-y-auto pr-1 md:gap-2">
+                {courses.length > 0 ? (
+                  courses.map((course) => (
+                    <Link
+                      key={`${teacher.id}-${course.id}`}
+                      href={buildCoursePath(course.id)}
+                      className="whitespace-nowrap rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-[11px] text-gray-600 transition-colors hover:bg-rose-500 hover:text-white md:px-3 md:text-xs"
+                    >
+                      {course.name}
+                    </Link>
+                  ))
+                ) : (
+                  <div className="rounded-full border border-dashed border-gray-200 px-2.5 py-1 text-[11px] text-gray-400 md:px-3 md:text-xs">
+                    暂无授课课程
+                  </div>
+                  )}
+                </div>
+              </div>
           </div>
         </div>
       </div>

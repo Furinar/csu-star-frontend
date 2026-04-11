@@ -7,13 +7,15 @@ type Member = {
   title: string;
   location: string;
   website?: string;
+  email?: string;
+  bio?: string;
   github?: string;
 };
 
 const CORE_MEMBERS: Member[] = [
   {
     name: "Furina",
-    avatar: "https://picui.ogmua.cn/s1/2026/04/08/69d645c706367.webp",
+    avatar: "https://img.cdn1.vip/i/69da3249c4d89_1775907401.webp",
     title: "前端工程师",
     location: "Jiangxi, China",
     website: "https://github.com/Furinar",
@@ -21,7 +23,7 @@ const CORE_MEMBERS: Member[] = [
   },
   {
     name: "starnighter",
-    avatar: "https://picui.ogmua.cn/s1/2026/04/08/69d66960223c6.webp",
+    avatar: "https://img.cdn1.vip/i/69da32882c772_1775907464.webp",
     title: "后端工程师",
     location: "Changsha, China",
     website: "https://blog.starnighter.com",
@@ -29,7 +31,7 @@ const CORE_MEMBERS: Member[] = [
   },
   {
     name: "Qichen",
-    avatar: "https://picui.ogmua.cn/s1/2026/04/08/69d66bb95ef02.webp",
+    avatar: "https://img.cdn1.vip/i/69da32882a9c5_1775907464.webp",
     title: "后端工程师",
     location: "蒙德, 提瓦特",
     website: "https://github.com/QiChenSn",
@@ -37,10 +39,10 @@ const CORE_MEMBERS: Member[] = [
   },
   {
     name: "Navy_",
-    avatar: "https://picui.ogmua.cn/s1/2026/04/08/69d66c1a0e626.webp",
-    title: "数据获取及清洗",
+    avatar: "https://img.cdn1.vip/i/69da2d10ac1cf_1775906064.webp",
+    title: "数据 测试",
     location: "Changsha, China",
-    website: "skina.cn/",
+    website: "https://skina.cn",
     github: "https://github.com/IAMNAVY",
   },
   {
@@ -71,6 +73,39 @@ const CORE_MEMBERS: Member[] = [
   },
 ];
 
+// const SPONSOR_MEMBERS = [
+//   {}
+// ];
+
+const COMMUNITY_MEMBERS: Member[] = [
+  {
+    name: "雲",
+    avatar: "https://img.cdn1.vip/i/69da2f7505776_1775906677.jpg",
+    title: "Contributor",
+    location: "Jiangxi, China",
+    // website: "https://#",
+    // github: "https://github.com/#",
+  },
+  {
+    name: "冰寻卿",
+    avatar: "https://img.cdn1.vip/i/69da30608564d_1775906912.webp",
+    title: "Contributor",
+    location: "Guangxi, China",
+    website: "https://blog.bingx.page",
+    // github: "https://github.com/#",
+  },
+  {
+    name: "没本事的辣椒油",
+    avatar: "https://img.cdn1.vip/i/69da312d3260c_1775907117.webp",
+    bio: "数学资料相关（特别是数学专业）可以dd我",
+    email: "97084588@qq.com",
+    title: "热心小蜜蜂",
+    location: "Changsha, China",
+    // website: "#",
+    // github: "https://github.com/#",
+  }
+];
+
 function LocationIcon() {
   return (
       <svg aria-hidden="true" viewBox="0 0 24 24" className={styles.descIcon}>
@@ -89,6 +124,24 @@ function WebsiteIcon() {
             d="M14 16c-1.8 0-3.6-.8-4.8-2.4-.3-.4-.2-1.1.2-1.4.4-.3 1.1-.2 1.4.2 1.3 1.8 3.8 2.1 5.6.8.2-.1.3-.2.4-.4l3-3c1.5-1.6 1.5-4.1-.1-5.6-1.6-1.5-4-1.5-5.6 0l-1.7 1.7c-.4.4-1 .4-1.4 0-.4-.4-.4-1 0-1.4l1.7-1.7c2.3-2.3 6-2.3 8.3 0 2.4 2.3 2.4 6.1.1 8.5l-3 3c-.2.2-.4.4-.7.6-1.1.7-2.3 1.1-3.6 1.1z"/>
         <path
             d="M7.1 22.9c-1.5 0-3-.6-4.2-1.7-2.4-2.3-2.4-6.1-.1-8.5l3-3c.2-.1.4-.3.6-.5 1.3-1 2.9-1.4 4.4-1.1 1.6.2 3 1.1 3.9 2.3.3.4.2 1.1-.2 1.4-.4.3-1.1.2-1.4-.2-.6-.9-1.6-1.4-2.6-1.6-1.1-.2-2.1.1-3 .8-.2.1-.3.2-.4.4l-3 3c-1.5 1.6-1.5 4.1.1 5.6 1.6 1.5 4 1.5 5.6 0l1.7-1.7c.4-.4 1-.4 1.4 0s.4 1 0 1.4l-1.7 1.7c-1.1 1.1-2.6 1.7-4.1 1.7z"/>
+      </svg>
+  );
+}
+
+function EmailIcon() {
+  return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={styles.descIcon}>
+        <path
+            d="M3 5h18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zm0 2v.2l9 5.4 9-5.4V7H3zm18 10V9.5l-8.5 5.1a1 1 0 0 1-1 0L3 9.5V17h18z"/>
+      </svg>
+  );
+}
+
+function BioIcon() {
+  return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className={styles.descIcon}>
+        <path
+            d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm0 2v14h14V5H5zm3 2h8v2H8V7zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/>
       </svg>
   );
 }
@@ -153,6 +206,15 @@ function TeamMemberCard({member}: { member: Member }) {
           <div className={styles.data}>
             <h3 className={styles.name}>{member.name}</h3>
             <p className={styles.org}>{member.title}</p>
+            {member.bio ? (
+                <div className={styles.bioRow}>
+                  <div className={styles.descTitle}>
+                    <h4 className={styles.srOnly}>Bio</h4>
+                    <BioIcon/>
+                  </div>
+                  <p className={styles.bio}>{member.bio}</p>
+                </div>
+            ) : null}
 
             <div className={styles.profiles}>
               <section className={styles.desc}>
@@ -179,6 +241,20 @@ function TeamMemberCard({member}: { member: Member }) {
                           rel="noreferrer"
                       >
                         {member.website.replace(/^https?:\/\//, "")}
+                      </a>
+                    </p>
+                  </section>
+              ) : null}
+
+              {member.email ? (
+                  <section className={styles.desc}>
+                    <div className={styles.descTitle}>
+                      <h4 className={styles.srOnly}>Email</h4>
+                      <EmailIcon/>
+                    </div>
+                    <p className={styles.descText}>
+                      <a className={styles.descLink} href={`mailto:${member.email}`}>
+                        {member.email}
                       </a>
                     </p>
                   </section>
@@ -252,7 +328,11 @@ export default function AboutPage() {
                     project.
                   </p>
                 </div>
-                <div className={styles.members}/>
+                <div className={styles.members}>
+                  {/*{SPONSOR_MEMBERS.map((member) => (*/}
+                  {/*    <TeamMemberCard key={member.name} member={member}/>*/}
+                  {/*))}*/}
+                </div>
               </div>
             </div>
           </section>
@@ -269,7 +349,11 @@ export default function AboutPage() {
                     coordinating with them on upcoming features and news.
                   </p>
                 </div>
-                <div className={styles.members}/>
+                <div className={styles.members}>
+                  {COMMUNITY_MEMBERS.map((member) => (
+                      <TeamMemberCard key={member.name} member={member}/>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
