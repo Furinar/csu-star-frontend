@@ -13,6 +13,12 @@ type CaptchaFailureKind =
   | "sender_issue"
   | "contact_admin";
 
+type CaptchaFailureScene =
+  | "register"
+  | "bind_email"
+  | "forget_password"
+  | "reset_password";
+
 type CaptchaFailureFeedback = {
   kind: CaptchaFailureKind;
   title: string;
@@ -80,6 +86,7 @@ export function showCaptchaSendFailureFeedback(
   options?: {
     title?: string;
     defaultDescription?: string;
+    scene?: CaptchaFailureScene;
   },
 ) {
   const nextCount = getCaptchaSendFailureCount() + 1;
@@ -93,6 +100,7 @@ export function showCaptchaSendFailureFeedback(
     errorDescription,
     nextCount >= CAPTCHA_SEND_FAILURE_THRESHOLD,
     options?.title,
+    options?.scene,
   );
 
   feedback.error({
@@ -111,6 +119,7 @@ function resolveCaptchaFailureFeedback(
   message: string,
   hasRepeatedFailures: boolean,
   customTitle?: string,
+  scene?: CaptchaFailureScene,
 ): CaptchaFailureFeedback {
   const normalizedMessage = message.toLowerCase();
 
@@ -129,8 +138,7 @@ function resolveCaptchaFailureFeedback(
     return {
       kind: "campus_mailbox_pending_activation",
       title: customTitle ?? "校园邮箱暂不可用",
-      description:
-        "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.",
+      description: getPendingActivationDescription(scene),
       actionLabel: "改用 QQ 登录",
       onAction: () => {
         if (typeof window === "undefined") {
@@ -170,6 +178,20 @@ function resolveCaptchaFailureFeedback(
     actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
     onAction: contactAdminMail,
   };
+}
+
+function getPendingActivationDescription(scene?: CaptchaFailureScene) {
+  switch (scene) {
+    case "bind_email":
+      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+    case "forget_password":
+      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请先等待邮箱生效后再找回密码；如你原本通过QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+    case "reset_password":
+      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请稍后再试；如当前账号支持QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+    case "register":
+    default:
+      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
+  }
 }
 
 function isUnregisteredMailboxError(message: string) {

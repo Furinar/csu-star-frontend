@@ -86,6 +86,7 @@ export default function EmailPanel({
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
         defaultDescription: getErrorMessage(error, "请检查邮箱后重试"),
+        scene: "bind_email",
       });
     } finally {
       setIsSendingCode(false);

@@ -92,6 +92,7 @@ export default function Login() {
       const message = showCaptchaSendFailureFeedback(error, {
         title: "验证码发送失败",
         defaultDescription: "验证码发送失败，请稍后重试",
+        scene: "register",
       });
       setRegisterError(message);
       setIsSendingCode(false);

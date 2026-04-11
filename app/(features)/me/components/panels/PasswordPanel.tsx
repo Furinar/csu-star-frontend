@@ -65,6 +65,7 @@ export default function PasswordPanel({
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
         defaultDescription: getErrorMessage(error, "请稍后再试"),
+        scene: "reset_password",
       });
     } finally {
       setIsSendingCode(false);

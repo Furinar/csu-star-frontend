@@ -32,6 +32,7 @@ export default function Forget() {
           const errMsg = showCaptchaSendFailureFeedback(err, {
             title: "验证码发送失败",
             defaultDescription: "发送验证码失败，请重试",
+            scene: "forget_password",
           });
           setErrorInfo(errMsg);
           return false;
