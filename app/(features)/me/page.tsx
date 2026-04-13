@@ -551,7 +551,7 @@ export default function Me() {
                   >
                     <img
                         className="h-28 w-28 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
-                        src={profile?.avatar_url || "https://picui.ogmua.cn/s1/2026/04/08/69d645c706367.webp"}
+                        src={profile?.avatar_url || "https://img.cdn1.vip/i/69da3249c4d89_1775907401.webp"}
                         alt="User Avatar"
                     />
                     <div

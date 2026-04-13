@@ -186,7 +186,7 @@ export default function CourseResourceCollectionPage() {
               className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-cyan-200/40 blur-3xl md:-bottom-10 md:left-10 md:h-40 md:w-40"></div>
           <div className="relative flex items-stretch gap-3 md:gap-6 lg:items-end lg:justify-between">
             <div
-                className="flex min-w-0 flex-1 flex-col justify-between rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:justify-start md:space-y-4 md:self-start md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0">
+                className="flex min-w-0 flex-1 flex-col justify-between rounded-[22px] bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm md:justify-start md:space-y-4 md:self-start md:rounded-[30px] md:bg-transparent md:p-0 md:shadow-none md:backdrop-blur-0 lg:self-stretch lg:justify-between">
               <div className="space-y-3 md:space-y-4">
                 <div>
                   <div className="text-[11px] font-medium tracking-[0.18em] text-gray-400 md:text-sm">
@@ -197,7 +197,7 @@ export default function CourseResourceCollectionPage() {
                   </h1>
                 </div>
               </div>
-              <div className="mt-3 flex flex-wrap gap-2 md:mt-0 md:gap-3">
+              <div className="mt-3 flex flex-wrap gap-2 md:mt-0 md:gap-3 lg:mt-auto">
                 <Link
                     href={buildCoursePath(detail.course.id)}
                     className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200/80 bg-white/95 px-3 py-1.5 text-xs font-medium text-emerald-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-50 md:px-4 md:py-2 md:text-sm"

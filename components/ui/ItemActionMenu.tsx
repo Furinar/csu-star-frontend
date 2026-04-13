@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export interface ItemActionMenuItem {
   key: string;
@@ -22,12 +23,61 @@ export default function ItemActionMenu({
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<{ top: number; left?: number; right?: number }>({ top: 0 });
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const updateMenuPosition = () => {
+      const triggerElement = triggerRef.current;
+      if (!triggerElement) return;
+
+      const rect = triggerElement.getBoundingClientRect();
+      const nextTop = rect.bottom + 8;
+
+      if (align === "right") {
+        setMenuStyle({
+          top: nextTop,
+          right: window.innerWidth - rect.right,
+        });
+        return;
+      }
+
+      setMenuStyle({
+        top: nextTop,
+        left: rect.left,
+      });
+    };
+
+    updateMenuPosition();
+
+    const handleViewportChange = () => updateMenuPosition();
+
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
+
+    return () => {
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
+    };
+  }, [align, open]);
 
   useEffect(() => {
     if (!open) return;
     const handlePointerDown = (event: MouseEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        !rootRef.current?.contains(target) &&
+        !menuRef.current?.contains(target)
+      ) {
         setOpen(false);
       }
     };
@@ -40,6 +90,7 @@ export default function ItemActionMenu({
   return (
     <div ref={rootRef} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={
@@ -51,31 +102,34 @@ export default function ItemActionMenu({
       >
         {trigger ?? <i className="uil uil-ellipsis-h text-lg" />}
       </button>
-      {open ? (
-        <div
-          className={`absolute top-9 z-20 min-w-[132px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.14)] ${
-            align === "right" ? "right-0" : "left-0"
-          }`}
-        >
-          {items.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={async () => {
-                setOpen(false);
-                await item.onClick();
-              }}
-              className={`flex w-full items-center rounded-xl px-3 py-3 md:py-2 text-left text-sm transition ${
-                item.destructive
-                  ? "text-rose-600 hover:bg-rose-50"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
+      {open && mounted
+        ? createPortal(
+            <div
+              ref={menuRef}
+              className="fixed z-[120] min-w-[132px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.14)]"
+              style={menuStyle}
             >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+              {items.map((item) => (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={async () => {
+                    setOpen(false);
+                    await item.onClick();
+                  }}
+                  className={`flex w-full items-center rounded-xl px-3 py-3 text-left text-sm transition md:py-2 ${
+                    item.destructive
+                      ? "text-rose-600 hover:bg-rose-50"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

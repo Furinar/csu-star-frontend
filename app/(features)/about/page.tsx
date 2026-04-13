@@ -103,6 +103,13 @@ const COMMUNITY_MEMBERS: Member[] = [
     location: "Changsha, China",
     // website: "#",
     // github: "https://github.com/#",
+  },
+  {
+    name: "Lukas",
+    avatar: "https://img.cdn1.vip/i/69dc8f301ed45_1776062256.jpg",
+    location: "Jilin, China",
+    title: "Contributor",
+    email: "3787960037@qq.com"
   }
 ];
 

@@ -247,13 +247,13 @@ export default function Register() {
                         你可以使用图床服务上传图片并获取链接：
                       </p>
                       <a
-                          href="https://picui.cn/upload"
+                          href="https://img.scdn.io/"
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center mt-2 text-sm text-(--color-first) hover:underline"
                       >
                         <i className="uil uil-external-link-alt mr-1"></i>
-                        前往 PICUI 图床上传
+                        前往推荐图床上传
                       </a>
                     </div>
                   </div>

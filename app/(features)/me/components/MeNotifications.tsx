@@ -159,7 +159,7 @@ export default function MeNotifications({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex justify-end">
         {notificationItems.length > 0 ? (
           <button
@@ -213,14 +213,14 @@ function NotificationSection({
   onOpenItem: (item: NotificationItem) => void;
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5 sm:space-y-3">
       <div className="ml-1">
         <h3 className="text-base font-medium text-gray-900">{title}</h3>
         <p className="mt-1 text-sm text-gray-500">{description}</p>
       </div>
 
       {items.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {items.map((item) => (
             <NotificationCard
               key={item.id}
@@ -251,7 +251,7 @@ function NotificationCard({
 
   return (
     <GlassCard
-      className={`${tone.cardClassName} p-4 ${
+      className={`rounded-xl sm:rounded-2xl ${tone.cardClassName} p-2.5 sm:p-4 ${
         targetPath ? "cursor-pointer transition hover:-translate-y-0.5" : ""
       }`}
       onClick={targetPath ? () => void onOpen(item) : undefined}
@@ -268,27 +268,29 @@ function NotificationCard({
           : undefined
       }
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
             <span
-              className={`rounded-full px-2.5 py-1 text-xs ${tone.badgeClassName}`}
+              className={`rounded-full px-2 py-0.5 text-[11px] sm:px-2.5 sm:py-1 sm:text-xs ${tone.badgeClassName}`}
             >
               {getNotificationBadgeLabel(item)}
             </span>
             {!item.is_read ? (
               <span
-                className={`rounded-full px-2 py-1 text-[11px] ${tone.unreadClassName}`}
+                className={`rounded-full px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-[11px] ${tone.unreadClassName}`}
               >
                 未读
               </span>
             ) : null}
           </div>
-          <p className="mt-2 font-medium text-gray-900">{item.title}</p>
-          <p className="mt-1 text-sm leading-6 text-gray-600">
+          <p className="mt-1 text-[13px] font-medium leading-5 text-gray-900 sm:mt-2 sm:text-sm sm:leading-6">
+            {item.title}
+          </p>
+          <p className="mt-0.5 text-xs leading-5 text-gray-600 sm:mt-1 sm:text-sm sm:leading-6">
             {item.content || "暂无附加内容"}
           </p>
-          <p className="mt-2 text-xs text-gray-500">
+          <p className="mt-1.5 text-[10px] text-gray-500 sm:mt-2 sm:text-xs">
             {formatDateTime(item.created_at)}
           </p>
         </div>
@@ -299,7 +301,7 @@ function NotificationCard({
               event.stopPropagation();
               void onMarkRead(item.id);
             }}
-            className="rounded-xl border border-gray-200/70 bg-white/80 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-white"
+            className="self-end rounded-lg border border-gray-200/70 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-white sm:self-start sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs"
           >
             标记已读
           </button>
@@ -360,16 +362,16 @@ function SectionEmptyState({
   description: string;
 }) {
   return (
-    <GlassCard className="border-dashed p-12 text-center">
+    <GlassCard className="rounded-xl border-dashed p-6 text-center sm:rounded-2xl sm:p-12">
       <Image
         src="/undraw_mcp-server_7kvc.svg"
         alt="空状态插画"
-        className="mx-auto mb-4 h-24 w-auto opacity-90"
+        className="mx-auto mb-3 h-20 w-auto opacity-90 sm:mb-4 sm:h-24"
         width={160}
         height={96}
       />
-      <h3 className="mb-2 text-xl font-medium text-gray-800">{title}</h3>
-      <p className="mx-auto max-w-md text-gray-500">{description}</p>
+      <h3 className="mb-1.5 text-lg font-medium text-gray-800 sm:mb-2 sm:text-xl">{title}</h3>
+      <p className="mx-auto max-w-md text-sm text-gray-500 sm:text-base">{description}</p>
     </GlassCard>
   );
 }

@@ -113,8 +113,8 @@ export default function MeEvaluations({
           : [];
 
   return (
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           {[
             {key: "all" as const, label: "全部"},
             {key: "teacher" as const, label: "教师评价"},
@@ -124,7 +124,7 @@ export default function MeEvaluations({
                   key={item.key}
                   type="button"
                   onClick={() => setEvaluationFilter(item.key)}
-                  className={`rounded-full px-3 py-1.5 text-sm transition ${
+                  className={`rounded-full px-2.5 py-1 text-xs transition sm:px-3 sm:py-1.5 sm:text-sm ${
                       evaluationFilter === item.key
                           ? "bg-first text-white"
                           : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
@@ -142,28 +142,32 @@ export default function MeEvaluations({
                 description="你发布的教师评价和课程评价会汇总在这里。"
             />
         ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filteredTeacherEvaluations.map((item) => {
                 const linkedCourseName = item.course_name || (item.course_id ? `课程 #${item.course_id}` : null);
                 const teacherName = item.teacher_name || `教师 #${item.teacher_id}`;
                 const cardContent = (
                     <GlassCard
-                        className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
-                      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        className="rounded-xl p-3 sm:rounded-2xl sm:p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
+                      <div className="mb-2.5 flex flex-col gap-2.5 sm:mb-3 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex w-full items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <h4 className="font-semibold text-gray-900">
+                              <h4 className="text-[15px] font-semibold leading-6 text-gray-900 sm:text-base">
                                 {teacherName}
                               </h4>
                             </div>
-                            <EntityTypeBadge type="teacher" label="教师评价" />
+                            <EntityTypeBadge
+                              type="teacher"
+                              label="教师评价"
+                              className="shrink-0 scale-90 origin-top-right sm:scale-100"
+                            />
                           </div>
-                          <p className="mt-3 text-sm text-gray-500">
+                          <p className="mt-2 text-xs text-gray-500 sm:mt-3 sm:text-sm">
                             发布于 {formatDateTime(item.created_at)}
                           </p>
                           {linkedCourseName ? (
-                              <div className="mt-2 text-sm text-gray-600">
+                              <div className="mt-1.5 text-xs text-gray-600 sm:mt-2 sm:text-sm">
                                 关联课程：
                                 <span
                                     onClick={(event) => {
@@ -181,50 +185,50 @@ export default function MeEvaluations({
                           ) : null}
                         </div>
                       </div>
-                      <div className="mb-3 rounded-2xl bg-slate-100/90 px-4 py-3 text-sm leading-6 text-gray-700">
+                      <div className="mb-2.5 rounded-xl bg-slate-100/90 px-3 py-2.5 text-xs leading-5 text-gray-700 sm:mb-3 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                         {item.comment || "未填写文字评价"}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-star text-lg text-amber-500"></i>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 sm:gap-x-5 sm:gap-y-2 sm:text-sm">
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-star text-base text-amber-500 sm:text-lg"></i>
                           <span>综合 {item.avg_rating}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-presentation-line text-lg text-sky-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-presentation-line text-base text-sky-500 sm:text-lg"></i>
                           <span>教学 {item.rating_quality ?? "-"}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-file-check-alt text-lg text-emerald-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-file-check-alt text-base text-emerald-500 sm:text-lg"></i>
                           <span>给分 {item.rating_grading ?? "-"}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-user-check text-lg text-rose-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-user-check text-base text-rose-500 sm:text-lg"></i>
                           <span>考勤 {item.rating_attendance ?? "-"}</span>
                         </div>
                         {item.course_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-edit text-lg text-violet-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-edit text-base text-violet-500 sm:text-lg"></i>
                               <span>作业 {item.rating_homework ?? "-"}</span>
                             </div>
                         ) : null}
                         {item.course_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-book-reader text-lg text-cyan-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-book-reader text-base text-cyan-500 sm:text-lg"></i>
                               <span>收获 {item.rating_gain ?? "-"}</span>
                             </div>
                         ) : null}
                         {item.course_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-chart-down text-lg text-orange-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-chart-down text-base text-orange-500 sm:text-lg"></i>
                               <span>考试 {item.rating_exam_difficulty ?? "-"}</span>
                             </div>
                         ) : null}
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-thumbs-up text-base text-rose-500 sm:text-lg"></i>
                           <span>点赞 {formatNumber(item.likes)}</span>
                         </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-gray-500">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2 text-xs text-gray-500 sm:mt-4 sm:gap-3 sm:text-sm">
                         <span>点击查看教师详情</span>
                         <div
                             onClick={(event) => {
@@ -279,22 +283,26 @@ export default function MeEvaluations({
                 const courseName = item.course_name || `课程 #${item.course_id}`;
                 const cardContent = (
                     <GlassCard
-                        className="p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
-                      <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        className="rounded-xl p-3 sm:rounded-2xl sm:p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
+                      <div className="mb-2.5 flex flex-col gap-2.5 sm:mb-3 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <div className="flex w-full items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <h4 className="font-semibold text-gray-900">
+                              <h4 className="text-[15px] font-semibold leading-6 text-gray-900 sm:text-base">
                                 {courseName}
                               </h4>
                             </div>
-                            <EntityTypeBadge type="course" label="课程评价" />
+                            <EntityTypeBadge
+                              type="course"
+                              label="课程评价"
+                              className="shrink-0 scale-90 origin-top-right sm:scale-100"
+                            />
                           </div>
-                          <p className="mt-3 text-sm text-gray-500">
+                          <p className="mt-2 text-xs text-gray-500 sm:mt-3 sm:text-sm">
                             发布于 {formatDateTime(item.created_at)}
                           </p>
                           {linkedTeacherName ? (
-                              <div className="mt-2 text-sm text-gray-600">
+                              <div className="mt-1.5 text-xs text-gray-600 sm:mt-2 sm:text-sm">
                                 关联教师：
                                 <span
                                     onClick={(event) => {
@@ -312,50 +320,50 @@ export default function MeEvaluations({
                           ) : null}
                         </div>
                       </div>
-                      <div className="mb-3 rounded-2xl bg-slate-100/90 px-4 py-3 text-sm leading-6 text-gray-700">
+                      <div className="mb-2.5 rounded-xl bg-slate-100/90 px-3 py-2.5 text-xs leading-5 text-gray-700 sm:mb-3 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
                         {item.comment || "未填写文字评价"}
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-medium text-slate-600">
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-star text-lg text-amber-500"></i>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 sm:gap-x-5 sm:gap-y-2 sm:text-sm">
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-star text-base text-amber-500 sm:text-lg"></i>
                           <span>综合 {item.avg_rating}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-edit text-lg text-violet-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-edit text-base text-violet-500 sm:text-lg"></i>
                           <span>作业 {item.rating_homework ?? "-"}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-book-reader text-lg text-cyan-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-book-reader text-base text-cyan-500 sm:text-lg"></i>
                           <span>收获 {item.rating_gain ?? "-"}</span>
                         </div>
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-chart-down text-lg text-orange-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-chart-down text-base text-orange-500 sm:text-lg"></i>
                           <span>考试 {item.rating_exam_difficulty ?? "-"}</span>
                         </div>
                         {item.teacher_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-presentation-line text-lg text-sky-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-presentation-line text-base text-sky-500 sm:text-lg"></i>
                               <span>教学 {item.rating_quality ?? "-"}</span>
                             </div>
                         ) : null}
                         {item.teacher_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-file-check-alt text-lg text-emerald-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-file-check-alt text-base text-emerald-500 sm:text-lg"></i>
                               <span>给分 {item.rating_grading ?? "-"}</span>
                             </div>
                         ) : null}
                         {item.teacher_id ? (
-                            <div className="flex items-center gap-1.5 transition-colors">
-                              <i className="uil uil-user-check text-lg text-rose-500"></i>
+                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                              <i className="uil uil-user-check text-base text-rose-500 sm:text-lg"></i>
                               <span>考勤 {item.rating_attendance ?? "-"}</span>
                             </div>
                         ) : null}
-                        <div className="flex items-center gap-1.5 transition-colors">
-                          <i className="uil uil-thumbs-up text-lg text-rose-500"></i>
+                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
+                          <i className="uil uil-thumbs-up text-base text-rose-500 sm:text-lg"></i>
                           <span>点赞 {formatNumber(item.likes)}</span>
                         </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-between gap-3 text-sm text-gray-500">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2 text-xs text-gray-500 sm:mt-4 sm:gap-3 sm:text-sm">
                         <span>点击查看课程详情</span>
                         <div
                             onClick={(event) => {
@@ -542,14 +550,14 @@ function SectionEmptyState({
   description: string;
 }) {
   return (
-      <GlassCard className="border-dashed p-12 text-center">
+      <GlassCard className="rounded-xl border-dashed p-6 text-center sm:rounded-2xl sm:p-12">
         <img
             src="/undraw_mcp-server_7kvc.svg"
             alt="空状态插画"
-            className="mx-auto mb-4 h-24 w-auto opacity-90"
+            className="mx-auto mb-3 h-20 w-auto opacity-90 sm:mb-4 sm:h-24"
         />
-        <h3 className="mb-2 text-xl font-medium text-gray-800">{title}</h3>
-        <p className="mx-auto max-w-md text-gray-500">{description}</p>
+        <h3 className="mb-1.5 text-lg font-medium text-gray-800 sm:mb-2 sm:text-xl">{title}</h3>
+        <p className="mx-auto max-w-md text-sm text-gray-500 sm:text-base">{description}</p>
       </GlassCard>
   );
 }

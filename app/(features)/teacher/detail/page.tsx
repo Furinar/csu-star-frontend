@@ -224,6 +224,7 @@ export default function TeacherDetailPage() {
                   setEvaluations((prev) => [result, ...prev]);
                   setEvaluationTotal((prev) => prev + 1);
                   setComposerVersion((prev) => prev + 1);
+                  setIsComposerOpen(false);
                   feedback.success({
                     title: "评价已发布",
                     description: "发表评价获得 1 积分。",

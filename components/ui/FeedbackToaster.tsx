@@ -39,7 +39,7 @@ export default function FeedbackToaster() {
   const toasts = useFeedbackStore((state) => state.toasts);
 
   return (
-    <div className="pointer-events-none fixed inset-y-0 right-0 z-[1100] mt-17 flex w-[50vw] max-w-[50vw] flex-col items-end justify-start gap-2 pr-1 pt-3 sm:w-80 sm:max-w-none sm:gap-3 sm:pr-0 sm:pt-4 md:w-96">
+    <div className="pointer-events-none fixed inset-y-0 right-0 z-[1100] mt-17 flex w-[60vw] max-w-[60vw] flex-col items-end justify-start gap-2 pr-1 pt-3 sm:w-80 sm:max-w-none sm:gap-3 sm:pr-0 sm:pt-4 md:w-96">
       <AnimatePresence initial={false}>
         {toasts.map((toast) => (
           <ToastCard key={toast.id} toast={toast} />
@@ -116,7 +116,10 @@ function ToastCard({ toast }: { toast: FeedbackToast }) {
             <button
               type="button"
               className="-m-1 shrink-0 rounded-sm p-0.5 opacity-50 transition-opacity hover:opacity-100 sm:p-1"
-              onClick={() => feedback.dismiss(toast.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                feedback.dismiss(toast.id);
+              }}
             >
               <CloseIcon />
             </button>
