@@ -20,7 +20,7 @@ import Link from "next/link";
 import {useDebounce} from "@/hooks/useDebounce";
 import {AdvancedInput, AdvancedSelect, AdvancedTextarea,} from "./AdvancedFormControls";
 import type {EntityId} from "@/types/entity";
-import { processDataTransferItems } from "./folderZipper";
+import {processDataTransferItems} from "./folderZipper";
 
 const MAX_UPLOAD_FILENAME_LENGTH = 255;
 
@@ -122,6 +122,7 @@ export default function ResourceUploader({
   const [errorMsg, setErrorMsg] = useState("");
   const [editingFileId, setEditingFileId] = useState<string | null>(null);
   const [editingBaseName, setEditingBaseName] = useState("");
+  const hasFiles = files.length > 0;
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -449,8 +450,8 @@ export default function ResourceUploader({
       <div
           className={
             isModal
-                ? "mx-auto w-full"
-                : "mx-auto mt-6 max-w-4xl rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-8"
+                ? "mx-auto w-full overflow-x-hidden overflow-y-hidden"
+                : "mx-auto mt-6 max-w-4xl overflow-x-hidden overflow-y-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:p-8 over"
           }
       >
         <div className="mb-6 flex items-center justify-between">
@@ -476,7 +477,6 @@ export default function ResourceUploader({
                       setFiles([]);
                       setTitle("");
                       setDescription("");
-                      setSelectedCourse(null);
                       setCourseQuery("");
                       setTotalProgress(0);
                     }}
@@ -599,189 +599,196 @@ export default function ResourceUploader({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-black mb-2">
-                  上传文件 <span className="text-red-500">*</span>
-                </label>
-                <div
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
-                    onClick={() => !isUploading && fileInputRef.current?.click()}
-                    className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors sm:p-8
+              <div className={hasFiles ? "grid gap-4 md:grid-cols-10 md:items-stretch" : ""}>
+                <div className={hasFiles ? "md:col-span-4 md:flex" : ""}>
+                  <div className={`w-full ${hasFiles ? "md:flex md:h-[18rem] md:flex-col" : ""}`}>
+                    <label className="mb-2 block text-sm font-medium text-black">
+                      上传文件 <span className="text-red-500">*</span>
+                    </label>
+                    <div
+                        onDragEnter={handleDrag}
+                        onDragLeave={handleDrag}
+                        onDragOver={handleDrag}
+                        onDrop={handleDrop}
+                        onClick={() => !isUploading && fileInputRef.current?.click()}
+                        className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors sm:p-8 ${
+                            hasFiles ? "md:flex md:min-h-0 md:flex-1 md:flex-col md:items-center md:justify-center" : ""
+                        }
                 ${dragActive ? "border-emerald-400 bg-emerald-50/80" : "border-gray-300 hover:border-emerald-400 hover:bg-emerald-50/70"}
                 ${isUploading ? "opacity-50 cursor-not-allowed pointer-events-none" : ""}
               `}
-                >
-                  <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={handleChange}
-                  />
-                  <div className="mb-2 text-4xl text-emerald-400">
-                    <i className="uil uil-cloud-upload"/>
-                  </div>
-                  <p className="font-medium text-black">
-                    点击或将文件拖拽到这里上传
-                  </p>
-                  <p className="mt-1 text-sm text-second">
-                    支持多文件上传，任何文件格式均可
-                  </p>
-                  <p className="pt-5 text-sm text-second">
-                    文件总大小需小于300MB
-                  </p>
-                </div>
-              </div>
-
-              {files.length > 0 && (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-black">
-                      待上传文件 ({files.length})
-                    </h4>
-                    <div className="max-h-60 space-y-2 overflow-y-auto pr-1 sm:pr-2">
-                      {files.map((f) => (
-                          <div
-                              key={f.local_id}
-                              className="relative overflow-hidden rounded-xl border border-ice-100 bg-white/60 p-3"
-                          >
-                            {/* background progress */}
-                            {f.status === "uploading" && (
-                                <div
-                                    className="absolute left-0 top-0 bottom-0 bg-emerald-100/60 transition-all duration-300 pointer-events-none"
-                                    style={{width: `${f.progress}%`}}
-                                />
-                            )}
-                            {f.status === "success" && (
-                                <div
-                                    className="absolute left-0 top-0 bottom-0 bg-green-100/40 w-full pointer-events-none"/>
-                            )}
-
-                            <div
-                                className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                              <div
-                                  className="flex min-w-0 items-start gap-3 sm:max-w-[calc(100%-8rem)] sm:items-center">
-                                <i className="uil uil-file-alt mt-0.5 text-xl text-emerald-400 sm:mt-0"/>
-                                {editingFileId === f.local_id ? (
-                                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                                      <input
-                                          ref={renameInputRef}
-                                          type="text"
-                                          value={editingBaseName}
-                                          onChange={(e) => setEditingBaseName(e.target.value)}
-                                          onClick={(e) => e.stopPropagation()}
-                                          onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                              e.preventDefault();
-                                              saveEditedFileName(
-                                                  f.local_id,
-                                                  splitEditableFilename(f.filename).extension,
-                                              );
-                                            }
-                                            if (e.key === "Escape") {
-                                              e.preventDefault();
-                                              cancelEditingFileName();
-                                            }
-                                          }}
-                                          className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm text-black outline-none transition focus:border-emerald-400"
-                                          maxLength={MAX_UPLOAD_FILENAME_LENGTH}
-                                      />
-                                      {splitEditableFilename(f.filename).extension ? (
-                                          <span
-                                              className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
-                                {splitEditableFilename(f.filename).extension}
-                              </span>
-                                      ) : null}
-                                    </div>
-                                ) : (
-                                    <div className="flex-1 truncate text-sm text-black" title={f.filename}>
-                                      {f.filename}
-                                    </div>
-                                )}
-                                <div className="shrink-0 text-xs text-second sm:w-16 sm:text-right">
-                                  {(f.file.size / 1024 / 1024).toFixed(2)} MB
-                                </div>
-                              </div>
-
-                              <div
-                                  className="relative z-10 flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto">
-                                {f.status === "uploading" && (
-                                    <span className="w-10 text-right text-xs font-medium text-emerald-700">
-                            {f.progress}%
-                          </span>
-                                )}
-                                {f.status === "success" && (
-                                    <i className="uil uil-check-circle text-green-500 text-lg"/>
-                                )}
-                                {f.status === "failed" && (
-                                    <i
-                                        className="uil uil-times-circle text-red-500 text-lg"
-                                        title={f.error || ""}
-                                    />
-                                )}
-                                {f.status === "queued" && !isUploading && (
-                                    <>
-                                      {editingFileId === f.local_id ? (
-                                          <>
-                                            <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  saveEditedFileName(
-                                                      f.local_id,
-                                                      splitEditableFilename(f.filename).extension,
-                                                  );
-                                                }}
-                                                className="text-emerald-500 transition-colors hover:text-emerald-600"
-                                                title="保存文件名"
-                                            >
-                                              <i className="uil uil-check text-lg"/>
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  cancelEditingFileName();
-                                                }}
-                                                className="text-slate-400 transition-colors hover:text-slate-600"
-                                                title="取消编辑"
-                                            >
-                                              <i className="uil uil-times text-lg"/>
-                                            </button>
-                                          </>
-                                      ) : (
-                                          <>
-                                            <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  startEditingFileName(f.local_id, f.filename);
-                                                }}
-                                                className="text-ice-400 transition-colors hover:text-emerald-500"
-                                                title="编辑文件名"
-                                            >
-                                              <i className="uil uil-edit text-lg"/>
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  removeFile(f.local_id);
-                                                }}
-                                                className="text-ice-400 transition-colors hover:text-red-500"
-                                                title="移除文件"
-                                            >
-                                              <i className="uil uil-trash-alt text-lg"/>
-                                            </button>
-                                          </>
-                                      )}
-                                    </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                      ))}
+                    >
+                      <input
+                          ref={fileInputRef}
+                          type="file"
+                          multiple
+                          className="hidden"
+                          onChange={handleChange}
+                      />
+                      <div className="mb-2 text-4xl text-emerald-400">
+                        <i className="uil uil-cloud-upload"/>
+                      </div>
+                      <p className="font-medium text-black">
+                        点击或将文件拖拽到这里上传
+                      </p>
+                      <p className="mt-1 text-sm text-second">
+                        支持多文件上传，任何文件格式均可
+                      </p>
+                      <p className="pt-5 text-sm text-second">
+                        文件总大小需小于300MB
+                      </p>
                     </div>
                   </div>
-              )}
+                </div>
+
+                {hasFiles && (
+                    <div className="md:col-span-6 md:flex md:h-[18rem] md:flex-col">
+                      <h4 className="mb-3 text-sm font-medium text-black">
+                        待上传文件 ({files.length})
+                      </h4>
+                      <div
+                          className="max-h-60 space-y-2 overflow-y-auto pr-1 sm:pr-2 md:max-h-none md:min-h-0 md:flex-1">
+                        {files.map((f) => (
+                            <div
+                                key={f.local_id}
+                                className="relative overflow-hidden rounded-xl border border-ice-100 bg-white/60 p-3"
+                            >
+                              {/* background progress */}
+                              {f.status === "uploading" && (
+                                  <div
+                                      className="absolute left-0 top-0 bottom-0 bg-emerald-100/60 transition-all duration-300 pointer-events-none"
+                                      style={{width: `${f.progress}%`}}
+                                  />
+                              )}
+                              {f.status === "success" && (
+                                  <div
+                                      className="absolute left-0 top-0 bottom-0 bg-green-100/40 w-full pointer-events-none"/>
+                              )}
+
+                              <div
+                                  className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div
+                                    className="flex min-w-0 items-start gap-3 sm:max-w-[calc(100%-8rem)] sm:items-center">
+                                  <i className="uil uil-file-alt mt-0.5 text-xl text-emerald-400 sm:mt-0"/>
+                                  {editingFileId === f.local_id ? (
+                                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                                        <input
+                                            ref={renameInputRef}
+                                            type="text"
+                                            value={editingBaseName}
+                                            onChange={(e) => setEditingBaseName(e.target.value)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onKeyDown={(e) => {
+                                              if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                saveEditedFileName(
+                                                    f.local_id,
+                                                    splitEditableFilename(f.filename).extension,
+                                                );
+                                              }
+                                              if (e.key === "Escape") {
+                                                e.preventDefault();
+                                                cancelEditingFileName();
+                                              }
+                                            }}
+                                            className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm text-black outline-none transition focus:border-emerald-400"
+                                            maxLength={MAX_UPLOAD_FILENAME_LENGTH}
+                                        />
+                                        {splitEditableFilename(f.filename).extension ? (
+                                            <span
+                                                className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
+                                {splitEditableFilename(f.filename).extension}
+                              </span>
+                                        ) : null}
+                                      </div>
+                                  ) : (
+                                      <div className="flex-1 truncate text-sm text-black" title={f.filename}>
+                                        {f.filename}
+                                      </div>
+                                  )}
+                                  <div className="shrink-0 text-xs text-second sm:w-16 sm:text-right">
+                                    {(f.file.size / 1024 / 1024).toFixed(2)} MB
+                                  </div>
+                                </div>
+
+                                <div
+                                    className="relative z-10 flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto">
+                                  {f.status === "uploading" && (
+                                      <span className="w-10 text-right text-xs font-medium text-emerald-700">
+                            {f.progress}%
+                          </span>
+                                  )}
+                                  {f.status === "success" && (
+                                      <i className="uil uil-check-circle text-green-500 text-lg"/>
+                                  )}
+                                  {f.status === "failed" && (
+                                      <i
+                                          className="uil uil-times-circle text-red-500 text-lg"
+                                          title={f.error || ""}
+                                      />
+                                  )}
+                                  {f.status === "queued" && !isUploading && (
+                                      <>
+                                        {editingFileId === f.local_id ? (
+                                            <>
+                                              <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    saveEditedFileName(
+                                                        f.local_id,
+                                                        splitEditableFilename(f.filename).extension,
+                                                    );
+                                                  }}
+                                                  className="text-emerald-500 transition-colors hover:text-emerald-600"
+                                                  title="保存文件名"
+                                              >
+                                                <i className="uil uil-check text-lg"/>
+                                              </button>
+                                              <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    cancelEditingFileName();
+                                                  }}
+                                                  className="text-slate-400 transition-colors hover:text-slate-600"
+                                                  title="取消编辑"
+                                              >
+                                                <i className="uil uil-times text-lg"/>
+                                              </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                              <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    startEditingFileName(f.local_id, f.filename);
+                                                  }}
+                                                  className="text-ice-400 transition-colors hover:text-emerald-500"
+                                                  title="编辑文件名"
+                                              >
+                                                <i className="uil uil-edit text-lg"/>
+                                              </button>
+                                              <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    removeFile(f.local_id);
+                                                  }}
+                                                  className="text-ice-400 transition-colors hover:text-red-500"
+                                                  title="移除文件"
+                                              >
+                                                <i className="uil uil-trash-alt text-lg"/>
+                                              </button>
+                                            </>
+                                        )}
+                                      </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                        ))}
+                      </div>
+                    </div>
+                )}
+              </div>
 
               {isUploading && (
                   <div className="space-y-2 mt-4">
@@ -800,7 +807,7 @@ export default function ResourceUploader({
 
               <div className="flex flex-col sm:flex-row items-center justify-center pt-4 sm:justify-end sm:gap-4 gap-3">
                 {files.length > 0 && (
-                  <span className="text-sm font-medium text-slate-400">
+                    <span className="text-sm font-medium text-slate-400">
                     {(files.reduce((a, b) => a + b.file.size, 0) / 1024 / 1024).toFixed(2)} MB / 300 MB
                   </span>
                 )}

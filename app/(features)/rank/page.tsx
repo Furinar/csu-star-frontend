@@ -87,7 +87,7 @@ export default function Rank() {
   const [courseItems, setCourseItems] = useState<CourseRankingItem[]>([]);
   const [teacherItems, setTeacherItems] = useState<TeacherRankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
-  const [shouldAutoFetch, setShouldAutoFetch] = useState(false);
+  const [shouldAutoFetch, setShouldAutoFetch] = useState(true);
   const requestIdRef = useRef(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -105,7 +105,7 @@ export default function Rank() {
 
     const nextCategory = rankConfig.find((item) => item.category === categoryParam)?.category;
     if (!nextCategory) {
-      setShouldAutoFetch(false);
+      setShouldAutoFetch(true);
       return;
     }
 
