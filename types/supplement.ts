@@ -29,7 +29,7 @@ export interface SupplementRequestItem {
   department_id?: number | null;
   department_name?: string | null;
   course_name?: string | null;
-  course_type?: SupplementCourseType | null;
+  course_type?: string | null;
   remark?: string | null;
   reviewed_by?: string | null;
   reviewed_at?: string | null;
