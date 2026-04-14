@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { searchCourseSuggestions, searchTeacherSuggestions } from "@/api/resource";
 import { createSupplementRequest } from "@/api/supplement";
 import {
   AdvancedInput,
@@ -10,11 +9,9 @@ import {
 } from "@/app/(features)/resource/components/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { DEPARTMENTS } from "@/data/departments";
-import { useDebounce } from "@/hooks/useDebounce";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
-import type { CourseSuggestionItem, TeacherSuggestionItem } from "@/types/resource";
 import type {
   CreateSupplementRequestInput,
   SupplementRequestType,
@@ -26,9 +23,8 @@ type FormState = {
   contact: string;
   teacher_name: string;
   department_id: string;
-  related_course_name: string;
   course_name: string;
-  course_type: "" | "公选课" | "非公选课";
+  course_type: "" | "public" | "non_public";
   remark: string;
 };
 
@@ -40,7 +36,6 @@ function createInitialForm(
     contact: "",
     teacher_name: "",
     department_id: "",
-    related_course_name: "",
     course_name: "",
     course_type: "",
     remark: "",
@@ -64,29 +59,11 @@ export default function SupplementRequestModal({
     createInitialForm(initialRequestType),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [relatedCourseQuery, setRelatedCourseQuery] = useState("");
-  const [relatedCourseOptions, setRelatedCourseOptions] = useState<CourseSuggestionItem[]>([]);
-  const [selectedRelatedCourses, setSelectedRelatedCourses] = useState<CourseSuggestionItem[]>([]);
-  const [isSearchingRelatedCourse, setIsSearchingRelatedCourse] = useState(false);
-  const [relatedTeacherQuery, setRelatedTeacherQuery] = useState("");
-  const [relatedTeacherOptions, setRelatedTeacherOptions] = useState<TeacherSuggestionItem[]>([]);
-  const [selectedRelatedTeachers, setSelectedRelatedTeachers] = useState<TeacherSuggestionItem[]>([]);
-  const [isSearchingRelatedTeachers, setIsSearchingRelatedTeachers] = useState(false);
-  const debouncedRelatedCourseQuery = useDebounce(relatedCourseQuery, 300);
-  const debouncedRelatedTeacherQuery = useDebounce(relatedTeacherQuery, 300);
   const currentType = form.request_type;
 
   useEffect(() => {
     if (!isOpen) {
       setForm(createInitialForm(initialRequestType));
-      setRelatedCourseQuery("");
-      setRelatedCourseOptions([]);
-      setSelectedRelatedCourses([]);
-      setIsSearchingRelatedCourse(false);
-      setRelatedTeacherQuery("");
-      setRelatedTeacherOptions([]);
-      setSelectedRelatedTeachers([]);
-      setIsSearchingRelatedTeachers(false);
       setIsSubmitting(false);
       return;
     }
@@ -100,80 +77,6 @@ export default function SupplementRequestModal({
           },
     );
   }, [initialRequestType, isOpen]);
-
-  useEffect(() => {
-    if (form.request_type !== "teacher") {
-      setRelatedCourseOptions([]);
-      setIsSearchingRelatedCourse(false);
-      return;
-    }
-
-    if (!debouncedRelatedCourseQuery.trim()) {
-      setRelatedCourseOptions([]);
-      setIsSearchingRelatedCourse(false);
-      return;
-    }
-
-    let isActive = true;
-    setIsSearchingRelatedCourse(true);
-
-    searchCourseSuggestions(debouncedRelatedCourseQuery)
-      .then((items) => {
-        if (!isActive) return;
-        const selectedIds = new Set(selectedRelatedCourses.map((course) => course.id));
-        setRelatedCourseOptions(items.filter((course) => !selectedIds.has(course.id)));
-      })
-      .catch((error) => {
-        console.error(error);
-        if (!isActive) return;
-        setRelatedCourseOptions([]);
-      })
-      .finally(() => {
-        if (!isActive) return;
-        setIsSearchingRelatedCourse(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [form.request_type, debouncedRelatedCourseQuery, selectedRelatedCourses]);
-
-  useEffect(() => {
-    if (form.request_type !== "course") {
-      setRelatedTeacherOptions([]);
-      setIsSearchingRelatedTeachers(false);
-      return;
-    }
-
-    if (!debouncedRelatedTeacherQuery.trim()) {
-      setRelatedTeacherOptions([]);
-      setIsSearchingRelatedTeachers(false);
-      return;
-    }
-
-    let isActive = true;
-    setIsSearchingRelatedTeachers(true);
-
-    searchTeacherSuggestions(debouncedRelatedTeacherQuery)
-      .then((items) => {
-        if (!isActive) return;
-        const selectedIds = new Set(selectedRelatedTeachers.map((teacher) => teacher.id));
-        setRelatedTeacherOptions(items.filter((teacher) => !selectedIds.has(teacher.id)));
-      })
-      .catch((error) => {
-        console.error(error);
-        if (!isActive) return;
-        setRelatedTeacherOptions([]);
-      })
-      .finally(() => {
-        if (!isActive) return;
-        setIsSearchingRelatedTeachers(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, [form.request_type, debouncedRelatedTeacherQuery, selectedRelatedTeachers]);
 
   const accent = currentType === "teacher" ? "teacher" : "course";
   const modalTitle =
@@ -214,12 +117,6 @@ export default function SupplementRequestModal({
         contact,
         teacher_name: teacherName,
         department_id: departmentId,
-        related_course_ids: selectedRelatedCourses.map((course) =>
-          String(course.id),
-        ),
-        related_course_names: selectedRelatedCourses.map((course) =>
-          course.name.trim(),
-        ),
         remark: form.remark.trim() || null,
       };
     }
@@ -238,12 +135,6 @@ export default function SupplementRequestModal({
       contact,
       course_name: courseName,
       course_type: form.course_type,
-      related_teacher_ids: selectedRelatedTeachers.map((teacher) =>
-        String(teacher.id),
-      ),
-      related_teacher_names: selectedRelatedTeachers.map((teacher) =>
-        teacher.name.trim(),
-      ),
       remark: form.remark.trim() || null,
     };
   };
@@ -370,81 +261,6 @@ export default function SupplementRequestModal({
                   </option>
                 ))}
               </AdvancedSelect>
-
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <AdvancedInput
-                    label="关联课程（可选）"
-                    value={relatedCourseQuery}
-                    maxLength={50}
-                    onChange={(event) => setRelatedCourseQuery(event.target.value)}
-                    placeholder="搜索并选择已存在课程"
-                  />
-                  {isSearchingRelatedCourse ? (
-                    <div className="mt-2 text-sm text-slate-400">搜索中...</div>
-                  ) : null}
-                  {!isSearchingRelatedCourse && relatedCourseOptions.length > 0 ? (
-                    <div className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                      {relatedCourseOptions.map((course) => (
-                        <button
-                          key={course.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedRelatedCourses((current) => [...current, course]);
-                            setRelatedCourseOptions([]);
-                            setRelatedCourseQuery("");
-                          }}
-                          className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
-                        >
-                          <div className="min-w-0">
-                            <div className="font-medium text-slate-800">
-                              {course.name}
-                            </div>
-                            {course.course_type ? (
-                              <div className="mt-1 text-xs text-slate-400">
-                                {course.course_type}
-                              </div>
-                            ) : null}
-                          </div>
-                          <span className="mt-0.5 text-xs font-medium text-rose-500/80">
-                            添加
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                  {!isSearchingRelatedCourse &&
-                  relatedCourseQuery.trim() &&
-                  relatedCourseOptions.length === 0 ? (
-                    <div className="mt-2 text-sm text-slate-400">未找到相关课程</div>
-                  ) : null}
-                </div>
-              </div>
-
-              {selectedRelatedCourses.length > 0 ? (
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-black">
-                    已选关联课程
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRelatedCourses.map((course) => (
-                      <button
-                        key={course.id}
-                        type="button"
-                        onClick={() =>
-                          setSelectedRelatedCourses((current) =>
-                            current.filter((item) => item.id !== course.id),
-                          )
-                        }
-                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-rose-50 px-3 py-1.5 text-sm text-rose-900 transition hover:border-rose-300 hover:bg-rose-100"
-                      >
-                        <span>{course.name}</span>
-                        <span className="text-rose-500">移除</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
             </>
           ) : (
             <>
@@ -476,82 +292,9 @@ export default function SupplementRequestModal({
                 }
               >
                 <option value="">请选择课程类型</option>
-                <option value="公选课">公选课</option>
-                <option value="非公选课">非公选课</option>
+                <option value="public">公选课</option>
+                <option value="non_public">非公选课</option>
               </AdvancedSelect>
-
-              <div className="relative md:col-span-2">
-                <AdvancedInput
-                  label="关联教师（可选）"
-                  value={relatedTeacherQuery}
-                  maxLength={50}
-                  onChange={(event) => setRelatedTeacherQuery(event.target.value)}
-                  placeholder="搜索并选择已有教师"
-                />
-                {isSearchingRelatedTeachers ? (
-                  <div className="mt-2 text-sm text-slate-400">搜索中...</div>
-                ) : null}
-                {!isSearchingRelatedTeachers && relatedTeacherOptions.length > 0 ? (
-                  <div className="absolute z-10 mt-2 max-h-64 w-full overflow-y-auto rounded-[20px] border border-slate-200 bg-white shadow-[0_20px_50px_rgba(15,23,42,0.12)]">
-                    {relatedTeacherOptions.map((teacher) => (
-                      <button
-                        key={teacher.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedRelatedTeachers((current) => [...current, teacher]);
-                          setRelatedTeacherOptions([]);
-                          setRelatedTeacherQuery("");
-                        }}
-                        className="flex w-full items-start justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left transition last:border-none hover:bg-slate-50 sm:px-5"
-                      >
-                        <div className="min-w-0">
-                          <div className="font-medium text-slate-800">
-                            {teacher.name}
-                          </div>
-                          {teacher.department ? (
-                            <div className="mt-1 text-xs text-slate-400">
-                              {teacher.department}
-                            </div>
-                          ) : null}
-                        </div>
-                        <span className="mt-0.5 text-xs font-medium text-sky-500/80">
-                          添加
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-                {!isSearchingRelatedTeachers &&
-                relatedTeacherQuery.trim() &&
-                relatedTeacherOptions.length === 0 ? (
-                  <div className="mt-2 text-sm text-slate-400">未找到相关教师</div>
-                ) : null}
-              </div>
-
-              {selectedRelatedTeachers.length > 0 ? (
-                <div className="md:col-span-2">
-                  <label className="mb-2 block text-sm font-medium text-black">
-                    已选关联教师
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRelatedTeachers.map((teacher) => (
-                      <button
-                        key={teacher.id}
-                        type="button"
-                        onClick={() =>
-                          setSelectedRelatedTeachers((current) =>
-                            current.filter((item) => item.id !== teacher.id),
-                          )
-                        }
-                        className="inline-flex items-center gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-sm text-sky-900 transition hover:border-sky-300 hover:bg-sky-100"
-                      >
-                        <span>{teacher.name}</span>
-                        <span className="text-sky-500">移除</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
             </>
           )}
 
