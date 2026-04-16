@@ -66,6 +66,9 @@ export default function Resource() {
               router.push(searchHref);
             }}
           />
+          <p className="mt-3 text-sm text-slate-500">
+            本站资源仅供学习交流，禁止二次倒卖等商业行为。如有侵权内容，请及时举报，我们将尽快下架处理。
+          </p>
         </div>
 
         <SearchLandingSection
