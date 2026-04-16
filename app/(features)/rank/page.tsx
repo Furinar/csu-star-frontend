@@ -6,15 +6,12 @@ import RankItemCard from "@/components/ui/RankItemCard";
 import {
   getCourseRankings,
   getResourceRankings,
-  getTeacherRankings,
 } from "@/api/ranking";
 import type {
   CourseRankType,
   CourseRankingItem,
   ResourceRankType,
   ResourceRankingItem,
-  TeacherRankType,
-  TeacherRankingItem,
 } from "@/types/ranking";
 
 const rankConfig = [
@@ -41,19 +38,6 @@ const rankConfig = [
       { type: "avg_gain", label: "收获", icon: "brain" },
       { type: "avg_exam_diff", label: "考试", icon: "brackets-curly" },
       { type: "resource_count", label: "资源数", icon: "file-alt" },
-      { type: "favorite_count", label: "收藏数", icon: "bookmark" },
-    ],
-  },
-  {
-    category: "teacher",
-    label: "教师",
-    icon: "users-alt",
-    filters: [
-      { type: "avg_score", label: "综合", icon: "award" },
-      { type: "avg_quality", label: "教学", icon: "book-open" },
-      { type: "avg_grading", label: "给分", icon: "chart-bar" },
-      { type: "avg_attendance", label: "考勤", icon: "bell-school" },
-      { type: "eval_count", label: "评价数", icon: "comment-alt-lines" },
       { type: "favorite_count", label: "收藏数", icon: "bookmark" },
     ],
   },
@@ -85,7 +69,6 @@ export default function Rank() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [courseItems, setCourseItems] = useState<CourseRankingItem[]>([]);
-  const [teacherItems, setTeacherItems] = useState<TeacherRankingItem[]>([]);
   const [resourceItems, setResourceItems] = useState<ResourceRankingItem[]>([]);
   const [shouldAutoFetch, setShouldAutoFetch] = useState(true);
   const requestIdRef = useRef(0);
@@ -124,9 +107,8 @@ export default function Rank() {
 
   const currentItems = useMemo(() => {
     if (rankCategory === "resource") return resourceItems;
-    if (rankCategory === "course") return courseItems;
-    return teacherItems;
-  }, [courseItems, rankCategory, resourceItems, teacherItems]);
+    return courseItems;
+  }, [courseItems, rankCategory, resourceItems]);
 
   const hasMore = currentItems.length < total;
 
@@ -148,7 +130,6 @@ export default function Rank() {
       setTotal(0);
       setPage(1);
       setCourseItems([]);
-      setTeacherItems([]);
       setResourceItems([]);
     } else {
       setIsLoadingMore(true);
@@ -194,23 +175,6 @@ export default function Rank() {
         setPage(nextPage);
         return;
       }
-
-      const result = await getTeacherRankings({
-        rank_type: filterType as TeacherRankType,
-        page: nextPage,
-        size: PAGE_SIZE,
-        is_increased: sortType === "asc",
-      });
-
-      if (requestIdRef.current !== currentRequestId) return;
-
-      setTeacherItems((previous) =>
-        append
-          ? mergeRankingItems(previous, result.items, (item) => item.id)
-          : result.items,
-      );
-      setTotal(result.total);
-      setPage(nextPage);
     } catch (error) {
       if (requestIdRef.current !== currentRequestId) return;
       console.error(error);
@@ -233,7 +197,6 @@ export default function Rank() {
     setTotal(0);
     setPage(1);
     setCourseItems([]);
-    setTeacherItems([]);
     setResourceItems([]);
   }, [rankCategory, filterType, sortType]);
 
@@ -580,26 +543,6 @@ export default function Rank() {
                       ?.label || ""
                   }
                   filterValue={item[filterType as keyof CourseRankingItem] as string | number | null | undefined}
-                />
-              ))}
-            </div>
-          ) : null}
-
-          {!errorMessage &&
-          !loading &&
-          rankCategory === "teacher" &&
-          teacherItems.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4">
-              {teacherItems.map((item, index) => (
-                <RankItemCard
-                  key={`${item.id}-${index}`}
-                  type="teacher"
-                  item={{ ...item, rank: item.rank || index + 1 }}
-                  filterLabel={
-                    currentCategory.filters.find((f) => f.type === filterType)
-                      ?.label || ""
-                  }
-                  filterValue={item[filterType as keyof TeacherRankingItem] as string | number | null | undefined}
                 />
               ))}
             </div>
