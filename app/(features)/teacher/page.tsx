@@ -9,12 +9,10 @@ import TeacherSlider from "./components/TeacherSlider";
 import RankCard from "../../../components/ui/RankCard";
 import { useRouter } from "next/navigation";
 import { getTeacherRankings } from "@/api/ranking";
-import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import { useAuthStore } from "@/store/useAuthStore";
 import { requireAuthAction } from "@/lib/requireAuthAction";
-import TeacherGlobalEvaluationModal from "./components/TeacherGlobalEvaluationModal";
 
 type RankCardItem = {
   id: string;
@@ -40,7 +38,6 @@ export default function Teacher() {
   const [qualityRanks, setQualityRanks] = useState<RankCardItem[]>([]);
   const [gradingRanks, setGradingRanks] = useState<RankCardItem[]>([]);
   const [attendanceRanks, setAttendanceRanks] = useState<RankCardItem[]>([]);
-  const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
   useEffect(() => {
     let active = true;
@@ -96,20 +93,6 @@ export default function Teacher() {
     }
 
     setIsSupplementModalOpen(true);
-  };
-
-  const handleOpenComposer = () => {
-    if (
-      !requireAuthAction({
-        isSignedIn: Boolean(accessToken),
-        router,
-        description: "登录后才能发表教师评价。",
-      })
-    ) {
-      return;
-    }
-
-    setIsComposerOpen(true);
   };
 
   return (
@@ -177,21 +160,6 @@ export default function Teacher() {
           }
         />
       </div>
-
-      <div className="pointer-events-none fixed bottom-0 left-0 right-0 top-0 z-[100] overflow-hidden">
-        <div className="absolute bottom-8 right-8 pointer-events-auto">
-          <DetailFloatingActionButton
-            label="写评价"
-            tone="teacher"
-            onClick={handleOpenComposer}
-          />
-        </div>
-      </div>
-
-      <TeacherGlobalEvaluationModal
-        isOpen={isComposerOpen}
-        onClose={() => setIsComposerOpen(false)}
-      />
 
       <SupplementRequestModal
         isOpen={isSupplementModalOpen}

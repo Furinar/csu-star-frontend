@@ -137,6 +137,7 @@ type DetailBookHeroProps =
       data: TeacherDetail;
       onAddRelation?: () => void;
       isAddingRelation?: boolean;
+      showRating?: boolean;
     };
 
 type HeroScoreCardProps = {
@@ -404,6 +405,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
   }
 
   const teacher = props.data;
+  const showTeacherRating = props.showRating ?? true;
   const courses = teacher.courses || [];
   const avatarInitial = teacher.name.slice(0, 1) || "?";
   const departmentName =
@@ -499,30 +501,32 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
 
         <div className="course-relate flex-1 grid grid-cols-1 gap-3 pt-3 md:gap-6 md:pt-4">
           <div className="flex min-h-[176px] flex-col gap-3 md:contents md:min-h-0">
-            <div className={`right flex min-w-0 flex-1 flex-col rounded-xl p-3 md:hidden ${TEACHER_CARD_CLASS}`}>
-              <HeroScoreCard
-                avgScore={teacher.avg_score}
-                evalCount={teacher.eval_count}
-                compact
-                bars={[
-                  {
-                    label: "教学质量",
-                    score: teacher.avg_quality,
-                    gradient: teacherTheme.ratingGradients[0],
-                  },
-                  {
-                    label: "给分情况",
-                    score: teacher.avg_grading,
-                    gradient: teacherTheme.ratingGradients[1],
-                  },
-                  {
-                    label: "点名情况",
-                    score: teacher.avg_attendance,
-                    gradient: teacherTheme.ratingGradients[2],
-                  },
-                ]}
-              />
-            </div>
+            {showTeacherRating ? (
+              <div className={`right flex min-w-0 flex-1 flex-col rounded-xl p-3 md:hidden ${TEACHER_CARD_CLASS}`}>
+                <HeroScoreCard
+                  avgScore={teacher.avg_score}
+                  evalCount={teacher.eval_count}
+                  compact
+                  bars={[
+                    {
+                      label: "教学质量",
+                      score: teacher.avg_quality,
+                      gradient: teacherTheme.ratingGradients[0],
+                    },
+                    {
+                      label: "给分情况",
+                      score: teacher.avg_grading,
+                      gradient: teacherTheme.ratingGradients[1],
+                    },
+                    {
+                      label: "点名情况",
+                      score: teacher.avg_attendance,
+                      gradient: teacherTheme.ratingGradients[2],
+                    },
+                  ]}
+                />
+              </div>
+            ) : null}
 
             <div
               className={`teacher-card flex min-w-0 flex-1 flex-col rounded-xl p-3 transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5 ${TEACHER_CARD_CLASS}`}
@@ -574,29 +578,31 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
         </div>
       </div>
 
-      <div className={`right hidden h-80 rounded-[15px] p-4 md:block ${TEACHER_CARD_CLASS}`}>
-        <HeroScoreCard
-          avgScore={teacher.avg_score}
-          evalCount={teacher.eval_count}
-          bars={[
-            {
-              label: "教学质量",
-              score: teacher.avg_quality,
-              gradient: teacherTheme.ratingGradients[0],
-            },
-            {
-              label: "给分情况",
-              score: teacher.avg_grading,
-              gradient: teacherTheme.ratingGradients[1],
-            },
-            {
-              label: "点名情况",
-              score: teacher.avg_attendance,
-              gradient: teacherTheme.ratingGradients[2],
-            },
-          ]}
-        />
-      </div>
+      {showTeacherRating ? (
+        <div className={`right hidden h-80 rounded-[15px] p-4 md:block ${TEACHER_CARD_CLASS}`}>
+          <HeroScoreCard
+            avgScore={teacher.avg_score}
+            evalCount={teacher.eval_count}
+            bars={[
+              {
+                label: "教学质量",
+                score: teacher.avg_quality,
+                gradient: teacherTheme.ratingGradients[0],
+              },
+              {
+                label: "给分情况",
+                score: teacher.avg_grading,
+                gradient: teacherTheme.ratingGradients[1],
+              },
+              {
+                label: "点名情况",
+                score: teacher.avg_attendance,
+                gradient: teacherTheme.ratingGradients[2],
+              },
+            ]}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
