@@ -5,9 +5,7 @@ import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {
   deleteCourseEvaluation,
-  deleteTeacherEvaluation,
   updateCourseEvaluation,
-  updateTeacherEvaluation,
 } from "@/api/detail";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
@@ -16,46 +14,15 @@ import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
 import ItemActionMenu from "@/components/ui/ItemActionMenu";
 import { buildCoursePath, buildTeacherPath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
-import type { CourseEvaluationInput, TeacherEvaluationInput } from "@/types/detail";
+import type { CourseEvaluationInput } from "@/types/detail";
 import type {
   CourseEvaluation,
   PaginatedData,
-  TeacherEvaluation,
 } from "@/types/me";
 import {formatDateTime, formatNumber} from "./shared/helpers";
 
 interface MeEvaluationsProps {
-  teacherEvaluations: PaginatedData<TeacherEvaluation>;
   courseEvaluations: PaginatedData<CourseEvaluation>;
-}
-
-function mergeTeacherEvaluation(
-    current: TeacherEvaluation,
-    updated: Awaited<ReturnType<typeof updateTeacherEvaluation>>,
-): TeacherEvaluation {
-  if (!updated) return current;
-
-  return {
-    ...current,
-    id: updated.id,
-    teacher_id: updated.teacher_id,
-    teacher_name: current.teacher_name,
-    mode: updated.mode,
-    course_id: updated.course_id,
-    course_name: updated.course_name,
-    rating_quality: updated.rating_quality ?? undefined,
-    rating_grading: updated.rating_grading ?? undefined,
-    rating_attendance: updated.rating_attendance ?? undefined,
-    rating_homework: updated.rating_homework ?? undefined,
-    rating_gain: updated.rating_gain ?? undefined,
-    rating_exam_difficulty: updated.rating_exam_difficulty ?? undefined,
-    avg_rating: updated.avg_rating ?? current.avg_rating,
-    comment: updated.comment,
-    is_anonymous: updated.is_anonymous,
-    likes: updated.likes ?? current.likes,
-    is_liked: updated.is_liked ?? current.is_liked,
-    created_at: updated.created_at || current.created_at,
-  };
 }
 
 function mergeCourseEvaluation(
@@ -88,196 +55,23 @@ function mergeCourseEvaluation(
 }
 
 export default function MeEvaluations({
-  teacherEvaluations,
   courseEvaluations,
 }: MeEvaluationsProps) {
   const router = useRouter();
-  const [teacherItems, setTeacherItems] = useState(teacherEvaluations.items ?? []);
   const [courseItems, setCourseItems] = useState(courseEvaluations.items ?? []);
-  const [evaluationFilter, setEvaluationFilter] = useState<
-      "all" | "teacher" | "course"
-  >("all");
-  const [editingTeacherEvaluation, setEditingTeacherEvaluation] = useState<TeacherEvaluation | null>(null);
   const [editingCourseEvaluation, setEditingCourseEvaluation] = useState<CourseEvaluation | null>(null);
 
-  const teacherEvaluationItems = teacherItems;
-  const courseEvaluationItems = courseItems;
-
-  const filteredTeacherEvaluations =
-      evaluationFilter === "all" || evaluationFilter === "teacher"
-          ? teacherEvaluationItems
-          : [];
-  const filteredCourseEvaluations =
-      evaluationFilter === "all" || evaluationFilter === "course"
-          ? courseEvaluationItems
-          : [];
+  const filteredCourseEvaluations = courseItems;
 
   return (
       <div className="space-y-3 sm:space-y-4">
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-          {[
-            {key: "all" as const, label: "全部"},
-            {key: "teacher" as const, label: "教师评价"},
-            {key: "course" as const, label: "课程评价"},
-          ].map((item) => (
-              <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setEvaluationFilter(item.key)}
-                  className={`rounded-full px-2.5 py-1 text-xs transition sm:px-3 sm:py-1.5 sm:text-sm ${
-                      evaluationFilter === item.key
-                          ? "bg-first text-white"
-                          : "border border-gray-200/70 bg-white/50 text-gray-600 hover:bg-white/70"
-                  }`}
-              >
-                {item.label}
-              </button>
-          ))}
-        </div>
-
-        {filteredTeacherEvaluations.length === 0 &&
-        filteredCourseEvaluations.length === 0 ? (
+        {filteredCourseEvaluations.length === 0 ? (
             <SectionEmptyState
                 title="暂无评价记录"
-                description="你发布的教师评价和课程评价会汇总在这里。"
+                description="你发布的课程评价会汇总在这里。"
             />
         ) : (
             <div className="space-y-3 sm:space-y-4">
-              {filteredTeacherEvaluations.map((item) => {
-                const linkedCourseName = item.course_name || (item.course_id ? `课程 #${item.course_id}` : null);
-                const teacherName = item.teacher_name || `教师 #${item.teacher_id}`;
-                const cardContent = (
-                    <GlassCard
-                        className="rounded-xl p-3 sm:rounded-2xl sm:p-5 transition-all hover:bg-white/55 hover:shadow-[0_12px_36px_0_rgba(31,38,135,0.18)]">
-                      <div className="mb-2.5 flex flex-col gap-2.5 sm:mb-3 sm:gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="flex w-full items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h4 className="text-[15px] font-semibold leading-6 text-gray-900 sm:text-base">
-                                {teacherName}
-                              </h4>
-                            </div>
-                            <EntityTypeBadge
-                              type="teacher"
-                              label="教师评价"
-                              className="shrink-0 scale-90 origin-top-right sm:scale-100"
-                            />
-                          </div>
-                          <p className="mt-2 text-xs text-gray-500 sm:mt-3 sm:text-sm">
-                            发布于 {formatDateTime(item.created_at)}
-                          </p>
-                          {linkedCourseName ? (
-                              <div className="mt-1.5 text-xs text-gray-600 sm:mt-2 sm:text-sm">
-                                关联课程：
-                                <span
-                                    onClick={(event) => {
-                                      event.preventDefault();
-                                      event.stopPropagation();
-                                      if (item.course_id) {
-                                        router.push(buildCoursePath(item.course_id));
-                                      }
-                                    }}
-                                    className="ml-1 cursor-pointer font-medium text-gray-800 hover:text-first hover:underline"
-                                >
-                                  {linkedCourseName}
-                                </span>
-                              </div>
-                          ) : null}
-                        </div>
-                      </div>
-                      <div className="mb-2.5 rounded-xl bg-slate-100/90 px-3 py-2.5 text-xs leading-5 text-gray-700 sm:mb-3 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
-                        {item.comment || "未填写文字评价"}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 sm:gap-x-5 sm:gap-y-2 sm:text-sm">
-                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                          <i className="uil uil-star text-base text-amber-500 sm:text-lg"></i>
-                          <span>综合 {item.avg_rating}</span>
-                        </div>
-                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                          <i className="uil uil-presentation-line text-base text-sky-500 sm:text-lg"></i>
-                          <span>教学 {item.rating_quality ?? "-"}</span>
-                        </div>
-                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                          <i className="uil uil-file-check-alt text-base text-emerald-500 sm:text-lg"></i>
-                          <span>给分 {item.rating_grading ?? "-"}</span>
-                        </div>
-                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                          <i className="uil uil-user-check text-base text-rose-500 sm:text-lg"></i>
-                          <span>考勤 {item.rating_attendance ?? "-"}</span>
-                        </div>
-                        {item.course_id ? (
-                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                              <i className="uil uil-edit text-base text-violet-500 sm:text-lg"></i>
-                              <span>作业 {item.rating_homework ?? "-"}</span>
-                            </div>
-                        ) : null}
-                        {item.course_id ? (
-                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                              <i className="uil uil-book-reader text-base text-cyan-500 sm:text-lg"></i>
-                              <span>收获 {item.rating_gain ?? "-"}</span>
-                            </div>
-                        ) : null}
-                        {item.course_id ? (
-                            <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                              <i className="uil uil-chart-down text-base text-orange-500 sm:text-lg"></i>
-                              <span>考试 {item.rating_exam_difficulty ?? "-"}</span>
-                            </div>
-                        ) : null}
-                        <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
-                          <i className="uil uil-thumbs-up text-base text-rose-500 sm:text-lg"></i>
-                          <span>点赞 {formatNumber(item.likes)}</span>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2 text-xs text-gray-500 sm:mt-4 sm:gap-3 sm:text-sm">
-                        <span>点击查看教师详情</span>
-                        <div
-                            onClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                            }}
-                        >
-                          <ItemActionMenu
-                              items={[
-                                {
-                                  key: "edit",
-                                  label: "修改评价",
-                                  onClick: async () => {
-                                    setEditingTeacherEvaluation(item);
-                                  },
-                                },
-                                {
-                                  key: "delete",
-                                  label: "删除评价",
-                                  destructive: true,
-                                  onClick: async () => {
-                                    try {
-                                      await deleteTeacherEvaluation(item.id);
-                                      setTeacherItems((prev) => prev.filter((entry) => entry.id !== item.id));
-                                      feedback.success({ title: "评价已删除" });
-                                    } catch (error) {
-                                      console.error(error);
-                                      feedback.error({ title: "删除失败", description: "请稍后重试。" });
-                                    }
-                                  },
-                                },
-                              ]}
-                          />
-                        </div>
-                      </div>
-                    </GlassCard>
-                );
-
-                return (
-                    <Link
-                        key={`teacher-${item.id}`}
-                        href={buildTeacherPath(item.teacher_id)}
-                        className="block"
-                    >
-                      {cardContent}
-                    </Link>
-                );
-              })}
-
               {filteredCourseEvaluations.map((item) => {
                 const linkedTeacherName = item.teacher_name || (item.teacher_id ? `教师 #${item.teacher_id}` : null);
                 const courseName = item.course_name || `课程 #${item.course_id}`;
@@ -414,68 +208,6 @@ export default function MeEvaluations({
               })}
             </div>
         )}
-
-        <DetailComposerModal
-            isOpen={editingTeacherEvaluation !== null}
-            onClose={() => setEditingTeacherEvaluation(null)}
-            accent="teacher"
-            badge="教师评价"
-            title="修改教师评价"
-            description="更新你的教师评价内容和评分。"
-        >
-          {editingTeacherEvaluation ? (
-              <EvaluationComposerForm
-                  key={`edit-teacher-${editingTeacherEvaluation.id}`}
-                  evaluationType="teacher"
-                  relatedItems={
-                    editingTeacherEvaluation.course_id
-                        ? [
-                          {
-                            id: editingTeacherEvaluation.course_id,
-                            name: editingTeacherEvaluation.course_name || `课程 #${editingTeacherEvaluation.course_id}`,
-                          },
-                        ]
-                        : []
-                  }
-                  submitLabel="保存修改"
-                  initialValues={{
-                    relatedId: editingTeacherEvaluation.course_id ?? null,
-                    comment: editingTeacherEvaluation.comment ?? "",
-                    anonymous: editingTeacherEvaluation.is_anonymous ?? false,
-                    ratings: {
-                      rating_quality: editingTeacherEvaluation.rating_quality,
-                      rating_grading: editingTeacherEvaluation.rating_grading,
-                      rating_attendance: editingTeacherEvaluation.rating_attendance,
-                      rating_homework: editingTeacherEvaluation.rating_homework,
-                      rating_gain: editingTeacherEvaluation.rating_gain,
-                      rating_exam_difficulty: editingTeacherEvaluation.rating_exam_difficulty,
-                    },
-                  }}
-                  onSubmit={async (payload) => {
-                    try {
-                      const updated = await updateTeacherEvaluation(
-                          editingTeacherEvaluation.id,
-                          payload as unknown as TeacherEvaluationInput,
-                      );
-                      if (!updated) return;
-                      setTeacherItems((prev) =>
-                          prev.map((entry) =>
-                              entry.id === editingTeacherEvaluation.id
-                                  ? mergeTeacherEvaluation(entry, updated)
-                                  : entry,
-                          ),
-                      );
-                      setEditingTeacherEvaluation(null);
-                      feedback.success({ title: "评价已更新" });
-                    } catch (error) {
-                      console.error(error);
-                      feedback.error({ title: "更新失败", description: "请稍后重试。" });
-                      throw error;
-                    }
-                  }}
-              />
-          ) : null}
-        </DetailComposerModal>
 
         <DetailComposerModal
             isOpen={editingCourseEvaluation !== null}

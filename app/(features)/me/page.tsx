@@ -15,7 +15,6 @@ import {
   getMyInviteCode,
   getMyProfile,
   getMyResources,
-  getMyTeacherEvaluations,
   getUnreadNotificationCount,
 } from "@/api/me";
 import GlassCard from "@/components/ui/GlassCard";
@@ -120,8 +119,6 @@ export default function Me() {
       dashboard?.resources ?? createEmptyPaginated<ResourceItem>();
   const favorites =
       dashboard?.favorites ?? createEmptyPaginated<FavoriteItem>();
-  const teacherEvaluations =
-      dashboard?.teacherEvaluations ?? createEmptyPaginated<TeacherEvaluation>();
   const courseEvaluations =
       dashboard?.courseEvaluations ?? createEmptyPaginated<CourseEvaluation>();
   const points = dashboard?.points ?? createEmptyPaginated<PointsRecord>();
@@ -285,15 +282,11 @@ export default function Me() {
     setIsLoadingEvaluations(true);
     setEvaluationsError("");
     try {
-      const [teacherData, courseData] = await Promise.all([
-        getMyTeacherEvaluations({page: 1, size: 100}),
-        getMyCourseEvaluations({page: 1, size: 100}),
-      ]);
+      const courseData = await getMyCourseEvaluations({page: 1, size: 100});
       setDashboard((current) =>
           current
               ? {
                 ...current,
-                teacherEvaluations: teacherData,
                 courseEvaluations: courseData,
               }
               : current,
@@ -837,7 +830,7 @@ export default function Me() {
                 {
                   key: "evaluations" as TabKey,
                   label: "我的评价",
-                  count: teacherEvaluations.total + courseEvaluations.total,
+                  count: courseEvaluations.total,
                 },
               ].map((tab) => {
                 const isActive = activeTab === tab.key;
@@ -948,7 +941,6 @@ export default function Me() {
                         />
                     ) : (
                         <MeEvaluations
-                            teacherEvaluations={teacherEvaluations}
                             courseEvaluations={courseEvaluations}
                         />
                     )
