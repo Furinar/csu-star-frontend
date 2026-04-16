@@ -112,24 +112,24 @@ function CourseScoreCard({
           compact={compact}
         />
         <RatingBar
-          label="给分情况"
+          label="收获感"
+          score={normalizeRating(avgGain)}
+          maxScore={5}
+          gradient={courseTheme.ratingGradients[0]}
+          compact={compact}
+        />
+        <RatingBar
+          label="作业量"
           score={normalizeRating(avgHomework)}
           maxScore={5}
           gradient={courseTheme.ratingGradients[1]}
           compact={compact}
         />
         <RatingBar
-          label="任务量"
+          label="考试难度"
           score={normalizeRating(avgExamDiff)}
           maxScore={5}
           gradient={courseTheme.ratingGradients[2]}
-          compact={compact}
-        />
-        <RatingBar
-          label="课程收获"
-          score={normalizeRating(avgGain)}
-          maxScore={5}
-          gradient={courseTheme.ratingGradients[0]}
           compact={compact}
         />
       </div>

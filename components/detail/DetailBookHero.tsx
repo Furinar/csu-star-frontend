@@ -310,19 +310,19 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                       gradient: courseTheme.ratingGradients[0],
                     },
                     {
-                      label: "给分情况",
+                      label: "收获感",
+                      score: course.avg_gain,
+                      gradient: courseTheme.ratingGradients[0],
+                    },
+                    {
+                      label: "作业量",
                       score: course.avg_homework,
                       gradient: courseTheme.ratingGradients[1],
                     },
                     {
-                      label: "任务量",
+                      label: "考试难度",
                       score: course.avg_exam_diff,
                       gradient: courseTheme.ratingGradients[2],
-                    },
-                    {
-                      label: "课程收获",
-                      score: course.avg_gain,
-                      gradient: courseTheme.ratingGradients[0],
                     },
                   ]}
                 />
@@ -383,19 +383,19 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 gradient: courseTheme.ratingGradients[0],
               },
               {
-                label: "给分情况",
+                label: "收获感",
+                score: course.avg_gain,
+                gradient: courseTheme.ratingGradients[0],
+              },
+              {
+                label: "作业量",
                 score: course.avg_homework,
                 gradient: courseTheme.ratingGradients[1],
               },
               {
-                label: "任务量",
+                label: "考试难度",
                 score: course.avg_exam_diff,
                 gradient: courseTheme.ratingGradients[2],
-              },
-              {
-                label: "课程收获",
-                score: course.avg_gain,
-                gradient: courseTheme.ratingGradients[0],
               },
             ]}
           />
