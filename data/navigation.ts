@@ -15,7 +15,6 @@ export const FEATURE_ROUTE_NAV_ITEMS: readonly NavItem[] = [
   { label: "排行", href: "/rank", icon: "uil-trophy" },
   { label: "资源", href: "/resource", icon: "uil-file-alt" },
   { label: "课程", href: "/course", icon: "uil-graduation-cap" },
-  { label: "教师", href: "/teacher", icon: "uil-users-alt" },
   { label: "我的", href: "/me", icon: "uil-user-circle" },
   { label: "关于", href: "/about", icon: "uil-info-circle" },
 ];
