@@ -71,19 +71,27 @@ export default function EvaluationComposerForm({
   const linkedDimensions =
     evaluationType === "teacher" ? COURSE_DIMENSIONS : TEACHER_DIMENSIONS;
   const tone = toneMap[evaluationType];
-
-  const requiredDimensions = useMemo(
-    () =>
-      relatedId
-        ? [...primaryDimensions, ...linkedDimensions]
-        : primaryDimensions,
-    [linkedDimensions, primaryDimensions, relatedId],
-  );
+  const supportsRelated = evaluationType === "teacher";
 
   const [enableRelated, setEnableRelated] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const isRelatedEnabled =
+    supportsRelated && enableRelated && relatedItems.length > 0;
+  const requiredDimensions = useMemo(
+    () =>
+      isRelatedEnabled
+        ? [...primaryDimensions, ...linkedDimensions]
+        : primaryDimensions,
+    [isRelatedEnabled, linkedDimensions, primaryDimensions],
+  );
 
   useEffect(() => {
+    if (!supportsRelated) {
+      setEnableRelated(false);
+      setRelatedId(null);
+      return;
+    }
+
     if (!enableRelated) {
       setRelatedId(null);
       // Clear linked ratings
@@ -96,7 +104,7 @@ export default function EvaluationComposerForm({
       // Auto-select first item when enabled if none selected
       setRelatedId(relatedItems[0].id);
     }
-  }, [enableRelated, relatedItems, linkedDimensions, relatedId]);
+  }, [enableRelated, relatedItems, linkedDimensions, relatedId, supportsRelated]);
 
   useEffect(() => {
     setRatings(
@@ -106,13 +114,16 @@ export default function EvaluationComposerForm({
         ),
       ),
     );
-    setRelatedId(initialValues?.relatedId ?? null);
-    if (initialValues?.relatedId) {
-      setEnableRelated(true);
+    if (supportsRelated) {
+      setRelatedId(initialValues?.relatedId ?? null);
+      setEnableRelated(Boolean(initialValues?.relatedId));
+    } else {
+      setRelatedId(null);
+      setEnableRelated(false);
     }
     setComment(initialValues?.comment ?? "");
     setAnonymous(initialValues?.anonymous ?? false);
-  }, [initialValues]);
+  }, [initialValues, supportsRelated]);
 
   const allRequiredRated = requiredDimensions.every(
     (dimension) => (ratings[dimension.key] ?? 0) > 0,
@@ -132,12 +143,8 @@ export default function EvaluationComposerForm({
         is_anonymous: anonymous,
       };
 
-      if (evaluationType === "teacher" && relatedId) {
+      if (evaluationType === "teacher" && isRelatedEnabled && relatedId) {
         payload.course_id = relatedId;
-      }
-
-      if (evaluationType === "course" && relatedId) {
-        payload.teacher_id = relatedId;
       }
 
       await onSubmit(payload);
@@ -170,143 +177,157 @@ export default function EvaluationComposerForm({
           </div>
         </div>
 
-        {/* Right Side: Related Item Evaluation */}
-        <div className="flex h-full flex-col">
-          <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:h-10 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center justify-between gap-3 sm:justify-start">
-              <h3
-                className={`text-lg font-semibold ${!enableRelated ? "text-slate-400" : "text-slate-700"}`}
-              >
-                关联{evaluationType === "teacher" ? "课程" : "教师"}
-              </h3>
-              {relatedItems.length > 0 && (
-                <ModernCheckbox
-                  checked={enableRelated}
-                  onChange={(checked) => {
-                    setEnableRelated(checked);
-                    if (!checked) setIsDropdownOpen(false);
-                  }}
-                  label=""
-                />
+        {evaluationType === "teacher" ? (
+          <div className="flex h-full flex-col">
+            <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:h-10 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center justify-between gap-3 sm:justify-start">
+                <h3
+                  className={`text-lg font-semibold ${!enableRelated ? "text-slate-400" : "text-slate-700"}`}
+                >
+                  关联课程
+                </h3>
+                {relatedItems.length > 0 && (
+                  <ModernCheckbox
+                    checked={enableRelated}
+                    onChange={(checked) => {
+                      setEnableRelated(checked);
+                      if (!checked) setIsDropdownOpen(false);
+                    }}
+                    label=""
+                  />
+                )}
+              </div>
+
+              {enableRelated && relatedItems.length > 0 && (
+                <div className="relative w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className={`flex w-full items-center justify-between gap-1 rounded-full border px-3 py-2 text-sm font-medium transition sm:min-w-[120px] sm:justify-center ${tone.chipActive}`}
+                  >
+                    <span className="max-w-[calc(100%-1.5rem)] truncate leading-tight sm:max-w-[120px]">
+                      {relatedItems.find((i) => i.id === relatedId)?.name ||
+                        "请选择"}
+                    </span>
+                    <svg
+                      className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {isDropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setIsDropdownOpen(false)}
+                      />
+                      <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl sm:left-auto sm:right-0 sm:min-w-[220px] sm:w-max">
+                        <div className="flex flex-col gap-1">
+                          {relatedItems.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => {
+                                setRelatedId(item.id);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition ${
+                                relatedId === item.id
+                                  ? "bg-slate-50 text-[var(--first-color)] font-semibold"
+                                  : "text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              {item.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               )}
             </div>
 
-            {enableRelated && relatedItems.length > 0 && (
-              <div className="relative w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className={`flex w-full items-center justify-between gap-1 rounded-full border px-3 py-2 text-sm font-medium transition sm:min-w-[120px] sm:justify-center ${tone.chipActive}`}
+            <div className="flex-1 transition-all duration-300">
+              {relatedItems.length > 0 ? (
+                <div
+                  className={`h-full ${!enableRelated ? "opacity-40 grayscale blur-[1px] pointer-events-none" : ""}`}
                 >
-                  <span className="max-w-[calc(100%-1.5rem)] truncate leading-tight sm:max-w-[120px]">
-                    {relatedItems.find((i) => i.id === relatedId)?.name ||
-                      "请选择"}
-                  </span>
-                  <svg
-                    className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {isDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setIsDropdownOpen(false)}
-                    />
-                    <div className="absolute left-0 right-0 top-full z-50 mt-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl sm:left-auto sm:right-0 sm:min-w-[220px] sm:w-max">
-                      <div className="flex flex-col gap-1">
-                        {relatedItems.map((item) => (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => {
-                              setRelatedId(item.id);
-                              setIsDropdownOpen(false);
-                            }}
-                            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition ${
-                              relatedId === item.id
-                                ? "bg-slate-50 text-[var(--first-color)] font-semibold"
-                                : "text-slate-600 hover:bg-slate-50"
-                            }`}
-                          >
-                            {item.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 transition-all duration-300">
-            {relatedItems.length > 0 ? (
-              <div
-                className={`h-full ${!enableRelated ? "opacity-40 grayscale blur-[1px] pointer-events-none" : ""}`}
-              >
-                <div className={`grid gap-3 h-full`}>
-                  {linkedDimensions.map((dimension) => (
-                    <RatingStar
-                      key={dimension.key}
-                      disabled={!enableRelated}
-                      label={dimension.label}
-                      value={ratings[dimension.key] ?? 0}
-                      onChange={(value) =>
-                        setRatings((prev) => ({
-                          ...prev,
-                          [dimension.key]: value,
-                        }))
-                      }
-                    />
-                  ))}
+                  <div className={`grid gap-3 h-full`}>
+                    {linkedDimensions.map((dimension) => (
+                      <RatingStar
+                        key={dimension.key}
+                        disabled={!enableRelated}
+                        label={dimension.label}
+                        value={ratings[dimension.key] ?? 0}
+                        onChange={(value) =>
+                          setRatings((prev) => ({
+                            ...prev,
+                            [dimension.key]: value,
+                          }))
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center py-8 rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50">
-                <span className="text-sm text-slate-400">
-                  暂无{evaluationType === "teacher" ? "课程" : "教师"}可关联
-                </span>
-              </div>
-            )}
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center py-8 rounded-[24px] border border-dashed border-slate-200 bg-slate-50/50">
+                  <span className="text-sm text-slate-400">暂无课程可关联</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-sm font-medium text-slate-800">评价内容</div>
+              <ModernCheckbox
+                checked={anonymous}
+                onChange={setAnonymous}
+                label="匿名发表"
+              />
+            </div>
+            <AdvancedTextarea
+              className="mt-4"
+              rows={5}
+              label="输入评价正文"
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder="写下你的体验、建议或提醒。"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Main Comment and Action */}
-      <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+      {evaluationType === "teacher" ? (
+        <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm font-medium text-slate-800">评价内容</div>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
-              更适合写课堂感受、节奏判断、给分体验和避坑建议。
-            </p>
+            <ModernCheckbox
+              checked={anonymous}
+              onChange={setAnonymous}
+              label="匿名发表"
+            />
           </div>
-          <ModernCheckbox
-            checked={anonymous}
-            onChange={setAnonymous}
-            label="匿名发表"
+          <AdvancedTextarea
+            className="mt-4"
+            rows={5}
+            label="输入评价正文"
+            value={comment}
+            onChange={(event) => setComment(event.target.value)}
+            placeholder="写下你的体验、建议或提醒。"
           />
         </div>
-        <AdvancedTextarea
-          className="mt-4"
-          rows={5}
-          label="输入评价正文"
-          value={comment}
-          onChange={(event) => setComment(event.target.value)}
-          placeholder="写下你的体验、建议或提醒。"
-        />
-      </div>
+      ) : null}
 
       <div className="flex justify-center sm:justify-end">
         <ActionSubmitButton
