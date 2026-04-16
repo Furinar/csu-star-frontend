@@ -141,16 +141,21 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
   }
 
   if (!showLinkedSplit) {
+    const showCompactDivider = dimensionsToShow.length === 3;
     return (
       <div className={`p-3 sm:p-4 rounded-xl bg-gray-50/80 border border-gray-100 ${className}`}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
-          {dimensionsToShow.map((dim) => (
-            <BarRow
-              key={dim.key}
-              label={dim.label}
-              value={getDimensionScore(evaluation, dim.key)}
-              fillStyle={dim.fillStyle}
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3 sm:gap-y-0">
+          {dimensionsToShow.map((dim, index) => (
+            <div key={dim.key} className="relative sm:px-1">
+              {showCompactDivider && index > 0 ? (
+                <span className="pointer-events-none absolute -left-3 top-1/2 hidden h-8 -translate-y-1/2 border-l border-gray-200 sm:block" />
+              ) : null}
+              <BarRow
+                label={dim.label}
+                value={getDimensionScore(evaluation, dim.key)}
+                fillStyle={dim.fillStyle}
+              />
+            </div>
           ))}
         </div>
       </div>
