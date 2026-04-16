@@ -7,6 +7,7 @@ export interface SearchQuery {
   type?: SearchScope;
   page?: number;
   size?: number;
+  relevance_first?: boolean;
 }
 
 export interface PaginatedData<T> {

@@ -5,12 +5,13 @@ import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsG
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import type {SupplementRequestPromptVariant} from "@/components/supplement/SupplementRequestPrompt";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
+import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import SearchBar from "@/components/ui/SearchBar";
 import {requireAuthAction} from "@/lib/requireAuthAction";
 import {useAuthStore} from "@/store/useAuthStore";
 import type {SearchResponse, SearchScope,} from "@/types/search";
 import type {SupplementRequestType} from "@/types/supplement";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
 
 const PAGE_SIZE = 24;
@@ -158,6 +159,7 @@ export default function Search() {
   const accessToken = useAuthStore((state) => state.access_token);
   const [searchType, setSearchType] = useState<SearchScope>("all");
   const [keyword, setKeyword] = useState("");
+  const [relevanceFirst, setRelevanceFirst] = useState(false);
   const [, setSubmittedQuery] = useState("");
   const [results, setResults] = useState<SearchResponse>(createEmptyResults);
   const [hasSearched, setHasSearched] = useState(false);
@@ -258,16 +260,45 @@ export default function Search() {
 
   const hasMore = summary.loaded < summary.total;
 
+  const syncSearchParams = useCallback(({
+    query,
+    type,
+    relevance,
+  }: {
+    query: string;
+    type: SearchScope;
+    relevance: boolean;
+  }) => {
+    const trimmedQuery = query.trim();
+    const params = new URLSearchParams();
+
+    if (trimmedQuery) {
+      params.set("q", trimmedQuery);
+    }
+    if (type !== "all") {
+      params.set("type", type);
+    }
+    if (relevance) {
+      params.set("relevance", "1");
+    }
+
+    const queryString = params.toString();
+    const href = queryString ? `/search?${queryString}` : "/search";
+    router.replace(href);
+  }, [router]);
+
   const runSearch = async ({
                              query,
                              type,
                              page,
                              append,
+                             relevance,
                            }: {
     query: string;
     type: SearchScope;
     page: number;
     append: boolean;
+    relevance: boolean;
   }) => {
     const trimmedQuery = query.trim();
 
@@ -306,6 +337,7 @@ export default function Search() {
         type,
         page,
         size: PAGE_SIZE,
+        relevance_first: relevance,
       });
 
       if (requestIdRef.current !== currentRequestId) return;
@@ -314,9 +346,9 @@ export default function Search() {
         if (type === "all") {
           try {
             const [resourceData, courseData, teacherData] = await Promise.all([
-              searchEverything({q: trimmedQuery, type: "resource", page: 1, size: 1}),
-              searchEverything({q: trimmedQuery, type: "course", page: 1, size: 1}),
-              searchEverything({q: trimmedQuery, type: "teacher", page: 1, size: 1}),
+              searchEverything({q: trimmedQuery, type: "resource", page: 1, size: 1, relevance_first: relevance}),
+              searchEverything({q: trimmedQuery, type: "course", page: 1, size: 1, relevance_first: relevance}),
+              searchEverything({q: trimmedQuery, type: "teacher", page: 1, size: 1, relevance_first: relevance}),
             ]);
 
             if (requestIdRef.current !== currentRequestId) return;
@@ -363,28 +395,18 @@ export default function Search() {
   const handleSearchTypeChange = (type: SearchScope) => {
     requestIdRef.current += 1;
     setSearchType(type);
-
-    if (keyword.trim()) {
-      void runSearch({
-        query: keyword,
-        type,
-        page: 1,
-        append: false,
-      });
-      return;
-    }
-
-    setHasSearched(false);
-    setIsLoading(false);
-    setIsLoadingMore(false);
-    setError(null);
-    setCurrentPage(1);
-    setResults(createEmptyResults());
+    syncSearchParams({query: keyword, type, relevance: relevanceFirst});
   };
 
   const handleSearch = async (value: string) => {
     setKeyword(value);
-    await runSearch({query: value, type: searchType, page: 1, append: false});
+    syncSearchParams({query: value, type: searchType, relevance: relevanceFirst});
+  };
+
+  const handleRelevanceChange = (checked: boolean) => {
+    requestIdRef.current += 1;
+    setRelevanceFirst(checked);
+    syncSearchParams({query: keyword, type: searchType, relevance: checked});
   };
 
   const showEmptyPrompt = !hasSearched && !isLoading;
@@ -394,15 +416,19 @@ export default function Search() {
   useEffect(() => {
     const typeParam = searchParams.get("type");
     const qParam = searchParams.get("q");
+    const relevanceParam = searchParams.get("relevance");
     const normalizedType =
         typeParam === "resource" ||
         typeParam === "course" ||
         typeParam === "teacher"
             ? typeParam
             : "all";
+    const normalizedRelevance =
+      relevanceParam === "1" || relevanceParam === "true";
 
     setSearchType(normalizedType);
     setKeyword(qParam ?? "");
+    setRelevanceFirst(normalizedRelevance);
 
     if (qParam?.trim()) {
       void runSearch({
@@ -410,6 +436,7 @@ export default function Search() {
         type: normalizedType,
         page: 1,
         append: false,
+        relevance: normalizedRelevance,
       });
     } else {
       setResults(createEmptyResults());
@@ -440,6 +467,7 @@ export default function Search() {
         type: searchType,
         page: currentPage + 1,
         append: true,
+        relevance: relevanceFirst,
       });
     }, {rootMargin: "240px 0px"});
 
@@ -454,6 +482,7 @@ export default function Search() {
     isLoading,
     isLoadingMore,
     keyword,
+    relevanceFirst,
     searchType,
   ]);
 
@@ -517,6 +546,15 @@ export default function Search() {
         </div>
 
         <div className="border-t border-gray-300"/>
+
+        <div className="flex justify-end">
+          <ModernCheckbox
+            checked={relevanceFirst}
+            onChange={handleRelevanceChange}
+            label="按匹配度优先"
+            className="mt-1"
+          />
+        </div>
 
         {/* Conditional rendering based on search state */}
         {showEmptyPrompt ? (

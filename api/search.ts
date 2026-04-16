@@ -277,6 +277,7 @@ export async function searchEverything(params: SearchQuery): Promise<SearchRespo
       type: params.type ?? "all",
       page: params.page ?? 1,
       size: params.size ?? 24,
+      relevance_first: params.relevance_first ?? false,
     },
   });
 
