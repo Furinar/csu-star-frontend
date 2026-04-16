@@ -196,40 +196,31 @@ export default function SearchResultCard(props: SearchResultCardProps) {
         )}
       </div>
     );
-    leftScoreValue = item.avg_score ?? 0;
-    leftScoreHint = "/ 5.0";
-    rightDetailsTitle = "详细评分";
-    rightDetailsIcon = "uil-chart-bar";
+    rightDetailsTitle = "教师信息";
+    rightDetailsIcon = "uil-user-circle";
     rightDetailsContent = (
-      <>
-        <BarRow
-          label="教学质量"
-          value={item.avg_quality}
-          colorClass={theme.dimensionBarClassNames[0]}
-          hideBarOnMobile
-        />
-        <BarRow
-          label="给分宽松"
-          value={item.avg_grading}
-          colorClass={theme.dimensionBarClassNames[1]}
-          hideBarOnMobile
-        />
-        <BarRow
-          label="考勤要求"
-          value={item.avg_attendance}
-          colorClass={theme.dimensionBarClassNames[2]}
-          hideBarOnMobile
-        />
-      </>
+      <div className="flex h-full flex-col justify-center gap-1 md:gap-2 text-xs text-gray-600">
+        <div className="flex items-center justify-between gap-1 md:gap-2">
+          <span>所属院系</span>
+          <span className="font-medium text-gray-700 line-clamp-1">
+            {item.department_name || "未录入"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-1 md:gap-2">
+          <span>职称</span>
+          <span className="font-medium text-gray-700">
+            {item.title || "未录入"}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-1 md:gap-2">
+          <span>授课课程</span>
+          <span className="font-medium text-gray-700">
+            {courses.length} 门
+          </span>
+        </div>
+      </div>
     );
-    bottomStats = [
-      {
-        icon: "uil-comment-alt-lines",
-        label: "评价",
-        value: item.eval_count ?? 0,
-      },
-      { icon: "uil-bookmark", label: "收藏", value: item.favorite_count ?? 0 },
-    ];
+    bottomStats = [];
   } else {
     const item = props.item;
     href = buildResourceCollectionPath(item.course_id);
@@ -308,29 +299,32 @@ export default function SearchResultCard(props: SearchResultCardProps) {
         </div>
 
         <div className="flex flex-1 gap-1 md:gap-4 mt-1 mb-1 md:mt-2 md:mb-2 min-h-[70px] md:min-h-[90px]">
-          <div className="w-[80px] md:w-[120px] flex flex-col items-center justify-center border-r border-gray-100 pr-1 md:pr-4">
-            <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mb-1 md:mb-1.5">
-              <i className="uil uil-chart-line"></i> {leftScoreTitle}
-            </div>
-            <div className="flex items-baseline gap-1">
-              <div className="text-xl md:text-3xl font-bold text-gray-800 tabular-nums">
-                {formatScore(leftScoreValue)}
+          {type !== "teacher" ? (
+            <div className="w-[80px] md:w-[120px] flex flex-col items-center justify-center border-r border-gray-100 pr-1 md:pr-4">
+              <div className="flex items-center gap-1 text-[10px] md:text-xs text-gray-500 mb-1 md:mb-1.5">
+                <i className="uil uil-chart-line"></i> {leftScoreTitle}
+              </div>
+              <div className="flex items-baseline gap-1">
+                <div className="text-xl md:text-3xl font-bold text-gray-800 tabular-nums">
+                  {formatScore(leftScoreValue)}
+                </div>
+              </div>
+              <div className="text-[9px] md:text-xs text-gray-400 mt-0 md:mt-0.5">
+                {leftScoreHint}
+              </div>
+              <div className="mt-1 md:mt-1.5 transform scale-75 origin-center md:scale-100">
+                <StarRating
+                  score={clampScore(leftScoreValue)}
+                  fillClassName={theme.starFillClassName}
+                />
               </div>
             </div>
-            <div className="text-[9px] md:text-xs text-gray-400 mt-0 md:mt-0.5">
-              {leftScoreHint}
-            </div>
-            <div className="mt-1 md:mt-1.5 transform scale-75 origin-center md:scale-100">
-              <StarRating
-                score={clampScore(leftScoreValue)}
-                fillClassName={theme.starFillClassName}
-              />
-            </div>
-          </div>
+          ) : null}
 
-          <div className="flex-1 flex flex-col justify-center px-1 md:px-2">
+          <div className={`flex-1 flex flex-col justify-center ${type !== "teacher" ? "px-1 md:px-2" : ""}`}>
             <div className="text-[10px] md:text-xs text-gray-500 mb-1 md:mb-2 flex items-center gap-1">
-              <i className={`uil ${rightDetailsIcon}`}></i> {rightDetailsTitle}
+              <i className={`uil ${rightDetailsIcon}`}></i>
+              {rightDetailsTitle}
             </div>
             <div className="flex flex-col gap-1 md:gap-2 transform origin-left scale-90 md:scale-100">
               {rightDetailsContent}
@@ -338,18 +332,20 @@ export default function SearchResultCard(props: SearchResultCardProps) {
           </div>
         </div>
 
-        <div className="mt-auto flex items-center gap-1.5 md:gap-6 overflow-x-auto border-t border-gray-100 pt-2 md:pt-3 scrollbar-hide">
-          {bottomStats.map((stat) => (
-            <div
-              key={stat.label}
-              className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-sm whitespace-nowrap"
-            >
-              <i className={`uil ${stat.icon} text-gray-400`}></i>
-              <span className="text-gray-500">{stat.label}</span>
-              <span className="text-gray-800 font-medium">{stat.value}</span>
-            </div>
-          ))}
-        </div>
+        {bottomStats.length > 0 ? (
+          <div className="mt-auto flex items-center gap-1.5 md:gap-6 overflow-x-auto border-t border-gray-100 pt-2 md:pt-3 scrollbar-hide">
+            {bottomStats.map((stat) => (
+              <div
+                key={stat.label}
+                className="flex items-center gap-1 md:gap-1.5 text-[10px] md:text-sm whitespace-nowrap"
+              >
+                <i className={`uil ${stat.icon} text-gray-400`}></i>
+                <span className="text-gray-500">{stat.label}</span>
+                <span className="text-gray-800 font-medium">{stat.value}</span>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
     </Link>
   );
