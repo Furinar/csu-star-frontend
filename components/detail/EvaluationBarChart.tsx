@@ -119,27 +119,28 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
   theme,
   className = "",
 }) => {
-  // If we are in "linked" mode, or if fields from the other side exist, we show all 6.
+  // Linked evaluation can contain both teacher/course dimensions in one record.
   const isLinked =
     evaluation.mode === "linked" ||
     (evaluation.course_id && evaluation.teacher_id);
 
-  // Decide which dimensions to show
+  // On course detail page we intentionally hide teacher-side bars.
+  const showLinkedSplit = theme === "teacher" && isLinked;
+
+  // Decide which dimensions to show in non-split mode
   let dimensionsToShow: DimensionConfig[] = [];
 
-  if (isLinked) {
-    // Show both (6 dimensions)
+  if (theme === "course") {
+    dimensionsToShow = [...DIMENSIONS_COURSE];
+  } else if (showLinkedSplit) {
     dimensionsToShow = [...DIMENSIONS_TEACHER, ...DIMENSIONS_COURSE];
   } else if (theme === "teacher") {
-    // Show only teacher's 3 dimensions
     dimensionsToShow = [...DIMENSIONS_TEACHER];
   } else {
-    // Show only course's 3 dimensions
     dimensionsToShow = [...DIMENSIONS_COURSE];
   }
 
-  // If there are 6 dimensions, use a 2-column grid. Otherwise 1-column or 2-column depending on space.
-  if (!isLinked) {
+  if (!showLinkedSplit) {
     return (
       <div className={`p-3 sm:p-4 rounded-xl bg-gray-50/80 border border-gray-100 ${className}`}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-3">
@@ -156,9 +157,9 @@ export const EvaluationBarChart: React.FC<EvaluationBarChartProps> = ({
     );
   }
 
-  // Linked mode: split into two columns with a vertical divider
-  const teacherName = evaluation.teacher_name || (theme === "teacher" ? "教师参评" : "关联教师");
-  const courseName = evaluation.course_name || (theme === "course" ? "课程参评" : "关联课程");
+  // Linked mode on teacher detail: split into two columns with a vertical divider
+  const teacherName = evaluation.teacher_name || "教师参评";
+  const courseName = evaluation.course_name || "关联课程";
 
   return (
     <div className={`p-4 rounded-xl bg-gray-50/80 border border-gray-100 ${className}`}>
