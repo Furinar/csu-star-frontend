@@ -104,7 +104,6 @@ export default function CourseGlobalEvaluationModal({
       );
       feedback.success("评价提交成功！");
       setFormVersion((prev) => prev + 1);
-      handleClose();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "提交失败";
       feedback.error(msg);
