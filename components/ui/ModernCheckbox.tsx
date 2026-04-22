@@ -13,9 +13,10 @@ interface ModernCheckboxProps {
 const StyledWrapper = styled.div`
   .container {
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap;
   }
 
   .container input {
@@ -23,6 +24,7 @@ const StyledWrapper = styled.div`
   }
 
   .container svg {
+    flex-shrink: 0;
     overflow: visible;
   }
 
@@ -45,16 +47,26 @@ const StyledWrapper = styled.div`
   }
 `;
 
-const ModernCheckbox: React.FC<ModernCheckboxProps> = ({ checked, onChange, label, className }) => {
+const ModernCheckbox: React.FC<ModernCheckboxProps> = ({
+  checked,
+  onChange,
+  label,
+  className,
+}) => {
   return (
     <StyledWrapper className={className}>
       <label className="container">
-        <input 
-          type="checkbox" 
-          checked={checked} 
-          onChange={(e) => onChange?.(e.target.checked)} 
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange?.(e.target.checked)}
         />
-        <svg viewBox="0 0 64 64" height="1.2em" width="1.2em" className="text-slate-400">
+        <svg
+          viewBox="0 0 64 64"
+          height="1.2em"
+          width="1.2em"
+          className="text-slate-400"
+        >
           <path
             d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
             pathLength="575.0541381835938"
