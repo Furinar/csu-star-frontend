@@ -96,6 +96,7 @@ export interface ResourceUploaderProps {
   onClose?: () => void;
   initialCourse?: { id: EntityId; name: string };
   onUploadSuccess?: () => void;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
 export default function ResourceUploader({
@@ -103,6 +104,7 @@ export default function ResourceUploader({
   onClose,
   initialCourse,
   onUploadSuccess,
+  onUploadingChange,
 }: ResourceUploaderProps = {}) {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
@@ -126,7 +128,14 @@ export default function ResourceUploader({
   const [isSearchingCourse, setIsSearchingCourse] = useState(false);
 
   // Upload state
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploadingState] = useState(false);
+  const setIsUploading = useCallback(
+    (val: boolean) => {
+      setIsUploadingState(val);
+      onUploadingChange?.(val);
+    },
+    [onUploadingChange],
+  );
   const [totalProgress, setTotalProgress] = useState(0);
   const [uploadedResourceId, setUploadedResourceId] = useState<EntityId | null>(
     null,
