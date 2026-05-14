@@ -553,22 +553,27 @@ export default function ResourceUploader({
               <div className="relative">
                 {selectedCourse ? (
                   <>
-                    <label className="block text-sm font-medium text-black mb-1">
-                      关联课程 <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex items-start justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-900">
-                      <span className="min-w-0 flex-1 break-words">
-                        {selectedCourse.name}
-                      </span>
-                      {!isUploading && (
-                        <button
-                          onClick={() => setSelectedCourse(null)}
-                          className="shrink-0 text-emerald-400 hover:text-emerald-600"
-                        >
-                          <i className="uil uil-times-circle text-xl" />
-                        </button>
-                      )}
-                    </div>
+                    <AdvancedInput
+                      label={
+                        <>
+                          已关联课程 <span className="text-red-500">*</span>
+                        </>
+                      }
+                      type="text"
+                      readOnly
+                      value={selectedCourse.name}
+                      placeholder=""
+                      disabled={isUploading}
+                    />
+                    {!isUploading && (
+                      <button
+                        onClick={() => setSelectedCourse(null)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-500 hover:text-red-500 transition-colors"
+                        title="取消关联"
+                      >
+                        <i className="uil uil-times-circle text-xl" />
+                      </button>
+                    )}
                   </>
                 ) : (
                   <div>
@@ -584,25 +589,36 @@ export default function ResourceUploader({
                       maxLength={50}
                       onChange={(e) => setCourseQuery(e.target.value)}
                       placeholder=""
+                      disabled={isUploading}
                     />
                     {isSearchingCourse && (
-                      <div className="text-xs text-second mt-1">搜索中...</div>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-second pointer-events-none">
+                        <i className="uil uil-spinner-alt animate-spin text-xl" />
+                      </div>
                     )}
-                    {courseOptions.length > 0 && !isSearchingCourse && (
+                    {(courseOptions.length > 0 ||
+                      (courseQuery.trim().length > 0 &&
+                        !isSearchingCourse)) && (
                       <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-ice-200 bg-white shadow-lg">
-                        {courseOptions.map((course) => (
-                          <div
-                            key={course.id}
-                            onClick={() => {
-                              setSelectedCourse(course);
-                              setCourseOptions([]);
-                              setCourseQuery("");
-                            }}
-                            className="px-4 py-2 hover:bg-ice-50 cursor-pointer text-sm"
-                          >
-                            {course.name}
+                        {courseOptions.length > 0 ? (
+                          courseOptions.map((course) => (
+                            <div
+                              key={course.id}
+                              onClick={() => {
+                                setSelectedCourse(course);
+                                setCourseOptions([]);
+                                setCourseQuery("");
+                              }}
+                              className="px-4 py-2 hover:bg-ice-50 cursor-pointer text-sm"
+                            >
+                              {course.name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-second text-center">
+                            未找到相关课程
                           </div>
-                        ))}
+                        )}
                       </div>
                     )}
                   </div>
@@ -673,147 +689,152 @@ export default function ResourceUploader({
                   </h4>
                   <div className="flex-1 overflow-y-auto pr-1 sm:pr-2 max-h-60 lg:max-h-none space-y-2">
                     {files.map((f) => (
-                    <div
-                      key={f.local_id}
-                      className="relative overflow-hidden rounded-xl border border-ice-100 bg-white/60 p-3"
-                    >
-                      {/* background progress */}
-                      {f.status === "uploading" && (
-                        <div
-                          className="absolute left-0 top-0 bottom-0 bg-emerald-100/60 transition-all duration-300 pointer-events-none"
-                          style={{ width: `${f.progress}%` }}
-                        />
-                      )}
-                      {f.status === "success" && (
-                        <div className="absolute left-0 top-0 bottom-0 bg-green-100/40 w-full pointer-events-none" />
-                      )}
+                      <div
+                        key={f.local_id}
+                        className="relative overflow-hidden rounded-xl border border-ice-100 bg-white/60 p-3"
+                      >
+                        {/* background progress */}
+                        {f.status === "uploading" && (
+                          <div
+                            className="absolute left-0 top-0 bottom-0 bg-emerald-100/60 transition-all duration-300 pointer-events-none"
+                            style={{ width: `${f.progress}%` }}
+                          />
+                        )}
+                        {f.status === "success" && (
+                          <div className="absolute left-0 top-0 bottom-0 bg-green-100/40 w-full pointer-events-none" />
+                        )}
 
-                      <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex min-w-0 items-start gap-3 sm:max-w-[calc(100%-8rem)] sm:items-center">
-                          <i className="uil uil-file-alt mt-0.5 text-xl text-emerald-400 sm:mt-0" />
-                          {editingFileId === f.local_id ? (
-                            <div className="flex min-w-0 flex-1 items-center gap-2">
-                              <input
-                                ref={renameInputRef}
-                                type="text"
-                                value={editingBaseName}
-                                onChange={(e) =>
-                                  setEditingBaseName(e.target.value)
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    saveEditedFileName(
-                                      f.local_id,
-                                      splitEditableFilename(f.filename)
-                                        .extension,
-                                    );
+                        <div className="relative z-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="flex flex-1 min-w-0 items-start gap-3 sm:items-center">
+                            <i className="uil uil-file-alt mt-0.5 text-xl text-emerald-400 sm:mt-0" />
+                            {editingFileId === f.local_id ? (
+                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                                <input
+                                  ref={renameInputRef}
+                                  type="text"
+                                  value={editingBaseName}
+                                  onChange={(e) =>
+                                    setEditingBaseName(e.target.value)
                                   }
-                                  if (e.key === "Escape") {
-                                    e.preventDefault();
-                                    cancelEditingFileName();
-                                  }
-                                }}
-                                className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm text-black outline-none transition focus:border-emerald-400"
-                                maxLength={MAX_UPLOAD_FILENAME_LENGTH}
-                              />
-                              {splitEditableFilename(f.filename).extension ? (
-                                <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
-                                  {splitEditableFilename(f.filename).extension}
-                                </span>
-                              ) : null}
-                            </div>
-                          ) : (
-                            <div
-                              className="flex-1 truncate text-sm text-black"
-                              title={f.filename}
-                            >
-                              {f.filename}
-                            </div>
-                          )}
-                          <div className="shrink-0 text-xs text-second sm:w-16 sm:text-right">
-                            {(f.file.size / 1024 / 1024).toFixed(2)} MB
-                          </div>
-                        </div>
-
-                        <div className="relative z-10 flex flex-wrap items-center justify-end gap-2 self-end sm:self-auto">
-                          {f.status === "uploading" && (
-                            <span className="w-10 text-right text-xs font-medium text-emerald-700">
-                              {f.progress}%
-                            </span>
-                          )}
-                          {f.status === "success" && (
-                            <i className="uil uil-check-circle text-green-500 text-lg" />
-                          )}
-                          {f.status === "failed" && (
-                            <i
-                              className="uil uil-times-circle text-red-500 text-lg"
-                              title={f.error || ""}
-                            />
-                          )}
-                          {f.status === "queued" && !isUploading && (
-                            <>
-                              {editingFileId === f.local_id ? (
-                                <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
+                                  onClick={(e) => e.stopPropagation()}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      e.preventDefault();
                                       saveEditedFileName(
                                         f.local_id,
                                         splitEditableFilename(f.filename)
                                           .extension,
                                       );
-                                    }}
-                                    className="text-emerald-500 transition-colors hover:text-emerald-600"
-                                    title="保存文件名"
-                                  >
-                                    <i className="uil uil-check text-lg" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
+                                    }
+                                    if (e.key === "Escape") {
+                                      e.preventDefault();
                                       cancelEditingFileName();
-                                    }}
-                                    className="text-slate-400 transition-colors hover:text-slate-600"
-                                    title="取消编辑"
-                                  >
-                                    <i className="uil uil-times text-lg" />
-                                  </button>
-                                </>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      startEditingFileName(
-                                        f.local_id,
-                                        f.filename,
-                                      );
-                                    }}
-                                    className="text-ice-400 transition-colors hover:text-emerald-500"
-                                    title="编辑文件名"
-                                  >
-                                    <i className="uil uil-edit text-lg" />
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      removeFile(f.local_id);
-                                    }}
-                                    className="text-ice-400 transition-colors hover:text-red-500"
-                                    title="移除文件"
-                                  >
-                                    <i className="uil uil-trash-alt text-lg" />
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          )}
+                                    }
+                                  }}
+                                  className="min-w-0 flex-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm text-black outline-none transition focus:border-emerald-400"
+                                  maxLength={MAX_UPLOAD_FILENAME_LENGTH}
+                                />
+                                {splitEditableFilename(f.filename).extension ? (
+                                  <span className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-500">
+                                    {
+                                      splitEditableFilename(f.filename)
+                                        .extension
+                                    }
+                                  </span>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <div
+                                className="flex-1 truncate text-sm text-black"
+                                title={f.filename}
+                              >
+                                {f.filename}
+                              </div>
+                            )}
+                            {editingFileId !== f.local_id && (
+                              <div className="shrink-0 ml-auto pr-2 text-xs text-second sm:w-16 sm:text-right">
+                                {(f.file.size / 1024 / 1024).toFixed(2)} MB
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="relative z-10 flex shrink-0 flex-wrap items-center justify-end gap-2 self-end sm:self-auto">
+                            {f.status === "uploading" && (
+                              <span className="w-10 text-right text-xs font-medium text-emerald-700">
+                                {f.progress}%
+                              </span>
+                            )}
+                            {f.status === "success" && (
+                              <i className="uil uil-check-circle text-green-500 text-lg" />
+                            )}
+                            {f.status === "failed" && (
+                              <i
+                                className="uil uil-times-circle text-red-500 text-lg"
+                                title={f.error || ""}
+                              />
+                            )}
+                            {f.status === "queued" && !isUploading && (
+                              <>
+                                {editingFileId === f.local_id ? (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        saveEditedFileName(
+                                          f.local_id,
+                                          splitEditableFilename(f.filename)
+                                            .extension,
+                                        );
+                                      }}
+                                      className="text-emerald-500 transition-colors hover:text-emerald-600"
+                                      title="保存文件名"
+                                    >
+                                      <i className="uil uil-check text-lg" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        cancelEditingFileName();
+                                      }}
+                                      className="text-slate-400 transition-colors hover:text-slate-600"
+                                      title="取消编辑"
+                                    >
+                                      <i className="uil uil-times text-lg" />
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        startEditingFileName(
+                                          f.local_id,
+                                          f.filename,
+                                        );
+                                      }}
+                                      className="text-ice-400 transition-colors hover:text-emerald-500"
+                                      title="编辑文件名"
+                                    >
+                                      <i className="uil uil-edit text-lg" />
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeFile(f.local_id);
+                                      }}
+                                      className="text-ice-400 transition-colors hover:text-red-500"
+                                      title="移除文件"
+                                    >
+                                      <i className="uil uil-trash-alt text-lg" />
+                                    </button>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                   </div>
                 </div>
               </div>
