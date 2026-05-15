@@ -5,11 +5,9 @@ import Image from "next/image";
 import {UserBrief} from "@/types/detail";
 import {formatDateTimeZh} from "@/lib/date";
 import BilibiliReplyItem from "./BilibiliReplyItem";
-import {avatarOptions} from "@/data/avatar";
 import type {ItemActionMenuItem} from "./ItemActionMenu";
 import ItemActionMenu from "./ItemActionMenu";
-
-const DEFAULT_AVATAR = avatarOptions[0]?.url ?? "";
+import {DEFAULT_AVATAR_SRC, resolveAvatarSrc} from "@/lib/avatar";
 
 export interface BilibiliCommentItemProps {
   id: string | number;
@@ -79,8 +77,9 @@ export default function BilibiliCommentItem({
   const commentRef = useRef<HTMLDivElement | null>(null);
 
   const displayUser = isAnonymous
-      ? {nickname: "匿名用户", avatar_url: DEFAULT_AVATAR}
-      : user || {nickname: "未知用户", avatar_url: DEFAULT_AVATAR};
+      ? {nickname: "匿名用户", avatar_url: DEFAULT_AVATAR_SRC}
+      : user || {nickname: "未知用户", avatar_url: DEFAULT_AVATAR_SRC};
+  const avatarSrc = resolveAvatarSrc(displayUser.avatar_url, DEFAULT_AVATAR_SRC);
 
   const shouldShowAllReplies = forceShowAllReplies || showAllReplies;
   const displayedReplies = shouldShowAllReplies ? replies : replies.slice(0, 2);
@@ -143,7 +142,7 @@ export default function BilibiliCommentItem({
               trigger={
                 <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-200 bg-gray-50 transition hover:border-gray-300 md:h-12 md:w-12">
                   <Image
-                    src={displayUser.avatar_url || DEFAULT_AVATAR}
+                    src={avatarSrc}
                     alt={displayUser.nickname}
                     fill
                     className="object-cover"
@@ -156,7 +155,7 @@ export default function BilibiliCommentItem({
           ) : (
             <div className="relative h-9 w-9 overflow-hidden rounded-full border border-gray-200 bg-gray-50 md:h-12 md:w-12">
               <Image
-                src={displayUser.avatar_url || DEFAULT_AVATAR}
+                src={avatarSrc}
                 alt={displayUser.nickname}
                 fill
                 className="object-cover"

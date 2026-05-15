@@ -10,9 +10,11 @@ interface RatingStarProps {
   name?: string;
   className?: string;
   disabled?: boolean;
+  hint?: string;
 }
 
-const StyledWrapper = styled.div<{ $disabled?: boolean }>`
+const StyledWrapper = styled.div<{ $disabled?: boolean; $tone?: "low" | "high" | "neutral" }>`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,12 +30,43 @@ const StyledWrapper = styled.div<{ $disabled?: boolean }>`
   filter: ${(props) =>
     props.$disabled ? "grayscale(100%) blur(0.5px)" : "none"};
 
+  .hint {
+    position: absolute;
+    right: 14px;
+    bottom: -14px;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    transform: translateY(1px);
+  }
+
+  .hint-low {
+    color: #dc2626;
+  }
+
+  .hint-high {
+    color: #ca8a04;
+  }
+
+  .hint-neutral {
+    color: #ca8a04;
+  }
+
   .rating {
     display: flex;
     flex-direction: row-reverse;
     gap: 0.3rem;
-    --stroke: #94a3b8;
-    --fill: #ffc73a;
+    --stroke: ${(props) =>
+      props.$tone === "low"
+        ? "#ef4444"
+        : props.$tone === "high"
+          ? "#facc15"
+          : "#94a3b8"};
+    --fill: ${(props) =>
+      props.$tone === "low" ? "#ef4444" : props.$tone === "high" ? "#facc15" : "#facc15"};
   }
 
   .rating input {
@@ -117,6 +150,14 @@ const StyledWrapper = styled.div<{ $disabled?: boolean }>`
   }
 `;
 
+const hintMap = {
+  1: {tone: "low", text: "作业多 / 考试难 / 收获低"},
+  2: {tone: "low", text: "作业偏多，考试偏难"},
+  3: {tone: "mid", text: "作业与难度适中"},
+  4: {tone: "high", text: "作业较少，考试较易"},
+  5: {tone: "high", text: "作业少 / 考试易 / 收获高"},
+} as const;
+
 export default function RatingStar({
   label,
   value,
@@ -124,6 +165,7 @@ export default function RatingStar({
   name,
   className,
   disabled,
+  hint,
 }: RatingStarProps) {
   const generatedId = useId();
   const radioName = name || generatedId;
@@ -131,9 +173,11 @@ export default function RatingStar({
   // CSS structure heavily relies on siblings combinatorial selectors.
   // Using 5 down to 1 structure alongside CSS row-reverse lets CSS `~` gracefully target everything "visually to the left".
   const stars = [5, 4, 3, 2, 1];
+  const currentHint = value > 0 ? hint ?? hintMap[value as keyof typeof hintMap]?.text ?? "" : "";
+  const currentTone = value <= 2 ? "low" : value >= 4 ? "high" : "neutral";
 
   return (
-    <StyledWrapper className={className} $disabled={disabled}>
+    <StyledWrapper className={className} $disabled={disabled} $tone={currentTone}>
       <span className="text-sm font-medium text-slate-700">{label}</span>
       <div className="rating">
         {stars.map((star) => {
@@ -161,6 +205,11 @@ export default function RatingStar({
           );
         })}
       </div>
+      {currentHint ? (
+        <span className={`hint ${currentTone === "low" ? "hint-low" : "hint-high"}`}>
+          {currentHint}
+        </span>
+      ) : null}
     </StyledWrapper>
   );
 }

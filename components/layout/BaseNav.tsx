@@ -4,6 +4,7 @@ import type {NavItem} from "@/types/component";
 import Link from "next/link";
 import {useAuthStore} from "@/store/useAuthStore";
 import {useEffect, useRef, useState} from "react";
+import {DEFAULT_AVATAR_SRC, resolveAvatarSrc} from "@/lib/avatar";
 
 type BaseNavProps = {
   navItems: readonly NavItem[];
@@ -113,6 +114,7 @@ export default function BaseNav({
     opacity: 0,
   });
   const avatar = useAuthStore((state) => state.user?.avatar_url);
+  const avatarSrc = resolveAvatarSrc(avatar, DEFAULT_AVATAR_SRC);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const logout = useAuthStore((state) => state.logout);
 
@@ -206,7 +208,7 @@ export default function BaseNav({
                         onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
                     >
                       <img
-                          src={avatar}
+                          src={avatarSrc}
                           alt="Avatar"
                           width={28}
                           height={28}
@@ -348,7 +350,7 @@ export default function BaseNav({
                 ) : avatar ? (
                     <div className="relative group p-2 cursor-pointer">
                       <img
-                          src={avatar}
+                          src={avatarSrc}
                           alt="Avatar"
                           width={32}
                           height={32}

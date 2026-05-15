@@ -168,9 +168,9 @@ export default function CollectButton({
       className={`group relative z-0 isolate flex items-center justify-center border border-gray-200 bg-white cursor-pointer overflow-hidden transition-all duration-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${
         mobileStack
           ? `h-8 w-auto min-w-[88px] flex-row gap-1.5 rounded-full px-1 pr-3 ${desktopButton}`
+          : mobileIconOnly
+          ? `h-[32px] w-[32px] rounded-full shrink-0 flex-none md:justify-start ${desktopButton}`
           : `${s.button} rounded-full`
-      } ${
-        mobileIconOnly ? "w-full md:w-[100px]" : ""
       } ${className}`}
     >
       <span
@@ -178,7 +178,7 @@ export default function CollectButton({
           mobileStack
             ? `h-[24px] w-[24px] shrink-0 md:absolute md:left-[4px] ${desktopIconCont} ${desktopIconHover}`
             : mobileIconOnly
-            ? `h-[28px] w-[28px] md:absolute md:left-[4px] ${desktopIconCont} ${desktopIconHover}`
+            ? `h-[26px] w-[26px] md:absolute md:left-[4px] ${desktopIconCont} ${desktopIconHover}`
             : `absolute left-[4px] ${s.iconCont} ${s.iconContHover}`
         } ${
           !supportsHover && tapAnimating && !mobileStack && !mobileIconOnly

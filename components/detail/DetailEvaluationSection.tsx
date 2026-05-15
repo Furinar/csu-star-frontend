@@ -673,7 +673,7 @@ export default function DetailEvaluationSection({
       id: evaluation.id,
       user: evaluation.user,
       isAnonymous: evaluation.is_anonymous,
-      content: evaluation.comment || "该评价未填写文字内容。",
+      content: evaluation.comment || "",
       createdAt: evaluation.created_at,
       likes: evaluation.likes,
       isLiked: evaluation.is_liked,

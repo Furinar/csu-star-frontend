@@ -22,7 +22,11 @@ export const ENTITY_THEMES: Record<EntityThemeKey, EntityTheme> = {
     badgeMutedBackgroundClassName: "bg-sky-50/70",
     starFillClassName: "text-sky-500",
     ratingGradient: "linear-gradient(90deg, #38bdf8 0%, #2563eb 100%)",
-    dimensionBarClassNames: ["bg-sky-400", "bg-blue-500", "bg-cyan-500"],
+    dimensionBarClassNames: [
+      "bg-gradient-to-r from-blue-400 to-blue-500",
+      "bg-gradient-to-r from-emerald-400 to-emerald-500",
+      "bg-gradient-to-r from-amber-400 to-amber-500",
+    ],
   },
   teacher: {
     label: "教师",

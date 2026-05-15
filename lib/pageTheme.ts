@@ -76,9 +76,9 @@ export const PAGE_THEMES: Record<PageThemeKey, PageTheme> = {
       "rgba(109, 40, 217, 0.2)",
     ],
     ratingGradients: [
-      "linear-gradient(90deg, #38bdf8 0%, #2563eb 100%)",
-      "linear-gradient(90deg, #2563eb 0%, #4338ca 100%)",
-      "linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%)",
+      "linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%)",
+      "linear-gradient(90deg, #34d399 0%, #10b981 100%)",
+      "linear-gradient(90deg, #facc15 0%, #f59e0b 100%)",
     ],
   },
   teacher: {

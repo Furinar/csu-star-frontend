@@ -488,9 +488,11 @@ export default function EvaluationThread({
                       ) : null}
                       <span className="text-xs text-gray-400">{formatDateTime(evaluation.created_at)}</span>
                     </div>
-                    <p className="text-sm leading-7 text-gray-700">
-                      {evaluation.comment || "该评价未填写文字内容。"}
-                    </p>
+                    {evaluation.comment && (
+                      <p className="text-sm leading-7 text-gray-700">
+                        {evaluation.comment}
+                      </p>
+                    )}
                     <div className="flex flex-wrap gap-2">
                       <StatPill label="综合评分" value={formatScore(evaluation.avg_rating)} />
                       {visibleDimensions.map((dimension) => (

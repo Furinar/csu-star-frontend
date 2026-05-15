@@ -307,7 +307,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                     {
                       label: "推荐指数",
                       score: course.avg_score,
-                      gradient: courseTheme.ratingGradients[0],
+                      gradient: "linear-gradient(90deg, #f87171 0%, #ef4444 100%)",
                     },
                     {
                       label: "收获感",
@@ -380,7 +380,7 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
               {
                 label: "推荐指数",
                 score: course.avg_score,
-                gradient: courseTheme.ratingGradients[0],
+                gradient: "linear-gradient(90deg, #f87171 0%, #ef4444 100%)",
               },
               {
                 label: "收获感",

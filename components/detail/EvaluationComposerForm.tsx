@@ -172,6 +172,15 @@ export default function EvaluationComposerForm({
                       onChange={(value) =>
                           setRatings((prev) => ({...prev, [dimension.key]: value}))
                       }
+                      hint={
+                        dimension.key === "rating_homework"
+                          ? "作业越多，通常课程节奏越紧，备课和完成任务压力也更大"
+                          : dimension.key === "rating_gain"
+                            ? "收获感越高，说明这门课越值得投入"
+                            : dimension.key === "rating_exam_difficulty"
+                              ? "考试越难，通常要求更高，复习压力也更大"
+                              : undefined
+                      }
                   />
               ))}
             </div>
@@ -277,6 +286,33 @@ export default function EvaluationComposerForm({
                                         [dimension.key]: value,
                                       }))
                                   }
+                                  hint={
+                                    dimension.key === "rating_homework"
+                                      ? {
+                                          1: "作业很少",
+                                          2: "作业偏少",
+                                          3: "作业适中",
+                                          4: "作业偏多",
+                                          5: "作业很多",
+                                        }[ratings[dimension.key] ?? 0]
+                                      : dimension.key === "rating_gain"
+                                        ? {
+                                            1: "收获有限",
+                                            2: "收获一般",
+                                            3: "有所收获",
+                                            4: "收获颇丰",
+                                            5: "收获满满",
+                                          }[ratings[dimension.key] ?? 0]
+                                        : dimension.key === "rating_exam_difficulty"
+                                          ? {
+                                              1: "考试很易",
+                                              2: "考试偏易",
+                                              3: "难度适中",
+                                              4: "考试偏难",
+                                              5: "考试很难",
+                                            }[ratings[dimension.key] ?? 0]
+                                          : undefined
+                                  }
                               />
                           ))}
                         </div>
@@ -334,22 +370,16 @@ export default function EvaluationComposerForm({
             </div>
         ) : null}
 
-        <div className="flex items-center w-full justify-between">
-          <div className="text-red-400 pl-4">
-            Tip: 收获感越多，作业量越少，考试难度越低，评分越高。
-          </div>
-
-          <div className="flex justify-center sm:justify-end">
-            <ActionSubmitButton
-                defaultText={submitLabel}
-                sentText="提交中..."
-                isSent={isSubmitting}
-                onClick={() => {
-                  handleSubmit().catch(console.error);
-                }}
-                disabled={!allRequiredRated || isSubmitting}
-            />
-          </div>
+        <div className="flex items-center w-full justify-end">
+          <ActionSubmitButton
+              defaultText={submitLabel}
+              sentText="提交中..."
+              isSent={isSubmitting}
+              onClick={() => {
+                handleSubmit().catch(console.error);
+              }}
+              disabled={!allRequiredRated || isSubmitting}
+          />
         </div>
       </div>
   );

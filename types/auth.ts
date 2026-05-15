@@ -78,7 +78,7 @@ export interface TokenResponse {
 
 
 export interface RegisterByEmailRequest {
-  avatar_url: string;
+  avatar_url?: string;
   email: string;
   invite_code: string;
   nickname: string;

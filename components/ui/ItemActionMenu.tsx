@@ -23,15 +23,10 @@ export default function ItemActionMenu({
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [menuStyle, setMenuStyle] = useState<{ top: number; left?: number; right?: number }>({ top: 0 });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -102,7 +97,7 @@ export default function ItemActionMenu({
       >
         {trigger ?? <i className="uil uil-ellipsis-h text-lg" />}
       </button>
-      {open && mounted
+      {open
         ? createPortal(
             <div
               ref={menuRef}

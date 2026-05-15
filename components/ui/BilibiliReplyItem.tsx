@@ -4,10 +4,8 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { UserBrief } from "@/types/detail";
 import { formatDateTimeZh } from "@/lib/date";
-import { avatarOptions } from "@/data/avatar";
 import ItemActionMenu, { ItemActionMenuItem } from "./ItemActionMenu";
-
-const DEFAULT_AVATAR = avatarOptions[0]?.url ?? "";
+import { DEFAULT_AVATAR_SRC, resolveAvatarSrc } from "@/lib/avatar";
 
 export interface BilibiliReplyItemProps {
   id: string | number;
@@ -37,7 +35,8 @@ export default function BilibiliReplyItem({
   avatarActions = [],
   shouldFlash = false,
 }: BilibiliReplyItemProps) {
-  const displayUser = user || { nickname: "匿名用户", avatar_url: DEFAULT_AVATAR };
+  const displayUser = user || { nickname: "匿名用户", avatar_url: DEFAULT_AVATAR_SRC };
+  const avatarSrc = resolveAvatarSrc(displayUser.avatar_url, DEFAULT_AVATAR_SRC);
   const [isFlashing, setIsFlashing] = useState(false);
 
   useEffect(() => {
@@ -74,7 +73,7 @@ export default function BilibiliReplyItem({
             trigger={
               <div className="relative h-4.5 w-4.5 cursor-pointer overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
                 <Image
-                  src={displayUser.avatar_url || DEFAULT_AVATAR}
+                  src={avatarSrc}
                   alt={displayUser.nickname}
                   fill
                   className="object-cover"
@@ -87,7 +86,7 @@ export default function BilibiliReplyItem({
         ) : (
           <div className="relative h-4.5 w-4.5 overflow-hidden rounded-full border border-gray-100 bg-gray-50 md:h-6 md:w-6">
             <Image
-              src={displayUser.avatar_url || DEFAULT_AVATAR}
+              src={avatarSrc}
               alt={displayUser.nickname}
               fill
               className="object-cover"

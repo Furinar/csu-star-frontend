@@ -24,6 +24,7 @@ import {useHasMounted} from "@/hooks/useHasMounted";
 import {feedback} from "@/store/useFeedbackStore";
 import {useAuthStore} from "@/store/useAuthStore";
 import type {UserProfile} from "@/types/auth";
+import {DEFAULT_AVATAR_SRC, resolveAvatarSrc} from "@/lib/avatar";
 import type {
   CourseEvaluation,
   DownloadRecord,
@@ -130,6 +131,10 @@ export default function Me() {
       accountMode,
       emailStatus,
       profile,
+  );
+  const profileAvatarSrc = resolveAvatarSrc(
+      profile?.avatar_url,
+      DEFAULT_AVATAR_SRC,
   );
   const isVerifiedCampusEmail = Boolean(
       emailStatus.email_verified || profile?.email_verified,
@@ -544,7 +549,7 @@ export default function Me() {
                   >
                     <img
                         className="h-28 w-28 rounded-full border-4 border-white/50 object-cover shadow-lg transition-transform duration-300 group-hover:scale-[1.02] md:h-48 md:w-48"
-                        src={profile?.avatar_url || "https://img.cdn1.vip/i/69da3249c4d89_1775907401.webp"}
+                        src={profileAvatarSrc}
                         alt="User Avatar"
                     />
                     <div

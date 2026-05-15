@@ -108,7 +108,7 @@ function CourseScoreCard({
           label="推荐指数"
           score={normalizeRating(avgScore)}
           maxScore={5}
-          gradient={courseTheme.ratingGradients[0]}
+          gradient="linear-gradient(90deg, #f87171 0%, #ef4444 100%)"
           compact={compact}
         />
         <RatingBar
@@ -318,7 +318,19 @@ export default function RandomBook() {
             </div>
           </div>
 
-          <div className="flex min-h-[172px] gap-3 md:contents md:min-h-0">
+          <div className="flex flex-col min-h-[172px] gap-3 md:contents md:min-h-0">
+            <div className="right flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-sm md:hidden">
+              <CourseScoreCard
+                avgScore={course.avg_score}
+                avgHomework={course.avg_homework}
+                avgGain={course.avg_gain}
+                avgExamDiff={course.avg_exam_diff}
+                evalCount={course.eval_count}
+                compact
+                error={showErrorState}
+              />
+            </div>
+            
             <div className="teacher-card flex min-w-0 flex-1 flex-col overflow-auto rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-transform hover:-translate-y-1 md:rounded-2xl md:p-5">
               <div className="mb-2 flex items-center gap-1 text-gray-500 md:mb-3 md:gap-2">
                 <i className="uil uil-user-circle text-base text-[var(--first-color)] md:text-xl"></i>
@@ -344,18 +356,6 @@ export default function RandomBook() {
                   </div>
                 )}
               </div>
-            </div>
-
-            <div className="right flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-sm md:hidden">
-              <CourseScoreCard
-                avgScore={course.avg_score}
-                avgHomework={course.avg_homework}
-                avgGain={course.avg_gain}
-                avgExamDiff={course.avg_exam_diff}
-                evalCount={course.eval_count}
-                compact
-                error={showErrorState}
-              />
             </div>
           </div>
         </div>

@@ -114,9 +114,13 @@ export default function MeEvaluations({
                           ) : null}
                         </div>
                       </div>
-                      <div className="mb-2.5 rounded-xl bg-slate-100/90 px-3 py-2.5 text-xs leading-5 text-gray-700 sm:mb-3 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
-                        {item.comment || "未填写文字评价"}
-                      </div>
+                      {item.comment ? (
+                        <div className="mb-2.5 rounded-xl bg-slate-100/90 px-3 py-2.5 text-xs leading-5 text-gray-700 sm:mb-3 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
+                          {item.comment}
+                        </div>
+                      ) : (
+                        <div className="mb-2.5 sm:mb-3"></div>
+                      )}
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-medium text-slate-600 sm:gap-x-5 sm:gap-y-2 sm:text-sm">
                         <div className="flex items-center gap-1 transition-colors sm:gap-1.5">
                           <i className="uil uil-star text-base text-amber-500 sm:text-lg"></i>
