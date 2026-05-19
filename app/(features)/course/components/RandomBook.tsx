@@ -319,7 +319,7 @@ export default function RandomBook() {
           </div>
 
           <div className="flex flex-col min-h-[172px] gap-3 md:contents md:min-h-0">
-            <div className="right flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-3 shadow-sm md:hidden">
+            <div className="right flex min-w-0 flex-1 flex-col rounded-xl border border-gray-100 bg-white p-3 shadow-sm md:hidden">
               <CourseScoreCard
                 avgScore={course.avg_score}
                 avgHomework={course.avg_homework}

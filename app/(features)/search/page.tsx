@@ -26,7 +26,7 @@ const searchConfig: Array<{
     label: "全局",
     type: "all",
     icon: "globe",
-    placeholder: "探索有趣的资源、课程和教师，发现更多精彩内容...",
+    placeholder: "搜索有趣的事情...",
   },
   {
     label: "资源",
@@ -594,7 +594,7 @@ export default function Search() {
           <div className="text-lg sm:text-xl md:text-2xl text-gray-800">
             开始搜索{currentSearchType?.label}吧！
           </div>
-          <div className="text-sm sm:text-base md:text-lg text-gray-500">
+          <div className="text-xs sm:text-base md:text-lg text-gray-500">
             使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
           </div>
         </div>

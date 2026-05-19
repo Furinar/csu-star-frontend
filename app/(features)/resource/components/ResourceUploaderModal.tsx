@@ -69,7 +69,7 @@ export default function ResourceUploaderModal({
         aria-label="关闭上传资源弹层"
       />
       <div
-        className="relative mx-auto flex min-h-full items-end justify-center p-2 pb-safe sm:p-3 md:items-center md:p-6"
+        className="relative mx-auto flex min-h-full items-center justify-center p-2 pb-safe sm:p-3 md:p-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.18)] sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] md:rounded-[32px]">
@@ -80,7 +80,7 @@ export default function ResourceUploaderModal({
             ariaLabel="关闭上传资源弹层"
             disabled={isUploading}
           />
-          <div className="modal-scrollbar max-h-[calc(100dvh-1rem)] overflow-x-hidden overflow-y-auto px-4 pb-4 pt-14 sm:max-h-[calc(100dvh-1.5rem)] sm:px-5 sm:pb-5 sm:pt-16 md:max-h-[calc(100dvh-3rem)] md:px-8 md:pb-8">
+          <div className="modal-scrollbar max-h-[calc(100dvh-1rem)] overflow-x-hidden overflow-y-auto px-4 pb-4 pt-4 sm:max-h-[calc(100dvh-1.5rem)] sm:px-5 sm:pb-5 sm:pt-5 md:max-h-[calc(100dvh-3rem)] md:px-8 md:pb-8">
             <ResourceUploader
               isModal
               onClose={() => {

@@ -78,7 +78,6 @@ export function createEmptyPaginated<T>(): PaginatedData<T> {
 export function createEmptyContributionSummary(): ContributionSummary {
   return {
     weeks: [],
-    total_score: 0,
     active_days: 0,
     current_streak: 0,
     max_day_score: 0,

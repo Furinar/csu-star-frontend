@@ -43,6 +43,21 @@ const StyledWrapper = styled.div<{ $disabled?: boolean; $tone?: "low" | "high" |
     transform: translateY(1px);
   }
 
+  @media (max-width: 640px) {
+    height: 40px;
+    padding: 6px 12px;
+
+    .hint {
+      font-size: 10px;
+      bottom: -12px;
+    }
+
+    .rating svg {
+      width: 1.6rem;
+      height: 1.6rem;
+    }
+  }
+
   .hint-low {
     color: #dc2626;
   }

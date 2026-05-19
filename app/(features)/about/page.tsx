@@ -4,12 +4,19 @@ import SponsorButton from "./components/SponsorButton";
 type Member = {
   name: string;
   avatar: string;
-  title: string;
-  location: string;
+  title?: string;
+  location?: string;
   website?: string;
   email?: string;
   bio?: string;
   github?: string;
+};
+
+type FriendlySite = {
+  name: string;
+  url: string;
+  description?: string;
+  avatar: string;
 };
 
 const CORE_MEMBERS: Member[] = [
@@ -45,6 +52,9 @@ const CORE_MEMBERS: Member[] = [
     website: "https://skina.cn",
     github: "https://github.com/IAMNAVY",
   },
+];
+
+const AI_MEMBERS: Member[] = [
   {
     name: "GPT-5.4",
     avatar:
@@ -77,12 +87,21 @@ const CORE_MEMBERS: Member[] = [
 //   {}
 // ];
 
+const FRIENDLY_SITES: FriendlySite[] = [
+  {
+    name: "zonenan",
+    url: "https://zonenan.pro",
+    avatar: "https://img.cdn1.vip/i/6a0965030594d_1779000579.png",
+  },
+];
+
 const COMMUNITY_MEMBERS: Member[] = [
   {
     name: "雲",
     avatar: "https://img.cdn1.vip/i/69da2f7505776_1775906677.jpg",
     title: "Contributor",
     location: "Jiangxi, China",
+    bio: "非常好网站，使我的大拇指旋转",
     // website: "https://#",
     // github: "https://github.com/#",
   },
@@ -118,8 +137,50 @@ const COMMUNITY_MEMBERS: Member[] = [
     title: "Contributor",
     github: "https://github.com/inwildwind",
     website: "https://github.com/inwildwind",
+  }, {
+    name: "线粒体XianlitiCN",
+    avatar: "https://img.cdn1.vip/i/6a096c6a4ad7e_1779002474.webp",
+    title: "Contributor",
+    github: "https://github.com/MitochondriaCN"
   },
-];
+  {
+    name: "night_star",
+    avatar: "https://cdn.phototourl.com/free/2026-05-14-55f9d260-32cd-4746-ad78-3a017b51f921.png",
+    bio: "星夜海"
+  },
+  {
+    name: "Your Sincere Bomber",
+    avatar: "https://img.cdn1.vip/i/6a09716a8159a_1779003754.webp",
+    bio: "祝csu star打造一流中南资源库",
+    github: "https://space.bilibili.com/3546757845747775",
+    website: "https://space.bilibili.com/3546757845747775",
+  },
+  {
+    name: "yumi",
+    avatar: "https://codeforces.com/userpic.codeforces.org/4640703/title/f77d6f70fcdc6c93.jpg",
+    bio: "等日落西山，等冬去春来，等尘埃落定。",
+
+  },
+  {
+    name: "Leontc",
+    avatar: "https://img.cdn1.vip/i/6a0970fc5b9ef_1779003644.jpg",
+    bio: "每个人都有自己的花期，跟随自己的节奏，去绽放!",
+    github: "https://leontc-liujiahui.github.io",
+    website: "https://leontc-liujiahui.github.io",
+  },
+  {
+    name: "漠枫",
+    avatar: "https://img.cdn1.vip/i/6a0970fcaa336_1779003644.webp",
+    bio: "毕生心血全部拿来了，只求狠狠灌满CSU STAR",
+    location: "🐔院小手子"
+  },
+  {
+    name: "cookie",
+    avatar: "https://img.cdn1.vip/i/6a0970fc81b2f_1779003644.webp",
+    location: "HeiLongjiang,China",
+    bio: "我真的上过中南大学吗🥵",
+  },
+]
 
 function LocationIcon() {
   return (
@@ -210,17 +271,20 @@ function TeamMemberCard({member}: { member: Member }) {
               </a>
           ) : null}
 
-          <figure className={styles.avatar}>
-            <img
-                className={styles.avatarImg}
-                src={member.avatar}
-                alt={`${member.name}'s Profile Picture`}
-            />
-          </figure>
+          <a className={styles.avatarLink} href={member.website || member.github || undefined} target="_blank"
+             rel="noreferrer">
+            <figure className={styles.avatar}>
+              <img
+                  className={styles.avatarImg}
+                  src={member.avatar}
+                  alt={`${member.name}'s Profile Picture`}
+              />
+            </figure>
+          </a>
 
           <div className={styles.data}>
             <h3 className={styles.name}>{member.name}</h3>
-            <p className={styles.org}>{member.title}</p>
+            {member.title ? <p className={styles.org}>{member.title}</p> : null}
             {member.bio ? (
                 <div className={styles.bioRow}>
                   <div className={styles.descTitle}>
@@ -232,15 +296,17 @@ function TeamMemberCard({member}: { member: Member }) {
             ) : null}
 
             <div className={styles.profiles}>
-              <section className={styles.desc}>
-                <div className={styles.descTitle}>
-                  <h4 className={styles.srOnly}>Location</h4>
-                  <LocationIcon/>
-                </div>
-                <ul className={styles.descList}>
-                  <li className={styles.descItem}>{member.location}</li>
-                </ul>
-              </section>
+              {member.location ? (
+                  <section className={styles.desc}>
+                    <div className={styles.descTitle}>
+                      <h4 className={styles.srOnly}>Location</h4>
+                      <LocationIcon/>
+                    </div>
+                    <ul className={styles.descList}>
+                      <li className={styles.descItem}>{member.location}</li>
+                    </ul>
+                  </section>
+              ) : null}
 
               {member.website ? (
                   <section className={styles.desc}>
@@ -277,6 +343,56 @@ function TeamMemberCard({member}: { member: Member }) {
                     </p>
                   </section>
               ) : null}
+            </div>
+          </div>
+        </article>
+      </div>
+  );
+}
+
+function FriendlySiteCard({site}: { site: FriendlySite }) {
+  return (
+      <div className={styles.member}>
+        <article className={styles.teamMember}>
+          <a
+              className={styles.githubTopRight}
+              href={site.url}
+              target="_blank"
+              rel="noreferrer"
+          >
+            <WebsiteIcon/>
+          </a>
+
+          <a className={styles.avatarLink} href={site.url} target="_blank" rel="noreferrer">
+            <figure className={styles.avatar}>
+              <img
+                  className={styles.avatarImg}
+                  src={site.avatar}
+                  alt={`${site.name}'s Profile Picture`}
+              />
+            </figure>
+          </a>
+
+          <div className={styles.data}>
+            <h3 className={styles.name}>{site.name}</h3>
+            {site.description ? <p className={styles.org}>{site.description}</p> : null}
+            <div className={styles.profiles}>
+              <section className={styles.desc}>
+                <div className={styles.descTitle}>
+                  <h4 className={styles.srOnly}>Website</h4>
+                  <WebsiteIcon/>
+                </div>
+                <p className={styles.descText}>
+                  <a
+                      className={styles.descLink}
+                      href={site.url}
+                      target="_blank"
+                      rel="noreferrer"
+                  >
+                    {site.url.replace(/^https?:\/\//, "")}
+                  </a>
+                </p>
+              </section>
             </div>
           </div>
         </article>
@@ -339,6 +455,25 @@ export default function AboutPage() {
             <div className={styles.container}>
               <div className={styles.teamGrid}>
                 <div className={styles.info}>
+                  <h2 className={styles.title}>友站</h2>
+                  <p className={styles.lead}>
+                    Our affiliated sites and friends across the CSU community.
+                    Feel free to visit and explore their projects.
+                  </p>
+                </div>
+                <div className={styles.members}>
+                  {FRIENDLY_SITES.map((site) => (
+                      <FriendlySiteCard key={site.name} site={site}/>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.teamList}>
+            <div className={styles.container}>
+              <div className={styles.teamGrid}>
+                <div className={styles.info}>
                   <h2 className={styles.title}>赞助成员</h2>
                   <p className={styles.lead}>
                     Here we express our sincere gratitude to our sponsor members
@@ -369,6 +504,25 @@ export default function AboutPage() {
                 </div>
                 <div className={styles.members}>
                   {COMMUNITY_MEMBERS.map((member) => (
+                      <TeamMemberCard key={member.name} member={member}/>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.teamList}>
+            <div className={styles.container}>
+              <div className={styles.teamGrid}>
+                <div className={styles.info}>
+                  <h2 className={styles.title}>AI</h2>
+                  <p className={styles.lead}>
+                    The AI assistants that have contributed their intelligence
+                    to the development of CSU Star, working behind the scenes.
+                  </p>
+                </div>
+                <div className={styles.members}>
+                  {AI_MEMBERS.map((member) => (
                       <TeamMemberCard key={member.name} member={member}/>
                   ))}
                 </div>

@@ -194,25 +194,27 @@ export default function CourseGlobalEvaluationModal({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 rounded-3xl border border-slate-100 bg-slate-50/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="inline-flex flex-col gap-3 rounded-3xl border border-slate-100 bg-slate-50/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <div className="min-w-0">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-sky-500/80 mb-0.5">
                 SELECTED COURSE
               </div>
-              <div className="font-semibold text-slate-800">
-                {selectedCourse.name}
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-slate-800 truncate">{selectedCourse.name}</span>
+                <button
+                  onClick={() => {
+                    setSelectedCourse(null);
+                    setRelatedTeachers([]);
+                    setQuery("");
+                    setOptions([]);
+                  }}
+                  className="shrink-0 text-slate-400 hover:text-sky-600 transition-colors"
+                  title="更换课程"
+                >
+                  <i className="uil uil-exchange text-base" />
+                </button>
               </div>
             </div>
-            <button
-              type="button"
-              className="w-full rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:w-auto sm:py-1.5"
-              onClick={() => {
-                setSelectedCourse(null);
-                setRelatedTeachers([]);
-              }}
-            >
-              重新选择
-            </button>
           </div>
           <EvaluationComposerForm
             key={`course-global-form-${formVersion}-${selectedCourse.id}`}

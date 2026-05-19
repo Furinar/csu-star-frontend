@@ -119,12 +119,12 @@ export default function Home() {
             <img
                 src="/undraw_route-planning_2psv.svg"
                 alt=""
-                className="w-full max-w-[260px] sm:max-w-[340px] md:max-w-none"
+                className="w-full max-w-[360px] sm:max-w-[440px] md:max-w-none"
             />
           </div>
         </div>
 
-        <div className="w-full flex flex-col items-center justify-center gap-2 mt-70 md:mt-20">
+        <div className="w-full flex flex-col items-center justify-center gap-2 mt-20 md:mt-20">
         <span className="text-gray-500 text-sm">
           本站仅供学习 严禁商业行为
         </span>

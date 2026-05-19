@@ -69,13 +69,13 @@ export default function DetailComposerModal({
         onClick={onClose}
         aria-label="关闭表单弹层"
       />
-      <div className="flex min-h-full items-end justify-center p-2 pb-safe sm:p-3 md:items-center md:p-6">
+      <div className="flex min-h-full items-center justify-center p-2 pb-safe sm:p-3 md:p-6">
         <div
           className={`relative flex max-h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[24px] border border-slate-200/80 bg-white sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] md:rounded-[28px] ${tone.ring}`}
         >
           <div className="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-white blur-3xl opacity-50" />
           <FloatingCloseButton onClick={onClose} ariaLabel="关闭表单弹层" />
-          <div className="modal-scrollbar relative z-10 w-full overflow-y-auto px-4 pb-4 pt-14 sm:px-5 sm:pb-5 sm:pt-16 md:px-8 md:pb-8">
+          <div className="modal-scrollbar relative z-10 w-full overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5 md:px-8 md:pb-8">
             {children}
           </div>
         </div>

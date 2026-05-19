@@ -30,6 +30,7 @@ interface MeOverviewProps {
   profile: UserProfile | null;
   accountMode: AccountMode;
   contributionData: ContributionSummary;
+  contributionScore: number;
   onOpenPanel: (panel: PanelKey) => void;
 }
 
@@ -68,6 +69,7 @@ export default function MeOverview({
   profile,
   accountMode,
   contributionData,
+  contributionScore,
   onOpenPanel,
 }: MeOverviewProps) {
   const router = useRouter();
@@ -179,7 +181,7 @@ export default function MeOverview({
                     <>
                       累计{" "}
                       <span className="text-emerald-400">
-                        {formatNumber(contributionData.total_score)}
+                        {formatNumber(contributionScore)}
                       </span>{" "}
                       分贡献
                     </>

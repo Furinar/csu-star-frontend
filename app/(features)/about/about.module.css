@@ -198,6 +198,15 @@
     height: 100%;
     border-radius: 9999px;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.avatarImg:hover {
+    transform: scale(1.1);
+}
+
+.avatarLink {
+    display: contents;
 }
 
 .data {

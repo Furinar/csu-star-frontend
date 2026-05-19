@@ -175,7 +175,7 @@ export function DetailSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-[24px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:rounded-[32px] md:p-7">
+    <section className="rounded-[24px] border border-slate-200/80 bg-white/90 px-2 py-3 shadow-[0_16px_50px_rgba(15,23,42,0.05)] backdrop-blur-xl md:rounded-[32px] md:p-7">
       <div className="flex flex-col gap-2.5 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between md:gap-3 md:pb-5">
         <div>
           <h2 className="text-xl font-semibold tracking-[-0.04em] text-slate-950 md:text-2xl">{title}</h2>

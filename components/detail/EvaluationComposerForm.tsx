@@ -154,7 +154,7 @@ export default function EvaluationComposerForm({
   };
 
   return (
-      <div className="mx-auto w-full max-w-4xl space-y-5 sm:space-y-6">
+      <div className="mx-auto w-full max-w-4xl space-y-3 sm:space-y-5 md:space-y-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
           {/* Left Side: Primary Item Evaluation */}
           <div className="flex h-full flex-col">
@@ -163,7 +163,7 @@ export default function EvaluationComposerForm({
                 {evaluationType === "teacher" ? "教师评分" : "课程评分"}
               </h3>
             </div>
-            <div className="grid flex-1 gap-3">
+            <div className="grid flex-1 gap-2 sm:gap-3">
               {primaryDimensions.map((dimension) => (
                   <RatingStar
                       key={dimension.key}
@@ -174,11 +174,29 @@ export default function EvaluationComposerForm({
                       }
                       hint={
                         dimension.key === "rating_homework"
-                          ? "作业越多，通常课程节奏越紧，备课和完成任务压力也更大"
+                          ? {
+                              1: "作业很多",
+                              2: "作业偏多",
+                              3: "作业适中",
+                              4: "作业偏少",
+                              5: "作业很少",
+                            }[ratings[dimension.key] ?? 0]
                           : dimension.key === "rating_gain"
-                            ? "收获感越高，说明这门课越值得投入"
+                            ? {
+                                1: "收获有限",
+                                2: "收获一般",
+                                3: "有所收获",
+                                4: "收获颇丰",
+                                5: "收获满满",
+                              }[ratings[dimension.key] ?? 0]
                             : dimension.key === "rating_exam_difficulty"
-                              ? "考试越难，通常要求更高，复习压力也更大"
+                              ? {
+                                  1: "考试很难",
+                                  2: "考试偏难",
+                                  3: "难度适中",
+                                  4: "考试偏易",
+                                  5: "考试很易",
+                                }[ratings[dimension.key] ?? 0]
                               : undefined
                       }
                   />
@@ -273,7 +291,7 @@ export default function EvaluationComposerForm({
                       <div
                           className={`h-full ${!enableRelated ? "opacity-40 grayscale blur-[1px] pointer-events-none" : ""}`}
                       >
-                        <div className={`grid gap-3 h-full`}>
+                        <div className={`grid gap-2 sm:gap-3 h-full`}>
                           {linkedDimensions.map((dimension) => (
                               <RatingStar
                                   key={dimension.key}
@@ -326,9 +344,8 @@ export default function EvaluationComposerForm({
                 </div>
               </div>
           ) : (
-              <div
-                  className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
+                <div className="flex flex-row items-center justify-between gap-3">
                   <div className="text-sm font-medium text-slate-800">评价内容</div>
                   <ModernCheckbox
                       checked={anonymous}
@@ -349,8 +366,7 @@ export default function EvaluationComposerForm({
         </div>
 
         {evaluationType === "teacher" ? (
-            <div
-                className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
+            <div className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-[0_16px_42px_rgba(15,23,42,0.05)] sm:p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm font-medium text-slate-800">评价内容</div>
                 <ModernCheckbox

@@ -66,7 +66,6 @@ export interface ContributionCell {
 
 export interface ContributionSummary {
   weeks: ContributionCell[][];
-  total_score: number;
   active_days: number;
   current_streak: number;
   max_day_score: number;
@@ -271,6 +270,10 @@ export interface EmailBindInput {
 export interface OAuthBindInput {
   provider: OAuthBindProvider;
   code: string;
+  meta?: {
+    code_verifier?: string;
+    code_challenge?: string;
+  };
 }
 
 export interface OAuthBindResult {
@@ -306,6 +309,7 @@ export interface MeDashboardData {
   departments: Department[];
   unreadCount: number;
   contributions: ContributionSummary;
+  contributionScore: number;
   resources: PaginatedData<ResourceItem>;
   favorites: PaginatedData<FavoriteItem>;
   teacherEvaluations: PaginatedData<TeacherEvaluation>;

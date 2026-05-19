@@ -45,7 +45,6 @@ type AnyRecord = Record<string, unknown>;
 
 const EMPTY_CONTRIBUTION_SUMMARY: ContributionSummary = {
   weeks: [],
-  total_score: 0,
   active_days: 0,
   current_streak: 0,
   max_day_score: 0,
@@ -393,6 +392,12 @@ export function getMyContributions() {
   );
 }
 
+export function getMyContributionScore() {
+  return unwrap<{ score: number }>(
+    service.get<ApiEnvelope<{ score: number }>>("/me/contribution-score"),
+  );
+}
+
 export function dailyCheckin() {
   return unwrap<{ points?: number }>(
     service.post<ApiEnvelope<{ points?: number }>>("/me/checkin"),
@@ -508,6 +513,7 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
     courseEvaluationsResult,
     pointsResult,
     contributionsResult,
+    contributionScoreResult,
     unreadCountResult,
   ] = await Promise.allSettled([
     getMyProfile(),
@@ -518,6 +524,7 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
     getMyCourseEvaluations({ page: 1, size: 100 }),
     getMyPoints({ page: 1, size: 100 }),
     getMyContributions(),
+    getMyContributionScore(),
     getUnreadNotificationCount(),
   ]);
 
@@ -539,6 +546,10 @@ export async function getMeDashboard(): Promise<MeDashboardData> {
       contributionsResult.status === "fulfilled"
         ? contributionsResult.value
         : EMPTY_CONTRIBUTION_SUMMARY,
+    contributionScore:
+      contributionScoreResult.status === "fulfilled"
+        ? contributionScoreResult.value.score
+        : 0,
     resources:
       resourcesResult.status === "fulfilled"
         ? normalizePaginated(resourcesResult.value)

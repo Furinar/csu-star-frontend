@@ -63,6 +63,10 @@ export default function CallBack() {
           await bindOAuthAccount({
             provider: context.platform as OAuthBindProvider,
             code,
+            meta: {
+              code_verifier: context.codeVerifier,
+              code_challenge: context.codeChallenge,
+            },
           });
           router.replace("/me");
         } else {

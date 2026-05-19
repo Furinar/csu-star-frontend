@@ -168,3 +168,84 @@ export const AdvancedTextarea: React.FC<TextareaProps> = ({ label, className, va
     </StyledWrapper>
   );
 };
+
+const UnderlineStyledWrapper = styled.div`
+  .input-group {
+    position: relative;
+    width: 100%;
+  }
+
+  .input-underline {
+    width: 100%;
+    border: none;
+    border-bottom: solid 1.5px #d1d5db;
+    border-radius: 0;
+    background: transparent;
+    padding: 0.75rem 0.25rem;
+    font-size: 1rem;
+    color: #111827;
+    transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input-underline::placeholder {
+    color: transparent;
+    transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .input-underline:focus::placeholder {
+    color: #9ca3af;
+  }
+
+  .input-underline.has-value::placeholder {
+    color: transparent;
+  }
+
+  .input-underline:focus {
+    outline: none;
+    border-bottom-color: var(--first-color, #8b5cf6);
+  }
+
+  .input-underline:disabled {
+    border-bottom-color: #e5e7eb;
+  }
+
+  .user-label {
+    position: absolute;
+    left: 0;
+    color: #6b7280;
+    pointer-events: none;
+    transform: translateY(0.75rem);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: transparent;
+  }
+
+  .input-underline:focus ~ .user-label,
+  .input-underline.has-value ~ .user-label {
+    transform: translateY(-50%) scale(0.8);
+    background-color: #fff;
+    padding: 0 0.2em;
+  }
+
+  .input-underline:focus ~ .user-label {
+    color: var(--first-color, #8b5cf6);
+  }
+`;
+
+interface UnderlineInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: React.ReactNode;
+}
+
+export const UnderlineInput: React.FC<UnderlineInputProps> = ({ label, className, value, ...props }) => {
+  return (
+    <UnderlineStyledWrapper className={className}>
+      <div className="input-group">
+        <input
+          {...props}
+          value={value}
+          className={`input-underline ${value ? "has-value" : ""}`}
+        />
+        <label className="user-label">{label}</label>
+      </div>
+    </UnderlineStyledWrapper>
+  );
+};

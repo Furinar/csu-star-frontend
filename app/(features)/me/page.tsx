@@ -8,6 +8,7 @@ import {useSearchParams} from "next/navigation";
 import {
   dailyCheckin,
   getMyContributions,
+  getMyContributionScore,
   getMyCourseEvaluations,
   getMyDownloads,
   getMyEmailStatus,
@@ -154,6 +155,7 @@ export default function Me() {
         departments: DEPARTMENTS,
         unreadCount: 0,
         contributions: createEmptyContributionSummary(),
+        contributionScore: 0,
         resources: createEmptyPaginated<ResourceItem>(),
         favorites: createEmptyPaginated<FavoriteItem>(),
         teacherEvaluations: createEmptyPaginated<TeacherEvaluation>(),
@@ -177,11 +179,13 @@ export default function Me() {
             profileResult,
             emailStatusResult,
             contributionsResult,
+            contributionScoreResult,
             unreadCountResult,
           ] = await Promise.allSettled([
             getMyProfile(),
             getMyEmailStatus(),
             getMyContributions(),
+            getMyContributionScore(),
             getUnreadNotificationCount(),
           ]);
 
@@ -207,6 +211,10 @@ export default function Me() {
                 contributionsResult.status === "fulfilled"
                     ? contributionsResult.value
                     : createEmptyContributionSummary(),
+            contributionScore:
+                contributionScoreResult.status === "fulfilled"
+                    ? contributionScoreResult.value.score
+                    : 0,
           };
 
           setDashboard((current) => ({
@@ -888,6 +896,7 @@ export default function Me() {
                     profile={profile}
                     accountMode={accountMode}
                     contributionData={contributionSummary}
+                    contributionScore={dashboard?.contributionScore ?? 0}
                     onOpenPanel={openProtectedPanel}
                 />
             ) : null}

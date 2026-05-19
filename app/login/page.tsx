@@ -167,8 +167,8 @@ export default function Login() {
       return;
     }
 
-    if (loginPassword.trim().length < 8) {
-      setLoginError("密码不能少于8位");
+    if (loginPassword.trim().length < 4) {
+      setLoginError("密码不能少于4位");
       return;
     }
 
@@ -286,21 +286,21 @@ export default function Login() {
                     onClick={() => handleOAuthLogin("qq")}
                     aria-label="使用 QQ 登录"
                 >
-                  <FaSvgIcon name="qq" />
+                  <FaSvgIcon name="qq"/>
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
                     aria-label="使用 GitHub 登录"
                 >
-                  <FaSvgIcon name="github" />
+                  <FaSvgIcon name="github"/>
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
                     aria-label="使用 Google 登录"
                 >
-                  <FaSvgIcon name="google" />
+                  <FaSvgIcon name="google"/>
                 </button>
               </div>
             </form>
@@ -384,12 +384,12 @@ export default function Login() {
               </button>
 
               <p className={styles["email-tip"]}>
-                Don&apos;t have a CSU Email?
+                Have any questions?
                 <a
                     href="https://www.yuque.com/yuqueyonghu-kumqgh/invqh6/xcuxhmgmt19pmrd5?singleDoc#"
                     className={styles["email-tip-link"]}
                 >
-                  Get Email
+                  Solve problems
                 </a>
               </p>
               <div className={styles["social-icons"]}>
@@ -398,21 +398,21 @@ export default function Login() {
                     onClick={() => handleOAuthLogin("qq")}
                     aria-label="使用 QQ 登录"
                 >
-                  <FaSvgIcon name="qq" />
+                  <FaSvgIcon name="qq"/>
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
                     aria-label="使用 GitHub 登录"
                 >
-                  <FaSvgIcon name="github" />
+                  <FaSvgIcon name="github"/>
                 </button>
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
                     aria-label="使用 Google 登录"
                 >
-                  <FaSvgIcon name="google" />
+                  <FaSvgIcon name="google"/>
                 </button>
               </div>
             </form>
