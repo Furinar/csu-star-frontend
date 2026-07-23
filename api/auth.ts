@@ -9,9 +9,10 @@ const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<n
 
 // WIP
 // 发送验证码
-const sendCaptcha = (email: string): Promise<ApiResponse<null>> => {
+const sendCaptcha = (email: string, purpose: string): Promise<ApiResponse<null>> => {
   return service.post('/auth/email/captcha', {
     email,
+    purpose,
   });
 }
 

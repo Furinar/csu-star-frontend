@@ -89,6 +89,7 @@ export default function OAuthPanel({
         </div>
 
         <div className="flex flex-col gap-4 py-2">
+          {/* 暂时注释 QQ 绑定
           <button
             type="button"
             onClick={() => handleOAuthBind("qq")}
@@ -98,6 +99,7 @@ export default function OAuthPanel({
             <FaSvgIcon name="qq" className="text-lg" />
             {bindings?.qq ? "QQ 已绑定" : "绑定 QQ 账号"}
           </button>
+          */}
           <button
             type="button"
             onClick={() => handleOAuthBind("github")}
@@ -107,6 +109,7 @@ export default function OAuthPanel({
             <FaSvgIcon name="github" className="text-lg" />
             {bindings?.github ? "GitHub 已绑定" : "绑定 GitHub 账号"}
           </button>
+          {/* 暂时注释 Google 绑定
           <button
             type="button"
             onClick={() => handleOAuthBind("google")}
@@ -134,6 +137,7 @@ export default function OAuthPanel({
             </svg>
             {bindings?.google ? "Google 已绑定" : "绑定 Google 账号"}
           </button>
+          */}
         </div>
       </div>
       <div className="mt-8 flex justify-end">

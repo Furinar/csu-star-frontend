@@ -102,6 +102,7 @@ export default function SearchLandingSection({
 }) {
   const [results, setResults] = useState<SearchResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const requestIdRef = useRef(0);
@@ -119,7 +120,7 @@ export default function SearchLandingSection({
     if (!append) {
       requestIdRef.current = currentRequestId;
       setError(null);
-      setResults(null);
+      setLoading(true);
       setPage(1);
     } else {
       setIsLoadingMore(true);
@@ -145,9 +146,9 @@ export default function SearchLandingSection({
       const message =
         err instanceof Error ? err.message : "列表加载失败，请稍后重试。";
       setError(message);
-      setResults((previous) => previous ?? createEmptyResults());
     } finally {
       if (requestIdRef.current === currentRequestId) {
+        setLoading(false);
         setIsLoadingMore(false);
       }
     }
@@ -157,7 +158,7 @@ export default function SearchLandingSection({
     void loadPage({ page: 1, append: false });
   }, [loadPage]);
 
-  const isLoading = results === null && error === null;
+  const isLoading = loading && results === null;
   const resolvedResults = results ?? createEmptyResults();
   const items = useMemo(() => getScopedItems(resolvedResults, type), [resolvedResults, type]);
   const total = useMemo(() => getScopedTotal(resolvedResults, type), [resolvedResults, type]);
@@ -206,7 +207,7 @@ export default function SearchLandingSection({
         </div>
       ) : null}
 
-      {!isLoading && error ? (
+      {!isLoading && error && items.length === 0 ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
           {error}
         </div>
@@ -218,8 +219,13 @@ export default function SearchLandingSection({
         </div>
       ) : null}
 
-      {!isLoading && !error && items.length > 0 ? (
+      {!isLoading && items.length > 0 ? (
         <>
+          {error ? (
+            <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
+              {error}
+            </div>
+          ) : null}
           <SearchResultsGrid items={items} />
           <div ref={loadMoreRef} className="py-4 text-center text-sm text-[var(--page-accent-text)]/80">
             {isLoadingMore ? "正在加载更多..." : null}

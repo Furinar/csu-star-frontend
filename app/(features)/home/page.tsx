@@ -89,7 +89,7 @@ export default function Home() {
         <div className="container mt-6 flex flex-col gap-6 md:mt-10 md:gap-10">
           <div className="title flex flex-col items-center justify-center gap-1.5 md:gap-2">
           <span className="hero-gradient-text text-[42px] font-bold leading-none sm:text-[54px] md:text-[70px]">
-            CSUSTAR.wiki
+            CSUSTAR.com
           </span>
             <span className="subtitle text-center leading-tight">
             <span className="text-[18px] font-bold text-gray-600 sm:text-[21px] md:text-[25px]">
@@ -125,7 +125,9 @@ export default function Home() {
         </div>
 
         <div className="w-full flex flex-col items-center justify-center gap-2 mt-20 md:mt-20">
-        <span className="text-gray-500 text-sm">
+        <span className="text-gray-500 text-sm text-center">
+          著作权归中南小黑板所有
+          <br/>
           本站仅供学习 严禁商业行为
         </span>
         </div>

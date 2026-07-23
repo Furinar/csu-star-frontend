@@ -483,9 +483,10 @@ export async function bindCampusEmail(payload: EmailBindInput) {
   );
 }
 
-export async function sendCampusEmailCaptcha(email: string) {
+export async function sendCampusEmailCaptcha(email: string, purpose: string) {
   const response = await service.post<ApiEnvelope<null>>("/auth/email/captcha", {
     email,
+    purpose,
   });
   const payload =
     "status" in response && "headers" in response ? response.data : response;

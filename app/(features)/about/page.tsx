@@ -19,69 +19,78 @@ type FriendlySite = {
   avatar: string;
 };
 
+
 const CORE_MEMBERS: Member[] = [
   {
-    name: "Furina",
-    avatar: "https://img.cdn1.vip/i/69da3249c4d89_1775907401.webp",
-    title: "前端工程师",
-    location: "Jiangxi, China",
-    website: "https://github.com/Furinar",
-    github: "https://github.com/Furinar",
-  },
-  {
-    name: "我是ai别看我",
-    avatar: "https://img.cdn1.vip/i/69e4ce82d50e5_1776602754.webp",
-    title: "后端工程师",
-    location: "Changsha, China",
-    website: "https://blog.starnighter.com",
-    github: "https://github.com/starnighter",
-  },
-  {
-    name: "Qichen",
-    avatar: "https://img.cdn1.vip/i/69da32882a9c5_1775907464.webp",
-    title: "后端工程师",
-    location: "蒙德, 提瓦特",
-    website: "https://github.com/QiChenSn",
-    github: "https://github.com/QiChenSn",
-  },
-  {
-    name: "Navy_",
-    avatar: "https://img.cdn1.vip/i/69da2d10ac1cf_1775906064.webp",
-    title: "数据 测试",
-    location: "Changsha, China",
-    website: "https://skina.cn",
-    github: "https://github.com/IAMNAVY",
-  },
-];
+    name: "中南小黑板",
+    avatar: "https://img.cdn1.vip/i/69fda09f47c6c_1778229407.webp",
 
-const AI_MEMBERS: Member[] = [
-  {
-    name: "GPT-5.4",
-    avatar:
-        "https://ts4.tc.mm.bing.net/th/id/OIP-C.9nB0y8FIZ156Iw0csey9NQAAAA?w=108&h=108&c=1&bgcl=1c8c09&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
-    title: "Slave",
-    location: "San Francisco, America",
-    website: "https://openai.com",
-    // github: "https://github.com/johnsoncodehk",
-  },
-  {
-    name: "Opus 4.6",
-    avatar:
-        "https://tse1-mm.cn.bing.net/th/id/OIP-C.tkL5azZ9GmOlrDDWwO4mNQHaHa?w=166&h=180&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3",
-    title: "Slave",
-    location: "San Francisco, America",
-    website: "https://www.anthopic.com",
-    // github: "https://github.com/antfu",
-  },
-  {
-    name: "Gemini -3.1-pro",
-    avatar:
-        "https://tse1-mm.cn.bing.net/th/id/OIP-C.E3H2gQjtfhGQrETciRrlPAAAAA?w=115&h=128&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3",
-    title: "Slave",
-    location: "San Francisco, America",
-    website: "https://gemini.google.com",
-  },
-];
+  }
+]
+
+// const CORE_MEMBERS: Member[] = [
+//   {
+//     name: "Furina",
+//     avatar: "https://img.cdn1.vip/i/69da3249c4d89_1775907401.webp",
+//     title: "前端工程师",
+//     location: "Jiangxi, China",
+//     website: "https://github.com/Furinar",
+//     github: "https://github.com/Furinar",
+//   },
+//   {
+//     name: "我是ai别看我",
+//     avatar: "https://img.cdn1.vip/i/69e4ce82d50e5_1776602754.webp",
+//     title: "后端工程师",
+//     location: "Changsha, China",
+//     website: "https://blog.starnighter.com",
+//     github: "https://github.com/starnighter",
+//   },
+//   {
+//     name: "Qichen",
+//     avatar: "https://img.cdn1.vip/i/69da32882a9c5_1775907464.webp",
+//     title: "后端工程师",
+//     location: "蒙德, 提瓦特",
+//     website: "https://github.com/QiChenSn",
+//     github: "https://github.com/QiChenSn",
+//   },
+//   {
+//     name: "Navy_",
+//     avatar: "https://img.cdn1.vip/i/69da2d10ac1cf_1775906064.webp",
+//     title: "数据 测试",
+//     location: "Changsha, China",
+//     website: "https://skina.cn",
+//     github: "https://github.com/IAMNAVY",
+//   },
+// ];
+//
+// const AI_MEMBERS: Member[] = [
+//   {
+//     name: "GPT-5.4",
+//     avatar:
+//         "https://ts4.tc.mm.bing.net/th/id/OIP-C.9nB0y8FIZ156Iw0csey9NQAAAA?w=108&h=108&c=1&bgcl=1c8c09&r=0&o=7&dpr=2&pid=ImgRC&rm=3",
+//     title: "Slave",
+//     location: "San Francisco, America",
+//     website: "https://openai.com",
+//     // github: "https://github.com/johnsoncodehk",
+//   },
+//   {
+//     name: "Opus 4.6",
+//     avatar:
+//         "https://tse1-mm.cn.bing.net/th/id/OIP-C.tkL5azZ9GmOlrDDWwO4mNQHaHa?w=166&h=180&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3",
+//     title: "Slave",
+//     location: "San Francisco, America",
+//     website: "https://www.anthopic.com",
+//     // github: "https://github.com/antfu",
+//   },
+//   {
+//     name: "Gemini -3.1-pro",
+//     avatar:
+//         "https://tse1-mm.cn.bing.net/th/id/OIP-C.E3H2gQjtfhGQrETciRrlPAAAAA?w=115&h=128&c=7&r=0&o=7&dpr=2&pid=1.7&rm=3",
+//     title: "Slave",
+//     location: "San Francisco, America",
+//     website: "https://gemini.google.com",
+//   },
+// ];
 
 // const SPONSOR_MEMBERS = [
 //   {}
@@ -95,92 +104,92 @@ const FRIENDLY_SITES: FriendlySite[] = [
   },
 ];
 
-const COMMUNITY_MEMBERS: Member[] = [
-  {
-    name: "雲",
-    avatar: "https://img.cdn1.vip/i/69da2f7505776_1775906677.jpg",
-    title: "Contributor",
-    location: "Jiangxi, China",
-    bio: "非常好网站，使我的大拇指旋转",
-    // website: "https://#",
-    // github: "https://github.com/#",
-  },
-  {
-    name: "冰寻卿",
-    avatar: "https://img.cdn1.vip/i/69da30608564d_1775906912.webp",
-    title: "Contributor",
-    location: "Guangxi, China",
-    website: "https://blog.bingxq.com",
-    // github: "https://github.com/#",
-  },
-  {
-    name: "没本事的辣椒油",
-    avatar: "https://img.cdn1.vip/i/69da312d3260c_1775907117.webp",
-    bio: "数学资料相关（特别是数学专业）可以dd我",
-    email: "97084588@qq.com",
-    title: "热心小蜜蜂",
-    location: "Changsha, China",
-    // website: "#",
-    // github: "https://github.com/#",
-  },
-  {
-    name: "Lukas",
-    avatar: "https://img.cdn1.vip/i/69dc8f301ed45_1776062256.jpg",
-    location: "Jilin, China",
-    title: "Contributor",
-    email: "3787960037@qq.com",
-  },
-  {
-    name: "野风",
-    avatar: "https://img.cdn1.vip/i/69e4c54cb959a_1776600396.webp",
-    location: "Changsha, China",
-    title: "Contributor",
-    github: "https://github.com/inwildwind",
-    website: "https://github.com/inwildwind",
-  }, {
-    name: "线粒体XianlitiCN",
-    avatar: "https://img.cdn1.vip/i/6a096c6a4ad7e_1779002474.webp",
-    title: "Contributor",
-    github: "https://github.com/MitochondriaCN"
-  },
-  {
-    name: "night_star",
-    avatar: "https://cdn.phototourl.com/free/2026-05-14-55f9d260-32cd-4746-ad78-3a017b51f921.png",
-    bio: "星夜海"
-  },
-  {
-    name: "Your Sincere Bomber",
-    avatar: "https://img.cdn1.vip/i/6a09716a8159a_1779003754.webp",
-    bio: "祝csu star打造一流中南资源库",
-    github: "https://space.bilibili.com/3546757845747775",
-    website: "https://space.bilibili.com/3546757845747775",
-  },
-  {
-    name: "yumi",
-    avatar: "https://codeforces.com/userpic.codeforces.org/4640703/title/f77d6f70fcdc6c93.jpg",
-    bio: "等日落西山，等冬去春来，等尘埃落定。",
-
-  },
-  {
-    name: "Leontc",
-    avatar: "https://img.cdn1.vip/i/6a0970fc5b9ef_1779003644.jpg",
-    bio: "每个人都有自己的花期，跟随自己的节奏，去绽放!",
-    github: "https://leontc-liujiahui.github.io",
-    website: "https://leontc-liujiahui.github.io",
-  },
-  {
-    name: "漠枫",
-    avatar: "https://img.cdn1.vip/i/6a0970fcaa336_1779003644.webp",
-    bio: "毕生心血全部拿来了，只求狠狠灌满CSU STAR",
-    location: "🐔院小手子"
-  },
-  {
-    name: "cookie",
-    avatar: "https://img.cdn1.vip/i/6a0970fc81b2f_1779003644.webp",
-    location: "HeiLongjiang,China",
-    bio: "我真的上过中南大学吗🥵",
-  },
-]
+// const COMMUNITY_MEMBERS: Member[] = [
+//   {
+//     name: "雲",
+//     avatar: "https://img.cdn1.vip/i/69da2f7505776_1775906677.jpg",
+//     title: "Contributor",
+//     location: "Jiangxi, China",
+//     bio: "非常好网站，使我的大拇指旋转",
+//     // website: "https://#",
+//     // github: "https://github.com/#",
+//   },
+//   {
+//     name: "冰寻卿",
+//     avatar: "https://img.cdn1.vip/i/69da30608564d_1775906912.webp",
+//     title: "Contributor",
+//     location: "Guangxi, China",
+//     website: "https://blog.bingxq.com",
+//     // github: "https://github.com/#",
+//   },
+//   {
+//     name: "没本事的辣椒油",
+//     avatar: "https://img.cdn1.vip/i/69da312d3260c_1775907117.webp",
+//     bio: "数学资料相关（特别是数学专业）可以dd我",
+//     email: "97084588@qq.com",
+//     title: "热心小蜜蜂",
+//     location: "Changsha, China",
+//     // website: "#",
+//     // github: "https://github.com/#",
+//   },
+//   {
+//     name: "Lukas",
+//     avatar: "https://img.cdn1.vip/i/69dc8f301ed45_1776062256.jpg",
+//     location: "Jilin, China",
+//     title: "Contributor",
+//     email: "3787960037@qq.com",
+//   },
+//   {
+//     name: "野风",
+//     avatar: "https://img.cdn1.vip/i/69e4c54cb959a_1776600396.webp",
+//     location: "Changsha, China",
+//     title: "Contributor",
+//     github: "https://github.com/inwildwind",
+//     website: "https://github.com/inwildwind",
+//   }, {
+//     name: "线粒体XianlitiCN",
+//     avatar: "https://img.cdn1.vip/i/6a096c6a4ad7e_1779002474.webp",
+//     title: "Contributor",
+//     github: "https://github.com/MitochondriaCN"
+//   },
+//   {
+//     name: "night_star",
+//     avatar: "https://cdn.phototourl.com/free/2026-05-14-55f9d260-32cd-4746-ad78-3a017b51f921.png",
+//     bio: "星夜海"
+//   },
+//   {
+//     name: "Your Sincere Bomber",
+//     avatar: "https://img.cdn1.vip/i/6a09716a8159a_1779003754.webp",
+//     bio: "祝csu star打造一流中南资源库",
+//     github: "https://space.bilibili.com/3546757845747775",
+//     website: "https://space.bilibili.com/3546757845747775",
+//   },
+//   {
+//     name: "yumi",
+//     avatar: "https://codeforces.com/userpic.codeforces.org/4640703/title/f77d6f70fcdc6c93.jpg",
+//     bio: "等日落西山，等冬去春来，等尘埃落定。",
+//
+//   },
+//   {
+//     name: "Leontc",
+//     avatar: "https://img.cdn1.vip/i/6a0970fc5b9ef_1779003644.jpg",
+//     bio: "每个人都有自己的花期，跟随自己的节奏，去绽放!",
+//     github: "https://leontc-liujiahui.github.io",
+//     website: "https://leontc-liujiahui.github.io",
+//   },
+//   {
+//     name: "漠枫",
+//     avatar: "https://img.cdn1.vip/i/6a0970fcaa336_1779003644.webp",
+//     bio: "毕生心血全部拿来了，只求狠狠灌满CSU STAR",
+//     location: "🐔院小手子"
+//   },
+//   {
+//     name: "cookie",
+//     avatar: "https://img.cdn1.vip/i/6a0970fc81b2f_1779003644.webp",
+//     location: "HeiLongjiang,China",
+//     bio: "我真的上过中南大学吗🥵",
+//   },
+// ]
 
 function LocationIcon() {
   return (
@@ -413,6 +422,7 @@ export default function AboutPage() {
               <strong>Make CSU Great Again</strong>
               <p className={styles.lead}>
                 欢迎来到 CSU Star | 中南大学一站式综合平台 <br/>
+                本社区由中南小黑板维护
                 我们致力于为中南学子提供一个开放、透明、公平的评教平台 <br/>
                 旨在实现知识平权、打破信息差 <br/>
               </p>
@@ -433,7 +443,7 @@ export default function AboutPage() {
             <div className={styles.container}>
               <div className={styles.teamGrid}>
                 <div className={styles.info}>
-                  <h2 className={styles.title}>核心开发成员</h2>
+                  <h2 className={styles.title}>核心成员</h2>
                   <p className={styles.lead}>
                     Core team members are those who are actively involved in the
                     maintenance of one or more core projects. They have made
@@ -503,32 +513,32 @@ export default function AboutPage() {
                   </p>
                 </div>
                 <div className={styles.members}>
-                  {COMMUNITY_MEMBERS.map((member) => (
-                      <TeamMemberCard key={member.name} member={member}/>
-                  ))}
+                  {/*{COMMUNITY_MEMBERS.map((member) => (*/}
+                  {/*    <TeamMemberCard key={member.name} member={member}/>*/}
+                  {/*))}*/}
                 </div>
               </div>
             </div>
           </section>
 
-          <section className={styles.teamList}>
-            <div className={styles.container}>
-              <div className={styles.teamGrid}>
-                <div className={styles.info}>
-                  <h2 className={styles.title}>AI</h2>
-                  <p className={styles.lead}>
-                    The AI assistants that have contributed their intelligence
-                    to the development of CSU Star, working behind the scenes.
-                  </p>
-                </div>
-                <div className={styles.members}>
-                  {AI_MEMBERS.map((member) => (
-                      <TeamMemberCard key={member.name} member={member}/>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
+          {/*<section className={styles.teamList}>*/}
+          {/*  <div className={styles.container}>*/}
+          {/*    <div className={styles.teamGrid}>*/}
+          {/*      <div className={styles.info}>*/}
+          {/*        <h2 className={styles.title}>AI</h2>*/}
+          {/*        <p className={styles.lead}>*/}
+          {/*          The AI assistants that have contributed their intelligence*/}
+          {/*          to the development of CSU Star, working behind the scenes.*/}
+          {/*        </p>*/}
+          {/*      </div>*/}
+          {/*      <div className={styles.members}>*/}
+          {/*        {AI_MEMBERS.map((member) => (*/}
+          {/*            <TeamMemberCard key={member.name} member={member}/>*/}
+          {/*        ))}*/}
+          {/*      </div>*/}
+          {/*    </div>*/}
+          {/*  </div>*/}
+          {/*</section>*/}
         </div>
 
         <footer className={styles.footer}>

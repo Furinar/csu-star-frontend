@@ -76,7 +76,7 @@ export default function EmailPanel({
 
     setIsSendingCode(true);
     try {
-      const message = await sendCampusEmailCaptcha(email);
+      const message = await sendCampusEmailCaptcha(email, "bind_email");
       setForm((current) => ({
         ...current,
         email,

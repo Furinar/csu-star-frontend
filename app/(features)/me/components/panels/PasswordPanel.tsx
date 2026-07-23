@@ -54,7 +54,7 @@ export default function PasswordPanel({
 
     setIsSendingCode(true);
     try {
-      const response = await sendCaptcha(email);
+      const response = await sendCaptcha(email, "reset_password");
       assertApiResponse(response, "验证码发送失败");
       setForm((current) => ({
         ...current,

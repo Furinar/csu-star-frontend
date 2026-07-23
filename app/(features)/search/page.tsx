@@ -401,10 +401,6 @@ export default function Search() {
       const message =
         err instanceof Error ? err.message : "搜索失败，请稍后重试。";
       setError(message);
-
-      if (!append) {
-        setResults(createEmptyResults());
-      }
     } finally {
       if (requestIdRef.current === currentRequestId) {
         if (append) {
@@ -609,7 +605,7 @@ export default function Search() {
         </div>
       ) : null}
 
-      {error ? (
+      {error && !hasSearched ? (
         <div className="mt-8 mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm md:mt-10 md:p-6">
           <div className="text-red-500 text-4xl mb-3">
             <i className="uil uil-exclamation-triangle"></i>
@@ -643,8 +639,18 @@ export default function Search() {
         </div>
       ) : null}
 
-      {!isLoading && !error && hasSearched && summary.total > 0 ? (
+      {!isLoading && hasSearched && summary.total > 0 ? (
         <div className="flex flex-col gap-6 md:gap-10">
+          {error ? (
+            <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm md:p-6">
+              <div className="text-red-500 text-4xl mb-3">
+                <i className="uil uil-exclamation-triangle"></i>
+              </div>
+              <div className="text-red-700 font-medium">搜索请求失败</div>
+              <div className="text-red-600 text-sm mt-1">{error}</div>
+            </div>
+          ) : null}
+
           <div className="flex flex-col md:flex-row md:justify-between gap-4 md:items-end">
             <div className="flex flex-col gap-2 text-sm text-gray-500 md:gap-3">
               <div className="flex items-center gap-4">

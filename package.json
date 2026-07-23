@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "deploy:cos": "pnpm run build && node scripts/deploy-cos.mjs",
+    "deploy:server": "pnpm run build && cd out && tar czf - . | ssh root@38.76.183.120 'tar xzf - -C /var/www/csustar.com/'",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"

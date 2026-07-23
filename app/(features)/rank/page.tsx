@@ -127,10 +127,7 @@ export default function Rank() {
       setLoading(true);
       setIsLoadingMore(false);
       setErrorMessage("");
-      setTotal(0);
       setPage(1);
-      setCourseItems([]);
-      setResourceItems([]);
     } else {
       setIsLoadingMore(true);
     }
@@ -179,7 +176,6 @@ export default function Rank() {
       if (requestIdRef.current !== currentRequestId) return;
       console.error(error);
       setErrorMessage("排行榜接口异常，请稍后重试。");
-      setTotal(0);
     } finally {
       if (requestIdRef.current === currentRequestId) {
         setLoading(false);
@@ -493,7 +489,7 @@ export default function Rank() {
             </div>
           </div>
 
-          {errorMessage ? (
+          {errorMessage && currentItemsEmpty ? (
             <div className="py-8 text-center md:py-12">
               <div className="text-red-500 text-base">{errorMessage}</div>
               <div className="mt-3 text-gray-500 text-sm">
@@ -502,14 +498,19 @@ export default function Rank() {
             </div>
           ) : null}
 
-          {!errorMessage && loading ? (
+          {loading ? (
             <div className="py-8 text-center text-gray-500 md:py-12">
               排行榜加载中...
             </div>
           ) : null}
 
-          {!errorMessage &&
-          !loading &&
+          {!loading && errorMessage && !currentItemsEmpty ? (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+              {errorMessage}
+            </div>
+          ) : null}
+
+          {!loading &&
           rankCategory === "resource" &&
           resourceItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
@@ -528,8 +529,7 @@ export default function Rank() {
             </div>
           ) : null}
 
-          {!errorMessage &&
-          !loading &&
+          {!loading &&
           rankCategory === "course" &&
           courseItems.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
@@ -548,7 +548,7 @@ export default function Rank() {
             </div>
           ) : null}
 
-          {!errorMessage && !loading && currentItemsEmpty ? (
+          {!loading && currentItemsEmpty && !errorMessage ? (
             <div className="flex flex-col items-center justify-center gap-3 py-8 md:gap-4 md:py-12">
               <div className="text-7xl text-gray-300">
                 <i className="uil uil-filter"></i>
@@ -560,7 +560,7 @@ export default function Rank() {
             </div>
           ) : null}
 
-          {!errorMessage && !loading && !currentItemsEmpty ? (
+          {!loading && !currentItemsEmpty ? (
             <div
               ref={loadMoreRef}
               className="flex justify-center py-4 text-sm text-gray-500 md:py-6"

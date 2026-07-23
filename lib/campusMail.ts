@@ -148,6 +148,22 @@ function resolveCaptchaFailureFeedback(
 ): CaptchaFailureFeedback {
   const normalizedMessage = message.toLowerCase();
 
+  if (isAlreadyRegisteredError(normalizedMessage)) {
+    return {
+      kind: "unregistered_mailbox",
+      title: customTitle ?? "该邮箱已注册",
+      description:
+        "该邮箱已注册过账号，请直接登录。如果忘记密码，可以使用找回密码功能。",
+      actionLabel: "去登录",
+      onAction: () => {
+        if (typeof window === "undefined") {
+          return;
+        }
+        window.location.href = "/login";
+      },
+    };
+  }
+
   if (isUnregisteredMailboxError(normalizedMessage)) {
     return {
       kind: "unregistered_mailbox",
@@ -217,6 +233,13 @@ function getPendingActivationDescription(scene?: CaptchaFailureScene) {
     default:
       return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
   }
+}
+
+function isAlreadyRegisteredError(message: string) {
+  return (
+    message.includes("已注册") ||
+    message.includes("already registered")
+  );
 }
 
 function isUnregisteredMailboxError(message: string) {

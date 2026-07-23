@@ -86,7 +86,7 @@ export default function Login() {
     setIsSendingCode(true);
 
     try {
-      await sendCaptcha(toCsuEmail(emailPrefix));
+      await sendCaptcha(toCsuEmail(emailPrefix), "register");
       showCaptchaSentFeedback(`请查收 ${toCsuEmail(emailPrefix)} 的邮件。`, "register");
     } catch (error) {
       const message = showCaptchaSendFailureFeedback(error, {
@@ -281,6 +281,7 @@ export default function Login() {
               <p>or login with social platforms</p>
 
               <div className={styles["social-icons"]}>
+                {/* 暂时注释 QQ 登录
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("qq")}
@@ -288,6 +289,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="qq"/>
                 </button>
+                */}
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
@@ -295,6 +297,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="github"/>
                 </button>
+                {/* 暂时注释 Google 登录
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
@@ -302,6 +305,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="google"/>
                 </button>
+                */}
               </div>
             </form>
           </div>
@@ -393,6 +397,7 @@ export default function Login() {
                 </a>
               </p>
               <div className={styles["social-icons"]}>
+                {/* 暂时注释 QQ 登录
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("qq")}
@@ -400,6 +405,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="qq"/>
                 </button>
+                */}
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("github")}
@@ -407,6 +413,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="github"/>
                 </button>
+                {/* 暂时注释 Google 登录
                 <button
                     type="button"
                     onClick={() => handleOAuthLogin("google")}
@@ -414,6 +421,7 @@ export default function Login() {
                 >
                   <FaSvgIcon name="google"/>
                 </button>
+                */}
               </div>
             </form>
           </div>

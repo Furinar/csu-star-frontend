@@ -3,6 +3,7 @@ export const OAUTH_BIND_ERROR_STORAGE_KEY = "oauth-bind-error-message";
 
 // QQ callback validation is exact-match, so do not normalize the configured URI.
 const OAUTH_REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI!;
+const GITHUB_REDIRECT_URI = process.env.NEXT_PUBLIC_GITHUB_REDIRECT_URI || OAUTH_REDIRECT_URI;
 
 export const AUTH_CONFIG = {
   qq: {
@@ -15,7 +16,7 @@ export const AUTH_CONFIG = {
   github: {
     url: "https://github.com/login/oauth/authorize",
     client_id: process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID!,
-    redirect_uri: OAUTH_REDIRECT_URI,
+    redirect_uri: GITHUB_REDIRECT_URI,
     scope: "read:user user:email",
     extraParams: {
       allow_signup: "true",
