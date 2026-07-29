@@ -1,5 +1,11 @@
 import type { Department } from "@/types/me";
+import { COLLEGES } from "@/data/colleges";
 
+/**
+ * 学院列表（id 与后端 departments 表对齐，勿随意改号）
+ * 1–32 为历史顺序；33 为官网新增的人工智能学院。
+ * 展示名以官网二级学院为准：https://www.csu.edu.cn/xyxk1/ejxy.htm
+ */
 export const DEPARTMENTS: Department[] = [
   { id: 1, name: "机电工程学院", code: "" },
   { id: 2, name: "能源科学与工程学院", code: "" },
@@ -33,13 +39,28 @@ export const DEPARTMENTS: Department[] = [
   { id: 30, name: "建筑与艺术学院", code: "" },
   { id: 31, name: "体育教研部", code: "" },
   { id: 32, name: "邓迪国际学院", code: "" },
+  { id: 33, name: "人工智能学院", code: "" },
 ];
 
 const DEPARTMENT_NAME_MAP = new Map(
   DEPARTMENTS.map((department) => [department.id, department.name]),
 );
 
+const DEPARTMENT_ID_BY_NAME = new Map(
+  DEPARTMENTS.map((department) => [department.name, department.id]),
+);
+
 export function getDepartmentNameById(departmentId?: number | null) {
   if (!departmentId) return null;
   return DEPARTMENT_NAME_MAP.get(departmentId) ?? null;
+}
+
+export function getDepartmentIdByName(name?: string | null) {
+  if (!name) return null;
+  return DEPARTMENT_ID_BY_NAME.get(name.trim()) ?? null;
+}
+
+/** 与官网 33 院清单交叉校验（开发期断言用） */
+export function listOfficialCollegeNames(): string[] {
+  return COLLEGES.map((c) => c.name);
 }
