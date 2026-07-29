@@ -11,6 +11,7 @@ import {
   toggleOpenGroup,
 } from "@/lib/wikiDoc";
 import type { WikiSectionNode } from "@/types/wiki";
+import SidebarActiveMarker from "./SidebarActiveMarker";
 
 interface WikiSidebarProps {
   /** 当前板块整棵子树（侧栏只渲染这一块） */
@@ -115,8 +116,13 @@ export default function WikiSidebar({
     setOpenGroups((prev) => toggleOpenGroup(prev, id));
   };
 
+  const openLayoutKey = useMemo(
+    () => [...openGroups].sort().join(","),
+    [openGroups],
+  );
+
   return (
-    <>
+    <SidebarActiveMarker activeKey={activeSlug} layoutKey={openLayoutKey}>
       {primary.map((item) => {
         if (item.type === "doc") {
           const { doc } = item;
@@ -208,6 +214,6 @@ export default function WikiSidebar({
           </div>
         );
       })}
-    </>
+    </SidebarActiveMarker>
   );
 }

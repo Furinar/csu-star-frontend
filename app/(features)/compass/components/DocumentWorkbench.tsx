@@ -20,6 +20,7 @@ import {
 import { useAuthStore } from "@/store/useAuthStore";
 import { feedback } from "@/store/useFeedbackStore";
 import MarkdownArticle from "./MarkdownArticle";
+import SidebarActiveMarker from "./SidebarActiveMarker";
 import WikiBackBar from "./WikiBackBar";
 
 type SideTab = "outline" | "comments" | "history";
@@ -312,6 +313,7 @@ export default function DocumentWorkbench({
   }, [initialPageId]);
 
   const loadPage = useCallback(async (id: string) => {
+    // 保留上一篇正文，避免切文时 skeleton 替换导致高度塌缩闪烁
     setLoading(true);
     setIsEditing(false);
     try {
@@ -320,6 +322,7 @@ export default function DocumentWorkbench({
       setCanWrite(data.can_write);
       setEditTitle(data.page.title);
       setEditBody(data.page.body);
+      window.scrollTo(0, 0);
       const [hist, cms] = await Promise.all([
         getCompassHistory(id),
         getCompassComments(id),
@@ -672,13 +675,18 @@ export default function DocumentWorkbench({
         <nav className="nav" aria-label="文档目录" tabIndex={-1}>
           <h2 className="visually-hidden">目录</h2>
           {tree.length ? (
-            <TreeList
-              nodes={tree}
-              activeId={pageId}
-              onSelect={selectPage}
-              openIds={openTreeIds}
-              onToggle={toggleTreeNode}
-            />
+            <SidebarActiveMarker
+              activeKey={pageId}
+              layoutKey={[...openTreeIds].sort().join(",")}
+            >
+              <TreeList
+                nodes={tree}
+                activeId={pageId}
+                onSelect={selectPage}
+                openIds={openTreeIds}
+                onToggle={toggleTreeNode}
+              />
+            </SidebarActiveMarker>
           ) : (
             <p className="cw-muted">暂无目录节点</p>
           )}
@@ -804,8 +812,12 @@ export default function DocumentWorkbench({
             <div className="content">
               <div className="content-container">
                 <main className="main">
-                  <div className="vp-doc">
-                    {loading ? (
+                  <div
+                    className={`vp-doc${loading && page ? " is-pending" : ""}`}
+                    aria-busy={loading}
+                  >
+                    {/* 仅首屏无缓存时用 skeleton；切文保留旧正文，消除高度闪烁 */}
+                    {loading && !page ? (
                       <div className="wiki-skeleton" aria-hidden>
                         <span />
                         <span style={{ width: "100%" }} />
@@ -845,7 +857,10 @@ export default function DocumentWorkbench({
                     ) : (
                       <>
                         <h1 tabIndex={-1}>{page.title}</h1>
-                        <MarkdownArticle content={page.body || ""} />
+                        <MarkdownArticle
+                          content={page.body || ""}
+                          contentKey={page.id}
+                        />
                         <p className="cw-meta">
                           更新{" "}
                           {page.updated_at

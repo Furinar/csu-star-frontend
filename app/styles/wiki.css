@@ -517,19 +517,18 @@
 
 /* =========================================================
  * Sidebar：mobile drawer / desktop fixed
- * 桌面：top/bottom 贴视口，滚动条从顶部 tabbar 区域穿过（经典 VP）
+ * 桌面：贴在主站 Nav + 返回栏下方，滚动条不得穿过 tabbar
  * ========================================================= */
 .wiki-doc-shell .VPSidebar {
   position: fixed;
-  top: 0;
+  /* 移动端抽屉仍从顶栏下起，避免盖住主站 Nav */
+  top: var(--vp-nav-height);
   bottom: 0;
   left: 0;
   z-index: var(--vp-z-index-sidebar);
-  height: 100%;
-  max-height: 100dvh;
-  padding: 32px 32px 96px;
-  /* 内容从 tabbar 下开始；滚动条轨道仍占满视口高度 */
-  padding-top: calc(var(--vp-nav-height) + 24px);
+  height: calc(100% - var(--vp-nav-height));
+  max-height: calc(100dvh - var(--vp-nav-height));
+  padding: 24px 32px 96px;
   width: calc(100vw - 64px);
   max-width: 320px;
   background-color: var(--vp-sidebar-bg-color);
@@ -552,18 +551,18 @@
 
 @media (min-width: 960px) {
   .wiki-doc-shell .VPSidebar {
-    top: 0;
+    top: var(--vp-nav-height);
     bottom: 0;
-    height: 100%;
-    max-height: 100dvh;
-    padding-top: calc(var(--vp-nav-height) + 24px);
+    height: calc(100% - var(--vp-nav-height));
+    max-height: calc(100dvh - var(--vp-nav-height));
+    padding-top: 16px;
     width: var(--vp-sidebar-width);
     max-width: 100%;
     opacity: 1;
     visibility: visible;
     box-shadow: none;
     transform: translateX(0);
-    /* 低于主站 tabbar(z-fixed≈100)，滚动条/内容可从顶栏区域穿过 */
+    /* 低于主站 tabbar(z-fixed≈100) 与返回栏 */
     z-index: var(--vp-z-index-sidebar-desktop);
   }
 }
@@ -581,24 +580,9 @@
   }
 }
 
-/* sticky curtain：盖住滚到顶时与 tabbar 的缝 */
+/* 侧栏已整体落在 chrome 下，不再需要顶缝 curtain */
 .wiki-doc-shell .VPSidebar .curtain {
   display: none;
-}
-
-@media (min-width: 960px) {
-  .wiki-doc-shell .VPSidebar .curtain {
-    display: block;
-    position: sticky;
-    top: calc(var(--vp-nav-height) * -1);
-    left: 0;
-    z-index: 1;
-    margin-top: calc(var(--vp-nav-height) * -1);
-    margin-right: -32px;
-    margin-left: -32px;
-    height: var(--vp-nav-height);
-    background-color: var(--vp-sidebar-bg-color);
-  }
 }
 
 .wiki-doc-shell .VPSidebar .nav {
@@ -708,12 +692,9 @@
 }
 
 /*
- * 当前文档指示条：固定画在该项上（非右侧大纲那种滑动 marker）。
- *
- * 几何对齐官方 VPSidebarItem.vue：
- *   .items { border-left: 1px; padding-left: 16px; }
- *   .indicator { left: -17px; width: 2px; }  // 16 + 1
- * 蓝条与灰 border 同一左缘，active 时盖住该段灰线。
+ * 静态 .indicator 仅占位；蓝条由 .sidebar-active-marker 滑动绘制。
+ * 几何：.items border-left 1px + padding 16px → marker 相对 item left:-17px。
+ * 一级↔一级、二级↔二级切换时 top/left 用 cubic-bezier 过渡。
  */
 .wiki-doc-shell .VPSidebarItem .indicator {
   position: absolute;
@@ -722,17 +703,43 @@
   left: -17px;
   width: 2px;
   border-radius: 2px;
-  transition: background-color 0.25s;
   background-color: transparent;
   pointer-events: none;
   z-index: 2;
 }
 
-/* 激活：根级一级链接（简介）/ 二级专业 / 更深节点 */
-.wiki-doc-shell .VPSidebarItem.level-0.is-active > .item > .indicator,
-.wiki-doc-shell .VPSidebarItem.level-1.is-active > .item > .indicator,
-.wiki-doc-shell .VPSidebarItem.level-2.is-active > .item > .indicator {
+.wiki-doc-shell .sidebar-tree {
+  position: relative;
+}
+
+.wiki-doc-shell .sidebar-active-marker {
+  position: absolute;
+  width: 2px;
+  border-radius: 2px;
   background-color: var(--vp-c-brand-1);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+  will-change: top, left, height;
+}
+
+/* 首次定位后再开 transition，避免从 (0,0) 飞入 */
+.wiki-doc-shell .sidebar-active-marker.is-motion {
+  transition:
+    top 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    left 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease;
+}
+
+.wiki-doc-shell .sidebar-active-marker.is-visible {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wiki-doc-shell .sidebar-active-marker.is-motion {
+    transition: opacity 0.15s ease;
+  }
 }
 
 .wiki-doc-shell .VPSidebarItem .link {
@@ -956,13 +963,17 @@
 
 .wiki-doc-shell .VPDoc .aside-container {
   position: fixed;
-  top: 0;
-  padding-top: calc(
+  /* 与侧栏一致：整体落在 Nav + 返回栏下，避免滚动条穿顶栏 */
+  top: calc(
     var(--vp-nav-height) + var(--wiki-back-bar-height, 0px) +
-      var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 48px
+      var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px)
   );
+  padding-top: 48px;
   width: 224px;
-  height: 100vh;
+  height: calc(
+    100vh - var(--vp-nav-height) - var(--wiki-back-bar-height, 0px) -
+      var(--vp-layout-top-height, 0px) - var(--vp-doc-top-height, 0px)
+  );
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-width: none;
@@ -986,7 +997,8 @@
   display: flex;
   flex-direction: column;
   min-height: calc(
-    100vh - (var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 48px)
+    100vh - var(--vp-nav-height) - var(--wiki-back-bar-height, 0px) -
+      var(--vp-layout-top-height, 0px) - 48px
   );
   padding-bottom: 32px;
 }
@@ -1588,6 +1600,18 @@
   margin-bottom: 8px;
 }
 
+/* 切文时保留旧正文：仅降透 + 禁点，避免 skeleton 替换导致布局抖动 */
+.wiki-doc-shell .vp-doc.is-pending {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  user-select: none;
+}
+
+.wiki-doc-shell .vp-doc:not(.is-pending) {
+  transition: opacity 0.12s ease;
+}
+
 @keyframes wiki-pulse {
   0%,
   100% {
@@ -1626,7 +1650,7 @@
   color: var(--vp-c-brand-2);
 }
 
-/* ---------- 返回栏：单行工具条（勿再做侧栏对齐假分栏） ---------- */
+/* ---------- 返回栏：左路径 / 右操作，全宽贴边，不再假对齐正文 ---------- */
 .wiki-doc-shell .wiki-back-bar {
   position: sticky;
   top: var(--vp-nav-height);
@@ -1639,36 +1663,42 @@
 .wiki-doc-shell .wiki-back-bar-inner {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   height: 100%;
   width: 100%;
   max-width: none;
   margin: 0;
-  /* 比内容区略偏左，避免贴齐侧栏右缘过远 */
   padding: 0 16px;
   box-sizing: border-box;
 }
 
 @media (min-width: 960px) {
   .wiki-doc-shell .wiki-back-bar-inner {
-    /* 靠侧栏右缘内侧，比正文起点略左 */
-    padding-left: calc(var(--vp-sidebar-width) - 8px);
-    /* 右侧不必顶到视口边缘，给编辑按钮留合理边距 */
-    padding-right: max(24px, calc((100% - var(--vp-layout-max-width)) / 2 + 32px));
+    /* 与侧栏内边距对齐：返回链落在侧栏正上方，不再整栏右挪 */
+    padding-left: 32px;
+    padding-right: 24px;
   }
 }
 
 @media (min-width: 1440px) {
   .wiki-doc-shell .wiki-back-bar-inner {
     padding-left: max(
-      16px,
-      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2 + var(--vp-sidebar-width) - 40px)
+      32px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)
     );
     padding-right: max(
       32px,
-      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2 + 48px)
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)
     );
   }
+}
+
+.wiki-doc-shell .wiki-back-bar-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .wiki-doc-shell .wiki-back-bar-link {
@@ -1701,7 +1731,6 @@
 
 .wiki-doc-shell .wiki-back-bar-crumb {
   min-width: 0;
-  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1710,12 +1739,12 @@
   color: var(--vp-c-text-2);
 }
 
-/* 编辑等操作：贴在路径旁而非死顶视口最右 */
+/* 编辑等操作：固定推到行尾 */
 .wiki-doc-shell .wiki-back-bar-extra {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: 12px;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -1768,28 +1797,26 @@
   top: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
 }
 
-/* 有返回栏：侧栏内容再下移，但 top 仍为 0，滚动条仍穿过主站 tabbar */
+/*
+ * 有返回栏：侧栏整体从 Nav + 返回栏下方起算。
+ * 用 top/height 裁切，而不是 padding-top 顶开，滚动条不会穿 tabbar。
+ */
 .wiki-doc-shell.has-main-nav .VPSidebar {
-  padding-top: calc(
-    var(--vp-nav-height) + var(--wiki-back-bar-height) + 16px
-  );
+  top: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
+  height: calc(100% - var(--vp-nav-height) - var(--wiki-back-bar-height));
+  max-height: calc(100dvh - var(--vp-nav-height) - var(--wiki-back-bar-height));
+  padding-top: 16px;
 }
 
 @media (min-width: 960px) {
   .wiki-doc-shell.has-main-nav .VPSidebar {
-    top: 0;
+    top: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
     bottom: 0;
-    height: 100%;
-    max-height: 100dvh;
-    padding-top: calc(
-      var(--vp-nav-height) + var(--wiki-back-bar-height) + 16px
+    height: calc(100% - var(--vp-nav-height) - var(--wiki-back-bar-height));
+    max-height: calc(
+      100dvh - var(--vp-nav-height) - var(--wiki-back-bar-height)
     );
-  }
-
-  .wiki-doc-shell.has-main-nav .VPSidebar .curtain {
-    top: calc((var(--vp-nav-height) + var(--wiki-back-bar-height)) * -1);
-    margin-top: calc((var(--vp-nav-height) + var(--wiki-back-bar-height)) * -1);
-    height: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
+    padding-top: 16px;
   }
 }
 

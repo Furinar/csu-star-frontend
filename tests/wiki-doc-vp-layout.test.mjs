@@ -267,9 +267,17 @@ test("sidebar uses unified primary list with open/collapsed dividers", () => {
   assert.match(sidebar, /level=\{1\}/);
   assert.match(sidebar, /items-inner/);
   assert.match(sidebar, /vpi-chevron-right/);
+  assert.match(sidebar, /SidebarActiveMarker/);
   assert.doesNotMatch(sidebar, /▸/);
   assert.doesNotMatch(sidebar, />入坑指南</);
   assert.doesNotMatch(sidebar, />专业指北</);
+  const marker = read(
+    "app/(features)/compass/components/SidebarActiveMarker.tsx",
+  );
+  assert.match(marker, /cubic-bezier|is-motion/);
+  const css = read("app/styles/wiki.css");
+  assert.match(css, /sidebar-active-marker/);
+  assert.match(css, /cubic-bezier\(0\.22,\s*1,\s*0\.36,\s*1\)/);
 });
 
 test("toc label is 页面导航 and uses nested outline tree", () => {
@@ -364,13 +372,16 @@ test("wiki.css matches VP layout tokens and fixed sidebar pattern", () => {
     css,
     /\.group\.is-branch\.is-open \+ \.group\.is-branch\.is-open/,
   );
-  // tabbar 穿透：桌面 top:0
+  // 侧栏落在 Nav（+ 返回栏）下方，滚动条不得穿过 tabbar
+  assert.match(css, /\.VPSidebar[^{]*\{[^}]*top:\s*var\(--vp-nav-height\)/s);
   assert.match(
     css,
-    /@media\s*\(min-width:\s*960px\)\s*\{[^}]*\.VPSidebar[^{]*\{[^}]*top:\s*0/s,
+    /\.has-main-nav \.VPSidebar[^{]*\{[^}]*top:\s*calc\(\s*var\(--vp-nav-height\)\s*\+\s*var\(--wiki-back-bar-height\)/s,
   );
-  // 返回栏
+  // 返回栏：左路径 / 右操作
   assert.match(css, /\.wiki-back-bar/);
+  assert.match(css, /\.wiki-back-bar-main/);
+  assert.match(css, /\.wiki-back-bar-extra[^}]*margin-left:\s*auto/s);
   // LocalNav only fully hides at 1280 (mid-width keeps outline dropdown)
   assert.match(
     css,
@@ -576,6 +587,8 @@ test("doc page ships WikiBackBar with location not raw keys", () => {
   const bar = read("app/(features)/compass/components/WikiBackBar.tsx");
   assert.match(bar, /返回目录/);
   assert.match(bar, /wiki-back-bar/);
+  assert.match(bar, /wiki-back-bar-main/);
+  assert.match(bar, /wiki-back-bar-extra/);
   assert.doesNotMatch(bar, /sectionTitle/);
   const wb = read("app/(features)/compass/components/DocumentWorkbench.tsx");
   assert.match(wb, /humanizeSpaceKey/);
