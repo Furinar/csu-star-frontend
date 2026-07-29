@@ -10,7 +10,8 @@ import {useTimer} from "@/hooks/useTimer";
 import {useAuthStore} from "@/store/useAuthStore";
 import {feedback} from "@/store/useFeedbackStore";
 import FaSvgIcon from "@/components/ui/FaSvgIcon";
-import {showCaptchaSendFailureFeedback, showCaptchaSentFeedback} from "@/lib/campusMail";
+import {showCaptchaSendFailureFeedback, showCaptchaSentFeedback} from "@/lib/accountMail";
+import {isValidEmail, normalizeEmail} from "@/lib/email";
 import {
   type AuthPlatform,
   buildAuthUrl,
@@ -52,11 +53,6 @@ export default function Login() {
     }
   }, [searchParams]);
 
-  const toCsuEmail = (value: string) => {
-    const prefix = value.split("@")[0].trim().toLowerCase();
-    return `${prefix}@csu.edu.cn`;
-  };
-
   const handleOAuthLogin = async (platform: AuthPlatform) => {
     const state = createOAuthState(platform);
     const {codeChallenge, codeVerifier} = await createPkcePair();
@@ -76,9 +72,13 @@ export default function Login() {
   const handleSendCode = async () => {
     if (countdown > 0) return;
 
-    const emailPrefix = registerEmail.trim();
-    if (!emailPrefix) {
-      setRegisterError("请先填写学号(邮箱前缀)");
+    const email = normalizeEmail(registerEmail);
+    if (!email) {
+      setRegisterError("请先填写邮箱地址");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setRegisterError("邮箱格式不正确，请检查后重试");
       return;
     }
 
@@ -86,8 +86,8 @@ export default function Login() {
     setIsSendingCode(true);
 
     try {
-      await sendCaptcha(toCsuEmail(emailPrefix), "register");
-      showCaptchaSentFeedback(`请查收 ${toCsuEmail(emailPrefix)} 的邮件。`, "register");
+      await sendCaptcha(email, "register");
+      showCaptchaSentFeedback(`请查收 ${email} 的邮件。`, email);
     } catch (error) {
       const message = showCaptchaSendFailureFeedback(error, {
         title: "验证码发送失败",
@@ -115,6 +115,11 @@ export default function Login() {
       return;
     }
 
+    if (!isValidEmail(registerEmail)) {
+      setRegisterError("邮箱格式不正确，请检查后重试");
+      return;
+    }
+
     if (registerPassword.trim().length < 8) {
       setRegisterError("密码至少需要8位");
       return;
@@ -124,7 +129,7 @@ export default function Login() {
     setIsRegisterSubmitting(true);
 
     try {
-      const email = toCsuEmail(registerEmail);
+      const email = normalizeEmail(registerEmail);
       await verifyEmail(email, registerCode.trim());
 
       const hashPwd = CryptoJS.SHA256(registerPassword).toString(
@@ -136,9 +141,9 @@ export default function Login() {
           JSON.stringify({email: email, password: hashPwd}),
       );
 
-      feedback.info({
+      feedback.success({
         title: "邮箱验证通过",
-        description: "继续补充资料后即可完成注册。",
+        description: "继续补充资料。",
       });
       const registerSearchParams = new URLSearchParams();
       if (inviteCode) {
@@ -173,7 +178,7 @@ export default function Login() {
     }
 
     setLoginError("");
-    const email = toCsuEmail(loginEmail.trim());
+    const email = normalizeEmail(loginEmail);
     const hashPwd = CryptoJS.SHA256(loginPassword).toString(CryptoJS.enc.Hex);
 
     setLoading(true);
@@ -184,10 +189,7 @@ export default function Login() {
       });
       const data = result.data;
       login(data.access_token, data.refresh_token ?? null, data.user ?? null);
-      feedback.success({
-        title: "登录成功",
-        description: "正在进入首页。",
-      });
+      feedback.success({ title: "登录成功" });
       setLoading(false);
       router.replace("/home");
     } catch (error) {
@@ -225,16 +227,12 @@ export default function Login() {
 
               <div className={styles["input-box"]}>
                 <input
-                    type="text"
-                    placeholder="email"
+                    type="email"
+                    placeholder="邮箱地址"
                     required
                     onChange={(e) => setLoginEmail(e.target.value)}
                     value={loginEmail}
                 />
-                <span
-                    className="absolute right-3 top-[50%] -translate-y-1/2 border-l border-gray-400 pl-3 text-md text-gray-600 bg-gray-100">
-                @csu.edu.cn
-              </span>
               </div>
 
               <div className={styles["input-box"]}>
@@ -321,16 +319,12 @@ export default function Login() {
 
               <div className={styles["input-box"]}>
                 <input
-                    type="text"
-                    placeholder="csu email"
+                    type="email"
+                    placeholder="邮箱地址，如 xxx@qq.com"
                     value={registerEmail}
                     onChange={(e) => setRegisterEmail(e.target.value)}
                     required
                 />
-                <span
-                    className="absolute right-3 top-[50%] -translate-y-1/2 border-l border-gray-400 pl-3 text-md text-gray-600 bg-gray-100">
-                @csu.edu.cn
-              </span>
               </div>
 
               <div className={styles["input-box"]}>
