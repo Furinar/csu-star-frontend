@@ -23,3 +23,6 @@ export const buildTeacherEvaluationComposerPath = (teacherId: EntityId) =>
 
 export const buildResourceCommentComposerPath = (resourceId: EntityId) =>
   `/resource/comment?id=${resourceId}`;
+
+export const buildWikiDocPath = (section: string, slug: string) =>
+  `/compass/doc?section=${encodeURIComponent(section)}&slug=${encodeURIComponent(slug)}`;
