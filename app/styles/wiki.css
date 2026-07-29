@@ -708,15 +708,19 @@
 }
 
 /*
- * 当前文档指示条：固定在该项上（不滑动），默认透明，is-active 上色。
- * 宽度 / 与灰杠对齐用 --vp-sidebar-rail-*（与 .items 左垫同一套变量）。
+ * 当前文档指示条：固定画在该项上（非右侧大纲那种滑动 marker）。
+ *
+ * 几何对齐官方 VPSidebarItem.vue：
+ *   .items { border-left: 1px; padding-left: 16px; }
+ *   .indicator { left: -17px; width: 2px; }  // 16 + 1
+ * 蓝条与灰 border 同一左缘，active 时盖住该段灰线。
  */
 .wiki-doc-shell .VPSidebarItem .indicator {
   position: absolute;
   top: 6px;
   bottom: 6px;
-  left: calc(-1 * var(--vp-sidebar-rail-pad, 14px));
-  width: var(--vp-sidebar-rail-w, 2px);
+  left: -17px;
+  width: 2px;
   border-radius: 2px;
   transition: background-color 0.25s;
   background-color: transparent;
@@ -724,13 +728,7 @@
   z-index: 2;
 }
 
-/* 根级一级链接（简介等，无树形左垫）：用默认偏移 */
-.wiki-doc-shell .group.is-leaf .VPSidebarItem.level-0 > .item > .indicator {
-  left: -17px;
-  width: 2px;
-}
-
-/* 激活：二级 / 根级一级链接 */
+/* 激活：根级一级链接（简介）/ 二级专业 / 更深节点 */
 .wiki-doc-shell .VPSidebarItem.level-0.is-active > .item > .indicator,
 .wiki-doc-shell .VPSidebarItem.level-1.is-active > .item > .indicator,
 .wiki-doc-shell .VPSidebarItem.level-2.is-active > .item > .indicator {
@@ -844,28 +842,27 @@
 }
 
 /*
- * 有二级的一级：展开后二级列表左侧的静态灰杠。
+ * 树形灰竖杠（二级列表左侧连续轨）
+ * ---------------------------------------------------------
+ * 官方 VP：仅 level-1..5 的 .items 画 border-left；本站树更浅——
+ *   level-0 学院 > .items > level-1 专业
+ * 因此必须在 level-0.collapsible > .items 上画轨（否则专业列表永远无杠）。
  *
- * 不用 border-left（与 absolute indicator 难对齐，且易被 overflow 裁掉）。
- * 用 ::before 画 2px 灰线；indicator 用同一 --vp-sidebar-rail-pad，
- * 保证蓝条与灰线完全重合（蓝条只是灰线上当前项那一段上色）。
+ * 根因（历史补丁反复失效）：
+ *   在 display:grid 的 .items 上用 ::before 画轨时，伪元素成为 grid item，
+ *   auto-place 进独立行；该行无 in-flow 内容高度为 0，top/bottom:0 的轨
+ *   高度塌成 0 → 灰线「始终没有」。禁止再用 ::before 画轨。
+ *
+ * 正确做法（与 VP 同源）：border-left + padding-left，indicator left:-17px。
+ * 折叠动画仍用 grid 0fr/1fr；只有唯一子项 .items-inner 参与 grid，无伪元素。
+ * 展开时 overflow:visible，避免裁掉 left:-17px 的 indicator。
  */
-.wiki-doc-shell {
-  --vp-sidebar-rail-w: 2px;
-  --vp-sidebar-rail-pad: 14px;
-}
-
 .wiki-doc-shell .VPSidebarItem.level-0.collapsible > .items,
 .wiki-doc-shell .VPSidebarItem.level-1.collapsible > .items {
-  --vp-sidebar-rail-w: 2px;
-  --vp-sidebar-rail-pad: 14px;
   display: grid;
   grid-template-rows: 1fr;
-  position: relative;
-  border-left: none;
-  /* 灰线占 pad 最左侧 w 宽，文字从 pad 之后开始 */
-  padding-left: var(--vp-sidebar-rail-pad);
-  margin-left: 4px;
+  border-left: 1px solid var(--vp-c-divider);
+  padding-left: 16px;
   opacity: 1;
   overflow: visible;
   transition:
@@ -873,30 +870,14 @@
     opacity 0.22s ease;
 }
 
-/* 展开时画整段灰杠（有二级的一级始终可见） */
-.wiki-doc-shell .VPSidebarItem.level-0.collapsible:not(.collapsed) > .items::before,
-.wiki-doc-shell .VPSidebarItem.level-1.collapsible:not(.collapsed) > .items::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--vp-sidebar-rail-w);
-  background-color: var(--vp-c-divider);
-  border-radius: 2px;
-  pointer-events: none;
-  z-index: 0;
-}
-
+/* 唯一 grid 子项：min-height:0 才能被 0fr 收起 */
 .wiki-doc-shell .VPSidebarItem.level-0.collapsible > .items > .items-inner,
 .wiki-doc-shell .VPSidebarItem.level-1.collapsible > .items > .items-inner {
   min-height: 0;
   overflow: visible;
-  position: relative;
-  z-index: 1;
 }
 
-/* 收起：0fr + 裁切；灰杠随 collapsed 去掉 ::before */
+/* 收起：0fr + 裁切；杠与子项一同消失 */
 .wiki-doc-shell .VPSidebarItem.level-0.collapsible.collapsed > .items,
 .wiki-doc-shell .VPSidebarItem.level-1.collapsible.collapsed > .items {
   grid-template-rows: 0fr;
@@ -910,25 +891,11 @@
   overflow: hidden;
 }
 
-/* 兼容旧结构（无 items-inner） */
-.wiki-doc-shell .VPSidebarItem.level-1 .items:not(:has(.items-inner)),
-.wiki-doc-shell .VPSidebarItem.level-2 .items {
-  position: relative;
-  padding-left: var(--vp-sidebar-rail-pad, 14px);
-  margin-left: 4px;
-}
-
-.wiki-doc-shell .VPSidebarItem.level-1 .items:not(:has(.items-inner))::before,
-.wiki-doc-shell .VPSidebarItem.level-2 .items::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--vp-sidebar-rail-w, 2px);
-  background-color: var(--vp-c-divider);
-  border-radius: 2px;
-  pointer-events: none;
+/* 更深层级 / 无 items-inner 的旧结构：同样用 border 画轨 */
+.wiki-doc-shell .VPSidebarItem.level-1:not(.collapsible) > .items,
+.wiki-doc-shell .VPSidebarItem.level-2 > .items {
+  border-left: 1px solid var(--vp-c-divider);
+  padding-left: 16px;
 }
 
 /* =========================================================

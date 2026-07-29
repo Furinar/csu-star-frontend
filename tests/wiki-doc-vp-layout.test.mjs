@@ -323,15 +323,37 @@ test("wiki.css matches VP layout tokens and fixed sidebar pattern", () => {
   assert.match(css, /button\.copy/);
   assert.match(css, /vp-external-link-icon/);
   assert.match(css, /custom-block/);
-  // 一级折叠下的二级左杠树形栏
+  // 树形轨：官方几何 border-left 1px + padding 16px；indicator left -17px / width 2px
+  // 本站 level-0.collapsible > .items 必须画杠（学院→专业），禁止 ::before 画轨
   assert.match(
     css,
     /\.VPSidebarItem\.level-0\.collapsible > \.items[^}]*border-left:\s*1px solid var\(--vp-c-divider\)/s,
+  );
+  assert.match(
+    css,
+    /\.VPSidebarItem\.level-0\.collapsible > \.items[^}]*padding-left:\s*16px/s,
+  );
+  assert.match(
+    css,
+    /\.VPSidebarItem \.indicator[^}]*left:\s*-17px/s,
+  );
+  assert.match(
+    css,
+    /\.VPSidebarItem \.indicator[^}]*width:\s*2px/s,
+  );
+  assert.doesNotMatch(
+    css,
+    /\.VPSidebarItem\.level-0\.collapsible[^{]*> \.items::before/,
   );
   // collapsed 选择器必须带 level+collapsible，否则 specificity 输给展开 1fr
   assert.match(
     css,
     /\.VPSidebarItem\.level-0\.collapsible\.collapsed > \.items[^}]*grid-template-rows:\s*0fr/s,
+  );
+  // 展开时不得裁切负 left 的 indicator
+  assert.match(
+    css,
+    /\.VPSidebarItem\.level-0\.collapsible > \.items[^}]*overflow:\s*visible/s,
   );
   // 仅展开分支有分割线；首尾外侧无线；相邻 is-open 去掉双线
   assert.match(css, /\.group\.is-branch\.is-open/);
