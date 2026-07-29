@@ -1,30 +1,33 @@
 "use client";
 
-import GlassCard from "@/components/ui/GlassCard";
 import { useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { Button } from "tdesign-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { UserProfile } from "@/types/auth";
 import type { ContributionCell, ContributionSummary } from "@/types/me";
 import {
   type AccountMode,
+  CONTRIBUTION_WEEKS,
+  createSkeletonContributionWeeks,
+  fitContributionWeekCount,
   formatDate,
   formatNumber,
   WEEKDAY_LABELS,
 } from "./shared/helpers";
-
-type PanelKey =
-  | "guest"
-  | "profile"
-  | "password"
-  | "email"
-  | "oauth"
-  | "points"
-  | "invite"
-  | "downloads"
-  | "feedback"
-  | "correction"
-  | "contribution";
+import {
+  ME_ICON_WELL,
+  ME_PANEL_PAD,
+  ME_SECTION_TITLE,
+  ME_SETTINGS_TILE,
+} from "./shared/styles";
+import type { PanelKey } from "./shared/types";
 
 interface MeOverviewProps {
   profile: UserProfile | null;
@@ -34,7 +37,9 @@ interface MeOverviewProps {
   onOpenPanel: (panel: PanelKey) => void;
 }
 
-const MOBILE_CONTRIBUTION_WEEKS = 15;
+/** Fixed heatmap block height: 7×12px cells + 6×4px gaps */
+const CONTRIBUTION_GRID_MIN_HEIGHT_CLASS = "min-h-[6.75rem]";
+
 const contributionStats = [
   { label: "活跃天数", icon: "calendar-alt", key: "active_days" as const, suffix: " 天" },
   { label: "连续活跃", icon: "history", key: "current_streak" as const, suffix: " 天" },
@@ -43,11 +48,11 @@ const contributionStats = [
 
 function getContributionClassName(cell: ContributionCell) {
   if (cell.is_future) {
-    return "bg-white/30 border border-white/30";
+    return "bg-slate-50";
   }
 
   if (cell.level === 0) {
-    return "bg-gray-100";
+    return "bg-slate-100";
   }
 
   if (cell.level === 1) {
@@ -90,7 +95,7 @@ export default function MeOverview({
     },
     {
       key: "email" as PanelKey,
-      title: "绑定校园邮箱",
+      title: "绑定邮箱",
       icon: "envelope-shield",
       desc:
         accountMode === "verified"
@@ -146,9 +151,7 @@ export default function MeOverview({
     },
   ];
   const isVerified = accountMode === "verified";
-  const mobileContributionWeeks = contributionData.weeks.slice(
-    -MOBILE_CONTRIBUTION_WEEKS,
-  );
+  const hasContributionWeeks = contributionData.weeks.length > 0;
   const settingsActions = baseSettingsActions.filter((item) => {
     if (item.key === "password") {
       return isVerified;
@@ -165,22 +168,20 @@ export default function MeOverview({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h3 className="mb-3 ml-5 text-md font-normal text-gray-800">
-          CSU Star贡献图
-        </h3>
-        <GlassCard className="p-6">
-          <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <h3 className={ME_SECTION_TITLE}>CSU Star 贡献图</h3>
+        <div className={ME_PANEL_PAD}>
+          <div className="mb-4 flex min-h-[4.5rem] flex-col gap-3 sm:min-h-[3.25rem] lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0 flex-1">
-              <p className="text-sm text-gray-500">社区贡献概览</p>
-              <h4 className="mt-1 text-xl font-semibold text-gray-900">
+              <p className="text-sm text-slate-500">社区贡献概览</p>
+              <h4 className="mt-1 min-h-[1.75rem] text-lg font-semibold text-slate-900 sm:text-xl">
                 {accountMode === "guest"
                   ? "登录后开始累计你的社区贡献"
                   : (
                     <>
                       累计{" "}
-                      <span className="text-emerald-400">
+                      <span className="inline-block min-w-[2.5ch] tabular-nums text-emerald-500">
                         {formatNumber(contributionScore)}
                       </span>{" "}
                       分贡献
@@ -188,7 +189,7 @@ export default function MeOverview({
                   )}
               </h4>
               <div className="mt-2 flex justify-end sm:hidden">
-                <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2 whitespace-nowrap text-[10px] text-gray-500">
+                <div className="flex shrink-0 flex-nowrap items-center justify-end gap-2 whitespace-nowrap text-[10px] text-slate-500">
                   {contributionStats.map((item) => (
                     <ContributionStatItem
                       key={item.key}
@@ -201,7 +202,7 @@ export default function MeOverview({
                 </div>
               </div>
             </div>
-            <div className="hidden flex-wrap items-center justify-end gap-3 text-sm text-gray-600 sm:flex">
+            <div className="hidden min-h-[1.5rem] flex-wrap items-center justify-end gap-3 text-sm text-slate-600 sm:flex">
               {contributionStats.map((item) => (
                 <ContributionStatItem
                   key={item.key}
@@ -213,83 +214,23 @@ export default function MeOverview({
             </div>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto hide-scrollbar sm:hidden">
-            <div className="flex flex-col justify-around py-[2px] text-xs text-gray-400">
-              {WEEKDAY_LABELS.map((label) => (
-                <span key={label} className="h-3 leading-3">
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {mobileContributionWeeks.map((week, weekIndex) => (
-                <div key={`mobile-week-${weekIndex}`} className="flex flex-col gap-1">
-                  {week.map((cell) => (
-                    <div
-                      key={cell.date}
-                      className={`h-3 w-3 rounded-[2px] ${getContributionClassName(
-                        cell,
-                      )}`}
-                      title={`${formatDate(cell.date)}${
-                        cell.is_future
-                          ? "\n未来日期"
-                          : cell.score > 0
-                            ? `\n${cell.score} 分贡献\n${cell.actions
-                                .map((item) => `• ${item.label} +${item.score}`)
-                                .join("\n")}`
-                            : "\n暂无贡献"
-                      }`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdaptiveContributionHeatmap
+            sourceWeeks={contributionData.weeks}
+            isSkeleton={!hasContributionWeeks}
+            className={CONTRIBUTION_GRID_MIN_HEIGHT_CLASS}
+          />
 
-          <div className="hidden gap-4 overflow-x-auto hide-scrollbar sm:flex">
-            <div className="flex flex-col justify-around py-[2px] text-xs text-gray-400">
-              {WEEKDAY_LABELS.map((label) => (
-                <span key={label} className="h-3 leading-3">
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-1">
-              {contributionData.weeks.map((week, weekIndex) => (
-                <div key={`week-${weekIndex}`} className="flex flex-col gap-1">
-                  {week.map((cell) => (
-                    <div
-                      key={cell.date}
-                      className={`h-3 w-3 rounded-[2px] ${getContributionClassName(
-                        cell,
-                      )}`}
-                      title={`${formatDate(cell.date)}${
-                        cell.is_future
-                          ? "\n未来日期"
-                          : cell.score > 0
-                            ? `\n${cell.score} 分贡献\n${cell.actions
-                                .map((item) => `• ${item.label} +${item.score}`)
-                                .join("\n")}`
-                            : "\n暂无贡献"
-                      }`}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 flex flex-col gap-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-4 flex min-h-[1.25rem] flex-col gap-3 border-t border-slate-100 pt-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
               onClick={() => onOpenPanel("contribution")}
-              className="text-left transition hover:text-blue-500"
+              className="text-left transition-colors hover:text-first"
             >
               了解我们如何计算贡献度
             </button>
             <div className="flex items-center gap-1">
               <span>Less</span>
-              <div className="h-3 w-3 rounded-[2px] bg-gray-100" />
+              <div className="h-3 w-3 rounded-[2px] bg-slate-100" />
               <div className="h-3 w-3 rounded-[2px] bg-green-100" />
               <div className="h-3 w-3 rounded-[2px] bg-green-200" />
               <div className="h-3 w-3 rounded-[2px] bg-green-400" />
@@ -297,14 +238,12 @@ export default function MeOverview({
               <span>More</span>
             </div>
           </div>
-        </GlassCard>
+        </div>
       </div>
 
       <div>
-        <h3 className="mb-3 ml-5 text-md font-normal text-gray-800">
-          更多设置
-        </h3>
-        <div className="grid grid-cols-2 gap-1.5 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
+        <h3 className={ME_SECTION_TITLE}>更多设置</h3>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-2 md:gap-3 xl:grid-cols-3">
           {settingsActions.map((item) => (
             <SettingsActionCard
               key={item.key}
@@ -323,19 +262,132 @@ export default function MeOverview({
             href="https://www.ifdian.net/a/csustar"
             external
           />
+          {accountMode !== "guest" ? (
+            <div className="col-end-[-1] flex items-end justify-end self-end">
+              <Button theme="danger" variant="outline" onClick={handleLogout}>
+                <i className="uil uil-signout mr-1.5 text-base" />
+                退出登录
+              </Button>
+            </div>
+          ) : null}
         </div>
-        {accountMode !== "guest" ? (
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-5 py-2.5 text-sm font-medium text-rose-600 shadow-sm transition hover:bg-rose-50"
-            >
-              <i className="uil uil-signout text-base" />
-              退出登录
-            </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Measure panel width and show as many trailing weeks as fit (mobile + desktop),
+ * capped at one year ({@link CONTRIBUTION_WEEKS}).
+ */
+function AdaptiveContributionHeatmap({
+  sourceWeeks,
+  isSkeleton,
+  className,
+}: {
+  sourceWeeks: ContributionCell[][];
+  isSkeleton: boolean;
+  className: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [weekCount, setWeekCount] = useState(CONTRIBUTION_WEEKS);
+
+  useLayoutEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const next = fitContributionWeekCount(el.clientWidth, CONTRIBUTION_WEEKS);
+      setWeekCount((prev) => (prev === next ? prev : next));
+    };
+
+    measure();
+    const observer =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(measure)
+        : null;
+    observer?.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const weeks = useMemo(() => {
+    if (isSkeleton || sourceWeeks.length === 0) {
+      return createSkeletonContributionWeeks(weekCount);
+    }
+    return sourceWeeks.slice(-weekCount);
+  }, [isSkeleton, sourceWeeks, weekCount]);
+
+  return (
+    <div ref={containerRef} className="w-full min-w-0">
+      <ContributionHeatmap
+        weeks={weeks}
+        isSkeleton={isSkeleton || sourceWeeks.length === 0}
+        className={className}
+        weekKeyPrefix="week"
+      />
+    </div>
+  );
+}
+
+function ContributionHeatmap({
+  weeks,
+  isSkeleton,
+  className,
+  weekKeyPrefix,
+}: {
+  weeks: ContributionCell[][];
+  isSkeleton: boolean;
+  className: string;
+  weekKeyPrefix: string;
+}) {
+  return (
+    <div
+      className={`flex gap-4 overflow-hidden ${className}`}
+      aria-busy={isSkeleton || undefined}
+      aria-label={isSkeleton ? "贡献图加载中" : "贡献热力图"}
+    >
+      <div className="flex shrink-0 flex-col justify-around py-[2px] text-xs text-slate-400">
+        {WEEKDAY_LABELS.map((label) => (
+          <span key={label} className="h-3 leading-3">
+            {label}
+          </span>
+        ))}
+      </div>
+      <div className={`flex min-w-0 gap-1 ${isSkeleton ? "animate-pulse" : ""}`}>
+        {weeks.map((week, weekIndex) => (
+          <div
+            key={`${weekKeyPrefix}-${weekIndex}`}
+            className="flex flex-col gap-1"
+          >
+            {week.map((cell) => (
+              <div
+                key={cell.date}
+                className={`h-3 w-3 rounded-[2px] ${
+                  isSkeleton
+                    ? "bg-slate-100/90"
+                    : getContributionClassName(cell)
+                }`}
+                title={
+                  isSkeleton
+                    ? undefined
+                    : `${formatDate(cell.date)}${
+                        cell.is_future
+                          ? "\n未来日期"
+                          : cell.score > 0
+                            ? `\n${cell.score} 分贡献\n${cell.actions
+                                .map((item) => `• ${item.label} +${item.score}`)
+                                .join("\n")}`
+                            : "\n暂无贡献"
+                      }`
+                }
+              />
+            ))}
           </div>
-        ) : null}
+        ))}
       </div>
     </div>
   );
@@ -367,38 +419,40 @@ function SettingsActionCard({
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noopener noreferrer" : undefined}
-          className="absolute inset-0 z-10 cursor-pointer rounded-xl sm:rounded-2xl"
+          className="absolute inset-0 z-10 cursor-pointer rounded-lg"
           aria-label={title}
         />
       ) : (
         <button
           type="button"
           onClick={onClick}
-          className="absolute inset-0 z-10 cursor-pointer rounded-xl sm:rounded-2xl"
+          className="absolute inset-0 z-10 cursor-pointer rounded-lg"
           aria-label={title}
         />
       )}
-      <GlassCard className="flex min-h-[58px] items-center gap-1.5 rounded-xl p-2 transition-colors group-hover:bg-white/60 sm:min-h-[88px] sm:items-start sm:gap-3 sm:rounded-2xl sm:p-3.5">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/50 text-sm shadow-inner transition-transform group-hover:scale-110 sm:mt-0.5 sm:h-9 sm:w-9 sm:text-lg">
+      <div className={ME_SETTINGS_TILE}>
+        <div className={ME_ICON_WELL}>
           <i className={`uil uil-${icon}`} />
         </div>
         <div className="flex min-w-0 flex-1 items-center sm:block">
           <div className="flex w-full items-center gap-1.5 sm:gap-2">
-            <h4 className="font-medium text-sm text-gray-900 sm:hidden">
+            <h4 className="text-sm font-medium text-slate-900 sm:hidden">
               {mobileTitle ?? title}
             </h4>
-            <h4 className="hidden font-medium text-gray-900 sm:block">{title}</h4>
+            <h4 className="hidden text-sm font-medium text-slate-900 sm:block">
+              {title}
+            </h4>
             {badge ? (
-              <span className="rounded-full bg-first/10 px-2 py-0.5 text-[11px] text-first">
+              <span className="rounded bg-first/10 px-1.5 py-0.5 text-[11px] text-first">
                 {badge}
               </span>
             ) : null}
           </div>
-          <p className="mt-1 hidden break-words text-xs leading-5 text-gray-500 sm:block">
+          <p className="mt-1 hidden break-words text-xs leading-5 text-slate-500 sm:block">
             {description}
           </p>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 }
@@ -418,19 +472,25 @@ function ContributionStatItem({
     <div
       className={
         mobile
-          ? "inline-flex min-w-0 items-center gap-1 whitespace-nowrap leading-none text-gray-500"
-          : "inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-gray-600"
+          ? "inline-flex min-w-0 items-center gap-1 whitespace-nowrap leading-none text-slate-500"
+          : "inline-flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600"
       }
     >
       <i
         className={`uil uil-${icon} shrink-0 ${
-          mobile ? "text-[12px] text-gray-400" : "text-[15px] text-gray-400"
+          mobile ? "text-[12px] text-slate-400" : "text-[15px] text-slate-400"
         }`}
       />
-      <span className={mobile ? "text-[9px] text-gray-400" : "text-xs text-gray-400"}>
+      <span className={mobile ? "text-[9px] text-slate-400" : "text-xs text-slate-400"}>
         {label}
       </span>
-      <span className={mobile ? "text-[10px] font-medium text-gray-800" : "font-medium text-gray-800"}>
+      <span
+        className={
+          mobile
+            ? "min-w-[2ch] tabular-nums text-[10px] font-medium text-slate-800"
+            : "min-w-[2ch] tabular-nums font-medium text-slate-800"
+        }
+      >
         {value}
       </span>
     </div>

@@ -2,20 +2,23 @@
 
 import { useState } from "react";
 import { bindCampusEmail, sendCampusEmailCaptcha } from "@/api/me";
-import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
-import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { AdvancedInput } from "@/components/ui/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
-import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
+import {
+  showCaptchaSendFailureFeedback,
+  showCaptchaSentFeedback,
+} from "@/lib/accountMail";
 import type { UserProfile } from "@/types/auth";
 import type { EmailStatus, MeDashboardData } from "@/types/me";
+import CaptchaCodeField from "../CaptchaCodeField";
 import {
   type AccountMode,
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
   getAccountPresentation,
   getErrorMessage,
-  isCampusEmail,
-  toCampusEmail,
+  isValidEmail,
+  normalizeEmail,
 } from "../shared/helpers";
 
 export default function EmailPanel({
@@ -46,30 +49,32 @@ export default function EmailPanel({
     emailStatus,
     profile,
   );
-  const isVerified = Boolean(emailStatus.email_verified || profile.email_verified);
+  const isVerified = Boolean(
+    emailStatus.email_verified || profile.email_verified,
+  );
 
   const handleSendCode = async () => {
     if (isVerified) {
       feedback.info({
-        title: "校园邮箱已认证",
-        description: "当前账号已经完成校园邮箱认证。",
+        title: "邮箱已认证",
+        description: "当前账号已经完成邮箱认证。",
       });
       return;
     }
 
-    const email = toCampusEmail(form.email);
+    const email = normalizeEmail(form.email);
     if (!email) {
       feedback.warning({
-        title: "请输入校园邮箱",
-        description: "支持直接填写邮箱前缀，系统会自动补全为 `@csu.edu.cn`。",
+        title: "请输入邮箱",
+        description: "请填写完整的邮箱地址，如 xxx@qq.com。",
       });
       return;
     }
 
-    if (!isCampusEmail(email)) {
+    if (!isValidEmail(email)) {
       feedback.warning({
-        title: "仅支持校园邮箱",
-        description: "请使用 `@csu.edu.cn` 结尾的邮箱地址。",
+        title: "邮箱格式不正确",
+        description: "请填写完整且格式正确的邮箱地址。",
       });
       return;
     }
@@ -81,7 +86,7 @@ export default function EmailPanel({
         ...current,
         email,
       }));
-      showCaptchaSentFeedback(message, "bind_email");
+      showCaptchaSentFeedback(message, email);
     } catch (error) {
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
@@ -99,7 +104,7 @@ export default function EmailPanel({
       return;
     }
 
-    const email = toCampusEmail(form.email);
+    const email = normalizeEmail(form.email);
     if (!email || !form.captcha.trim()) {
       feedback.warning({
         title: "信息不完整",
@@ -108,10 +113,10 @@ export default function EmailPanel({
       return;
     }
 
-    if (!isCampusEmail(email)) {
+    if (!isValidEmail(email)) {
       feedback.warning({
         title: "邮箱格式不正确",
-        description: "请确认邮箱为 `@csu.edu.cn` 后重试。",
+        description: "请确认邮箱地址填写正确后重试。",
       });
       return;
     }
@@ -145,7 +150,7 @@ export default function EmailPanel({
       );
       onClose();
       feedback.success({
-        title: "校园邮箱认证完成",
+        title: "邮箱认证完成",
         description: "你的个人中心已切换为校园认证状态。",
       });
     } catch (error) {
@@ -159,56 +164,41 @@ export default function EmailPanel({
   };
 
   return (
-    <>
-      <div className="space-y-4">
-        <div
-          className={`rounded-2xl border px-4 py-3 text-sm leading-6 ${accountPresentation.badgeClassName}`}
-        >
-          当前状态：{accountPresentation.badge}。{accountPresentation.hint}
-        </div>
+    <div className="space-y-4">
+      <p className="td-me-hint">
+        当前状态：{accountPresentation.badge}。{accountPresentation.hint}
+      </p>
 
-        <AdvancedInput
-          label="校园邮箱"
-          placeholder="填写你的校园邮箱或前缀"
-          autoComplete="email"
-          value={form.email}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              email: event.target.value,
-            }))
-          }
-        />
+      <AdvancedInput
+        label="邮箱"
+        placeholder="填写你的邮箱地址"
+        autoComplete="email"
+        value={form.email}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            email: event.target.value,
+          }))
+        }
+      />
 
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-          <AdvancedInput
-            label="验证码"
-            placeholder="请输入 6 位验证码"
-            inputMode="numeric"
-            maxLength={6}
-            value={form.captcha}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                captcha: event.target.value,
-              }))
-            }
-          />
-          <div className="sm:mt-[3px]">
-            <ActionSubmitButton
-              defaultText={isVerified ? "已完成认证" : "获取验证码"}
-              sentText="发送中..."
-              isSent={isSendingCode}
-              onClick={() => {
-                handleSendCode().catch(console.error);
-              }}
-              disabled={isSendingCode || isVerifying || isVerified}
-            />
-          </div>
-        </div>
-      </div>
+      <CaptchaCodeField
+        value={form.captcha}
+        onChange={(captcha) =>
+          setForm((current) => ({
+            ...current,
+            captcha,
+          }))
+        }
+        onSend={() => {
+          handleSendCode().catch(console.error);
+        }}
+        sending={isSendingCode}
+        disabled={isVerifying || isVerified}
+        doneLabel={isVerified ? "已完成认证" : undefined}
+      />
 
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
@@ -228,6 +218,6 @@ export default function EmailPanel({
           {isVerified ? "完成" : isVerifying ? "正在认证..." : "完成认证"}
         </button>
       </div>
-    </>
+    </div>
   );
 }
