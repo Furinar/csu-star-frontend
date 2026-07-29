@@ -1,88 +1,13 @@
 "use client";
 
-import {useEffect} from "react";
 import {useRouter} from "next/navigation";
-import {getHomeNotificationSummary} from "@/api/me";
 import SearchBar from "@/components/ui/SearchBar";
 import {buildSearchPageHref} from "@/app/(features)/search/searchNavigation";
-import {useAuthStore} from "@/store/useAuthStore";
-import {feedback} from "@/store/useFeedbackStore";
-import type {NotificationItem} from "@/types/me";
 
 export const dynamic = "force-static";
 
 export default function Home() {
   const router = useRouter();
-  const accessToken = useAuthStore((state) => state.access_token);
-  const hasHydrated = useAuthStore((state) => state._hasHydrated);
-
-  useEffect(() => {
-    if (!hasHydrated || !accessToken) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const openNotifications = () => {
-      router.push("/me?tab=notifications");
-    };
-
-    const showToast = (item: NotificationItem) => {
-      const isPersistent =
-          item.type === "system" &&
-          (item.category !== "announcement" || !item.is_pinned);
-      const isApprovedModerationResult =
-          item.type === "system" &&
-          item.result === "approved" &&
-          (item.category === "report" ||
-              item.category === "correction" ||
-              item.category === "feedback" ||
-              item.category === "supplement");
-      const isRejectedModerationResult =
-          item.type === "system" &&
-          item.result === "rejected" &&
-          (item.category === "report" ||
-              item.category === "correction" ||
-              item.category === "feedback" ||
-              item.category === "supplement");
-
-      const showFeedbackToast = isRejectedModerationResult
-          ? feedback.error
-          : isApprovedModerationResult
-              ? feedback.success
-              : feedback.info;
-
-      showFeedbackToast({
-        title: item.title,
-        description: item.content || "你有一条新的站内消息。",
-        duration: isPersistent ? 0 : undefined,
-        actionLabel: item.category === "announcement" ? "查看公告" : "查看通知",
-        onAction: openNotifications,
-      });
-    };
-
-    const loadHomeNotifications = async () => {
-      try {
-        const summary = await getHomeNotificationSummary();
-        if (cancelled) {
-          return;
-        }
-
-        [
-          ...summary.announcements,
-          ...summary.interactions,
-          ...summary.system_messages,
-        ].forEach(showToast);
-      } catch {
-      }
-    };
-
-    void loadHomeNotifications();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [accessToken, hasHydrated, router]);
 
   return (
       <>

@@ -3,18 +3,20 @@
 import Link from "next/link";
 import {useEffect, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
+import {PageEmpty, PageLoading} from "@/components/ui/AsyncState";
 import SectionCard from "@/components/ui/SectionCard";
 import {useHasMounted} from "@/hooks/useHasMounted";
 import {getCourseResourceCollection} from "@/api/detail";
 import type {CourseResourceCollection} from "@/types/detail";
 import {getResourceTypeLabel} from "@/app/(features)/me/components/shared/helpers";
 import {buildCoursePath, buildResourcePath,} from "@/lib/paths";
+import {getRequestErrorMessage} from "@/lib/requestError";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import ResourceUploaderModal from "../components/ResourceUploaderModal";
 import {getFileIcon} from "../detail/fileIcons";
 import {useAuthStore} from "@/store/useAuthStore";
-import {requireVerifiedCampusAction} from "@/lib/requireVerifiedCampusAction";
 
+import { requireAuthAction } from "@/lib/requireAuthAction";
 function formatFileSize(bytes?: number | null) {
   if (!bytes) return "未知大小";
   if (bytes < 1024) return `${bytes} B`;
@@ -25,11 +27,10 @@ function formatFileSize(bytes?: number | null) {
 export default function CourseResourceCollectionPage() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
-  const user = useAuthStore((state) => state.user);
-  const canUpload = Boolean(accessToken) && Boolean(user?.email_verified);
+  const canUpload = Boolean(accessToken);
   const uploadDisabledTooltip = !accessToken
       ? "登录后才能上传资源"
-      : "完成校园邮箱验证后才能上传资源";
+      : "";
   const searchParams = useSearchParams();
   const hasMounted = useHasMounted();
   const courseId = hasMounted
@@ -80,10 +81,10 @@ export default function CourseResourceCollectionPage() {
 
   const handleOpenUploadModal = () => {
     if (
-        !requireVerifiedCampusAction({
+        !requireAuthAction({
           isSignedIn: Boolean(accessToken),
-          user,
           router,
+          description: "登录后才能上传资源。",
         })
     ) {
       return;
@@ -118,7 +119,9 @@ export default function CourseResourceCollectionPage() {
         .catch((err) => {
           console.error(err);
           if (!active) return;
-          setError("课程资源合集加载失败，请稍后重试。");
+          setError(
+            getRequestErrorMessage(err, "课程资源合集加载失败，请稍后重试。"),
+          );
         })
         .finally(() => {
           if (active) setLoading(false);
@@ -129,41 +132,61 @@ export default function CourseResourceCollectionPage() {
     };
   }, [courseId, hasMounted, isInvalidCourseId]);
 
-  if (!hasMounted) {
+  if (!hasMounted || loading) {
     return (
-        <div
-            className="container mt-4 mb-10 md:mt-10 md:mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
-          课程资源合集加载中...
-        </div>
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
+        <PageLoading
+          text="课程资源合集加载中..."
+          className="min-h-[60vh]"
+        />
+      </div>
     );
   }
 
   if (isInvalidCourseId) {
     return (
-        <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
-          <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
-            课程 ID 无效。
-          </div>
-        </div>
-    );
-  }
-
-  if (loading) {
-    return (
-        <div
-            className="container mt-4 mb-10 md:mt-10 md:mb-20 flex min-h-[60vh] items-center justify-center text-gray-500">
-          课程资源合集加载中...
-        </div>
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
+        <PageEmpty
+          type="fail"
+          title="课程 ID 无效"
+          description="请检查链接是否正确，或从资源列表重新进入。"
+        />
+      </div>
     );
   }
 
   if (error || !detail) {
     return (
-        <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
-          <div className="rounded-[28px] border border-red-100 bg-red-50 p-8 text-center text-red-600">
-            {error || "课程资源合集不存在。"}
-          </div>
-        </div>
+      <div className="container mt-4 mb-10 md:mt-10 md:mb-20">
+        <PageEmpty
+          error={error || undefined}
+          type={error ? undefined : "empty"}
+          title={error ? "加载失败" : "课程资源合集不存在"}
+          description={error || "该课程下暂时没有资源合集。"}
+          onRetry={
+            courseId
+              ? () => {
+                  setLoading(true);
+                  setError("");
+                  void getCourseResourceCollection(courseId, 1, 24)
+                    .then((data) => {
+                      setDetail(data);
+                      setError("");
+                    })
+                    .catch((err) => {
+                      setError(
+                        getRequestErrorMessage(
+                          err,
+                          "课程资源合集加载失败，请稍后重试。",
+                        ),
+                      );
+                    })
+                    .finally(() => setLoading(false));
+                }
+              : undefined
+          }
+        />
+      </div>
     );
   }
 
@@ -337,7 +360,9 @@ export default function CourseResourceCollectionPage() {
         </SectionCard>
 
         <p className="text-center text-sm text-slate-500">
-          本站资源仅供学习交流，禁止二次倒卖等商业行为。如有侵权内容，请及时举报，我们将尽快下架处理。
+          本站资源仅供学习交流，禁止二次倒卖等商业行为。
+          <br />
+          如有侵权内容，请及时举报，我们将尽快下架处理。
         </p>
 
         <DetailFloatingActionButton
@@ -357,7 +382,12 @@ export default function CourseResourceCollectionPage() {
               loadCollectionDetail(courseId)
                   .catch((err) => {
                     console.error(err);
-                    setError("课程资源合集加载失败，请稍后重试。");
+                    setError(
+                      getRequestErrorMessage(
+                        err,
+                        "课程资源合集加载失败，请稍后重试。",
+                      ),
+                    );
                   })
                   .finally(() => {
                     setLoading(false);

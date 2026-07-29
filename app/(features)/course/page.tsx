@@ -1,14 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { buildSearchPageHref } from "@/app/(features)/search/searchNavigation";
 import SearchLandingSection from "@/app/(features)/search/components/SearchLandingSection";
 import SearchBar from "@/components/ui/SearchBar";
-import RankCard from "@/components/ui/RankCard";
-import RandomBook from "@/app/(features)/course/components/RandomBook";
-import { buildCoursePath } from "@/lib/paths";
-import { getPageTheme } from "@/lib/pageTheme";
 import { useRouter } from "next/navigation";
-import { getCourseRankings } from "@/api/ranking";
 import DetailFloatingActionButton from "@/components/detail/DetailFloatingActionButton";
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
@@ -16,74 +11,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import CourseGlobalEvaluationModal from "./components/CourseGlobalEvaluationModal";
 
-type RankCardItem = {
-  id: string;
-  name: string;
-  score: number;
-};
-
-const PAGE_SIZE = 5;
-const courseTheme = getPageTheme("/course");
-
-const mapRankItems = (
-  items: Array<{ id: string; name: string; score: number }>,
-): RankCardItem[] =>
-  items.slice(0, PAGE_SIZE).map((item) => ({
-    id: item.id,
-    name: item.name,
-    score: item.score,
-  }));
-
 export default function Course() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
-  const [homeworkRanks, setHomeworkRanks] = useState<RankCardItem[]>([]);
-  const [gainRanks, setGainRanks] = useState<RankCardItem[]>([]);
-  const [examRanks, setExamRanks] = useState<RankCardItem[]>([]);
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    Promise.all([
-      getCourseRankings({
-        rank_type: "avg_homework",
-        page: 1,
-        size: PAGE_SIZE,
-        is_increased: false,
-      }),
-      getCourseRankings({
-        rank_type: "avg_gain",
-        page: 1,
-        size: PAGE_SIZE,
-        is_increased: false,
-      }),
-      getCourseRankings({
-        rank_type: "avg_exam_diff",
-        page: 1,
-        size: PAGE_SIZE,
-        is_increased: false,
-      }),
-    ])
-      .then(([homework, gain, exam]) => {
-        if (!active) return;
-        setHomeworkRanks(mapRankItems(homework.items));
-        setGainRanks(mapRankItems(gain.items));
-        setExamRanks(mapRankItems(exam.items));
-      })
-      .catch((error) => {
-        console.error(error);
-        if (!active) return;
-        setHomeworkRanks([]);
-        setGainRanks([]);
-        setExamRanks([]);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const handleOpenSupplementModal = () => {
     if (
@@ -115,7 +47,7 @@ export default function Course() {
 
   return (
     <>
-      <div className="container flex flex-col gap-10 mt-10 mb-20 over">
+      <div className="container mt-6 mb-12 flex flex-col gap-6 md:mt-10 md:mb-20 md:gap-10">
         <div>
           <SearchBar
             placeholder="搜索课程..."
@@ -127,42 +59,6 @@ export default function Course() {
               router.push(searchHref);
             }}
           />
-        </div>
-
-        <RandomBook />
-
-        <div className="relative z-10 mt-8 hidden w-full flex-col gap-6 rounded-[40px] bg-gray-100 pb-10 px-5 pt-7 md:flex md:px-10">
-          <div className="absolute bottom-10 left-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl -z-10" style={{ backgroundColor: courseTheme.blobColors[0] }}></div>
-          <div className="absolute bottom-0 right-10 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-2000 -z-10" style={{ backgroundColor: courseTheme.blobColors[1] }}></div>
-          <div className="absolute top-16 left-2/5 h-72 w-72 animate-blob rounded-full mix-blend-multiply opacity-30 blur-3xl animation-delay-4000 -z-10" style={{ backgroundColor: courseTheme.blobColors[2] }}></div>
-
-          <div className="flex items-center justify-between mb-2 mt-4">
-            <div className="head flex flex-col md:flex-row w-full items-start md:items-center gap-2 md:gap-0">
-              <h2 className="hero-gradient-text flex-1 pl-2 md:pl-5 text-2xl md:text-3xl font-extrabold">
-                课程综合评价榜单
-              </h2>
-
-              <span className="pl-2 md:pl-0 md:mr-7 cursor-pointer text-sm md:text-base text-gray-500 hover:text-gray-800 transition-colors">查看全部排行榜</span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-            <RankCard
-              title="任务轻松榜"
-              data={homeworkRanks}
-              onItemClick={(item) => router.push(buildCoursePath(item.id))}
-            />
-            <RankCard
-              title="课堂收获榜"
-              data={gainRanks}
-              onItemClick={(item) => router.push(buildCoursePath(item.id))}
-            />
-            <RankCard
-              title="考试难度榜"
-              data={examRanks}
-              onItemClick={(item) => router.push(buildCoursePath(item.id))}
-            />
-          </div>
         </div>
 
         <SearchLandingSection

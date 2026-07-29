@@ -12,6 +12,14 @@ type BaseNavProps = {
   scrolled: boolean;
   useNextLink?: boolean;
   onItemClick?: (href: string) => void;
+  /** Brand link target (default `/`). */
+  brandHref?: string;
+  /** Brand text; default site wordmark. */
+  brandLabel?: string;
+  /** Optional logo image (e.g. wiki CSU Wiki mark). */
+  brandLogoSrc?: string;
+  /** When true, brand uses sentence case (wiki) instead of uppercase wordmark. */
+  brandWikiStyle?: boolean;
 };
 
 type NavLinkWrapperProps = {
@@ -95,12 +103,54 @@ function DesktopNavLink(
   );
 }
 
+function BrandLink({
+  href,
+  label,
+  logoSrc,
+  wikiStyle,
+  bold,
+}: {
+  href: string;
+  label: string;
+  logoSrc?: string;
+  wikiStyle?: boolean;
+  bold?: boolean;
+}) {
+  const className = wikiStyle
+    ? `flex items-center gap-2 font-semibold tracking-tight text-[var(--title-color)] hover:opacity-80 transition-opacity ${
+        bold ? "" : ""
+      }`
+    : `uppercase hero-gradient-text ${
+        bold ? "font-bold" : "font-medium"
+      } hover:scale-115 transition-transform`;
+
+  return (
+    <Link href={href} className={className}>
+      {logoSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element -- static brand asset
+        <img
+          src={logoSrc}
+          alt=""
+          width={24}
+          height={24}
+          className="w-6 h-6 object-contain shrink-0"
+        />
+      ) : null}
+      <span>{label}</span>
+    </Link>
+  );
+}
+
 export default function BaseNav({
                                   navItems,
                                   isActive,
                                   scrolled,
                                   useNextLink = false,
                                   onItemClick,
+                                  brandHref = "/",
+                                  brandLabel = "csu star",
+                                  brandLogoSrc,
+                                  brandWikiStyle = false,
                                 }: BaseNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [avatarMenuOpen, setAvatarMenuOpen] = useState(false);
@@ -129,31 +179,46 @@ export default function BaseNav({
   };
 
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
     const updateIndicator = () => {
-      setTimeout(() => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
         if (!navListRef.current) return;
         const activeIndex = navItems.findIndex((item) => isActive(item.href));
-
         const targetIndex = activeIndex + 1;
 
         if (activeIndex !== -1 && navListRef.current.children[targetIndex]) {
           const activeLi = navListRef.current.children[
               targetIndex
               ] as HTMLElement;
-          setIndicatorStyle({
+          const next = {
             left: activeLi.offsetLeft,
             width: activeLi.offsetWidth,
             opacity: 1,
-          });
+          };
+          // Skip setState when geometry is unchanged to avoid indicator micro-jitter.
+          setIndicatorStyle((prev) =>
+              prev.left === next.left &&
+              prev.width === next.width &&
+              prev.opacity === next.opacity
+                  ? prev
+                  : next,
+          );
         } else {
-          setIndicatorStyle((prev) => ({...prev, opacity: 0}));
+          setIndicatorStyle((prev) =>
+              prev.opacity === 0 ? prev : {...prev, opacity: 0},
+          );
         }
       }, 50);
     };
 
     updateIndicator();
     window.addEventListener("resize", updateIndicator);
-    return () => window.removeEventListener("resize", updateIndicator);
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener("resize", updateIndicator);
+    };
   }, [isActive, navItems]);
 
   useEffect(() => {
@@ -185,14 +250,15 @@ export default function BaseNav({
             className={`sticky top-0 w-full z-fixed bg-body md:hidden ${
                 scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
             } transition-shadow duration-1000`}
+            style={{ zIndex: "var(--z-fixed, 100)" }}
         >
           <div className="container relative flex justify-between items-center h-[calc(var(--header-height)+1.5rem)]">
-            <Link
-                href="/"
-                className="uppercase hero-gradient-text font-medium hover:scale-115 transition-transform "
-            >
-              csu star
-            </Link>
+            <BrandLink
+              href={brandHref}
+              label={brandLabel}
+              logoSrc={brandLogoSrc}
+              wikiStyle={brandWikiStyle}
+            />
 
             <div className="flex gap-x-3 items-center">
               <div className="flex items-center">
@@ -305,14 +371,16 @@ export default function BaseNav({
                 scrolled ? "shadow-[0_1px_2px_var(--nav-splitter)]" : ""
             } transition-shadow duration-1000`}
             id="header"
+            style={{ zIndex: "var(--z-fixed, 100)" }}
         >
           <nav className="container flex justify-between items-center h-[calc(var(--header-height)+1.5rem)] gap-x-4">
-            <Link
-                href="/"
-                className="uppercase hero-gradient-text font-bold hover:scale-115 transition-transform "
-            >
-              csu star
-            </Link>
+            <BrandLink
+              href={brandHref}
+              label={brandLabel}
+              logoSrc={brandLogoSrc}
+              wikiStyle={brandWikiStyle}
+              bold
+            />
 
             <div className="flex items-center ml-auto">
               <ul className="flex items-center gap-x-2 relative" ref={navListRef}>
