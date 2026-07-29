@@ -1,4 +1,4 @@
-/* ===== Tailwind 主题注册 ===== */
+/* ===== Tailwind @theme 注册 ===== */
 
 @theme inline {
   --color-background: var(--background);

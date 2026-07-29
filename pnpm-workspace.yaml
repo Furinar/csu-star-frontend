@@ -1,3 +1,7 @@
+allowBuilds:
+  cos-js-sdk-v5: true
+  sharp: true
+  unrs-resolver: true
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

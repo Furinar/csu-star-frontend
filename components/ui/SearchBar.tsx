@@ -11,7 +11,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 
 interface SearchBarProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
-  "onChange"
+  "onChange" | "size"
 > {
   value?: string;
   defaultValue?: string;
@@ -23,6 +23,8 @@ interface SearchBarProps extends Omit<
   className?: string;
   wrapperClassName?: string;
   allowClear?: boolean;
+  /** compact：更矮的字号与高度，适合页头内嵌 */
+  size?: "default" | "compact";
 }
 
 const SEARCH_HISTORY_KEY = "csu_star_search_history";
@@ -89,8 +91,10 @@ export default function SearchBar({
   className = "",
   wrapperClassName = "",
   allowClear = true,
+  size = "default",
   ...props
 }: SearchBarProps) {
+  const isCompact = size === "compact";
   const isControlled = propValue !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
@@ -199,19 +203,33 @@ export default function SearchBar({
   return (
     <div
       ref={wrapperRef}
-      className={`flex flex-col items-center w-full z-10 transition-all duration-300 pointer-events-auto px-4 sm:px-0 relative ${wrapperClassName}`}
+      className={`relative z-10 flex w-full flex-col items-center transition-all duration-300 pointer-events-auto ${
+        isCompact ? "px-0" : "px-4 sm:px-0"
+      } ${wrapperClassName}`}
     >
       <div
-        className={`relative flex items-center w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/80 backdrop-blur-xl rounded-[32px] transition-all duration-500 mx-auto overflow-hidden group border border-white/20 ${
+        className={`group relative mx-auto flex w-full items-center overflow-hidden border border-white/20 bg-[var(--container-color)]/80 backdrop-blur-xl transition-all duration-500 ${
+          isCompact
+            ? "max-w-full rounded-[22px]"
+            : "max-w-full rounded-[32px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl"
+        } ${
           isFocused
-            ? "scale-[1.02] shadow-[6px_6px_20px_rgba(0,0,0,0.1),-6px_-6px_20px_rgba(255,255,255,0.8),inset_0_0_0_1px_var(--first-color)]"
-            : "scale-100 shadow-[4px_4px_12px_rgba(0,0,0,0.25),-4px_-4px_12px_rgba(255,255,255,0.5)]"
+            ? isCompact
+              ? "scale-[1.01] shadow-[4px_4px_14px_rgba(0,0,0,0.08),-4px_-4px_14px_rgba(255,255,255,0.75),inset_0_0_0_1px_var(--first-color)]"
+              : "scale-[1.02] shadow-[6px_6px_20px_rgba(0,0,0,0.1),-6px_-6px_20px_rgba(255,255,255,0.8),inset_0_0_0_1px_var(--first-color)]"
+            : isCompact
+              ? "scale-100 shadow-[3px_3px_10px_rgba(0,0,0,0.18),-3px_-3px_10px_rgba(255,255,255,0.45)]"
+              : "scale-100 shadow-[4px_4px_12px_rgba(0,0,0,0.25),-4px_-4px_12px_rgba(255,255,255,0.5)]"
         } ${className}`}
       >
-        <div className="pl-4 sm:pl-5 pr-2 text-[var(--text-color-light)] shrink-0 transition-transform duration-500 group-focus-within:scale-110 group-focus-within:rotate-3">
+        <div
+          className={`shrink-0 pr-1.5 text-[var(--text-color-light)] transition-transform duration-500 group-focus-within:scale-110 group-focus-within:rotate-3 ${
+            isCompact ? "pl-3.5" : "pl-4 pr-2 sm:pl-5"
+          }`}
+        >
           <svg
-            width="18"
-            height="18"
+            width={isCompact ? 16 : 18}
+            height={isCompact ? 16 : 18}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -237,7 +255,11 @@ export default function SearchBar({
           }}
           placeholder={placeholder}
           maxLength={props.maxLength ?? 50}
-          className="flex-1 min-w-0 h-[46px] sm:h-[64px] pr-[70px] sm:pr-[140px] bg-transparent border-none outline-none text-[14px] sm:text-[18px] text-[var(--text-color)] placeholder:text-[var(--text-color-light)] placeholder:opacity-60 transition-all font-medium"
+          className={`min-w-0 flex-1 border-none bg-transparent font-medium text-[var(--text-color)] outline-none transition-all placeholder:text-[var(--text-color-light)] placeholder:opacity-60 ${
+            isCompact
+              ? "h-11 pr-[4.5rem] text-sm sm:h-12 sm:pr-[6.5rem] sm:text-[15px]"
+              : "h-[46px] pr-[70px] text-[14px] sm:h-[64px] sm:pr-[140px] sm:text-[18px]"
+          }`}
           {...props}
         />
 
@@ -245,11 +267,13 @@ export default function SearchBar({
           <button
             type="button"
             onClick={handleClear}
-            className="hidden sm:flex items-center justify-center w-8 h-8 rounded-full text-[var(--text-color-light)] hover:text-white hover:bg-[var(--first-color)] transition-all duration-300 mr-2 cursor-pointer outline-none active:scale-90"
+            className={`hidden cursor-pointer items-center justify-center rounded-full text-[var(--text-color-light)] outline-none transition-all duration-300 hover:bg-[var(--first-color)] hover:text-white active:scale-90 sm:flex ${
+              isCompact ? "mr-1.5 h-7 w-7" : "mr-2 h-8 w-8"
+            }`}
           >
             <svg
-              width="16"
-              height="16"
+              width={isCompact ? 14 : 16}
+              height={isCompact ? 14 : 16}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -266,15 +290,15 @@ export default function SearchBar({
         <button
           type="button"
           onClick={handleSearchClick}
-          className={`absolute -right-[2px] -top-[2px] -bottom-[2px] w-[66px] sm:w-[134px] rounded-r-[32px] bg-[var(--first-color)] text-white text-[16px] font-medium transition-all duration-500 cursor-pointer outline-none flex items-center justify-center shrink-0 hover:shadow-[0_0_15px_var(--first-color)] hover:brightness-110 active:scale-95 ${
-            isFocused
-              ? "sm:w-[144px] bg-gradient-to-r from-[var(--first-color)] to-[var(--first-color-alt)]"
-              : ""
+          className={`absolute -right-[2px] -top-[2px] -bottom-[2px] flex shrink-0 cursor-pointer items-center justify-center bg-[var(--first-color)] font-medium text-white outline-none transition-all duration-500 hover:brightness-110 hover:shadow-[0_0_15px_var(--first-color)] active:scale-95 ${
+            isCompact
+              ? `w-16 rounded-r-[22px] text-sm sm:w-24 ${isFocused ? "sm:w-[6.5rem] bg-gradient-to-r from-[var(--first-color)] to-[var(--first-color-alt)]" : ""}`
+              : `w-[66px] rounded-r-[32px] text-[16px] sm:w-[134px] ${isFocused ? "sm:w-[144px] bg-gradient-to-r from-[var(--first-color)] to-[var(--first-color-alt)]" : ""}`
           }`}
         >
           <svg
-            width="20"
-            height="20"
+            width={isCompact ? 17 : 20}
+            height={isCompact ? 17 : 20}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -286,16 +310,24 @@ export default function SearchBar({
             <line x1="22" y1="2" x2="11" y2="13"></line>
             <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
           </svg>
-          <span className="hidden sm:inline tracking-wider">Search</span>
+          <span
+            className={`hidden tracking-wider sm:inline ${isCompact ? "text-sm" : ""}`}
+          >
+            Search
+          </span>
         </button>
       </div>
 
       {/* Search History Dropdown */}
       <div
-        className={`absolute top-[60px] sm:top-[80px] w-full max-w-full sm:max-w-xl md:max-w-2xl lg:max-w-4xl bg-[var(--container-color)]/90 backdrop-blur-2xl rounded-[20px] overflow-hidden transition-all duration-400 origin-top border border-white/20 z-20 ${
+        className={`absolute w-full overflow-hidden border border-white/20 bg-[var(--container-color)]/90 backdrop-blur-2xl transition-all duration-400 origin-top z-20 ${
+          isCompact
+            ? "top-[52px] max-w-full rounded-[18px] sm:top-[56px]"
+            : "top-[60px] max-w-full rounded-[20px] sm:top-[80px] sm:max-w-xl md:max-w-2xl lg:max-w-4xl"
+        } ${
           isFocused
-            ? "opacity-100 scale-100 translate-y-0 shadow-[0_20px_40px_rgba(0,0,0,0.15)] pointer-events-auto"
-            : "opacity-0 scale-95 -translate-y-2 shadow-none pointer-events-none"
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100 shadow-[0_20px_40px_rgba(0,0,0,0.15)]"
+            : "pointer-events-none -translate-y-2 scale-95 opacity-0 shadow-none"
         }`}
       >
         {history.length > 0 ? (

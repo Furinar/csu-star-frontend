@@ -1,0 +1,2102 @@
+/* ===== Wiki 文档页：直接对齐 VitePress Default Theme =====
+ * 结构 / 尺寸 / 交互从 csu-star-wiki 构建产物抄出。
+ * 全部挂在 .wiki-doc-shell 下，避免污染主站。
+ * 品牌色：原站 indigo（非主站紫）。
+ */
+
+.wiki-doc-shell .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- tokens（对齐官方 VP :root + indigo brand） ---------- */
+.wiki-doc-shell {
+  --vp-c-white: #ffffff;
+  --vp-c-black: #000000;
+
+  --vp-c-gray-1: #dddde3;
+  --vp-c-gray-2: #e4e4e9;
+  --vp-c-gray-3: #ebebef;
+  --vp-c-gray-soft: rgba(142, 150, 170, 0.14);
+
+  --vp-c-indigo-1: #3451b2;
+  --vp-c-indigo-2: #3a5ccc;
+  --vp-c-indigo-3: #5672cd;
+  --vp-c-indigo-soft: rgba(100, 108, 255, 0.14);
+
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-alt: #f6f6f7;
+  --vp-c-bg-elv: #ffffff;
+  --vp-c-bg-soft: #f6f6f7;
+
+  --vp-c-border: #c2c2c4;
+  --vp-c-divider: #e2e2e3;
+  --vp-c-gutter: #e2e2e3;
+
+  --vp-c-text-1: #3c3c43;
+  --vp-c-text-2: #67676c;
+  --vp-c-text-3: #929295;
+
+  /* 原站 brand = indigo，勿绑主站 page-accent */
+  --vp-c-brand-1: var(--vp-c-indigo-1);
+  --vp-c-brand-2: var(--vp-c-indigo-2);
+  --vp-c-brand-3: var(--vp-c-indigo-3);
+  --vp-c-brand-soft: var(--vp-c-indigo-soft);
+
+  --vp-c-shadow-3: rgba(0, 0, 0, 0.12);
+
+  --vp-code-font-size: 0.875em;
+  --vp-code-color: var(--vp-c-text-1);
+  --vp-code-bg: var(--vp-c-bg-soft);
+  --vp-code-block-bg: #292d3e;
+  --vp-code-block-color: #a6accd;
+  --vp-code-line-height: 1.7;
+  --vp-code-link-color: var(--vp-c-brand-1);
+  --vp-code-link-hover-color: var(--vp-c-brand-2);
+
+  --vp-font-family-base: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans",
+    "Helvetica Neue", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+  --vp-font-family-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco,
+    Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --vp-layout-max-width: 1440px;
+  --vp-sidebar-width: 272px;
+  --vp-sidebar-bg-color: var(--vp-c-bg-alt);
+  /*
+   * 混合顶栏：主站 NavBar 高度 = header-height + 1.5rem（见 BaseNav）。
+   * 侧栏/LocalNav sticky 的 top 对齐主站栏底，而非独立 64px VPNav。
+   * 保留 --vp-nav-height 名以兼容既有选择器；有主站栏时用主站高度。
+   */
+  --vp-nav-height: calc(var(--header-height, 3rem) + 1.5rem);
+  --vp-nav-bg-color: var(--vp-c-bg);
+  --vp-nav-logo-height: 24px;
+  --vp-layout-top-height: 0px;
+  --vp-doc-top-height: 0px;
+  /* 返回栏 / 协作条高度 */
+  --wiki-back-bar-height: 44px;
+  --cw-collab-bar-height: 0px;
+  --vp-local-nav-bg-color: var(--vp-c-bg);
+  /*
+   * 主站 NavBar 使用 z-fixed(100)。侧栏/LocalNav 必须低于主站栏，
+   * 避免侧栏滚动条/内容「穿透」顶栏。
+   */
+  --vp-z-index-nav: 30;
+  --vp-z-index-local-nav: 20;
+  --vp-z-index-sidebar: 40;
+  --vp-z-index-sidebar-desktop: 20;
+
+  /* 自包含：盖住主站 body/title/Poppins 泄漏 */
+  color: var(--vp-c-text-1);
+  background-color: var(--vp-c-bg);
+  min-height: 100vh;
+  font-family: var(--vp-font-family-base);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  font-synthesis: style;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 对抗 base.css 对标题 / 列表 / 链接的全局 reset */
+.wiki-doc-shell h1,
+.wiki-doc-shell h2,
+.wiki-doc-shell h3,
+.wiki-doc-shell h4,
+.wiki-doc-shell h5,
+.wiki-doc-shell h6 {
+  color: inherit;
+  font-weight: inherit;
+}
+
+.wiki-doc-shell a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wiki-doc-shell ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================================
+ * VPNav（精简顶栏，对齐原 wiki 结构）
+ * ========================================================= */
+.wiki-doc-shell.Layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.wiki-doc-shell .VPNav {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: var(--vp-z-index-nav);
+  width: 100%;
+  pointer-events: none;
+}
+
+.wiki-doc-shell .VPNavBar {
+  position: relative;
+  z-index: var(--vp-z-index-nav);
+  height: var(--vp-nav-height);
+  pointer-events: none;
+  white-space: nowrap;
+  background-color: var(--vp-nav-bg-color);
+  transition: background-color 0.25s;
+}
+
+.wiki-doc-shell .VPNavBar .wrapper {
+  padding: 0 8px 0 24px;
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .VPNavBar .wrapper {
+    padding: 0 32px;
+  }
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .wrapper {
+    padding: 0;
+  }
+}
+
+/* 盖过主站 .container */
+.wiki-doc-shell .VPNavBar .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  margin: 0 auto;
+  max-width: calc(var(--vp-layout-max-width) - 64px);
+  width: 100%;
+  height: var(--vp-nav-height);
+  padding-left: 0;
+  padding-right: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .container {
+    max-width: 100%;
+  }
+}
+
+.wiki-doc-shell .VPNavBar .container * {
+  pointer-events: auto;
+}
+
+.wiki-doc-shell .VPNavBar .title {
+  flex-shrink: 0;
+  height: calc(var(--vp-nav-height) - 1px);
+  display: flex;
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    padding: 0 32px;
+    width: var(--vp-sidebar-width);
+    height: var(--vp-nav-height);
+    background-color: var(--vp-sidebar-bg-color);
+    border-bottom: 1px solid transparent;
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .title {
+    padding-left: max(
+      32px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)
+    );
+    width: calc(
+      (100% - (var(--vp-layout-max-width) - 64px)) / 2 + var(--vp-sidebar-width) -
+        32px
+    );
+  }
+}
+
+.wiki-doc-shell .VPNavBarTitle .title {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--vp-nav-height);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  border-bottom: 1px solid transparent;
+  transition: opacity 0.25s;
+}
+
+.wiki-doc-shell .VPNavBarTitle .title:hover {
+  opacity: 0.6;
+}
+
+.wiki-doc-shell .VPNavBarTitle .logo {
+  margin-right: 8px;
+  height: var(--vp-nav-logo-height);
+  width: auto;
+}
+
+.wiki-doc-shell .VPNavBar .content {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .content {
+    position: relative;
+    z-index: 1;
+    padding-left: var(--vp-sidebar-width);
+    padding-right: 32px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .content {
+    padding-left: calc(
+      (100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
+    );
+    padding-right: calc((100% - var(--vp-layout-max-width)) / 2 + 32px);
+  }
+}
+
+.wiki-doc-shell .VPNavBar .content-body {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: var(--vp-nav-height);
+  background-color: var(--vp-nav-bg-color);
+}
+
+.wiki-doc-shell .VPNavBarMenu {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .VPNavBarMenu {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.wiki-doc-shell .VPNavBarMenuLink {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  line-height: var(--vp-nav-height);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-1);
+  transition: color 0.25s;
+}
+
+.wiki-doc-shell .VPNavBarMenuLink:hover,
+.wiki-doc-shell .VPNavBarMenuLink.active {
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .VPNavBar .divider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  width: 100%;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .divider {
+    padding-left: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .VPNavBar.has-sidebar .divider {
+    padding-left: calc(
+      (100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
+    );
+  }
+}
+
+.wiki-doc-shell .VPNavBar .divider-line {
+  width: 100%;
+  height: 1px;
+  background-color: var(--vp-c-gutter);
+  transition: background-color 0.5s;
+}
+
+/* =========================================================
+ * Layout shell：fixed sidebar + content padding-left
+ * ========================================================= */
+.wiki-doc-shell .VPContent {
+  flex-grow: 1;
+  flex-shrink: 0;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.wiki-doc-shell .VPContent.has-sidebar {
+  margin: 0;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPContent.has-sidebar {
+    padding-left: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .VPContent.has-sidebar {
+    padding-right: calc((100% - var(--vp-layout-max-width)) / 2);
+    padding-left: calc(
+      (100% - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width)
+    );
+  }
+}
+
+/* =========================================================
+ * LocalNav（官方：<960 菜单；960–1279 大纲下拉；≥1280 隐藏）
+ * ========================================================= */
+.wiki-doc-shell .VPLocalNav {
+  position: sticky;
+  top: var(--vp-nav-height);
+  left: 0;
+  z-index: var(--vp-z-index-local-nav);
+  border-bottom: 1px solid var(--vp-c-gutter);
+  width: 100%;
+  background-color: var(--vp-local-nav-bg-color);
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPLocalNav.has-sidebar {
+    padding-left: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 1280px) {
+  .wiki-doc-shell .VPLocalNav {
+    display: none;
+  }
+}
+
+/* 必须盖过主站 unlayered `.container`（max-width:1200px + padding 2rem） */
+.wiki-doc-shell .VPLocalNav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+.wiki-doc-shell .VPLocalNav .menu {
+  display: flex;
+  align-items: center;
+  line-height: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  transition: color 0.5s;
+  border: 0;
+  background: transparent;
+  padding: 12px 24px 11px;
+  cursor: pointer;
+}
+
+.wiki-doc-shell .VPLocalNav .menu:hover {
+  color: var(--vp-c-text-1);
+  transition: color 0.25s;
+}
+
+.wiki-doc-shell .VPLocalNav .menu-icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.wiki-doc-shell .VPLocalNav .menu-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .VPLocalNav .menu,
+  .wiki-doc-shell .VPLocalNavOutlineDropdown > button {
+    padding: 12px 32px 11px;
+  }
+
+  .wiki-doc-shell .VPLocalNav .menu-text {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPLocalNav .menu {
+    display: none;
+  }
+}
+
+/* Outline dropdown（中档宽度「页面导航」） */
+.wiki-doc-shell .VPLocalNavOutlineDropdown {
+  position: relative;
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown > button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: transparent;
+  padding: 12px 24px 11px;
+  line-height: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  transition: color 0.25s;
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown > button:hover,
+.wiki-doc-shell .VPLocalNavOutlineDropdown > button.open {
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown .icon {
+  display: inline-block;
+  font-size: 12px;
+  transform: rotate(90deg);
+  transition: transform 0.25s;
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown.open .icon {
+  transform: rotate(-90deg);
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown .items {
+  position: absolute;
+  right: 16px;
+  top: 100%;
+  z-index: 30;
+  min-width: 200px;
+  max-width: min(320px, 80vw);
+  max-height: min(60vh, 420px);
+  overflow: auto;
+  padding: 12px 16px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.wiki-doc-shell .VPLocalNavOutlineDropdown .outline-link {
+  line-height: 28px;
+  font-size: 13px;
+}
+
+/* =========================================================
+ * Sidebar：mobile drawer / desktop fixed
+ * 桌面：top/bottom 贴视口，滚动条从顶部 tabbar 区域穿过（经典 VP）
+ * ========================================================= */
+.wiki-doc-shell .VPSidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--vp-z-index-sidebar);
+  height: 100%;
+  max-height: 100dvh;
+  padding: 32px 32px 96px;
+  /* 内容从 tabbar 下开始；滚动条轨道仍占满视口高度 */
+  padding-top: calc(var(--vp-nav-height) + 24px);
+  width: calc(100vw - 64px);
+  max-width: 320px;
+  background-color: var(--vp-sidebar-bg-color);
+  opacity: 0;
+  visibility: hidden;
+  box-shadow: var(--vp-c-shadow-3);
+  overflow-x: hidden;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: opacity 0.5s, transform 0.25s ease;
+  overscroll-behavior: contain;
+}
+
+.wiki-doc-shell .VPSidebar.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  transition: opacity 0.25s, transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPSidebar {
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    max-height: 100dvh;
+    padding-top: calc(var(--vp-nav-height) + 24px);
+    width: var(--vp-sidebar-width);
+    max-width: 100%;
+    opacity: 1;
+    visibility: visible;
+    box-shadow: none;
+    transform: translateX(0);
+    /* 低于主站 tabbar(z-fixed≈100)，滚动条/内容可从顶栏区域穿过 */
+    z-index: var(--vp-z-index-sidebar-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .VPSidebar {
+    padding-left: max(
+      32px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)
+    );
+    width: calc(
+      (100% - (var(--vp-layout-max-width) - 64px)) / 2 + var(--vp-sidebar-width) -
+        32px
+    );
+  }
+}
+
+/* sticky curtain：盖住滚到顶时与 tabbar 的缝 */
+.wiki-doc-shell .VPSidebar .curtain {
+  display: none;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPSidebar .curtain {
+    display: block;
+    position: sticky;
+    top: calc(var(--vp-nav-height) * -1);
+    left: 0;
+    z-index: 1;
+    margin-top: calc(var(--vp-nav-height) * -1);
+    margin-right: -32px;
+    margin-left: -32px;
+    height: var(--vp-nav-height);
+    background-color: var(--vp-sidebar-bg-color);
+  }
+}
+
+.wiki-doc-shell .VPSidebar .nav {
+  outline: 0;
+}
+
+.wiki-doc-shell .VPSidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--vp-z-index-sidebar) - 1);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPSidebar-backdrop {
+    display: none;
+  }
+}
+
+/*
+ * 一级 .group：
+ * - is-leaf / is-collapsed：无分割线
+ * - is-open（有二级且展开）：上下分割线；相邻两个 is-open 只保留一条线
+ */
+.wiki-doc-shell .VPSidebar .group {
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  padding-top: 0;
+  padding-bottom: 0;
+  transition:
+    border-color 0.28s ease,
+    padding 0.28s ease,
+    margin 0.28s ease;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPSidebar .group {
+    width: calc(var(--vp-sidebar-width) - 64px);
+  }
+}
+
+/*
+ * 展开且有二级：上下线 + 对称内边距。
+ * 线只用于组与组之间；侧栏最顶/最底外侧不画线。
+ */
+.wiki-doc-shell .VPSidebar .group.is-branch.is-open {
+  border-top-color: var(--vp-c-divider);
+  border-bottom-color: var(--vp-c-divider);
+  /* 分割线与目录树内容的上下留白（保持对称） */
+  padding-top: 14px;
+  padding-bottom: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* 最上面一个一级：不要顶部分隔线（贴侧栏顶/简介下都不必再多一条外框线） */
+.wiki-doc-shell .VPSidebar .group.is-branch.is-open:first-child {
+  border-top-color: transparent;
+}
+
+/* 最下面一个一级：不要底部分隔线 */
+.wiki-doc-shell .VPSidebar .group.is-branch.is-open:last-child {
+  border-bottom-color: transparent;
+}
+
+/*
+ * 相邻两个展开一级：去掉后一个 top 线（防双线），
+ * 但保留相同 padding-top，使「上一组末项→线」「线→下一组首项」等距。
+ */
+.wiki-doc-shell .VPSidebar .group.is-branch.is-open + .group.is-branch.is-open {
+  border-top-color: transparent;
+}
+
+.wiki-doc-shell .VPSidebar .group.is-leaf,
+.wiki-doc-shell .VPSidebar .group.is-branch.is-collapsed {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+/* ---------- SidebarItem：level-0 一级 / level-1 二级左杠 ---------- */
+/*
+ * 展开组的上下留白交给 .group.is-open 的 padding，
+ * level-0 自身不再垫 24px，否则底部分割线距离会明显大于顶部。
+ */
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible {
+  padding-bottom: 0;
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible.collapsed {
+  padding-bottom: 2px;
+}
+
+/* 一级纯链接（简介等）收紧底部 */
+.wiki-doc-shell .VPSidebarItem.level-0.is-link {
+  padding-bottom: 4px;
+}
+
+.wiki-doc-shell .VPSidebarItem .item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.wiki-doc-shell .VPSidebarItem.collapsible > .item {
+  cursor: pointer;
+}
+
+/*
+ * 当前文档指示条：固定在该项上（不滑动），默认透明，is-active 上色。
+ * 宽度 / 与灰杠对齐用 --vp-sidebar-rail-*（与 .items 左垫同一套变量）。
+ */
+.wiki-doc-shell .VPSidebarItem .indicator {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: calc(-1 * var(--vp-sidebar-rail-pad, 14px));
+  width: var(--vp-sidebar-rail-w, 2px);
+  border-radius: 2px;
+  transition: background-color 0.25s;
+  background-color: transparent;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 根级一级链接（简介等，无树形左垫）：用默认偏移 */
+.wiki-doc-shell .group.is-leaf .VPSidebarItem.level-0 > .item > .indicator {
+  left: -17px;
+  width: 2px;
+}
+
+/* 激活：二级 / 根级一级链接 */
+.wiki-doc-shell .VPSidebarItem.level-0.is-active > .item > .indicator,
+.wiki-doc-shell .VPSidebarItem.level-1.is-active > .item > .indicator,
+.wiki-doc-shell .VPSidebarItem.level-2.is-active > .item > .indicator {
+  background-color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .VPSidebarItem .link {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.wiki-doc-shell .VPSidebarItem .text {
+  flex-grow: 1;
+  padding: 4px 0;
+  line-height: 24px;
+  font-size: 14px;
+  transition: color 0.25s;
+  margin: 0;
+}
+
+/*
+ * 一级粗体：覆盖两种结构
+ * - WikiSidebar 折叠头：.item > .text
+ * - DocumentWorkbench / 链接：.item > .link > .text
+ * 中文系统字体 600 常不明显，用 700。
+ */
+.wiki-doc-shell .VPSidebarItem.level-0 > .item > .text,
+.wiki-doc-shell .VPSidebarItem.level-0 > .item > .link > .text,
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible > .item .text {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--vp-c-text-1);
+}
+
+/* 二级：专业/子页 — 更小、常规，挂在左杠下 */
+.wiki-doc-shell .VPSidebarItem.level-1 .text,
+.wiki-doc-shell .VPSidebarItem.level-2 .text {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 22px;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.is-link > .item > .link:hover .text,
+.wiki-doc-shell .VPSidebarItem.level-1.is-link > .item > .link:hover .text,
+.wiki-doc-shell .VPSidebarItem.level-2.is-link > .item > .link:hover .text {
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible > .item:hover > .text,
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible > .item:hover > .link > .text {
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.has-active > .item > .text,
+.wiki-doc-shell .VPSidebarItem.level-0.has-active > .item > .link > .text {
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.is-active > .item .link > .text,
+.wiki-doc-shell .VPSidebarItem.level-1.is-active > .item .link > .text,
+.wiki-doc-shell .VPSidebarItem.level-2.is-active > .item .link > .text {
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .VPSidebarItem .caret {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: -7px;
+  width: 32px;
+  height: 32px;
+  color: var(--vp-c-text-3);
+  cursor: pointer;
+  transition: color 0.25s;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.wiki-doc-shell .VPSidebarItem .item:hover .caret {
+  color: var(--vp-c-text-2);
+}
+
+/* 空心 chevron：展开 rotate 90deg（朝下），折叠 0（朝右） */
+.wiki-doc-shell .VPSidebarItem .caret-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  transform: rotate(90deg);
+  transition: transform 0.25s;
+  line-height: 1;
+}
+
+.wiki-doc-shell .VPSidebarItem .caret-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.wiki-doc-shell .VPSidebarItem.collapsed .caret-icon {
+  transform: rotate(0);
+}
+
+/*
+ * 有二级的一级：展开后二级列表左侧的静态灰杠。
+ *
+ * 不用 border-left（与 absolute indicator 难对齐，且易被 overflow 裁掉）。
+ * 用 ::before 画 2px 灰线；indicator 用同一 --vp-sidebar-rail-pad，
+ * 保证蓝条与灰线完全重合（蓝条只是灰线上当前项那一段上色）。
+ */
+.wiki-doc-shell {
+  --vp-sidebar-rail-w: 2px;
+  --vp-sidebar-rail-pad: 14px;
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible > .items,
+.wiki-doc-shell .VPSidebarItem.level-1.collapsible > .items {
+  --vp-sidebar-rail-w: 2px;
+  --vp-sidebar-rail-pad: 14px;
+  display: grid;
+  grid-template-rows: 1fr;
+  position: relative;
+  border-left: none;
+  /* 灰线占 pad 最左侧 w 宽，文字从 pad 之后开始 */
+  padding-left: var(--vp-sidebar-rail-pad);
+  margin-left: 4px;
+  opacity: 1;
+  overflow: visible;
+  transition:
+    grid-template-rows 0.28s ease,
+    opacity 0.22s ease;
+}
+
+/* 展开时画整段灰杠（有二级的一级始终可见） */
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible:not(.collapsed) > .items::before,
+.wiki-doc-shell .VPSidebarItem.level-1.collapsible:not(.collapsed) > .items::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--vp-sidebar-rail-w);
+  background-color: var(--vp-c-divider);
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible > .items > .items-inner,
+.wiki-doc-shell .VPSidebarItem.level-1.collapsible > .items > .items-inner {
+  min-height: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+
+/* 收起：0fr + 裁切；灰杠随 collapsed 去掉 ::before */
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible.collapsed > .items,
+.wiki-doc-shell .VPSidebarItem.level-1.collapsible.collapsed > .items {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wiki-doc-shell .VPSidebarItem.level-0.collapsible.collapsed > .items > .items-inner,
+.wiki-doc-shell .VPSidebarItem.level-1.collapsible.collapsed > .items > .items-inner {
+  overflow: hidden;
+}
+
+/* 兼容旧结构（无 items-inner） */
+.wiki-doc-shell .VPSidebarItem.level-1 .items:not(:has(.items-inner)),
+.wiki-doc-shell .VPSidebarItem.level-2 .items {
+  position: relative;
+  padding-left: var(--vp-sidebar-rail-pad, 14px);
+  margin-left: 4px;
+}
+
+.wiki-doc-shell .VPSidebarItem.level-1 .items:not(:has(.items-inner))::before,
+.wiki-doc-shell .VPSidebarItem.level-2 .items::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--vp-sidebar-rail-w, 2px);
+  background-color: var(--vp-c-divider);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* =========================================================
+ * VPDoc 主体
+ * ========================================================= */
+.wiki-doc-shell .VPDoc {
+  padding: 32px 24px 96px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .VPDoc {
+    padding: 48px 32px 128px;
+  }
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPDoc {
+    padding: 48px 32px 0;
+  }
+}
+
+/* 必须盖过主站 unlayered `.container`（max-width:1200px + padding 2rem），
+ * 否则 VPDoc 自带的 24–32px padding 会叠成双倍水平留白，且桌面被 1200px 夹窄。 */
+.wiki-doc-shell .VPDoc > .container {
+  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1280px) {
+  .wiki-doc-shell .VPDoc > .container {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* right outline column */
+.wiki-doc-shell .VPDoc .aside {
+  position: relative;
+  display: none;
+  order: 2;
+  flex-grow: 1;
+  padding-left: 32px;
+  width: 100%;
+  max-width: 256px;
+}
+
+@media (min-width: 1280px) {
+  .wiki-doc-shell .VPDoc .aside {
+    display: block;
+  }
+}
+
+.wiki-doc-shell .VPDoc .aside-container {
+  position: fixed;
+  top: 0;
+  padding-top: calc(
+    var(--vp-nav-height) + var(--wiki-back-bar-height, 0px) +
+      var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px) + 48px
+  );
+  width: 224px;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.wiki-doc-shell .VPDoc .aside-container::-webkit-scrollbar {
+  display: none;
+}
+
+.wiki-doc-shell .VPDoc .aside-curtain {
+  position: fixed;
+  bottom: 0;
+  z-index: 10;
+  width: 224px;
+  height: 32px;
+  background: linear-gradient(transparent, var(--vp-c-bg) 70%);
+  pointer-events: none;
+}
+
+.wiki-doc-shell .VPDoc .aside-content {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(
+    100vh - (var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + 48px)
+  );
+  padding-bottom: 32px;
+}
+
+.wiki-doc-shell .VPDoc .content {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .VPDoc .content {
+    padding: 0 32px 128px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .wiki-doc-shell .VPDoc .content {
+    order: 1;
+    margin: 0;
+    min-width: 640px;
+  }
+}
+
+.wiki-doc-shell .VPDoc .content-container {
+  margin: 0 auto;
+}
+
+.wiki-doc-shell .VPDoc.has-aside .content-container {
+  max-width: 688px;
+}
+
+/* =========================================================
+ * Outline
+ * ========================================================= */
+.wiki-doc-shell .VPDocAsideOutline {
+  display: none;
+}
+
+.wiki-doc-shell .VPDocAsideOutline.has-outline {
+  display: block;
+}
+
+.wiki-doc-shell .VPDocAsideOutline > .content {
+  position: relative;
+  border-left: 1px solid var(--vp-c-divider);
+  padding-left: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 0;
+  margin: 0;
+}
+
+.wiki-doc-shell .outline-marker {
+  position: absolute;
+  top: 32px;
+  left: -1px;
+  z-index: 0;
+  opacity: 0;
+  width: 2px;
+  border-radius: 2px;
+  height: 18px;
+  background-color: var(--vp-c-brand-1);
+  transition: top 0.25s cubic-bezier(0, 1, 0.5, 1), background-color 0.5s,
+    opacity 0.25s;
+}
+
+.wiki-doc-shell .outline-marker.is-visible {
+  opacity: 1;
+}
+
+.wiki-doc-shell .outline-title {
+  line-height: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .outline-link {
+  display: block;
+  line-height: 32px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--vp-c-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.5s;
+  text-decoration: none;
+}
+
+.wiki-doc-shell .outline-link:hover,
+.wiki-doc-shell .outline-link.active {
+  color: var(--vp-c-text-1);
+  transition: color 0.25s;
+}
+
+.wiki-doc-shell .outline-link.nested {
+  padding-left: 13px;
+}
+
+/* 嵌套大纲（官方 VPDocOutlineItem nested） */
+.wiki-doc-shell .VPDocOutlineItem {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wiki-doc-shell .VPDocOutlineItem.nested {
+  padding-left: 12px;
+}
+
+.wiki-doc-shell .VPDocOutlineItem li {
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================================
+ * Doc footer / pager
+ * ========================================================= */
+.wiki-doc-shell .VPDocFooter {
+  margin-top: 64px;
+}
+
+.wiki-doc-shell .VPDocFooter .edit-info {
+  padding-bottom: 18px;
+}
+
+@media (min-width: 640px) {
+  .wiki-doc-shell .VPDocFooter .edit-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+  }
+}
+
+.wiki-doc-shell .VPLastUpdated {
+  line-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  margin: 0;
+}
+
+.wiki-doc-shell .prev-next {
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 24px;
+  display: grid;
+  grid-row-gap: 8px;
+}
+
+@media (min-width: 640px) {
+  .wiki-doc-shell .prev-next {
+    grid-template-columns: repeat(2, 1fr);
+    grid-column-gap: 16px;
+  }
+}
+
+.wiki-doc-shell .pager-link {
+  display: block;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 11px 16px 13px;
+  width: 100%;
+  height: 100%;
+  transition: border-color 0.25s;
+  text-decoration: none;
+  box-sizing: border-box;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.wiki-doc-shell .pager-link:hover {
+  border-color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .pager-link.next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.wiki-doc-shell .pager-link .desc {
+  display: block;
+  line-height: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-doc-shell .pager-link .title {
+  display: block;
+  line-height: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  transition: color 0.25s;
+}
+
+/* =========================================================
+ * vp-doc 正文（从 VP 样式原样抄）
+ * unlayer：对抗 base.css 的 ul/h1 reset
+ * ========================================================= */
+.wiki-doc-shell .vp-doc {
+  outline: none;
+}
+
+.wiki-doc-shell .vp-doc h1,
+.wiki-doc-shell .vp-doc h2,
+.wiki-doc-shell .vp-doc h3,
+.wiki-doc-shell .vp-doc h4,
+.wiki-doc-shell .vp-doc h5,
+.wiki-doc-shell .vp-doc h6 {
+  position: relative;
+  font-weight: 600;
+  outline: none;
+  color: var(--vp-c-text-1);
+  scroll-margin-top: calc(var(--vp-nav-height) + 24px);
+}
+
+/* header-anchor：官方 hover 显示 ¶/​ */
+.wiki-doc-shell .vp-doc .header-anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin-left: -0.87em;
+  padding-right: 0.23em;
+  font-weight: 500;
+  user-select: none;
+  opacity: 0;
+  text-decoration: none;
+  color: var(--vp-c-brand-1);
+  transition: color 0.25s, opacity 0.25s;
+}
+
+.wiki-doc-shell .vp-doc h2 .header-anchor {
+  top: 24px;
+}
+
+.wiki-doc-shell .vp-doc h1:hover .header-anchor,
+.wiki-doc-shell .vp-doc h1 .header-anchor:focus,
+.wiki-doc-shell .vp-doc h2:hover .header-anchor,
+.wiki-doc-shell .vp-doc h2 .header-anchor:focus,
+.wiki-doc-shell .vp-doc h3:hover .header-anchor,
+.wiki-doc-shell .vp-doc h3 .header-anchor:focus,
+.wiki-doc-shell .vp-doc h4:hover .header-anchor,
+.wiki-doc-shell .vp-doc h4 .header-anchor:focus {
+  opacity: 1;
+}
+
+/* 外链小箭头 */
+.wiki-doc-shell .vp-doc a.vp-external-link-icon:not(.no-icon)::after {
+  display: inline-block;
+  margin-top: -1px;
+  margin-left: 4px;
+  width: 11px;
+  height: 11px;
+  content: "";
+  vertical-align: middle;
+  background-color: currentColor;
+  color: var(--vp-c-text-3);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M0 0h24v24H0V0z' fill='none'/%3E%3Cpath d='M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z'/%3E%3C/svg%3E");
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+
+.wiki-doc-shell .vp-doc h1 {
+  letter-spacing: -0.02em;
+  line-height: 40px;
+  font-size: 28px;
+  margin: 0 0 16px;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .vp-doc h1 {
+    font-size: 32px;
+  }
+}
+
+.wiki-doc-shell .vp-doc h2 {
+  margin: 48px 0 16px;
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 24px;
+  letter-spacing: -0.02em;
+  line-height: 32px;
+  font-size: 24px;
+}
+
+.wiki-doc-shell .vp-doc h3 {
+  margin: 32px 0 0;
+  letter-spacing: -0.01em;
+  line-height: 28px;
+  font-size: 20px;
+}
+
+.wiki-doc-shell .vp-doc h4 {
+  margin: 24px 0 0;
+  letter-spacing: -0.01em;
+  line-height: 24px;
+  font-size: 18px;
+}
+
+.wiki-doc-shell .vp-doc p,
+.wiki-doc-shell .vp-doc img,
+.wiki-doc-shell .vp-doc summary {
+  margin: 16px 0;
+}
+
+.wiki-doc-shell .vp-doc p {
+  line-height: 28px;
+}
+
+.wiki-doc-shell .vp-doc blockquote {
+  margin: 16px 0;
+  border-left: 2px solid var(--vp-c-divider);
+  padding-left: 16px;
+  transition: border-color 0.5s;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-doc-shell .vp-doc blockquote > p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.wiki-doc-shell .vp-doc a {
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.25s, opacity 0.25s;
+}
+
+.wiki-doc-shell .vp-doc a:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.wiki-doc-shell .vp-doc strong {
+  font-weight: 600;
+}
+
+.wiki-doc-shell .vp-doc ul,
+.wiki-doc-shell .vp-doc ol {
+  padding-left: 1.25rem;
+  margin: 16px 0;
+}
+
+.wiki-doc-shell .vp-doc ul {
+  list-style: disc;
+}
+
+.wiki-doc-shell .vp-doc ol {
+  list-style: decimal;
+}
+
+.wiki-doc-shell .vp-doc li + li {
+  margin-top: 8px;
+}
+
+.wiki-doc-shell .vp-doc li > ol,
+.wiki-doc-shell .vp-doc li > ul {
+  margin: 8px 0 0;
+}
+
+.wiki-doc-shell .vp-doc table {
+  display: block;
+  border-collapse: collapse;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.wiki-doc-shell .vp-doc tr {
+  background-color: var(--vp-c-bg);
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.wiki-doc-shell .vp-doc tr:nth-child(2n) {
+  background-color: var(--vp-c-bg-soft);
+}
+
+.wiki-doc-shell .vp-doc th,
+.wiki-doc-shell .vp-doc td {
+  border: 1px solid var(--vp-c-divider);
+  padding: 8px 16px;
+}
+
+.wiki-doc-shell .vp-doc th {
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vp-c-text-2);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.wiki-doc-shell .vp-doc td {
+  font-size: 14px;
+}
+
+.wiki-doc-shell .vp-doc hr {
+  margin: 16px 0;
+  border: none;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.wiki-doc-shell .vp-doc :not(pre, h1, h2, h3, h4, h5, h6) > code {
+  font-size: var(--vp-code-font-size);
+  color: var(--vp-code-color);
+}
+
+.wiki-doc-shell .vp-doc :not(pre) > code {
+  border-radius: 4px;
+  padding: 3px 6px;
+  background-color: var(--vp-code-bg);
+  font-family: var(--vp-font-family-mono);
+}
+
+.wiki-doc-shell .vp-doc a > code {
+  color: var(--vp-code-link-color);
+}
+
+.wiki-doc-shell .vp-doc h1 > code,
+.wiki-doc-shell .vp-doc h2 > code,
+.wiki-doc-shell .vp-doc h3 > code,
+.wiki-doc-shell .vp-doc h4 > code {
+  font-size: 0.9em;
+}
+
+/* 代码块壳：.language-xx + lang + copy（对齐官方站点配置页） */
+.wiki-doc-shell .vp-doc div[class*="language-"] {
+  position: relative;
+  margin: 16px 0;
+  background-color: var(--vp-code-block-bg);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.wiki-doc-shell .vp-doc div[class*="language-"] > .lang {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  z-index: 2;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(235, 235, 245, 0.38);
+  transition: opacity 0.4s;
+}
+
+.wiki-doc-shell .vp-doc div[class*="language-"] > button.copy {
+  direction: ltr;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  border: 1px solid rgba(82, 82, 89, 0.32);
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  background-color: #242424;
+  opacity: 0;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='rgba(235,235,245,0.6)' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Crect x='9' y='9' width='11' height='11' rx='1.5'/%3E%3Cpath d='M5 15V5a1.5 1.5 0 0 1 1.5-1.5H15'/%3E%3C/svg%3E");
+  background-position: 50%;
+  background-size: 20px;
+  background-repeat: no-repeat;
+  transition: border-color 0.25s, background-color 0.25s, opacity 0.25s;
+}
+
+.wiki-doc-shell .vp-doc div[class*="language-"]:hover > button.copy,
+.wiki-doc-shell .vp-doc div[class*="language-"] > button.copy:focus {
+  opacity: 1;
+}
+
+.wiki-doc-shell .vp-doc div[class*="language-"]:hover > .lang {
+  opacity: 0;
+}
+
+.wiki-doc-shell .vp-doc div[class*="language-"] > button.copy.copied {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' stroke='%233dd68c' stroke-width='1.5' viewBox='0 0 24 24'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+}
+
+.wiki-doc-shell .vp-doc pre {
+  position: relative;
+  margin: 0;
+  padding: 20px 24px;
+  overflow-x: auto;
+  background: transparent;
+  color: var(--vp-code-block-color);
+  line-height: var(--vp-code-line-height);
+}
+
+.wiki-doc-shell .vp-doc pre code {
+  display: block;
+  width: fit-content;
+  min-width: 100%;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: var(--vp-code-font-size);
+  font-family: var(--vp-font-family-mono);
+  border-radius: 0;
+}
+
+/* 无 language 壳的裸 pre 兜底 */
+.wiki-doc-shell .vp-doc > pre,
+.wiki-doc-shell .vp-doc p > pre,
+.wiki-doc-shell .vp-doc li > pre {
+  margin: 16px 0;
+  padding: 20px 24px;
+  border-radius: 8px;
+  background-color: var(--vp-code-block-bg);
+}
+
+.wiki-doc-shell .vp-doc img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* custom-block 预置（tip/info/warning/danger/details） */
+.wiki-doc-shell .vp-doc .custom-block {
+  margin: 16px 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 16px 16px 8px;
+  line-height: 24px;
+  font-size: 14px;
+}
+
+.wiki-doc-shell .vp-doc .custom-block.tip,
+.wiki-doc-shell .vp-doc .tip.custom-block {
+  border-color: var(--vp-c-brand-soft);
+  color: var(--vp-c-text-1);
+  background-color: var(--vp-c-brand-soft);
+}
+
+.wiki-doc-shell .vp-doc .custom-block.info {
+  border-color: rgba(100, 108, 255, 0.25);
+  background-color: rgba(100, 108, 255, 0.1);
+}
+
+.wiki-doc-shell .vp-doc .custom-block.warning,
+.wiki-doc-shell .vp-doc .warning.custom-block {
+  border-color: rgba(234, 179, 8, 0.32);
+  background-color: rgba(234, 179, 8, 0.1);
+}
+
+.wiki-doc-shell .vp-doc .custom-block.danger {
+  border-color: rgba(244, 63, 94, 0.32);
+  background-color: rgba(244, 63, 94, 0.1);
+}
+
+.wiki-doc-shell .vp-doc .custom-block.details,
+.wiki-doc-shell .vp-doc details.custom-block {
+  border-color: var(--vp-c-divider);
+  background-color: var(--vp-c-bg-soft);
+}
+
+.wiki-doc-shell .vp-doc .custom-block p {
+  margin: 8px 0;
+  line-height: 24px;
+}
+
+.wiki-doc-shell .vp-doc .custom-block p:first-child {
+  margin-top: 0;
+}
+
+/* empty / loading */
+.wiki-doc-shell .wiki-empty {
+  padding: 64px 0;
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-doc-shell .wiki-empty a {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+}
+
+.wiki-doc-shell .wiki-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.wiki-doc-shell .wiki-skeleton > span {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--vp-c-bg-soft);
+  animation: wiki-pulse 1.4s ease-in-out infinite;
+}
+
+.wiki-doc-shell .wiki-skeleton > span:first-child {
+  height: 36px;
+  width: 60%;
+  margin-bottom: 8px;
+}
+
+@keyframes wiki-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* =========================================================
+ * DocumentWorkbench — 三栏对齐 VitePress（大纲/评论/历史 + 读写）
+ * 主站 NavBar 在 shell 外；壳内仅薄协作条 + 三栏。
+ * ========================================================= */
+.wiki-doc-shell.compass-workbench {
+  min-height: calc(100dvh - var(--vp-nav-height));
+}
+
+.wiki-doc-shell.compass-workbench.cw-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  padding: 32px;
+}
+
+.wiki-doc-shell .cw-gate-link {
+  color: var(--vp-c-brand-1);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.wiki-doc-shell .cw-gate-link:hover {
+  color: var(--vp-c-brand-2);
+}
+
+/* ---------- 返回栏：单行工具条（勿再做侧栏对齐假分栏） ---------- */
+.wiki-doc-shell .wiki-back-bar {
+  position: sticky;
+  top: var(--vp-nav-height);
+  z-index: 50;
+  height: var(--wiki-back-bar-height);
+  border-bottom: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+}
+
+.wiki-doc-shell .wiki-back-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  /* 比内容区略偏左，避免贴齐侧栏右缘过远 */
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .wiki-back-bar-inner {
+    /* 靠侧栏右缘内侧，比正文起点略左 */
+    padding-left: calc(var(--vp-sidebar-width) - 8px);
+    /* 右侧不必顶到视口边缘，给编辑按钮留合理边距 */
+    padding-right: max(24px, calc((100% - var(--vp-layout-max-width)) / 2 + 32px));
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .wiki-back-bar-inner {
+    padding-left: max(
+      16px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2 + var(--vp-sidebar-width) - 40px)
+    );
+    padding-right: max(
+      32px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2 + 48px)
+    );
+  }
+}
+
+.wiki-doc-shell .wiki-back-bar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vp-c-brand-1);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.wiki-doc-shell .wiki-back-bar-link:hover {
+  color: var(--vp-c-brand-2);
+}
+
+.wiki-doc-shell .wiki-back-bar-arrow {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.wiki-doc-shell .wiki-back-bar-sep {
+  flex-shrink: 0;
+  color: var(--vp-c-text-3);
+  font-size: 13px;
+  user-select: none;
+}
+
+.wiki-doc-shell .wiki-back-bar-crumb {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+/* 编辑等操作：贴在路径旁而非死顶视口最右 */
+.wiki-doc-shell .wiki-back-bar-extra {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+.wiki-doc-shell .cw-collab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.wiki-doc-shell .cw-nav-btn {
+  appearance: none;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.wiki-doc-shell .cw-nav-btn:hover:not(:disabled) {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .cw-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wiki-doc-shell .cw-nav-btn-primary {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+
+.wiki-doc-shell .cw-nav-btn-primary:hover:not(:disabled) {
+  border-color: var(--vp-c-brand-2);
+  background: var(--vp-c-brand-2);
+  color: #fff;
+}
+
+/* 有返回栏时：LocalNav sticky 再下移 */
+.wiki-doc-shell.has-main-nav .VPLocalNav {
+  top: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
+}
+
+/* 有返回栏：侧栏内容再下移，但 top 仍为 0，滚动条仍穿过主站 tabbar */
+.wiki-doc-shell.has-main-nav .VPSidebar {
+  padding-top: calc(
+    var(--vp-nav-height) + var(--wiki-back-bar-height) + 16px
+  );
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell.has-main-nav .VPSidebar {
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    max-height: 100dvh;
+    padding-top: calc(
+      var(--vp-nav-height) + var(--wiki-back-bar-height) + 16px
+    );
+  }
+
+  .wiki-doc-shell.has-main-nav .VPSidebar .curtain {
+    top: calc((var(--vp-nav-height) + var(--wiki-back-bar-height)) * -1);
+    margin-top: calc((var(--vp-nav-height) + var(--wiki-back-bar-height)) * -1);
+    height: calc(var(--vp-nav-height) + var(--wiki-back-bar-height));
+  }
+}
+
+.wiki-doc-shell .cw-space-label {
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+}
+
+.wiki-doc-shell .cw-readonly {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+}
+
+/* 右栏自绘 tabs：大纲 / 评论 / 历史 */
+.wiki-doc-shell .cw-aside-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.wiki-doc-shell .cw-aside-tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--vp-c-text-2);
+  letter-spacing: 0.02em;
+}
+
+.wiki-doc-shell .cw-aside-tab:hover {
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .cw-aside-tab.is-active {
+  color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .cw-aside-panel .outline-title {
+  margin-bottom: 8px;
+}
+
+.wiki-doc-shell .cw-comment-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 6px;
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  resize: vertical;
+  outline: none;
+}
+
+.wiki-doc-shell .cw-comment-input:focus {
+  border-color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .cw-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wiki-doc-shell .cw-tree-link {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  min-width: 0;
+}
+
+.wiki-doc-shell .cw-muted {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--vp-c-text-3);
+}
+
+.wiki-doc-shell .cw-aside-panel > .content {
+  border-left: 1px solid var(--vp-c-divider);
+  padding-left: 16px;
+}
+
+.wiki-doc-shell .cw-aside-body {
+  margin-top: 12px;
+  max-height: calc(
+    100vh - var(--vp-nav-height) - var(--wiki-back-bar-height, 0px) - 140px
+  );
+  overflow-y: auto;
+  padding-bottom: 24px;
+}
+
+.wiki-doc-shell .cw-aside-panel .outline-link {
+  cursor: default;
+}
+
+.wiki-doc-shell .cw-comments {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wiki-doc-shell .cw-comments-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wiki-doc-shell .cw-comment {
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.wiki-doc-shell .cw-comment-meta {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+}
+
+.wiki-doc-shell .cw-comment-body {
+  margin-top: 2px;
+  color: var(--vp-c-text-1);
+  line-height: 1.5;
+}
+
+.wiki-doc-shell .cw-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wiki-doc-shell .cw-history-item {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.wiki-doc-shell .cw-history-title {
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .cw-history-meta {
+  margin-top: 2px;
+  color: var(--vp-c-text-3);
+}
+
+.wiki-doc-shell .cw-history-snippet {
+  margin-top: 4px;
+  color: var(--vp-c-text-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wiki-doc-shell .cw-edit-title {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  letter-spacing: -0.02em;
+  line-height: 40px;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--vp-c-text-1);
+  margin: 0 0 16px;
+  font-family: inherit;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .wiki-doc-shell .cw-edit-title {
+    font-size: 32px;
+  }
+}
+
+.wiki-doc-shell .cw-edit-body {
+  display: block;
+  width: 100%;
+  min-height: 50vh;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+  outline: none;
+  resize: vertical;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 28px;
+  color: var(--vp-c-text-1);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.wiki-doc-shell .cw-edit-body:focus {
+  border-color: var(--vp-c-brand-1);
+}
+
+.wiki-doc-shell .cw-meta {
+  margin-top: 32px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--vp-c-text-3);
+}
+
+.wiki-doc-shell .cw-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 16px;
+}
+
+.wiki-doc-shell .cw-modal {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 12px;
+  background: var(--vp-c-bg);
+  padding: 24px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  color: var(--vp-c-text-1);
+}
+
+.wiki-doc-shell .cw-modal h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.wiki-doc-shell .cw-modal-input {
+  margin-top: 12px;
+}
+
+.wiki-doc-shell .cw-modal-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

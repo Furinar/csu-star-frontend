@@ -1,0 +1,166 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  height: 48px;
+  --stroke: #94a3b8;
+  --fill: #facc15;
+}
+
+.wrapper[data-disabled="true"] {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(100%) blur(0.5px);
+}
+
+.wrapper[data-tone="low"] {
+  --stroke: #ef4444;
+  --fill: #ef4444;
+}
+
+.wrapper[data-tone="high"] {
+  --stroke: #facc15;
+  --fill: #facc15;
+}
+
+.wrapper[data-tone="neutral"] {
+  --stroke: #94a3b8;
+  --fill: #facc15;
+}
+
+.hint {
+  position: absolute;
+  right: 14px;
+  bottom: -14px;
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  transform: translateY(1px);
+}
+
+.hintLow {
+  color: #dc2626;
+}
+
+.hintHigh {
+  color: #ca8a04;
+}
+
+.rating {
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 0.3rem;
+}
+
+.rating input {
+  appearance: unset;
+  display: none;
+}
+
+.rating label {
+  cursor: pointer;
+}
+
+.wrapper[data-disabled="true"] .rating label {
+  cursor: not-allowed;
+}
+
+.rating svg {
+  width: 2rem;
+  height: 2rem;
+  overflow: visible;
+  fill: transparent;
+  stroke: var(--stroke);
+  stroke-linejoin: bevel;
+  stroke-dasharray: 12;
+  animation: rating-idle 4s linear infinite;
+  transition:
+    stroke 0.2s,
+    fill 0.5s;
+}
+
+@keyframes rating-idle {
+  from {
+    stroke-dashoffset: 24;
+  }
+}
+
+.rating label:hover svg,
+.rating label:hover ~ label svg {
+  stroke: var(--fill);
+}
+
+.rating input:checked ~ label svg {
+  transition: 0s;
+  animation:
+    rating-idle 4s linear infinite,
+    rating-yippee 0.75s backwards;
+  fill: var(--fill);
+  stroke: var(--fill);
+  stroke-opacity: 0;
+  stroke-dasharray: 0;
+  stroke-linejoin: miter;
+  stroke-width: 8px;
+}
+
+@keyframes rating-yippee {
+  0% {
+    transform: scale(1);
+    fill: var(--fill);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+    stroke: var(--stroke);
+    stroke-dasharray: 10;
+    stroke-width: 1px;
+    stroke-linejoin: bevel;
+  }
+
+  30% {
+    transform: scale(0);
+    fill: var(--fill);
+    fill-opacity: 0;
+    stroke-opacity: 1;
+    stroke: var(--stroke);
+    stroke-dasharray: 10;
+    stroke-width: 1px;
+    stroke-linejoin: bevel;
+  }
+
+  30.1% {
+    stroke: var(--fill);
+    stroke-dasharray: 0;
+    stroke-linejoin: miter;
+    stroke-width: 8px;
+  }
+
+  60% {
+    transform: scale(1.2);
+    fill: var(--fill);
+  }
+}
+
+@media (max-width: 640px) {
+  .wrapper {
+    height: 40px;
+    padding: 6px 12px;
+  }
+
+  .hint {
+    font-size: 10px;
+    bottom: -12px;
+  }
+
+  .rating svg {
+    width: 1.6rem;
+    height: 1.6rem;
+  }
+}

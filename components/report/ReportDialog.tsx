@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitReport } from "@/api/me";
-import { AdvancedSelect, AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
+import { AdvancedSelect, AdvancedTextarea } from "@/components/ui/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";

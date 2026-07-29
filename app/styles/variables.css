@@ -1,7 +1,6 @@
-/* ===== CSS 自定义属性 ===== */
+/* ===== Design tokens (CSS custom properties) ===== */
 
 :root {
-
   /* 冰山色系 */
   --ice-50: #f0f9ff;
   --ice-100: #dff1ff;
@@ -39,8 +38,6 @@
   /* 流星色 */
   --meteor-color: var(--star-500);
 
-
-
   /* 字体 */
   --body-font: "Poppins", system-ui, sans-serif;
   --big-font-size: 2rem;
@@ -53,7 +50,7 @@
   --font-medium: 500;
   --font-semi-bold: 600;
 
-  /* 间距 */
+  /* 间距（遗留全局 class 仍在使用） */
   --mb-0-25: 0.25rem;
   --mb-0-5: 0.5rem;
   --mb-0-75: 0.75rem;
@@ -86,22 +83,37 @@
   --page-accent-soft: rgba(139, 92, 246, 0.08);
   --page-accent-soft-strong: rgba(139, 92, 246, 0.14);
   --page-accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  --page-accent-gradient-soft: linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(124,58,237,0.06) 100%);
+  --page-accent-gradient-soft: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.12) 0%,
+    rgba(124, 58, 237, 0.06) 100%
+  );
   --page-at-color: var(--star-600);
   --page-like-color: var(--star-500);
   --page-like-soft: rgba(139, 92, 246, 0.12);
 
-    /* 主题色映射 */
-      --first-color: var(--star-500);
-      --first-color-second: var(--star-500);
-      --first-color-alt: var(--star-600);
-      --first-color-lighter: var(--star-200);
-      --title-color: #0a0a0a;
-      --text-color: #1a1a1a;
-      --text-color-light: #4a4a4a;
-      --input-color: var(--color-gray-100, #f3f4f6);
-      --body-color: #ffffff;
-      --container-color: #ffffff;
-      --scroll-bar-color: var(--star-50);
-      --scroll-thumb-color: var(--star-100);
+  /* 主题色映射（可被 pageTheme 运行时覆盖） */
+  --first-color: var(--star-500);
+  --first-color-second: var(--star-500);
+  --first-color-alt: var(--star-600);
+  --first-color-lighter: var(--star-200);
+  --title-color: #0a0a0a;
+  --text-color: #1a1a1a;
+  --text-color-light: #4a4a4a;
+  --input-color: var(--color-gray-100, #f3f4f6);
+  --body-color: #ffffff;
+  --container-color: #ffffff;
+}
+
+/* 大屏字号阶梯 */
+@media screen and (min-width: 968px) {
+  :root {
+    --big-font-size: 3rem;
+    --h1-font-size: 2.25rem;
+    --h2-font-size: 1.5rem;
+    --h3-font-size: 1.25rem;
+    --normal-font-size: 1rem;
+    --small-font-size: 0.875rem;
+    --smaller-font-size: 0.8125rem;
+  }
 }

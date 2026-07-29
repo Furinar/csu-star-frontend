@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
+  transpilePackages: ["tdesign-react", "tdesign-icons-react"],
 };
 
 export default nextConfig;

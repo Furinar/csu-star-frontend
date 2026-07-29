@@ -1,43 +1,13 @@
-/* ===== 基础重置样式 ===== */
-
-body {
-  overflow-x: hidden;
-  /* 移动端适配：防iOS点击高亮，确保触摸流畅 */
-  -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
-  /* 刘海屏安全区适配 */
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
+/* ===== Base reset & document defaults ===== */
 
 html {
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
 }
 
-/* 滚动容器 */
-.snap-scroll-container {
-  height: 100vh;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-}
-
-.snap-section {
-  min-height: 100vh;
-}
-
-@media screen and (max-width: 767px) {
-  .snap-section {
-    min-height: calc(100vh - 6rem);
-    max-height: calc(100vh - 6rem);
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-}
-
 body {
   margin: 0;
+  overflow-x: hidden;
   font-family: var(--body-font);
   font-size: var(--normal-font-size);
   background-color: var(--body-color);
@@ -45,6 +15,13 @@ body {
   transition: background-color 1s, color 1s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 移动端：防 iOS 点击高亮，保证触摸流畅 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* 刘海屏安全区 */
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 h1,
@@ -74,4 +51,24 @@ img {
   appearance: none;
   border-radius: 0;
   font-family: inherit;
+}
+
+/* 滚动容器（首页 snap） */
+.snap-scroll-container {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.snap-section {
+  min-height: 100vh;
+}
+
+@media screen and (max-width: 767px) {
+  .snap-section {
+    min-height: calc(100vh - 6rem);
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
 }

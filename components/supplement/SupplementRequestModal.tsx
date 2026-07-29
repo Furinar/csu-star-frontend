@@ -6,7 +6,7 @@ import {
   AdvancedInput,
   AdvancedSelect,
   AdvancedTextarea,
-} from "@/app/(features)/resource/components/AdvancedFormControls";
+} from "@/components/ui/AdvancedFormControls";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import { DEPARTMENTS } from "@/data/departments";
 import { requireAuthAction } from "@/lib/requireAuthAction";

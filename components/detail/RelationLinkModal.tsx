@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect, useMemo, useState } from "react";
-import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
+import { AdvancedInput } from "@/components/ui/AdvancedFormControls";
 import { createCourseTeacherRelation } from "@/api/detail";
 import { searchCourseSuggestions, searchTeacherSuggestions } from "@/api/resource";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";

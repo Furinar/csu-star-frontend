@@ -1,0 +1,21 @@
+/* Legacy CSS module retained for import stability.
+ * Floating form fields now render via TDesign (see AdvancedFormControls.tsx).
+ * Keep a minimal empty/utility shell so any residual className references do not break.
+ */
+
+.wrapper {
+  width: 100%;
+}
+
+.inputGroup,
+.underlineGroup {
+  width: 100%;
+}
+
+.input,
+.inputUnderline,
+.hasValue,
+.userLabel,
+.underlineLabel {
+  /* no-op: styles come from tdesign-react */
+}
