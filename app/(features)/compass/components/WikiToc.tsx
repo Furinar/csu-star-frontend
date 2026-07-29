@@ -122,7 +122,8 @@ export default function WikiToc({
     if (!activeId) return;
     const el = linkRefs.current.get(activeId);
     if (!el) return;
-    setMarkerTop(el.offsetTop + (el.offsetHeight - 18) / 2);
+    const next = el.offsetTop + (el.offsetHeight - 18) / 2;
+    setMarkerTop((prev) => (Math.abs(prev - next) < 0.5 ? prev : next));
   }, [activeId, nodes]);
 
   if (nodes.length === 0) return null;

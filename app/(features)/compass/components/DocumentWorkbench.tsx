@@ -322,7 +322,10 @@ export default function DocumentWorkbench({
       setCanWrite(data.can_write);
       setEditTitle(data.page.title);
       setEditBody(data.page.body);
-      window.scrollTo(0, 0);
+      // 仅在明显偏离顶部时复位，避免 sticky 返回栏跟着 scrollTo 抖一下
+      if (typeof window !== "undefined" && window.scrollY > 8) {
+        window.scrollTo(0, 0);
+      }
       const [hist, cms] = await Promise.all([
         getCompassHistory(id),
         getCompassComments(id),

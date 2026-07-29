@@ -720,6 +720,10 @@
   opacity: 0;
   pointer-events: none;
   z-index: 6;
+  /* 仅在运动时再开 will-change，避免常驻合成层牵连布局 */
+}
+
+.wiki-doc-shell .sidebar-active-marker.is-motion.is-visible {
   will-change: top, left, height;
 }
 
@@ -1630,6 +1634,16 @@
   min-height: calc(100dvh - var(--vp-nav-height));
 }
 
+/* 文档壳：预留滚动条槽，切文高度变化时不因滚动条显隐横向挪整栏 */
+.wiki-doc-shell.Layout,
+.wiki-doc-shell.compass-workbench {
+  scrollbar-gutter: stable;
+}
+
+html:has(.wiki-doc-shell) {
+  scrollbar-gutter: stable;
+}
+
 .wiki-doc-shell.compass-workbench.cw-gate {
   display: flex;
   flex-direction: column;
@@ -1650,7 +1664,7 @@
   color: var(--vp-c-brand-2);
 }
 
-/* ---------- 返回栏：左路径 / 右操作，全宽贴边，不再假对齐正文 ---------- */
+/* ---------- 返回栏：左路径 / 右操作；操作区绝对贴右，标题变长也不挤按钮 ---------- */
 .wiki-doc-shell .wiki-back-bar {
   position: sticky;
   top: var(--vp-nav-height);
@@ -1658,9 +1672,12 @@
   height: var(--wiki-back-bar-height);
   border-bottom: 1px solid var(--vp-c-divider);
   background: var(--vp-c-bg);
+  /* 避免切文时滚动条显隐带动整栏（含编辑按钮）左右抖 */
+  width: 100%;
 }
 
 .wiki-doc-shell .wiki-back-bar-inner {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1674,7 +1691,6 @@
 
 @media (min-width: 960px) {
   .wiki-doc-shell .wiki-back-bar-inner {
-    /* 与侧栏内边距对齐：返回链落在侧栏正上方，不再整栏右挪 */
     padding-left: 32px;
     padding-right: 24px;
   }
@@ -1693,12 +1709,34 @@
   }
 }
 
+/* 有右侧操作时：给路径区预留按钮宽度，避免 absolute 叠字 */
+.wiki-doc-shell .wiki-back-bar-inner:has(.wiki-back-bar-extra) {
+  padding-right: max(16px, 7.5rem);
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .wiki-back-bar-inner:has(.wiki-back-bar-extra) {
+    padding-right: max(24px, 8rem);
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .wiki-back-bar-inner:has(.wiki-back-bar-extra) {
+    padding-right: max(
+      8rem,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2 + 4.5rem)
+    );
+  }
+}
+
 .wiki-doc-shell .wiki-back-bar-main {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
   flex: 1 1 auto;
+  /* 不吃掉右侧绝对定位按钮的空间 */
+  max-width: 100%;
 }
 
 .wiki-doc-shell .wiki-back-bar-link {
@@ -1739,17 +1777,43 @@
   color: var(--vp-c-text-2);
 }
 
-/* 编辑等操作：固定推到行尾 */
+/*
+ * 编辑等操作：绝对贴右，与路径文案长度解耦。
+ * 切文章时 location 变长短，按钮像素位置不变，不再「跟随抖动」。
+ */
 .wiki-doc-shell .wiki-back-bar-extra {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
-  margin-left: auto;
   flex-shrink: 0;
+  /* 固定槽位宽度，disabled/loading 换字也不晃 */
+  min-width: 4.5rem;
+}
+
+@media (min-width: 960px) {
+  .wiki-doc-shell .wiki-back-bar-extra {
+    right: 24px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .wiki-doc-shell .wiki-back-bar-extra {
+    right: max(
+      32px,
+      calc((100% - (var(--vp-layout-max-width) - 64px)) / 2)
+    );
+  }
 }
 
 .wiki-doc-shell .cw-collab-actions {
   display: flex;
+  justify-content: flex-end;
+  min-width: 4.5rem;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;

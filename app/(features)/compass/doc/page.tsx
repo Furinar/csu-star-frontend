@@ -56,23 +56,28 @@ export default function WikiDocPage() {
     }
 
     let mounted = true;
+    // 保留上一篇正文，避免切文时 skeleton 替换导致高度塌缩闪烁
     setIsLoading(true);
     setLoadError(false);
     setIsDrawerOpen(false);
     setOutlineOpen(false);
-    setOutlineNodes([]);
 
     getWikiDoc(section, slug)
       .then((detail) => {
         if (!mounted) return;
         setDoc(detail);
         document.title = `${detail.title} | 中南指北`;
+        // 新文就绪后再滚顶，避免旧文高度被 skeleton 清空时的跳动
+        if (!window.location.hash) {
+          if (window.scrollY > 8) window.scrollTo(0, 0);
+        }
       })
       .catch((error) => {
         console.error("Failed to load wiki doc:", error);
         if (!mounted) return;
         setDoc(null);
         setLoadError(true);
+        setOutlineNodes([]);
       })
       .finally(() => {
         if (mounted) setIsLoading(false);
@@ -220,8 +225,12 @@ export default function WikiDocPage() {
             <div className="content">
               <div className="content-container">
                 <main className="main">
-                  <div className="vp-doc">
-                    {isLoading ? (
+                  <div
+                    className={`vp-doc${isLoading && doc ? " is-pending" : ""}`}
+                    aria-busy={isLoading}
+                  >
+                    {/* 仅首屏无缓存时用 skeleton；切文保留旧正文，消除高度闪烁 */}
+                    {isLoading && !doc ? (
                       <div className="wiki-skeleton" aria-hidden>
                         <span />
                         <span style={{ width: "100%" }} />
@@ -244,6 +253,7 @@ export default function WikiDocPage() {
                         <MarkdownArticle
                           ref={articleRef}
                           content={doc.content}
+                          contentKey={`${doc.section}:${doc.slug}`}
                         />
                       </>
                     ) : (
@@ -263,7 +273,7 @@ export default function WikiDocPage() {
 
                 {doc ? (
                   <footer className="VPDocFooter">
-                    {doc.updatedAt ? (
+                    {doc.updatedAt && !isLoading ? (
                       <div className="edit-info">
                         <div />
                         <div className="last-updated">
