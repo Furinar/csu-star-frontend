@@ -132,29 +132,30 @@ function PreBlock({ children, ...rest }: ComponentPropsWithoutRef<"pre">) {
   );
 }
 
-const MarkdownArticle = forwardRef<HTMLDivElement, { content: string }>(
-  function MarkdownArticle({ content }, ref) {
-    return (
-      <div ref={ref}>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeSlug]}
-          components={{
-            a: MarkdownLink,
-            h1: (props) => <HeadingWithAnchor as="h1" {...props} />,
-            h2: (props) => <HeadingWithAnchor as="h2" {...props} />,
-            h3: (props) => <HeadingWithAnchor as="h3" {...props} />,
-            h4: (props) => <HeadingWithAnchor as="h4" {...props} />,
-            h5: (props) => <HeadingWithAnchor as="h5" {...props} />,
-            h6: (props) => <HeadingWithAnchor as="h6" {...props} />,
-            pre: PreBlock,
-          }}
-        >
-          {content}
-        </ReactMarkdown>
-      </div>
-    );
-  },
-);
+const MarkdownArticle = forwardRef<
+  HTMLDivElement,
+  { content: string; contentKey?: string }
+>(function MarkdownArticle({ content, contentKey }, ref) {
+  return (
+    <div ref={ref} key={contentKey}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSlug]}
+        components={{
+          a: MarkdownLink,
+          h1: (props) => <HeadingWithAnchor as="h1" {...props} />,
+          h2: (props) => <HeadingWithAnchor as="h2" {...props} />,
+          h3: (props) => <HeadingWithAnchor as="h3" {...props} />,
+          h4: (props) => <HeadingWithAnchor as="h4" {...props} />,
+          h5: (props) => <HeadingWithAnchor as="h5" {...props} />,
+          h6: (props) => <HeadingWithAnchor as="h6" {...props} />,
+          pre: PreBlock,
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+});
 
 export default MarkdownArticle;

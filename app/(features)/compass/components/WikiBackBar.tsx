@@ -30,22 +30,24 @@ export default function WikiBackBar({
   return (
     <div className="wiki-back-bar" role="navigation" aria-label="返回与位置">
       <div className="wiki-back-bar-inner">
-        <Link href={backHref} className="wiki-back-bar-link">
-          <span className="wiki-back-bar-arrow" aria-hidden>
-            ←
-          </span>
-          <span>{backLabel}</span>
-        </Link>
-        {place ? (
-          <>
-            <span className="wiki-back-bar-sep" aria-hidden>
-              /
+        <div className="wiki-back-bar-main">
+          <Link href={backHref} className="wiki-back-bar-link">
+            <span className="wiki-back-bar-arrow" aria-hidden>
+              ←
             </span>
-            <span className="wiki-back-bar-crumb" title={place}>
-              {place}
-            </span>
-          </>
-        ) : null}
+            <span>{backLabel}</span>
+          </Link>
+          {place ? (
+            <>
+              <span className="wiki-back-bar-sep" aria-hidden>
+                /
+              </span>
+              <span className="wiki-back-bar-crumb" title={place}>
+                {place}
+              </span>
+            </>
+          ) : null}
+        </div>
         {extra ? <div className="wiki-back-bar-extra">{extra}</div> : null}
       </div>
     </div>

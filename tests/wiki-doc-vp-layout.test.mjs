@@ -381,7 +381,8 @@ test("wiki.css matches VP layout tokens and fixed sidebar pattern", () => {
   // 返回栏：左路径 / 右操作
   assert.match(css, /\.wiki-back-bar/);
   assert.match(css, /\.wiki-back-bar-main/);
-  assert.match(css, /\.wiki-back-bar-extra[^}]*margin-left:\s*auto/s);
+  // 编辑按钮绝对贴右，与路径文案长度解耦，避免切文抖动
+  assert.match(css, /\.wiki-back-bar-extra[^}]*position:\s*absolute/s);
   // LocalNav only fully hides at 1280 (mid-width keeps outline dropdown)
   assert.match(
     css,
