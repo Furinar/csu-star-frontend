@@ -2,6 +2,18 @@
 
 import { searchEverything } from "@/api/search";
 import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsGrid";
+import {
+  InlineErrorBar,
+  LoadMoreStatus,
+  PageEmpty,
+  PageLoading,
+} from "@/components/ui/AsyncState";
+import {
+  buildLandingListCacheKey,
+  readListCache,
+  writeListCache,
+} from "@/lib/listQueryCache";
+import { getRequestErrorMessage } from "@/lib/requestError";
 import type { SearchResponse, SearchScope, SearchUnifiedItem } from "@/types/search";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -37,6 +49,21 @@ function getScopedTotal(results: SearchResponse, type: LandingScope) {
   return results.resources.total;
 }
 
+function resolveMergedTotal(
+  previousTotal: number,
+  nextTotal: number,
+  mergedCount: number,
+  nextPageCount: number,
+) {
+  // Empty page ⇒ exhausted. Clamp total so hasMore stops even if server total
+  // was inflated by unstable pagination / duplicates.
+  if (nextPageCount === 0) {
+    return mergedCount;
+  }
+
+  return Math.max(previousTotal, nextTotal, mergedCount);
+}
+
 function mergeResults(previous: SearchResponse, next: SearchResponse, type: LandingScope): SearchResponse {
   if (type === "course") {
     const existingIds = new Set(previous.courses.items.map((item) => item.id));
@@ -49,6 +76,12 @@ function mergeResults(previous: SearchResponse, next: SearchResponse, type: Land
       ...previous,
       courses: {
         ...next.courses,
+        total: resolveMergedTotal(
+          previous.courses.total,
+          next.courses.total,
+          mergedItems.length,
+          next.courses.items.length,
+        ),
         items: mergedItems,
       },
     };
@@ -65,6 +98,12 @@ function mergeResults(previous: SearchResponse, next: SearchResponse, type: Land
       ...previous,
       teachers: {
         ...next.teachers,
+        total: resolveMergedTotal(
+          previous.teachers.total,
+          next.teachers.total,
+          mergedItems.length,
+          next.teachers.items.length,
+        ),
         items: mergedItems,
       },
     };
@@ -80,10 +119,21 @@ function mergeResults(previous: SearchResponse, next: SearchResponse, type: Land
     ...previous,
     resources: {
       ...next.resources,
+      total: resolveMergedTotal(
+        previous.resources.total,
+        next.resources.total,
+        mergedItems.length,
+        next.resources.items.length,
+      ),
       items: mergedItems,
     },
   };
 }
+
+type LandingCachePayload = {
+  results: SearchResponse;
+  page: number;
+};
 
 export default function SearchLandingSection({
   type,
@@ -95,15 +145,20 @@ export default function SearchLandingSection({
 }: {
   type: LandingScope;
   title: string;
-  description?: string;
+  description?: ReactNode;
   action?: ReactNode;
   size?: number;
   className?: string;
 }) {
-  const [results, setResults] = useState<SearchResponse | null>(null);
+  const cacheKey = buildLandingListCacheKey(type, size);
+  const cached = readListCache<LandingCachePayload>(cacheKey);
+
+  const [results, setResults] = useState<SearchResponse | null>(
+    () => cached?.results ?? null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(() => !cached?.results);
+  const [page, setPage] = useState(() => cached?.page ?? 1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const requestIdRef = useRef(0);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -120,8 +175,8 @@ export default function SearchLandingSection({
     if (!append) {
       requestIdRef.current = currentRequestId;
       setError(null);
+      // Keep showing cached results while refreshing; only block UI when empty.
       setLoading(true);
-      setPage(1);
     } else {
       setIsLoadingMore(true);
     }
@@ -136,38 +191,45 @@ export default function SearchLandingSection({
 
       if (requestIdRef.current !== currentRequestId) return;
 
-      setResults((previous) =>
-        append && previous ? mergeResults(previous, data, type) : data,
-      );
+      setResults((previous) => {
+        const next = append && previous ? mergeResults(previous, data, type) : data;
+        writeListCache(cacheKey, {
+          results: next,
+          page: nextPage,
+        } satisfies LandingCachePayload);
+        return next;
+      });
       setPage(nextPage);
+      setError(null);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
 
-      const message =
-        err instanceof Error ? err.message : "列表加载失败，请稍后重试。";
-      setError(message);
+      // Never clear existing results on network failure — surface inline retry only.
+      setError(getRequestErrorMessage(err, "列表加载失败，请稍后重试。"));
     } finally {
       if (requestIdRef.current === currentRequestId) {
         setLoading(false);
         setIsLoadingMore(false);
       }
     }
-  }, [size, type]);
+  }, [cacheKey, size, type]);
 
   useEffect(() => {
     void loadPage({ page: 1, append: false });
   }, [loadPage]);
 
-  const isLoading = loading && results === null;
   const resolvedResults = results ?? createEmptyResults();
   const items = useMemo(() => getScopedItems(resolvedResults, type), [resolvedResults, type]);
   const total = useMemo(() => getScopedTotal(resolvedResults, type), [resolvedResults, type]);
   const hasMore = items.length < total;
+  const hasCachedItems = items.length > 0;
+  // Full-page loading only when nothing to show yet.
+  const showInitialLoading = loading && !hasCachedItems;
 
   useEffect(() => {
     const node = loadMoreRef.current;
 
-    if (!node || isLoading || isLoadingMore || error || !hasMore) {
+    if (!node || showInitialLoading || isLoadingMore || error || !hasMore) {
       return;
     }
 
@@ -181,7 +243,7 @@ export default function SearchLandingSection({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [error, hasMore, isLoading, isLoadingMore, loadPage, page]);
+  }, [error, hasMore, isLoadingMore, loadPage, page, showInitialLoading]);
 
   return (
     <section className={`flex flex-col gap-6 ${className}`}>
@@ -194,42 +256,52 @@ export default function SearchLandingSection({
             {title}
           </h2>
           {description ? (
-            <p className="hidden text-sm text-gray-500 md:block">{description}</p>
+            // Reserve two text-sm lines so one-line vs two-line copy (e.g. course vs resource)
+            // does not shift the list grid below.
+            <p className="hidden text-sm leading-5 text-gray-500 md:block md:min-h-10">
+              {description}
+            </p>
           ) : null}
         </div>
 
         {action ? <div className="w-auto shrink-0 self-auto">{action}</div> : null}
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center rounded-3xl border border-[var(--page-accent-border)] bg-[var(--page-accent-soft)] py-10 text-[var(--page-accent-text)]">
-          正在加载列表...
-        </div>
+      {showInitialLoading ? <PageLoading text="正在加载列表..." /> : null}
+
+      {!showInitialLoading && error && !hasCachedItems ? (
+        <PageEmpty
+          error={error}
+          description={error}
+          onRetry={() => void loadPage({ page: 1, append: false })}
+        />
       ) : null}
 
-      {!isLoading && error && items.length === 0 ? (
-        <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
-          {error}
-        </div>
+      {!showInitialLoading && !error && !hasCachedItems ? (
+        <PageEmpty type="empty" title="暂无可展示内容" description="稍后再来看看吧。" />
       ) : null}
 
-      {!isLoading && !error && items.length === 0 ? (
-        <div className="flex items-center justify-center rounded-3xl border border-[var(--page-accent-border)] bg-white/80 py-10 text-gray-500">
-          暂无可展示内容
-        </div>
-      ) : null}
-
-      {!isLoading && items.length > 0 ? (
+      {hasCachedItems ? (
         <>
           {error ? (
-            <div className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-600">
-              {error}
-            </div>
+            <InlineErrorBar
+              message={error}
+              onRetry={() => void loadPage({ page: 1, append: false })}
+            />
           ) : null}
-          <SearchResultsGrid items={items} />
-          <div ref={loadMoreRef} className="py-4 text-center text-sm text-[var(--page-accent-text)]/80">
-            {isLoadingMore ? "正在加载更多..." : null}
-            {!isLoadingMore && !hasMore ? "没有更多内容了" : null}
+          <div
+            className={`transition-opacity duration-200 ${
+              loading ? "pointer-events-none opacity-55" : "opacity-100"
+            }`}
+          >
+            <SearchResultsGrid items={items} />
+          </div>
+          <div ref={loadMoreRef}>
+            <LoadMoreStatus
+              loading={isLoadingMore || (loading && hasCachedItems)}
+              end={!loading && !isLoadingMore && !hasMore}
+              loadingText={isLoadingMore ? "正在加载更多..." : "正在刷新..."}
+            />
           </div>
         </>
       ) : null}

@@ -1,25 +1,19 @@
 "use client";
 
 import { feedback } from "@/store/useFeedbackStore";
+import { isCampusEmail } from "@/lib/email";
 
 export const CAMPUS_MAIL_URL = "https://mail.csu.edu.cn/";
 export const ADMIN_MAIL_ADDRESS = "csustar@foxmail.com";
-const CAPTCHA_SEND_FAILURE_STORAGE_KEY = "campus-mail-captcha-send-failure-count";
+const CAPTCHA_SEND_FAILURE_STORAGE_KEY = "account-mail-captcha-send-failure-count";
 const CAPTCHA_SEND_FAILURE_THRESHOLD = 3;
 
 type CaptchaFailureKind =
   | "unregistered_mailbox"
-  | "campus_mailbox_pending_activation"
   | "sender_issue"
   | "contact_admin";
 
-type CaptchaFailureScene =
-  | "register"
-  | "bind_email"
-  | "forget_password"
-  | "reset_password";
-
-type CaptchaSuccessScene =
+type CaptchaScene =
   | "register"
   | "bind_email"
   | "forget_password"
@@ -49,34 +43,25 @@ export function contactAdminMail() {
   window.location.href = `mailto:${ADMIN_MAIL_ADDRESS}`;
 }
 
-export function showCaptchaSentFeedback(
-  description: string,
-  scene?: CaptchaSuccessScene,
-) {
+/**
+ * 验证码发送成功的提示。
+ *
+ * 「打开校园邮箱」这个动作只在收件地址确实是校园邮箱时才出现——
+ * 邮箱放开后，给填 QQ 邮箱的用户弹一个中南邮箱入口只会让人困惑。
+ */
+export function showCaptchaSentFeedback(description: string, email?: string) {
   resetCaptchaSendFailureCount();
+
+  const showCampusEntry = Boolean(email && isCampusEmail(email));
+  // Persistent + optional action → Notification (auto-upgraded by feedback layer).
   feedback.success({
     title: "验证码已发送",
-    description: formatCaptchaSuccessDescription(description, scene),
+    description,
     duration: 0,
-    actionLabel: "打开校园邮箱",
-    onAction: openCampusMail,
+    ...(showCampusEntry
+      ? { actionLabel: "打开校园邮箱", onAction: openCampusMail }
+      : {}),
   });
-}
-
-function formatCaptchaSuccessDescription(
-  description: string,
-  scene?: CaptchaSuccessScene,
-) {
-  switch (scene) {
-    case "register":
-    case "bind_email":
-      return `${description} 请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.`;
-    case "forget_password":
-    case "reset_password":
-      return `${description} 请确保你的邮箱注册已满1小时.`;
-    default:
-      return description;
-  }
 }
 
 function getCaptchaSendFailureCount() {
@@ -111,7 +96,7 @@ export function showCaptchaSendFailureFeedback(
   options?: {
     title?: string;
     defaultDescription?: string;
-    scene?: CaptchaFailureScene;
+    scene?: CaptchaScene;
   },
 ) {
   const nextCount = getCaptchaSendFailureCount() + 1;
@@ -125,9 +110,9 @@ export function showCaptchaSendFailureFeedback(
     errorDescription,
     nextCount >= CAPTCHA_SEND_FAILURE_THRESHOLD,
     options?.title,
-    options?.scene,
   );
 
+  // Long body + action footer → Notification; keep open after mailto/nav clicks.
   feedback.error({
     title: failureFeedback.title,
     description: failureFeedback.description,
@@ -144,7 +129,6 @@ function resolveCaptchaFailureFeedback(
   message: string,
   hasRepeatedFailures: boolean,
   customTitle?: string,
-  scene?: CaptchaFailureScene,
 ): CaptchaFailureFeedback {
   const normalizedMessage = message.toLowerCase();
 
@@ -167,26 +151,26 @@ function resolveCaptchaFailureFeedback(
   if (isUnregisteredMailboxError(normalizedMessage)) {
     return {
       kind: "unregistered_mailbox",
-      title: customTitle ?? "校园邮箱可能还未注册",
+      title: customTitle ?? "邮箱可能填写有误",
       description:
-        "系统没能把验证码投递到这个校园邮箱。请先确认该邮箱已开通；如果还没注册，请先注册校园邮箱后再重试。",
-      actionLabel: "打开校园邮箱",
-      onAction: openCampusMail,
-    };
-  }
-
-  if (isCampusMailboxPendingActivationError(normalizedMessage)) {
-    return {
-      kind: "campus_mailbox_pending_activation",
-      title: customTitle ?? "校园邮箱暂不可用",
-      description: getPendingActivationDescription(scene),
-      actionLabel: "改用 QQ 登录",
+        "这个邮箱还没有注册过账号。请确认地址填写无误，或先完成注册。",
+      actionLabel: "去注册",
       onAction: () => {
         if (typeof window === "undefined") {
           return;
         }
-        window.location.href = "/login";
+        window.location.href = "/login?type=true";
       },
+    };
+  }
+
+  if (isDomainNotAllowedError(normalizedMessage)) {
+    return {
+      kind: "contact_admin",
+      title: customTitle ?? "该邮箱暂不支持",
+      description: `${message}。可以换一个常用邮箱重试，或联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
+      actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
+      onAction: contactAdminMail,
     };
   }
 
@@ -195,7 +179,7 @@ function resolveCaptchaFailureFeedback(
       kind: "sender_issue",
       title: customTitle ?? "发件通道暂时异常",
       description:
-        `验证码发送失败，当前更像是发件邮箱或 SMTP 通道异常。请稍后重试，或联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
+        `验证码发送失败，当前更像是发件通道异常而非你的邮箱有问题。请稍后重试，或联系管理员 ${ADMIN_MAIL_ADDRESS}。`,
       actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
       onAction: contactAdminMail,
     };
@@ -206,7 +190,7 @@ function resolveCaptchaFailureFeedback(
       kind: "contact_admin",
       title: customTitle ?? "验证码发送失败",
       description:
-        `多次发送仍未成功。若你确认校园邮箱已注册，可能是发件通道异常，请联系管理员 ${ADMIN_MAIL_ADDRESS} 处理。`,
+        `多次发送仍未成功。若你确认邮箱地址无误，可能是发件通道异常，请联系管理员 ${ADMIN_MAIL_ADDRESS} 处理。`,
       actionLabel: `联系管理员 ${ADMIN_MAIL_ADDRESS}`,
       onAction: contactAdminMail,
     };
@@ -221,25 +205,8 @@ function resolveCaptchaFailureFeedback(
   };
 }
 
-function getPendingActivationDescription(scene?: CaptchaFailureScene) {
-  switch (scene) {
-    case "bind_email":
-      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
-    case "forget_password":
-      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请先等待邮箱生效后再找回密码；如你原本通过QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
-    case "reset_password":
-      return "请检查校园邮箱注册时间是否已满1小时。若该邮箱刚开通未满1小时，请稍后再试；如当前账号支持QQ登录，请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
-    case "register":
-    default:
-      return "请检查校园邮箱注册时间是否已满1小时,如若未满,请先采用QQ登录,1小时后在账号内进行邮箱绑定.";
-  }
-}
-
 function isAlreadyRegisteredError(message: string) {
-  return (
-    message.includes("已注册") ||
-    message.includes("already registered")
-  );
+  return message.includes("已注册") || message.includes("already registered");
 }
 
 function isUnregisteredMailboxError(message: string) {
@@ -253,12 +220,11 @@ function isUnregisteredMailboxError(message: string) {
   );
 }
 
-function isCampusMailboxPendingActivationError(message: string) {
+// 对应后端 1019 EmailDomainNotAllowedErr 与 1024 InvalidEmailFormatErr 的文案。
+function isDomainNotAllowedError(message: string) {
   return (
-    message.includes("注册时间是否已满1小时") ||
-    message.includes("请先采用qq登录") ||
-    message.includes("1小时后在账号内进行邮箱绑定") ||
-    message.includes("campus mailbox not found")
+    message.includes("暂不支持") ||
+    message.includes("邮箱格式不正确")
   );
 }
 
@@ -277,6 +243,6 @@ function isSenderIssueError(message: string) {
     message.includes("发件") ||
     message.includes("邮件发送") ||
     message.includes("验证码邮件") ||
-    message.includes("no smtp providers configured")
+    message.includes("没有配置可用的邮件通道")
   );
 }

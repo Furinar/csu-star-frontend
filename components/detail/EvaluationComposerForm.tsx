@@ -3,7 +3,7 @@
 import {useEffect, useMemo, useState} from "react";
 import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
-import {AdvancedTextarea} from "@/app/(features)/resource/components/AdvancedFormControls";
+import {AdvancedTextarea} from "@/components/ui/AdvancedFormControls";
 import RatingStar from "@/components/ui/RatingStar";
 import type {EntityId} from "@/types/entity";
 
@@ -354,9 +354,9 @@ export default function EvaluationComposerForm({
                   />
                 </div>
                 <AdvancedTextarea
-                    className="mt-4"
+                    className="mt-3"
                     rows={5}
-                    label="输入评价正文"
+                    label={false}
                     value={comment}
                     onChange={(event) => setComment(event.target.value)}
                     placeholder="写下你的体验、建议或提醒。"
@@ -376,9 +376,9 @@ export default function EvaluationComposerForm({
                 />
               </div>
               <AdvancedTextarea
-                  className="mt-4"
+                  className="mt-3"
                   rows={5}
-                  label="输入评价正文"
+                  label={false}
                   value={comment}
                   onChange={(event) => setComment(event.target.value)}
                   placeholder="写下你的体验、建议或提醒。"

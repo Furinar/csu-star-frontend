@@ -1,0 +1,132 @@
+/* ===== Effects: shooting stars + hero gradient text ===== */
+
+/* ---------- 流星动画 ---------- */
+.stars-space {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.star {
+  display: block;
+  width: 1px;
+  background: transparent;
+  position: relative;
+  opacity: 0;
+  animation: star-ani 2s linear infinite;
+}
+
+.star::after {
+  content: "";
+  display: block;
+  border-style: solid;
+  border-width: 0 90px 5px 90px;
+  border-color: transparent transparent transparent var(--meteor-color);
+  box-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: rotate(-45deg) translate3d(1px, 3px, 0);
+  transform-origin: 0 100%;
+}
+
+.star-a {
+  top: -30px;
+  left: 20%;
+}
+
+.star-b {
+  top: 60px;
+  left: 24%;
+  animation-delay: 4s;
+}
+
+.star-c {
+  top: 40px;
+  left: 60%;
+  animation-duration: 3s;
+  animation-delay: 1s;
+}
+
+.star-d {
+  top: -30px;
+  left: 108%;
+  animation-delay: 2s;
+}
+
+.star-e {
+  top: 40px;
+  left: 86%;
+  animation-duration: 4s;
+  animation-delay: 1s;
+}
+
+.star-f {
+  top: -200px;
+  left: 60%;
+  animation-duration: 4s;
+}
+
+.star-g {
+  top: -150px;
+  left: 110%;
+  animation-duration: 3s;
+}
+
+.star-h {
+  top: -150px;
+  left: 15%;
+  animation-duration: 2.5s;
+}
+
+@keyframes star-ani {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translate3d(0, 0, 0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate3d(-200px, 200px, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.2) translate3d(-300px, 300px, 0);
+  }
+}
+
+/* ---------- Hero 渐变标题 ---------- */
+.hero-gradient-text {
+  background: linear-gradient(135deg, var(--first-color) 0%, var(--hero-gradient-end) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 流星移动端适配 */
+@media screen and (max-width: 767px) {
+  .star-d {
+    left: 95%;
+  }
+
+  .star-g {
+    left: 98%;
+  }
+
+  @keyframes star-ani {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) translate3d(0, 0, 0);
+    }
+
+    50% {
+      opacity: 1;
+      transform: translate3d(-100px, 100px, 0);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(1.2) translate3d(-150px, 150px, 0);
+    }
+  }
+}

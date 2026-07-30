@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AdvancedInput, AdvancedSelect, AdvancedTextarea } from "@/app/(features)/resource/components/AdvancedFormControls";
+import { AdvancedInput, AdvancedSelect, AdvancedTextarea } from "@/components/ui/AdvancedFormControls";
 import DetailComposerModal from "./DetailComposerModal";
 import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
 import {

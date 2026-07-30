@@ -1,9 +1,9 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element */
-import "@/app/(features)/course/components/style.css";
+import "@/app/(features)/course/components/random-book.css";
 import Link from "next/link";
-import styled from "styled-components";
+import type { CSSProperties } from "react";
 import CollectButton from "@/components/ui/CollectButton";
 import RatingBar from "@/components/ui/RatingBar";
 import StarRating from "@/components/ui/StarRating";
@@ -16,6 +16,7 @@ import {
 } from "@/lib/paths";
 import { getPageTheme } from "@/lib/pageTheme";
 import type { CourseDetail, TeacherDetail } from "@/types/detail";
+import homepageButtonStyles from "./TeacherHomepageButton.module.css";
 
 function formatScore(value?: number | null) {
   if (typeof value !== "number" || Number.isNaN(value)) return "--";
@@ -47,83 +48,6 @@ const TEACHER_CARD_CLASS =
 
 const courseTheme = getPageTheme("/course");
 const teacherTheme = getPageTheme("/teacher");
-
-const TeacherHomepageButtonShell = styled.div<{
-  $accentGradient: string;
-  $shadowColor: string;
-}>`
-  .homepage-button {
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: ${({ $accentGradient }) => $accentGradient};
-    color: #fff;
-    padding: 0.56em 0.82em 0.56em 0.72em;
-    display: inline-flex;
-    align-items: center;
-    border: none;
-    border-radius: 14px;
-    overflow: hidden;
-    transition: all 0.2s;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: 0 10px 24px ${({ $shadowColor }) => $shadowColor};
-  }
-
-  .homepage-button .button-label {
-    display: block;
-    margin-left: 0.26em;
-    transition: all 0.3s ease-in-out;
-    white-space: nowrap;
-  }
-
-  .homepage-button .svg-wrapper-1 {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .homepage-button .svg-wrapper {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease-in-out;
-    will-change: transform;
-  }
-
-  .homepage-button svg {
-    display: block;
-    transform-origin: center center;
-    transition: transform 0.3s ease-in-out;
-  }
-
-  .homepage-button:hover .svg-wrapper {
-    animation: fly-1 0.6s ease-in-out infinite alternate;
-  }
-
-  .homepage-button:hover svg {
-    transform: translateX(1.35em) rotate(45deg) scale(1.08);
-  }
-
-  .homepage-button:hover .button-label {
-    transform: translateX(5.2em);
-    opacity: 0;
-  }
-
-  .homepage-button:active {
-    transform: scale(0.95);
-  }
-
-  @keyframes fly-1 {
-    from {
-      transform: translateY(0.08em);
-    }
-
-    to {
-      transform: translateY(-0.08em);
-    }
-  }
-`;
 
 type DetailBookHeroProps =
   | {
@@ -456,18 +380,28 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                 </div>
               ) : null}
               {teacher.metadata?.homepage_url ? (
-                <TeacherHomepageButtonShell
-                  $accentGradient={teacherTheme.pageAccentGradient}
-                  $shadowColor={teacherTheme.pageAccentSoftStrong}
+                <div
+                  className={homepageButtonStyles.shell}
+                  style={
+                    {
+                      "--homepage-accent-gradient":
+                        teacherTheme.pageAccentGradient,
+                      "--homepage-shadow-color":
+                        teacherTheme.pageAccentSoftStrong,
+                    } as CSSProperties
+                  }
                 >
                   <Link
                     href={teacher.metadata.homepage_url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="homepage-button scale-[0.92] origin-left md:scale-100"
+                    className={`${homepageButtonStyles.homepageButton} scale-[0.92] origin-left md:scale-100`}
                   >
-                    <span className="svg-wrapper-1" aria-hidden="true">
-                      <span className="svg-wrapper">
+                    <span
+                      className={homepageButtonStyles.svgWrapper1}
+                      aria-hidden="true"
+                    >
+                      <span className={homepageButtonStyles.svgWrapper}>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -482,9 +416,11 @@ export default function DetailBookHero(props: DetailBookHeroProps) {
                         </svg>
                       </span>
                     </span>
-                    <span className="button-label">教师主页</span>
+                    <span className={homepageButtonStyles.buttonLabel}>
+                      教师主页
+                    </span>
                   </Link>
-                </TeacherHomepageButtonShell>
+                </div>
               ) : null}
             </div>
           </div>

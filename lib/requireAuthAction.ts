@@ -28,9 +28,11 @@ export function requireAuthAction({
     return true;
   }
 
+  // Immediate redirect → short Message is enough; no action footer needed.
   feedback.warning({
     title,
     description,
+    channel: "message",
   });
 
   onUnauthed?.();

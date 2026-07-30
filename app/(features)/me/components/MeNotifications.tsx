@@ -1,29 +1,38 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Tag } from "tdesign-react";
 import {
   listMyNotifications,
   markAllNotificationsRead,
-  markNotificationRead,
 } from "@/api/me";
 import {
   buildCoursePath,
   buildResourcePath,
   buildTeacherPath,
 } from "@/lib/paths";
-import GlassCard from "@/components/ui/GlassCard";
+import { PageLoading } from "@/components/ui/AsyncState";
 import { feedback } from "@/store/useFeedbackStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import type { NotificationItem, PaginatedData } from "@/types/me";
+import { SectionEmptyState } from "./SectionStates";
 import {
   createEmptyPaginated,
   formatDateTime,
   getErrorMessage,
   getNotificationBadgeLabel,
-  getNotificationCardTone,
+  getNotificationTagTheme,
   isAnnouncementNotification,
 } from "./shared/helpers";
+import {
+  ME_LIST_STACK,
+  ME_META,
+  ME_ROW,
+  ME_ROW_INTERACTIVE,
+  ME_SECTION_TITLE,
+  ME_TITLE,
+} from "./shared/styles";
 
 interface MeNotificationsProps {
   onUnreadCountChange?: (delta: number) => void;
@@ -33,11 +42,15 @@ export default function MeNotifications({
   onUnreadCountChange,
 }: MeNotificationsProps) {
   const router = useRouter();
+  const markAllReadLocal = useNotificationStore(
+    (state) => state.markAllReadLocal,
+  );
   const [notifications, setNotifications] = useState<
     PaginatedData<NotificationItem>
   >(createEmptyPaginated());
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const autoReadDoneRef = useRef(false);
   const notificationItems = notifications.items ?? [];
 
   const loadNotifications = useCallback(async () => {
@@ -62,115 +75,76 @@ export default function MeNotifications({
     }
   }, [hasLoaded, loadNotifications]);
 
-  const handleMarkRead = async (id: string) => {
-    try {
-      await markNotificationRead(id);
-      setNotifications((current) => ({
-        ...current,
-        items: current.items.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                is_read: true,
-              }
-            : item,
-        ),
-      }));
-      onUnreadCountChange?.(-1);
-    } catch (error) {
-      feedback.error({
-        title: "操作失败",
-        description: getErrorMessage(error, "无法标记通知状态"),
-      });
+  // Entering the notifications panel marks everything as read automatically.
+  useEffect(() => {
+    if (!hasLoaded || autoReadDoneRef.current) {
+      return;
     }
-  };
+
+    const unreadItems = (notifications.items ?? []).filter(
+      (item) => !item.is_read,
+    );
+    if (unreadItems.length === 0) {
+      autoReadDoneRef.current = true;
+      markAllReadLocal();
+      return;
+    }
+
+    autoReadDoneRef.current = true;
+    void (async () => {
+      try {
+        await markAllNotificationsRead();
+        setNotifications((current) => ({
+          ...current,
+          items: current.items.map((item) => ({
+            ...item,
+            is_read: true,
+          })),
+        }));
+        onUnreadCountChange?.(-unreadItems.length);
+        markAllReadLocal();
+      } catch (error) {
+        autoReadDoneRef.current = false;
+        feedback.error({
+          title: "自动已读失败",
+          description: getErrorMessage(error, "请稍后再试"),
+        });
+      }
+    })();
+  }, [
+    hasLoaded,
+    notifications.items,
+    onUnreadCountChange,
+    markAllReadLocal,
+  ]);
 
   const handleOpenNotification = useCallback(
-    async (item: NotificationItem) => {
+    (item: NotificationItem) => {
       const targetPath = buildNotificationPath(item);
       if (!targetPath) {
         return;
       }
-
-      if (!item.is_read) {
-        try {
-          await markNotificationRead(item.id);
-          setNotifications((current) => ({
-            ...current,
-            items: current.items.map((currentItem) =>
-              currentItem.id === item.id
-                ? {
-                    ...currentItem,
-                    is_read: true,
-                  }
-                : currentItem,
-            ),
-          }));
-          onUnreadCountChange?.(-1);
-        } catch (error) {
-          feedback.error({
-            title: "已读状态同步失败",
-            description: getErrorMessage(error, "无法更新通知状态"),
-          });
-        }
-      }
-
       router.push(targetPath);
     },
-    [onUnreadCountChange, router],
+    [router],
   );
 
-  const handleMarkAllRead = async () => {
-    try {
-      await markAllNotificationsRead();
-      const unreadCount = notificationItems.filter(
-        (item) => !item.is_read,
-      ).length;
-      setNotifications((current) => ({
-        ...current,
-        items: current.items.map((item) => ({
-          ...item,
-          is_read: true,
-        })),
-      }));
-      onUnreadCountChange?.(-unreadCount);
-      feedback.success({
-        title: "全部通知已标记为已读",
-      });
-    } catch (error) {
-      feedback.error({
-        title: "操作失败",
-        description: getErrorMessage(error, "请稍后再试"),
-      });
-    }
-  };
-
-  const announcementItems = notificationItems.filter(
-    (item) => isAnnouncementNotification(item),
+  const announcementItems = notificationItems.filter((item) =>
+    isAnnouncementNotification(item),
   );
   const messageItems = notificationItems.filter(
     (item) => !isAnnouncementNotification(item),
   );
 
   if (isLoading) {
-    return (
-      <SectionEmptyState title="通知与公告加载中..." description="请稍候。" />
-    );
+    return <PageLoading text="通知与公告加载中..." />;
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex justify-end">
-        {notificationItems.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => void handleMarkAllRead()}
-            className="rounded-xl border border-gray-200/70 bg-white/70 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-white"
-          >
-            全部标记已读
-          </button>
-        ) : null}
-      </div>
+    <div className="space-y-5 sm:space-y-6">
+      <p className="text-xs text-slate-500 sm:text-sm">
+        进入本页后未读通知会自动标记为已读。
+      </p>
 
       <NotificationSection
         title="公告"
@@ -178,7 +152,6 @@ export default function MeNotifications({
         items={announcementItems}
         emptyTitle="暂无公告"
         emptyDescription="新的平台公告会展示在这里。"
-        onMarkRead={handleMarkRead}
         onOpenItem={handleOpenNotification}
       />
 
@@ -188,7 +161,6 @@ export default function MeNotifications({
         items={messageItems}
         emptyTitle="暂无通知"
         emptyDescription="新的系统通知和互动消息会展示在这里。"
-        onMarkRead={handleMarkRead}
         onOpenItem={handleOpenNotification}
       />
     </div>
@@ -201,7 +173,6 @@ function NotificationSection({
   items,
   emptyTitle,
   emptyDescription,
-  onMarkRead,
   onOpenItem,
 }: {
   title: string;
@@ -209,23 +180,21 @@ function NotificationSection({
   items: NotificationItem[];
   emptyTitle: string;
   emptyDescription: string;
-  onMarkRead: (id: string) => void;
   onOpenItem: (item: NotificationItem) => void;
 }) {
   return (
-    <div className="space-y-2.5 sm:space-y-3">
-      <div className="ml-1">
-        <h3 className="text-base font-medium text-gray-900">{title}</h3>
-        <p className="mt-1 text-sm text-gray-500">{description}</p>
+    <div>
+      <div className="mb-3 border-b border-slate-100 pb-2.5">
+        <h3 className={`${ME_SECTION_TITLE} mb-0.5`}>{title}</h3>
+        <p className="text-sm text-slate-500">{description}</p>
       </div>
 
       {items.length > 0 ? (
-        <div className="space-y-2.5 sm:space-y-3">
+        <div className={ME_LIST_STACK}>
           {items.map((item) => (
             <NotificationCard
               key={item.id}
               item={item}
-              onMarkRead={onMarkRead}
               onOpen={onOpenItem}
             />
           ))}
@@ -239,22 +208,19 @@ function NotificationSection({
 
 function NotificationCard({
   item,
-  onMarkRead,
   onOpen,
 }: {
   item: NotificationItem;
-  onMarkRead: (id: string) => void;
   onOpen: (item: NotificationItem) => void;
 }) {
-  const tone = getNotificationCardTone(item);
   const targetPath = buildNotificationPath(item);
+  const theme = getNotificationTagTheme(item);
+  const rowClass = targetPath ? ME_ROW_INTERACTIVE : ME_ROW;
 
   return (
-    <GlassCard
-      className={`rounded-xl sm:rounded-2xl ${tone.cardClassName} p-2.5 sm:p-4 ${
-        targetPath ? "cursor-pointer transition hover:-translate-y-0.5" : ""
-      }`}
-      onClick={targetPath ? () => void onOpen(item) : undefined}
+    <div
+      className={rowClass}
+      onClick={targetPath ? () => onOpen(item) : undefined}
       role={targetPath ? "button" : undefined}
       tabIndex={targetPath ? 0 : undefined}
       onKeyDown={
@@ -262,52 +228,30 @@ function NotificationCard({
           ? (event) => {
               if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
-                void onOpen(item);
+                onOpen(item);
               }
             }
           : undefined
       }
     >
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-            <span
-              className={`rounded-full px-2 py-0.5 text-[11px] sm:px-2.5 sm:py-1 sm:text-xs ${tone.badgeClassName}`}
-            >
-              {getNotificationBadgeLabel(item)}
-            </span>
-            {!item.is_read ? (
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-[10px] sm:px-2 sm:py-1 sm:text-[11px] ${tone.unreadClassName}`}
-              >
-                未读
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-1 text-[13px] font-medium leading-5 text-gray-900 sm:mt-2 sm:text-sm sm:leading-6">
-            {item.title}
-          </p>
-          <p className="mt-0.5 text-xs leading-5 text-gray-600 sm:mt-1 sm:text-sm sm:leading-6">
-            {item.content || "暂无附加内容"}
-          </p>
-          <p className="mt-1.5 text-[10px] text-gray-500 sm:mt-2 sm:text-xs">
-            {formatDateTime(item.created_at)}
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <Tag theme={theme} variant="light" size="small">
+          {getNotificationBadgeLabel(item)}
+        </Tag>
         {!item.is_read ? (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              void onMarkRead(item.id);
-            }}
-            className="self-end rounded-lg border border-gray-200/70 bg-white/80 px-2.5 py-1 text-[11px] font-medium text-gray-700 transition hover:bg-white sm:self-start sm:rounded-xl sm:px-3 sm:py-1.5 sm:text-xs"
-          >
-            标记已读
-          </button>
+          <Tag theme="danger" variant="light" size="small">
+            未读
+          </Tag>
         ) : null}
       </div>
-    </GlassCard>
+      <p className={`mt-1.5 ${ME_TITLE}`}>{item.title}</p>
+      <p className={`mt-0.5 ${ME_META} leading-5 sm:leading-6`}>
+        {item.content || "暂无附加内容"}
+      </p>
+      <p className="mt-1.5 text-[10px] text-slate-400 sm:mt-2 sm:text-xs">
+        {formatDateTime(item.created_at)}
+      </p>
+    </div>
   );
 }
 
@@ -352,26 +296,4 @@ function buildNotificationPath(item: NotificationItem) {
   }
 
   return null;
-}
-
-function SectionEmptyState({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) {
-  return (
-    <GlassCard className="rounded-xl border-dashed p-6 text-center sm:rounded-2xl sm:p-12">
-      <Image
-        src="/undraw_mcp-server_7kvc.svg"
-        alt="空状态插画"
-        className="mx-auto mb-3 h-20 w-auto opacity-90 sm:mb-4 sm:h-24"
-        width={160}
-        height={96}
-      />
-      <h3 className="mb-1.5 text-lg font-medium text-gray-800 sm:mb-2 sm:text-xl">{title}</h3>
-      <p className="mx-auto max-w-md text-sm text-gray-500 sm:text-base">{description}</p>
-    </GlassCard>
-  );
 }

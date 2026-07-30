@@ -1,0 +1,52 @@
+/* ===== Shared legacy component classes (still used on homepage etc.) =====
+ * Unlayered so they beat Tailwind utilities for color/background on CTAs.
+ * Compound selectors raise specificity above plain utility/link preflight.
+ */
+
+a.button,
+button.button,
+.button {
+  display: inline-block;
+  background-color: var(--first-color);
+  color: #fff;
+  padding: 0.7rem;
+  border-radius: 0.5rem;
+  font-weight: var(--font-medium);
+  text-decoration: none;
+}
+
+a.button:hover,
+button.button:hover,
+.button:hover {
+  background-color: var(--first-color-alt);
+  color: #fff;
+}
+
+.button__icon {
+  font-size: 1.2rem;
+  margin-left: var(--mb-0-5);
+  transition: 0.3s;
+}
+
+a.button--flex,
+button.button--flex,
+.button--flex {
+  display: inline-flex;
+  align-items: center;
+  transition: 0.3s;
+}
+
+a.button--link,
+button.button--link,
+.button--link {
+  padding: 0;
+  background-color: transparent;
+  color: var(--first-color);
+}
+
+a.button--link:hover,
+button.button--link:hover,
+.button--link:hover {
+  background-color: transparent;
+  color: var(--first-color-alt);
+}

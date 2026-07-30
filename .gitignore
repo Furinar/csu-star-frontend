@@ -54,3 +54,7 @@ next-env.d.ts
 # IDE
 /.idea/
 /.vscode/
+
+# CSS build / debug dumps at repo root
+/out.css
+/.test.css

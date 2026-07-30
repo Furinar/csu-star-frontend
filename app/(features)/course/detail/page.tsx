@@ -201,6 +201,36 @@ export default function CourseDetailPage() {
                 onDeleteReply={deleteCourseEvaluationReply}
             />
           </div>
+
+          <section className="mt-8 rounded-2xl border border-amber-100 bg-amber-50/50 p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">课程共笔</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  考点整理、避坑与同学笔记（登录后进入全屏文档工作台）
+                </p>
+              </div>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center rounded-xl bg-amber-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700"
+                onClick={() => {
+                  if (!Boolean(useAuthStore.getState().access_token)) {
+                    feedback.info({
+                      title: "请先登录",
+                      description: "登录后才能进入课程共笔。",
+                    });
+                    router.push("/login");
+                    return;
+                  }
+                  router.push(
+                    `/compass/space?key=courses&courseId=${encodeURIComponent(courseId)}`,
+                  );
+                }}
+              >
+                进入共笔
+              </button>
+            </div>
+          </section>
         </DetailPageShell>
 
         <DetailFloatingActionButton onClick={handleOpenComposer} label="写评价" tone="course"/>

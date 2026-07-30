@@ -1,16 +1,26 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-/* CSS 自定义属性（颜色、字体、间距等） */
+/* Design tokens */
 @import "./styles/variables.css";
 
-/* Tailwind @theme 注册 */
+/* Tailwind @theme registration */
 @import "./styles/theme.css";
 
-/* 基础重置样式 */
+/* Document reset & defaults */
 @import "./styles/base.css";
 
-/* 可复用工具类（section、container、button、scrollbar、响应式） */
+/* Layout helpers (.container, .grid) */
+@import "./styles/layout.css";
+
+/* Shared component classes (.button*) */
+@import "./styles/components.css";
+
+/* Utility classes (scrollbar) */
 @import "./styles/utilities.css";
 
-/* 动画、特效与渐变工具类 */
-@import "./styles/animations.css";
+/* Effects (shooting stars, hero gradient text) */
+@import "./styles/effects.css";
+
+/* Wiki prose cascade compensations */
+@import "./styles/wiki.css";

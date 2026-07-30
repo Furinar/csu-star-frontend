@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import FloatingCloseButton from "@/components/ui/FloatingCloseButton";
+import TDesignFloatingShell from "@/components/ui/TDesignFloatingShell";
 import ResourceUploader, { ResourceUploaderProps } from "./ResourceUploader";
 import { useAuthStore } from "@/store/useAuthStore";
-import { requireVerifiedCampusAction } from "@/lib/requireVerifiedCampusAction";
 
+import { requireAuthAction } from "@/lib/requireAuthAction";
 export interface ResourceUploaderModalProps extends Omit<
   ResourceUploaderProps,
   "isUploading"
@@ -30,69 +30,40 @@ export default function ResourceUploaderModal({
     if (!isOpen) return;
 
     if (
-      !requireVerifiedCampusAction({
+      !requireAuthAction({
         isSignedIn: Boolean(accessToken),
-        user,
         router,
+        description: "登录后才能上传资源。",
       })
     ) {
       onClose();
       return;
     }
-
-    const handleEscape = (e: KeyboardEvent) => {
-      // Prevent closing if we are typing in an input
-      if (e.key === "Escape" && !isUploading) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [accessToken, isOpen, onClose, router, user, isUploading]);
-
-  if (!isOpen) return null;
+  }, [accessToken, isOpen, onClose, router, user]);
 
   return (
-    <div
-      className="fixed inset-0 z-[1100] bg-slate-950/25 backdrop-blur-sm"
-      onClick={() => {
+    <TDesignFloatingShell
+      open={isOpen}
+      onClose={() => {
         if (!isUploading) onClose();
       }}
+      title="上传资源"
+      description="绑定课程、填写标题并添加文件即可发布。"
+      preventClose={isUploading}
+      zIndex={1100}
+      maxWidth="48rem"
+      className="td-resource-uploader-modal"
+      bodyClassName="px-0 py-0"
     >
-      <button
-        type="button"
-        className="absolute inset-0"
-        onClick={() => {
+      <ResourceUploader
+        isModal
+        onClose={() => {
           if (!isUploading) onClose();
         }}
-        aria-label="关闭上传资源弹层"
+        initialCourse={initialCourse}
+        onUploadSuccess={onUploadSuccess}
+        onUploadingChange={setIsUploading}
       />
-      <div
-        className="relative mx-auto flex min-h-full items-center justify-center p-2 pb-safe sm:p-3 md:p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="relative max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-hidden rounded-[24px] border border-white/70 bg-white shadow-[0_30px_100px_rgba(15,23,42,0.18)] sm:max-h-[calc(100dvh-1.5rem)] md:max-h-[calc(100dvh-3rem)] md:rounded-[32px]">
-          <FloatingCloseButton
-            onClick={() => {
-              if (!isUploading) onClose();
-            }}
-            ariaLabel="关闭上传资源弹层"
-            disabled={isUploading}
-          />
-          <div className="modal-scrollbar max-h-[calc(100dvh-1rem)] overflow-x-hidden overflow-y-auto px-4 pb-4 pt-4 sm:max-h-[calc(100dvh-1.5rem)] sm:px-5 sm:pb-5 sm:pt-5 md:max-h-[calc(100dvh-3rem)] md:px-8 md:pb-8">
-            <ResourceUploader
-              isModal
-              onClose={() => {
-                if (!isUploading) onClose();
-              }}
-              initialCourse={initialCourse}
-              onUploadSuccess={onUploadSuccess}
-              onUploadingChange={setIsUploading}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+    </TDesignFloatingShell>
   );
 }

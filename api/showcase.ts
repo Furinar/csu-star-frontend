@@ -1,9 +1,6 @@
 import { service } from "@/lib/request";
-import { normalizeCourseType } from "@/lib/courseType";
 import type { EntityId } from "@/types/entity";
 import type {
-  CourseShowcaseItem,
-  ShowcaseTeacherBrief,
   SiteShowcaseStats,
   TeacherShowcaseItem,
 } from "@/types/showcase";
@@ -51,47 +48,6 @@ const toStringId = (value: unknown): EntityId | null => {
   if (typeof value === "string" && value.trim() !== "") return value;
   if (typeof value === "number" && Number.isFinite(value)) return String(value);
   return null;
-};
-
-const normalizeTeacherBriefs = (raw: unknown): ShowcaseTeacherBrief[] => {
-  if (!Array.isArray(raw)) return [];
-
-  return raw.flatMap((item) => {
-    if (!isRecord(item)) return [];
-
-    return [
-      {
-        id: toStringId(item.id) ?? "",
-        name: toStringSafe(item.name) ?? "未命名教师",
-        title: toStringSafe(item.title),
-        avatar_url: toStringSafe(item.avatar_url),
-      },
-    ];
-  });
-};
-
-const normalizeCourseShowcaseItems = (raw: unknown): CourseShowcaseItem[] => {
-  if (!Array.isArray(raw)) return [];
-
-  return raw.flatMap((item) => {
-    if (!isRecord(item)) return [];
-
-    return [
-      {
-        id: toStringId(item.id) ?? "",
-        name: toStringSafe(item.name) ?? "未命名课程",
-        course_type: normalizeCourseType(toStringSafe(item.course_type)),
-        avg_score: toNumber(item.avg_score),
-        avg_homework: toNumber(item.avg_homework),
-        avg_gain: toNumber(item.avg_gain),
-        avg_exam_diff: toNumber(item.avg_exam_diff),
-        eval_count: toNumber(item.eval_count),
-        resource_count: toNumber(item.resource_count),
-        teacher_count: toNumber(item.teacher_count),
-        teachers: normalizeTeacherBriefs(item.teachers),
-      },
-    ];
-  });
 };
 
 const normalizeTeacherShowcaseItems = (raw: unknown): TeacherShowcaseItem[] => {
@@ -151,16 +107,6 @@ async function withShowcaseFallback<T>(
     // Showcase modules are non-critical. Fall back to empty data when the API is unreachable.
     return fallback;
   }
-}
-
-export async function getRandomCourseShowcase() {
-  return withShowcaseFallback(async () => {
-    const response = await service.get<ApiEnvelope<unknown>>(
-      "/courses/random-showcase",
-    );
-    const raw = normalizeShowcasePayload(unwrapResponseData(response));
-    return normalizeCourseShowcaseItems(raw);
-  }, []);
 }
 
 export async function getRandomTeacherShowcase() {

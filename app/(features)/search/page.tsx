@@ -5,8 +5,20 @@ import SearchResultsGrid from "@/app/(features)/search/components/SearchResultsG
 import SupplementRequestModal from "@/components/supplement/SupplementRequestModal";
 import type { SupplementRequestPromptVariant } from "@/components/supplement/SupplementRequestPrompt";
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
+import {
+  InlineErrorBar,
+  LoadMoreStatus,
+  PageEmpty,
+  PageLoading,
+} from "@/components/ui/AsyncState";
 import ModernCheckbox from "@/components/ui/ModernCheckbox";
 import SearchBar from "@/components/ui/SearchBar";
+import {
+  buildSearchListCacheKey,
+  readListCache,
+  writeListCache,
+} from "@/lib/listQueryCache";
+import { getRequestErrorMessage } from "@/lib/requestError";
 import { requireAuthAction } from "@/lib/requireAuthAction";
 import { useAuthStore } from "@/store/useAuthStore";
 import type { SearchResponse, SearchScope } from "@/types/search";
@@ -15,6 +27,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 const PAGE_SIZE = 24;
+
+type SearchCachePayload = {
+  results: SearchResponse;
+  currentPage: number;
+  globalTypeCounts: {
+    resource: number;
+    course: number;
+    teacher: number;
+  };
+};
+
+const EMPTY_TYPE_COUNTS = {
+  resource: 0,
+  course: 0,
+  teacher: 0,
+};
 
 const searchConfig: Array<{
   label: string;
@@ -100,58 +128,137 @@ function dedupeResourceItems(items: SearchResponse["resources"]["items"]) {
   });
 }
 
+function resolveMergedTotal(
+  previousTotal: number,
+  incomingTotal: number,
+  mergedCount: number,
+  incomingPageCount: number,
+) {
+  // Prefer the larger reported total; never let a later empty page collapse
+  // total to 0. An empty page means the list is exhausted — clamp total down
+  // to the unique items we already have so hasMore becomes false.
+  if (incomingPageCount === 0) {
+    return mergedCount;
+  }
+
+  return Math.max(previousTotal, incomingTotal, mergedCount);
+}
+
 function mergeResults(
   previous: SearchResponse,
   incoming: SearchResponse,
   searchType: SearchScope,
 ) {
   if (searchType === "all") {
+    const items = dedupeUnifiedItems([
+      ...previous.all.items,
+      ...incoming.all.items,
+    ]);
+
     return {
+      ...previous,
       ...incoming,
+      resources: {
+        ...incoming.resources,
+        total: resolveMergedTotal(
+          previous.resources.total,
+          incoming.resources.total,
+          items.length,
+          incoming.all.items.length,
+        ),
+      },
+      courses: {
+        ...incoming.courses,
+        total: resolveMergedTotal(
+          previous.courses.total,
+          incoming.courses.total,
+          items.length,
+          incoming.all.items.length,
+        ),
+      },
+      teachers: {
+        ...incoming.teachers,
+        total: resolveMergedTotal(
+          previous.teachers.total,
+          incoming.teachers.total,
+          items.length,
+          incoming.all.items.length,
+        ),
+      },
       all: {
         ...incoming.all,
-        items: dedupeUnifiedItems([
-          ...previous.all.items,
-          ...incoming.all.items,
-        ]),
+        total: resolveMergedTotal(
+          previous.all.total,
+          incoming.all.total,
+          items.length,
+          incoming.all.items.length,
+        ),
+        items,
       },
     };
   }
 
   if (searchType === "resource") {
+    const items = dedupeResourceItems([
+      ...previous.resources.items,
+      ...incoming.resources.items,
+    ]);
+
     return {
+      ...previous,
       ...incoming,
       resources: {
         ...incoming.resources,
-        items: dedupeResourceItems([
-          ...previous.resources.items,
-          ...incoming.resources.items,
-        ]),
+        total: resolveMergedTotal(
+          previous.resources.total,
+          incoming.resources.total,
+          items.length,
+          incoming.resources.items.length,
+        ),
+        items,
       },
     };
   }
 
   if (searchType === "course") {
+    const items = dedupeEntityItems([
+      ...previous.courses.items,
+      ...incoming.courses.items,
+    ]);
+
     return {
+      ...previous,
       ...incoming,
       courses: {
         ...incoming.courses,
-        items: dedupeEntityItems([
-          ...previous.courses.items,
-          ...incoming.courses.items,
-        ]),
+        total: resolveMergedTotal(
+          previous.courses.total,
+          incoming.courses.total,
+          items.length,
+          incoming.courses.items.length,
+        ),
+        items,
       },
     };
   }
 
+  const items = dedupeEntityItems([
+    ...previous.teachers.items,
+    ...incoming.teachers.items,
+  ]);
+
   return {
+    ...previous,
     ...incoming,
     teachers: {
       ...incoming.teachers,
-      items: dedupeEntityItems([
-        ...previous.teachers.items,
-        ...incoming.teachers.items,
-      ]),
+      total: resolveMergedTotal(
+        previous.teachers.total,
+        incoming.teachers.total,
+        items.length,
+        incoming.teachers.items.length,
+      ),
+      items,
     },
   };
 }
@@ -163,20 +270,17 @@ export default function Search() {
   const [searchType, setSearchType] = useState<SearchScope>("all");
   const [keyword, setKeyword] = useState("");
   const [relevanceFirst, setRelevanceFirst] = useState(false);
-  const [, setSubmittedQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [results, setResults] = useState<SearchResponse>(createEmptyResults);
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [globalTypeCounts, setGlobalTypeCounts] = useState({
-    resource: 0,
-    course: 0,
-    teacher: 0,
-  });
+  const [globalTypeCounts, setGlobalTypeCounts] = useState(EMPTY_TYPE_COUNTS);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
   const requestIdRef = useRef(0);
+  const resultKeyRef = useRef("");
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   const supplementInitialType: SupplementRequestType =
@@ -310,6 +414,7 @@ export default function Search() {
 
     if (!trimmedQuery) {
       requestIdRef.current += 1;
+      resultKeyRef.current = "";
       setHasSearched(false);
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -317,13 +422,18 @@ export default function Search() {
       setSubmittedQuery("");
       setCurrentPage(1);
       setResults(createEmptyResults());
-      setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+      setGlobalTypeCounts(EMPTY_TYPE_COUNTS);
       return;
     }
 
+    const cacheKey = buildSearchListCacheKey(trimmedQuery, type, relevance);
     const currentRequestId = append
       ? requestIdRef.current
       : requestIdRef.current + 1;
+
+    // Snapshot of type counts for this request (avoids stale closures when writing cache).
+    let typeCountsSnapshot =
+      type === "all" ? { ...EMPTY_TYPE_COUNTS } : EMPTY_TYPE_COUNTS;
 
     if (!append) {
       requestIdRef.current = currentRequestId;
@@ -332,9 +442,27 @@ export default function Search() {
       setIsLoading(true);
       setIsLoadingMore(false);
       setError(null);
-      setCurrentPage(1);
+
+      const cached = readListCache<SearchCachePayload>(cacheKey);
+      if (cached) {
+        // Hydrate immediately so network blips never blank the UI.
+        resultKeyRef.current = cacheKey;
+        typeCountsSnapshot = cached.globalTypeCounts;
+        setResults(cached.results);
+        setCurrentPage(cached.currentPage);
+        setGlobalTypeCounts(cached.globalTypeCounts);
+      } else if (resultKeyRef.current !== cacheKey) {
+        // Different query/type without cache: clear stale foreign results.
+        resultKeyRef.current = cacheKey;
+        setResults(createEmptyResults());
+        setCurrentPage(1);
+        setGlobalTypeCounts(EMPTY_TYPE_COUNTS);
+      } else {
+        resultKeyRef.current = cacheKey;
+      }
     } else {
       setIsLoadingMore(true);
+      // Append keeps existing counts; they'll be re-read from cache write via functional path below.
     }
 
     try {
@@ -377,30 +505,48 @@ export default function Search() {
 
             if (requestIdRef.current !== currentRequestId) return;
 
-            setGlobalTypeCounts({
+            typeCountsSnapshot = {
               resource: resourceData.resources.total,
               course: courseData.courses.total,
               teacher: teacherData.teachers.total,
-            });
+            };
+            setGlobalTypeCounts(typeCountsSnapshot);
           } catch {
             if (requestIdRef.current !== currentRequestId) return;
-            setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+            // Keep hydrated/cached counts — never force zeros over a good snapshot.
           }
         } else {
-          setGlobalTypeCounts({ resource: 0, course: 0, teacher: 0 });
+          typeCountsSnapshot = EMPTY_TYPE_COUNTS;
+          setGlobalTypeCounts(EMPTY_TYPE_COUNTS);
         }
       }
 
-      setResults((previous) =>
-        append ? mergeResults(previous, data, type) : data,
-      );
+      setResults((previous) => {
+        const next = append ? mergeResults(previous, data, type) : data;
+        const existingCache = readListCache<SearchCachePayload>(cacheKey);
+        const countsForCache =
+          type === "all"
+            ? append
+              ? (existingCache?.globalTypeCounts ?? typeCountsSnapshot)
+              : typeCountsSnapshot
+            : EMPTY_TYPE_COUNTS;
+
+        writeListCache(cacheKey, {
+          results: next,
+          currentPage: page,
+          globalTypeCounts: countsForCache,
+        } satisfies SearchCachePayload);
+
+        return next;
+      });
       setCurrentPage(page);
+      resultKeyRef.current = cacheKey;
+      setError(null);
     } catch (err) {
       if (requestIdRef.current !== currentRequestId) return;
 
-      const message =
-        err instanceof Error ? err.message : "搜索失败，请稍后重试。";
-      setError(message);
+      // Keep any hydrated/cached results; only surface the error.
+      setError(getRequestErrorMessage(err, "搜索失败，请稍后重试。"));
     } finally {
       if (requestIdRef.current === currentRequestId) {
         if (append) {
@@ -433,9 +579,13 @@ export default function Search() {
     syncSearchParams({ query: keyword, type: searchType, relevance: checked });
   };
 
-  const showEmptyPrompt = !hasSearched && !isLoading;
+  const hasResultItems = summary.loaded > 0;
+  // Only full-page loading when there is nothing cached/hydrated to show.
+  const showInitialLoading = isLoading && !hasResultItems;
+  const showEmptyPrompt = !hasSearched && !showInitialLoading;
+  // Use loaded count so a corrupted total=0 after append cannot hide real items.
   const showNoResults =
-    hasSearched && !isLoading && !error && summary.total === 0;
+    hasSearched && !showInitialLoading && !error && !hasResultItems;
 
   useEffect(() => {
     const typeParam = searchParams.get("type");
@@ -480,7 +630,7 @@ export default function Search() {
     if (
       !node ||
       !hasSearched ||
-      isLoading ||
+      showInitialLoading ||
       isLoadingMore ||
       !hasMore ||
       error
@@ -513,11 +663,11 @@ export default function Search() {
     error,
     hasMore,
     hasSearched,
-    isLoading,
     isLoadingMore,
     keyword,
     relevanceFirst,
     searchType,
+    showInitialLoading,
   ]);
 
   const handleOpenSupplementModal = () => {
@@ -536,44 +686,65 @@ export default function Search() {
 
   return (
     <div className="container mt-6 mb-12 flex flex-col gap-6 md:mt-10 md:mb-20 md:gap-10">
-      {/* Retained your original Hero and Searchbar UI unchanged */}
-      <div className="flex w-full flex-col items-center justify-center gap-2 px-4 md:gap-3">
-        <div className="hero-gradient-text text-4xl font-bold">风影情报处</div>
-        <div className="text-sm md:text-base text-gray-600 text-center">
-          Explore freely, discover what you need.
+      {/*
+        桌面端：搜索框在左，标题文字在右，分类在下居中
+        移动端：标题「搜索」+ 分类同一行，搜索框全宽在下（主操作优先）
+      */}
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-1 md:grid-cols-[minmax(0,1fr)_auto] md:gap-x-6 md:gap-y-5 md:px-0">
+        {/* 标题：移动端左上；桌面端右上右对齐 */}
+        <div className="col-start-1 row-start-1 flex min-w-0 flex-col gap-1 md:col-start-2 md:items-end md:gap-1.5 md:text-right">
+          <div className="hero-gradient-text text-2xl font-bold sm:text-3xl md:text-4xl">
+            <span className="md:hidden">搜索</span>
+            <span className="hidden md:inline">风影情报处</span>
+          </div>
+          <div className="hidden text-base text-gray-600 md:block">
+            Explore freely, discover what you need.
+          </div>
         </div>
-      </div>
 
-      <div className="flex w-full flex-col items-center gap-3 px-1 md:gap-5 md:px-0">
-        <div className="relative flex p-1 md:p-1.5 bg-gray-100 rounded-full shadow-inner shadow-gray-300 max-w-full overflow-x-auto scrollbar-hide overflow-x-hidden">
-          <div
-            className="absolute top-1 bottom-1 md:top-1.5 md:bottom-1.5 w-20 md:w-28 bg-white rounded-full shadow-md z-0 transition-transform duration-500 ease-[cubic-bezier(0.68,-0.55,0.26,1.55)]"
-            style={{
-              transform: `translateX(${searchConfig.findIndex((item) => item.type === searchType) * 100}%)`,
-            }}
-          />
-          {searchConfig.map((item) => (
-            <span
-              key={item.type}
-              onClick={() => handleSearchTypeChange(item.type)}
-              className={`relative z-10 w-20 md:w-28 flex items-center justify-center gap-1 md:gap-2 py-1.5 md:py-2 rounded-full cursor-pointer transition-colors duration-300 text-sm md:text-base whitespace-nowrap ${
-                searchType === item.type
-                  ? "text-first-alt font-medium"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <i className={`uil uil-${item.icon} text-base md:text-lg`}></i>
-              {item.label}
-            </span>
-          ))}
+        {/* 分类：移动端右上；桌面端第二行居中 */}
+        <div className="col-start-2 row-start-1 justify-self-end md:col-span-2 md:col-start-1 md:row-start-2 md:justify-self-center">
+          <div className="relative flex max-w-[min(100%,20rem)] overflow-x-auto rounded-full bg-gray-100 p-1 shadow-inner shadow-gray-300 scrollbar-hide sm:max-w-none md:p-1.5">
+            <div
+              className="absolute top-1 bottom-1 left-1 z-0 w-[3.75rem] rounded-full bg-white shadow-md transition-transform duration-300 ease-out sm:w-20 md:top-1.5 md:bottom-1.5 md:left-1.5 md:w-28"
+              style={{
+                transform: `translateX(${Math.max(0, searchConfig.findIndex((item) => item.type === searchType)) * 100}%)`,
+              }}
+            />
+            {searchConfig.map((item) => (
+              <span
+                key={item.type}
+                onClick={() => handleSearchTypeChange(item.type)}
+                className={`relative z-10 flex w-[3.75rem] cursor-pointer items-center justify-center gap-0.5 rounded-full py-1.5 text-xs whitespace-nowrap transition-colors duration-300 sm:w-20 sm:gap-1 sm:text-sm md:w-28 md:gap-2 md:py-2 md:text-base ${
+                  searchType === item.type
+                    ? "text-first-alt font-medium"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                <i
+                  className={`uil uil-${item.icon} shrink-0 leading-none text-sm sm:text-base md:text-lg`}
+                  aria-hidden="true"
+                ></i>
+                <span className="leading-none">{item.label}</span>
+              </span>
+            ))}
+          </div>
         </div>
-        <div className="w-full max-w-2xl">
+
+        {/*
+          搜索框：移动端第二行全宽。
+          桌面端用明确宽度撑开（auto 列 + max-w 无效）；约 36rem 适中。
+        */}
+        <div className="col-span-2 row-start-2 w-full md:col-span-1 md:col-start-1 md:row-start-1 md:w-[min(100%,36rem)] md:max-w-none md:justify-self-start">
           <SearchBar
+            size="compact"
             value={keyword}
             onChange={setKeyword}
             onSearch={handleSearch}
             debounceOnChange={false}
             placeholder={currentSearchType?.placeholder}
+            className="!max-w-none"
+            wrapperClassName="!max-w-none"
           />
         </div>
       </div>
@@ -582,73 +753,75 @@ export default function Search() {
 
       {/* Conditional rendering based on search state */}
       {showEmptyPrompt ? (
-        <div className="mt-8 flex flex-col items-center justify-center gap-2.5 md:mt-15 md:gap-5">
-          <div className="text-8xl text-gray-300">
-            <i className="uil uil-search"></i>
-          </div>
-
-          <div className="text-lg sm:text-xl md:text-2xl text-gray-800">
-            开始搜索{currentSearchType?.label}吧！
-          </div>
-          <div className="text-xs sm:text-base md:text-lg text-gray-500">
-            使用上方的搜索工具栏，输入关键词，发现更多精彩内容！
-          </div>
+        <div className="mt-8 md:mt-10">
+          <PageEmpty
+            type="empty"
+            title={`开始搜索${currentSearchType?.label ?? ""}吧！`}
+            description="使用上方的搜索工具栏，输入关键词，发现更多精彩内容！"
+          />
         </div>
       ) : null}
 
-      {isLoading ? (
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-10 md:gap-5">
-          <div className="text-4xl text-first-alt animate-spin">
-            <i className="uil uil-spinner-alt"></i>
-          </div>
-          <div className="text-gray-500">正在拼命搜索中...</div>
+      {showInitialLoading ? (
+        <div className="mt-8 md:mt-10">
+          <PageLoading text="正在拼命搜索中..." />
         </div>
       ) : null}
 
-      {error && !hasSearched ? (
-        <div className="mt-8 mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm md:mt-10 md:p-6">
-          <div className="text-red-500 text-4xl mb-3">
-            <i className="uil uil-exclamation-triangle"></i>
-          </div>
-          <div className="text-red-700 font-medium">搜索请求失败</div>
-          <div className="text-red-600 text-sm mt-1">{error}</div>
+      {error && hasSearched && !hasResultItems && !showInitialLoading ? (
+        <div className="mt-8 md:mt-10">
+          <PageEmpty
+            error={error}
+            title="搜索请求失败"
+            description={error}
+            onRetry={() =>
+              void runSearch({
+                query: submittedQuery || keyword,
+                type: searchType,
+                page: 1,
+                append: false,
+                relevance: relevanceFirst,
+              })
+            }
+          />
         </div>
       ) : null}
 
       {showNoResults ? (
-        <div className="mt-8 flex flex-col items-center justify-center gap-3 md:mt-15 md:gap-6">
-          <div className="text-8xl text-gray-300">
-            <i className="uil uil-tear"></i>
-          </div>
-
-          <div className="text-lg sm:text-xl md:text-2xl text-gray-800">
-            没有找到匹配的{currentSearchType?.label}
-          </div>
-          <div className="text-sm sm:text-base md:text-lg text-gray-500">
-            可以尝试换一个简短的关键词重新搜索看看~
-          </div>
-
-          <div className="w-full max-w-2xl">
-            <SupplementRequestPrompt
-              onClick={handleOpenSupplementModal}
-              align="center"
-              className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-5 py-4 md:px-6 md:py-5"
-              variant={supplementPromptVariant}
-            />
-          </div>
+        <div className="mt-8 md:mt-10">
+          <PageEmpty
+            type="empty"
+            title={`没有找到匹配的${currentSearchType?.label ?? "内容"}`}
+            description="可以尝试换一个简短的关键词重新搜索看看~"
+            action={
+              <div className="w-full max-w-2xl">
+                <SupplementRequestPrompt
+                  onClick={handleOpenSupplementModal}
+                  align="center"
+                  className="rounded-[28px] border border-slate-200 bg-slate-50/70 px-5 py-4 md:px-6 md:py-5"
+                  variant={supplementPromptVariant}
+                />
+              </div>
+            }
+          />
         </div>
       ) : null}
 
-      {!isLoading && hasSearched && summary.total > 0 ? (
+      {hasSearched && hasResultItems ? (
         <div className="flex flex-col gap-6 md:gap-10">
           {error ? (
-            <div className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 p-4 shadow-sm md:p-6">
-              <div className="text-red-500 text-4xl mb-3">
-                <i className="uil uil-exclamation-triangle"></i>
-              </div>
-              <div className="text-red-700 font-medium">搜索请求失败</div>
-              <div className="text-red-600 text-sm mt-1">{error}</div>
-            </div>
+            <InlineErrorBar
+              message={error}
+              onRetry={() =>
+                void runSearch({
+                  query: submittedQuery || keyword,
+                  type: searchType,
+                  page: 1,
+                  append: false,
+                  relevance: relevanceFirst,
+                })
+              }
+            />
           ) : null}
 
           <div className="flex flex-col md:flex-row md:justify-between gap-4 md:items-end">
@@ -656,7 +829,7 @@ export default function Search() {
               <div className="flex items-center gap-4">
                 找到相关的{" "}
                 <span className="font-semibold text-gray-800">
-                  {summary.total}
+                  {Math.max(summary.total, summary.loaded)}
                 </span>{" "}
                 条结果
               </div>
@@ -687,17 +860,26 @@ export default function Search() {
             </div>
           </div>
 
-          <SearchResultsGrid items={displayedItems} />
+          <div
+            className={`transition-opacity duration-200 ${
+              isLoading ? "pointer-events-none opacity-55" : "opacity-100"
+            }`}
+          >
+            <SearchResultsGrid items={displayedItems} />
+          </div>
 
-          {isLoadingMore ? (
-            <div className="flex items-center justify-center py-5 text-gray-500 md:py-8">
-              正在加载更多结果...
-            </div>
+          {isLoadingMore || (isLoading && hasResultItems) ? (
+            <LoadMoreStatus
+              loading
+              loadingText={
+                isLoadingMore ? "正在加载更多结果..." : "正在刷新搜索结果..."
+              }
+            />
           ) : null}
 
           {!isLoadingMore && !hasMore ? (
             <div className="flex flex-col items-center justify-center gap-3 py-5 md:gap-4 md:py-6">
-              <div className="text-sm text-gray-400">已经到底了</div>
+              <LoadMoreStatus end endText="已经到底了" />
               <div className="w-full max-w-3xl">
                 <SupplementRequestPrompt
                   onClick={handleOpenSupplementModal}

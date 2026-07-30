@@ -3,17 +3,20 @@
 import CryptoJS from "crypto-js";
 import { useState } from "react";
 import { recoverPwd, sendCaptcha } from "@/api/auth";
-import { AdvancedInput } from "@/app/(features)/resource/components/AdvancedFormControls";
-import ActionSubmitButton from "@/components/ui/ActionSubmitButton";
+import { AdvancedInput } from "@/components/ui/AdvancedFormControls";
 import { feedback } from "@/store/useFeedbackStore";
-import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
+import {
+  showCaptchaSendFailureFeedback,
+  showCaptchaSentFeedback,
+} from "@/lib/accountMail";
+import CaptchaCodeField from "../CaptchaCodeField";
 import {
   PANEL_PRIMARY_BUTTON_CLASS_NAME,
   PANEL_SECONDARY_BUTTON_CLASS_NAME,
   assertApiResponse,
   getErrorMessage,
-  isCampusEmail,
-  toCampusEmail,
+  isValidEmail,
+  normalizeEmail,
 } from "../shared/helpers";
 
 export default function PasswordPanel({
@@ -35,19 +38,19 @@ export default function PasswordPanel({
   const [isResetting, setIsResetting] = useState(false);
 
   const handleSendCode = async () => {
-    const email = toCampusEmail(form.email);
+    const email = normalizeEmail(form.email);
     if (!email) {
       feedback.warning({
         title: "请先填写邮箱",
-        description: "修改密码仍通过校园邮箱验证码完成。",
+        description: "请填写用于接收验证码的邮箱地址。",
       });
       return;
     }
 
-    if (!isCampusEmail(email)) {
+    if (!isValidEmail(email)) {
       feedback.warning({
         title: "邮箱格式不正确",
-        description: "请使用 `@csu.edu.cn` 校园邮箱接收验证码。",
+        description: "请填写完整且格式正确的邮箱地址。",
       });
       return;
     }
@@ -60,7 +63,7 @@ export default function PasswordPanel({
         ...current,
         email,
       }));
-      showCaptchaSentFeedback("请前往邮箱查收后继续完成密码修改。", "reset_password");
+      showCaptchaSentFeedback("请前往邮箱查收后继续完成密码修改。", email);
     } catch (error) {
       showCaptchaSendFailureFeedback(error, {
         title: "发送失败",
@@ -73,7 +76,7 @@ export default function PasswordPanel({
   };
 
   const handleReset = async () => {
-    const email = toCampusEmail(form.email);
+    const email = normalizeEmail(form.email);
     if (!email || !form.captcha.trim() || !form.password.trim()) {
       feedback.warning({
         title: "信息不完整",
@@ -82,10 +85,10 @@ export default function PasswordPanel({
       return;
     }
 
-    if (!isCampusEmail(email)) {
+    if (!isValidEmail(email)) {
       feedback.warning({
         title: "邮箱格式不正确",
-        description: "请确认邮箱为 `@csu.edu.cn` 后重试。",
+        description: "请确认邮箱地址填写正确后重试。",
       });
       return;
     }
@@ -130,85 +133,67 @@ export default function PasswordPanel({
   };
 
   return (
-    <>
-      <div className="space-y-4">
-        <div className="rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm leading-6 text-slate-600">
-          修改密码仍通过校园邮箱验证码完成。验证码发送后，请回到此处继续填写新密码。
-        </div>
+    <div className="space-y-4">
+      <AdvancedInput
+        label="邮箱"
+        placeholder={emailLocked ? "邮箱已绑定，不可修改" : "填写你的邮箱地址"}
+        autoComplete="email"
+        value={form.email}
+        readOnly={emailLocked}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            email: event.target.value,
+          }))
+        }
+      />
 
-        <AdvancedInput
-          label="校园邮箱"
-          placeholder={emailLocked ? "校园邮箱已绑定，不可修改" : "填写你的校园邮箱或前缀"}
-          autoComplete="email"
-          value={form.email}
-          readOnly={emailLocked}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              email: event.target.value,
-            }))
-          }
-        />
+      <CaptchaCodeField
+        value={form.captcha}
+        onChange={(captcha) =>
+          setForm((current) => ({
+            ...current,
+            captcha,
+          }))
+        }
+        onSend={() => {
+          handleSendCode().catch(console.error);
+        }}
+        sending={isSendingCode}
+        disabled={isResetting}
+      />
 
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-          <AdvancedInput
-            label="验证码"
-            placeholder="请输入 6 位验证码"
-            inputMode="numeric"
-            maxLength={6}
-            value={form.captcha}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                captcha: event.target.value,
-              }))
-            }
-          />
-          <div className="mt-[3px]">
-            <ActionSubmitButton
-              defaultText="获取验证码"
-              sentText="发送中..."
-              isSent={isSendingCode}
-              onClick={() => {
-                handleSendCode().catch(console.error);
-              }}
-              disabled={isSendingCode || isResetting}
-            />
-          </div>
-        </div>
+      <AdvancedInput
+        type="password"
+        label="新密码"
+        placeholder="至少 8 位的新密码"
+        minLength={8}
+        autoComplete="new-password"
+        value={form.password}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            password: event.target.value,
+          }))
+        }
+      />
 
-        <AdvancedInput
-          type="password"
-          label="新密码"
-          placeholder="至少 8 位的新密码"
-          minLength={8}
-          autoComplete="new-password"
-          value={form.password}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              password: event.target.value,
-            }))
-          }
-        />
+      <AdvancedInput
+        type="password"
+        label="确认新密码"
+        placeholder="请再次输入新密码"
+        minLength={8}
+        autoComplete="new-password"
+        value={form.confirmPassword}
+        onChange={(event) =>
+          setForm((current) => ({
+            ...current,
+            confirmPassword: event.target.value,
+          }))
+        }
+      />
 
-        <AdvancedInput
-          type="password"
-          label="确认新密码"
-          placeholder="请再次输入新密码"
-          minLength={8}
-          autoComplete="new-password"
-          value={form.confirmPassword}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              confirmPassword: event.target.value,
-            }))
-          }
-        />
-      </div>
-
-      <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <button
           type="button"
           onClick={onClose}
@@ -228,6 +213,6 @@ export default function PasswordPanel({
           {isResetting ? "正在修改..." : "确认修改"}
         </button>
       </div>
-    </>
+    </div>
   );
 }

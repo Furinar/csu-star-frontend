@@ -1,0 +1,69 @@
+/* ===== Layout container =====
+ * Tailwind v4 ships a built-in `.container` utility (width + breakpoint max-widths only,
+ * no horizontal centering). We redefine it via @utility, then reinforce with unlayered
+ * rules so margin/max-width always win over any later utility/reset (e.g. TDesign).
+ */
+
+@utility container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* Unlayered reinforcement — beats @layer utilities if another stylesheet redefines container */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 767px) {
+  .container {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+@media screen and (max-width: 350px) {
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .container {
+    max-width: 1320px;
+  }
+}
+
+@media screen and (min-width: 1900px) {
+  .container {
+    max-width: 1600px;
+  }
+}
+
+@media screen and (min-width: 2500px) {
+  .container {
+    max-width: 2100px;
+  }
+}
+
+@media screen and (min-width: 3800px) {
+  .container {
+    max-width: 3200px;
+  }
+}
+
+/* Legacy grid helper (still used with Tailwind grid utilities) */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}

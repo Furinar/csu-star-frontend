@@ -85,10 +85,7 @@ export default function Register() {
       });
 
       sessionStorage.removeItem("registerPayload");
-      feedback.success({
-        title: "注册完成",
-        description: "账号已创建，返回登录页。",
-      });
+      feedback.success({ title: "注册完成" });
       router.push("/login");
     } catch (error) {
       const message =

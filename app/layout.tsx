@@ -2,6 +2,9 @@ import type {Metadata, Viewport} from "next";
 import {Poppins} from "next/font/google";
 import AuthBootstrap from "@/components/auth/AuthBootstrap";
 import FeedbackToaster from "@/components/ui/FeedbackToaster";
+import TDesignProvider from "@/components/ui/TDesignProvider";
+/* TDesign styles first; site globals load after so project utilities can override. */
+import "tdesign-react/es/style/index.css";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -45,9 +48,11 @@ export default function RootLayout({
         />
       </head>
       <body className={poppins.className}>
-      <AuthBootstrap/>
-      {children}
-      <FeedbackToaster/>
+      <TDesignProvider>
+        <AuthBootstrap/>
+        {children}
+        <FeedbackToaster/>
+      </TDesignProvider>
       </body>
       </html>
   );

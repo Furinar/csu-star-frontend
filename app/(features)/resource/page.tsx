@@ -11,16 +11,12 @@ import SupplementRequestModal from "@/components/supplement/SupplementRequestMod
 import SupplementRequestPrompt from "@/components/supplement/SupplementRequestPrompt";
 import { useAuthStore } from "@/store/useAuthStore";
 import { requireAuthAction } from "@/lib/requireAuthAction";
-import { requireVerifiedCampusAction } from "@/lib/requireVerifiedCampusAction";
 
 export default function Resource() {
   const router = useRouter();
   const accessToken = useAuthStore((state) => state.access_token);
-  const user = useAuthStore((state) => state.user);
-  const canUpload = Boolean(accessToken) && Boolean(user?.email_verified);
-  const uploadDisabledTooltip = !accessToken
-    ? "登录后才能上传资源"
-    : "完成校园邮箱验证后才能上传资源";
+  const canUpload = Boolean(accessToken);
+  const uploadDisabledTooltip = "登录后才能上传资源";
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
 
@@ -40,10 +36,10 @@ export default function Resource() {
 
   const handleOpenUploadModal = () => {
     if (
-      !requireVerifiedCampusAction({
+      !requireAuthAction({
         isSignedIn: Boolean(accessToken),
-        user,
         router,
+        description: "登录后才能上传资源。",
       })
     ) {
       return;
@@ -54,7 +50,7 @@ export default function Resource() {
 
   return (
     <>
-      <div className="container max-w-5xl mx-auto py-12 space-y-12 mt-10">
+      <div className="container mt-6 mb-12 flex flex-col gap-6 md:mt-10 md:mb-20 md:gap-10">
         <div>
           <SearchBar
             placeholder="搜索资源所属的课程..."
@@ -71,7 +67,13 @@ export default function Resource() {
         <SearchLandingSection
           type="resource"
           title="资源列表"
-          description="本站资源仅供学习交流，禁止二次倒卖等商业行为。如有侵权内容，请及时举报，我们将尽快下架处理。"
+          description={
+            <>
+              本站资源仅供学习交流，禁止二次倒卖等商业行为。
+              <br />
+              如有侵权内容，请及时举报，我们将尽快下架处理。
+            </>
+          }
           size={24}
           action={
             <SupplementRequestPrompt

@@ -277,7 +277,8 @@ export default function RankItemCard(props: RankItemCardProps) {
       href={href}
       className={`relative block w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_8px_22px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg md:rounded-xl ${className}`}
     >
-      <div className="flex flex-col gap-3 p-3 md:hidden">
+      {/* 固定卡片最小高度，减少资源/课程切换时的列表高度跳动 */}
+      <div className="flex min-h-[132px] flex-col gap-3 p-3 md:hidden">
         <div className="flex items-start gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-100 bg-gray-50/70 shadow-sm">
             <div
@@ -373,7 +374,7 @@ export default function RankItemCard(props: RankItemCardProps) {
         </div>
       </div>
 
-      <div className="hidden min-h-[100px] flex-row items-stretch md:flex">
+      <div className="hidden min-h-[112px] flex-row items-stretch md:flex">
         <div className="flex w-16 shrink-0 items-center justify-center border-r border-gray-100 bg-gray-50/40 md:w-20">
           <div
             className={`flex h-11 w-11 items-center justify-center rounded-full border shadow-md ${

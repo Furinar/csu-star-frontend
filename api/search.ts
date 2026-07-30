@@ -284,9 +284,19 @@ export async function searchEverything(params: SearchQuery): Promise<SearchRespo
   const payload = unwrapResponseData(response);
   const raw = isRecord(payload) ? payload : {};
 
-  if (Array.isArray(raw.items)) {
-    const grouped = splitUnifiedSearchItems(raw.items);
-    const total = toNumber(raw.total) ?? raw.items.length;
+  // Backend may serialize empty pages as items: null (nil Go slice). Treat as
+  // unified list whenever the payload is the flat { items, total } shape so we
+  // keep total instead of falling through to an empty multi-bucket response.
+  const hasUnifiedShape =
+    "items" in raw ||
+    "total" in raw ||
+    Array.isArray(raw.items) ||
+    raw.items === null;
+
+  if (hasUnifiedShape && !isRecord(raw.resources) && !isRecord(raw.courses)) {
+    const rawItems = Array.isArray(raw.items) ? raw.items : [];
+    const grouped = splitUnifiedSearchItems(rawItems);
+    const total = toNumber(raw.total) ?? rawItems.length;
 
     return {
       resources: {

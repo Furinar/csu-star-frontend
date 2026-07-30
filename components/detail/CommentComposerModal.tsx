@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button, Textarea } from "tdesign-react";
+import TDesignFloatingShell from "@/components/ui/TDesignFloatingShell";
 
 interface CommentComposerModalProps {
   isOpen: boolean;
@@ -31,23 +33,6 @@ export default function CommentComposerModal({
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isSubmitting) {
-        onClose();
-      }
-    };
-
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isOpen, isSubmitting, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
-
   const handleSubmit = async () => {
     const trimmed = content.trim();
     if (!trimmed || isSubmitting) return;
@@ -62,53 +47,55 @@ export default function CommentComposerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/25 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-[32px] border border-white/70 bg-gradient-to-br from-white via-slate-50 to-emerald-50/60 p-6 shadow-[0_30px_100px_rgba(15,23,42,0.18)]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="inline-flex rounded-full border border-white/70 bg-white/80 px-3 py-1 text-xs font-medium text-emerald-700 shadow-sm">
-              资源评论
-            </div>
-            <h3 className="mt-4 text-2xl font-semibold tracking-tight text-slate-950">{title}</h3>
-            <p className="mt-2 text-sm text-slate-500">{description}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/70 bg-white/80 text-lg text-slate-500 shadow-sm transition hover:text-slate-800"
-          >
-            ×
-          </button>
+    <TDesignFloatingShell
+      open={isOpen}
+      onClose={() => {
+        if (!isSubmitting) onClose();
+      }}
+      title={title}
+      description={description}
+      preventClose={isSubmitting}
+      zIndex={1100}
+      maxWidth="42rem"
+      className="td-comment-composer-modal"
+    >
+      <div className="space-y-4">
+        <div className="inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+          资源评论
         </div>
 
-        <textarea
-          rows={7}
+        <Textarea
           value={content}
-          onChange={(event) => setContent(event.target.value)}
+          onChange={(value) => setContent(String(value ?? ""))}
           placeholder={placeholder}
-          className="mt-6 w-full resize-none rounded-[24px] border border-slate-200 bg-white px-4 py-3 text-sm leading-7 text-slate-700 outline-none transition focus:border-emerald-300"
+          autosize={{ minRows: 7, maxRows: 14 }}
+          disabled={isSubmitting}
+          className="w-full"
         />
 
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
+        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+          <Button
+            variant="outline"
+            theme="default"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-slate-300"
+            block
+            className="sm:!w-auto"
           >
             取消
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
+          </Button>
+          <Button
+            theme="primary"
+            onClick={() => void handleSubmit()}
             disabled={!content.trim() || isSubmitting}
-            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-60"
+            loading={isSubmitting}
+            block
+            className="sm:!w-auto"
           >
             {isSubmitting ? "提交中..." : submitLabel}
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </TDesignFloatingShell>
   );
 }

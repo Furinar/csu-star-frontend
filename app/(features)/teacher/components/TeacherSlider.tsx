@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import "./style.css";
+import "./teacher-slider.css";
 import RadarMap from "@/components/ui/RadarMap";
 import {useEffect, useRef, useState} from "react";
 import {getRandomTeacherShowcase} from "@/api/showcase";

@@ -4,7 +4,8 @@ import {useState} from "react";
 import {recoverPwd, sendCaptcha} from "@/api/auth";
 import {useRouter} from "next/navigation";
 import CryptoJS from "crypto-js";
-import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/campusMail";
+import { showCaptchaSendFailureFeedback, showCaptchaSentFeedback } from "@/lib/accountMail";
+import { isValidEmail, normalizeEmail } from "@/lib/email";
 
 export default function Forget() {
 
@@ -19,14 +20,15 @@ export default function Forget() {
       if (email.trim() === "") {
         setErrorInfo("邮箱不能为空");
         return false;
-      } else if (!email.trim().endsWith("@csu.edu.cn")) {
-        setErrorInfo("请输入@csu.edu.cn的邮箱");
+      } else if (!isValidEmail(email)) {
+        setErrorInfo("邮箱格式不正确，请检查后重试");
         return false;
       } else {
         setErrorInfo("");
         try {
-          await sendCaptcha(email.trim(), "forget_password");
-          showCaptchaSentFeedback(`请查收 ${email.trim()} 的邮件。`, "forget_password");
+          const normalized = normalizeEmail(email);
+          await sendCaptcha(normalized, "forget_password");
+          showCaptchaSentFeedback(`请查收 ${normalized} 的邮件。`, normalized);
           return true;
         } catch (err) {
           const errMsg = showCaptchaSendFailureFeedback(err, {
@@ -39,7 +41,7 @@ export default function Forget() {
         }
       }
     } else if (currentStep === 2) {
-      if (email.trim() === "") {
+      if (captcha.trim() === "") {
         setErrorInfo("验证码不能为空");
         return false;
       }
@@ -59,7 +61,9 @@ export default function Forget() {
       );
       try {
         await recoverPwd({
-          email, password: hashPwd, captcha
+          email: normalizeEmail(email),
+          password: hashPwd,
+          captcha: captcha.trim(),
         });
         return true;
       } catch (err) {
@@ -86,7 +90,7 @@ export default function Forget() {
               </h2>
               <input
                   type="text"
-                  placeholder="CSU Email"
+                  placeholder="邮箱地址"
                   className="bg-gray-200 py-2 pl-3 mt-3 mb-2 rounded-2xl  focus:outline-none focus:ring-2 focus:ring-(--color-first) w-full"
                   onChange={(e) => setEmail(e.target.value)}
               />

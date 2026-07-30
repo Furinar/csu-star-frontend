@@ -168,5 +168,15 @@ export function createPageThemeStyle(theme: PageTheme) {
     "--page-at-color": theme.pageAtColor,
     "--page-like-color": theme.pageLikeColor,
     "--page-like-soft": theme.pageLikeSoft,
+    // TDesign brand tokens must follow page accent. :root resolves --td-brand-*
+    // against the default --first-color once; re-set here so themed pages and
+    // body-portaled overlays (Dialog/Drawer) keep focus/active in sync.
+    "--td-brand-color": theme.firstColor,
+    "--td-brand-color-hover": theme.firstColorAlt,
+    "--td-brand-color-active": theme.firstColorAlt,
+    "--td-brand-color-focus": theme.firstColor,
+    "--td-brand-color-disabled": theme.firstColorLighter,
+    "--td-brand-color-light": `color-mix(in srgb, ${theme.firstColor} 12%, white)`,
+    "--td-brand-color-light-hover": `color-mix(in srgb, ${theme.firstColor} 18%, white)`,
   } as CSSProperties;
 }

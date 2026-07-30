@@ -2,7 +2,7 @@ import { ApiResponse, service } from "@/lib/request";
 import { LoginResponse, RegisterByEmailRequest, TokenResponse } from "@/types/auth";
 
 // WIP
-//校园邮箱注册
+//邮箱注册
 const registerByEmail = (payload: RegisterByEmailRequest): Promise<ApiResponse<null>> => {
   return service.post('/auth/email/register', payload);
 }
@@ -27,7 +27,7 @@ const verifyEmail = (email: string, captcha: string): Promise<ApiResponse<null>>
 
 
 // WIP
-// 校园邮箱登录
+// 邮箱登录
 const loginByEmail = (payload: { email: string, password: string }): Promise<ApiResponse<LoginResponse>> => {
   return service.post('/auth/email/login', payload);
 }

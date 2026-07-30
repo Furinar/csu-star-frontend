@@ -1,26 +1,5 @@
 import type { EntityId } from "@/types/entity";
 
-export interface ShowcaseTeacherBrief {
-  id: EntityId;
-  name: string;
-  title?: string | null;
-  avatar_url?: string | null;
-}
-
-export interface CourseShowcaseItem {
-  id: EntityId;
-  name: string;
-  course_type?: string | null;
-  avg_score?: number | null;
-  avg_homework?: number | null;
-  avg_gain?: number | null;
-  avg_exam_diff?: number | null;
-  eval_count?: number | null;
-  resource_count?: number | null;
-  teacher_count?: number | null;
-  teachers: ShowcaseTeacherBrief[];
-}
-
 export interface TeacherShowcaseItem {
   id: EntityId;
   name: string;

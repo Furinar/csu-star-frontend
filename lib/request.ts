@@ -149,9 +149,11 @@ service.interceptors.response.use(
           ? '账号已被管理员封禁'
           : '账号因异常行为已被系统限制';
         const message = extractApiErrorMessage(error) || defaultMessage;
+        // System-level restriction: richer Notification card before redirect.
         feedback.warning({
           title: '账号已被限制',
           description: message,
+          channel: 'notification',
         });
         useAuthStore.getState().logout();
         window.location.href = buildIllegalPageUrl(error);

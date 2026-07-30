@@ -9,7 +9,8 @@
     "deploy:server": "pnpm run build && cd out && tar czf - . | ssh root@38.76.183.120 'tar xzf - -C /var/www/csustar.com/'",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "axios": "^1.13.6",
@@ -22,11 +23,16 @@
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "styled-components": "^6.3.12",
+    "react-markdown": "^10.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "tdesign-icons-react": "^0.6.6",
+    "tdesign-react": "^1.18.1",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^20",
     "@types/react": "^19",
