@@ -1,0 +1,78 @@
+# 用户前台 CD：push 到 main 后构建静态站并发布到源站
+# 生产路径：csustar.com → 源站 Nginx → /var/www/csustar.com
+# 与 AGENTS.md 一致：主站不走 COS/CDN；deploy:cos 仅为历史/备用
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: frontend-deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build static export
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: https://api.csustar.wiki
+          NEXT_PUBLIC_WS_BASE_URL: wss://api.csustar.wiki
+          # OAuth 回调挂备案域 csustar.wiki（开放平台登记一致，见 AGENTS.md）
+          NEXT_PUBLIC_REDIRECT_URI: https://csustar.wiki/login/callback/
+          NEXT_PUBLIC_GITHUB_REDIRECT_URI: https://csustar.wiki/login/callback/
+          # OAuth Client ID 为公开配置（非密钥）
+          NEXT_PUBLIC_QQ_CLIENT_ID: "1903673774"
+          NEXT_PUBLIC_GITHUB_CLIENT_ID: "Ov23liqBZpdYsZQiqFJy"
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: "454929954053-am5b8mn6ov286fhrrljscohfib425ds0.apps.googleusercontent.com"
+          NEXT_PUBLIC_USE_MOCK: "false"
+
+      - name: Package out/
+        run: tar czf csustar-frontend-out.tar.gz -C out .
+
+      - name: Upload package to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: csustar-frontend-out.tar.gz
+          target: /tmp/
+
+      - name: Extract to /var/www/csustar.com
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -euo pipefail
+            test -f /tmp/csustar-frontend-out.tar.gz
+            mkdir -p /var/www/csustar.com
+            tar xzf /tmp/csustar-frontend-out.tar.gz -C /var/www/csustar.com/
+            rm -f /tmp/csustar-frontend-out.tar.gz
+            echo "[deploy] frontend published to /var/www/csustar.com"
