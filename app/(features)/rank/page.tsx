@@ -599,7 +599,7 @@ export default function Rank() {
           </div>
         </div>
       ) : (
-        <div className="min-h-[28rem] rounded-2xl border border-gray-200/80 bg-white/90 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] md:min-h-[32rem] md:p-6">
+        <div className="min-h-[28rem] md:min-h-[32rem]">
           <div className="mb-3 flex min-h-[1.75rem] flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between md:mb-4 md:gap-2">
             <div className="text-base md:text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-red-500 tracking-wider">
               巅峰百强
