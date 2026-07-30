@@ -1,3 +1,27 @@
+/* ===== Nav auth prepaint (before React hydrate) =====
+ * Head script sets html[data-auth="1"] + optional --nav-avatar-url from localStorage.
+ * SSR always emits both guest links and avatar face; CSS shows the matching branch
+ * so refresh does not flash skeleton → avatar or shift layout.
+ */
+html:not([data-auth="1"]) [data-nav-auth="avatar"] {
+  display: none !important;
+}
+
+html[data-auth="1"] [data-nav-auth="guest"] {
+  display: none !important;
+}
+
+.nav-avatar-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--ice-100);
+  background-image: var(--nav-avatar-url, url("/default-avatar.svg"));
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 /* ===== Shared legacy component classes (still used on homepage etc.) =====
  * Unlayered so they beat Tailwind utilities for color/background on CTAs.
  * Compound selectors raise specificity above plain utility/link preflight.

@@ -45,8 +45,19 @@ export default function NotificationBootstrap() {
       return;
     }
 
-    notificationSocket.connect(accessToken);
-    setConnected(true);
+    // Only keep WS open while this tab is visible; disconnect in background.
+    const syncSocketToVisibility = () => {
+      if (document.visibilityState === "visible") {
+        notificationSocket.connect(accessToken);
+        setConnected(true);
+      } else {
+        notificationSocket.disconnect();
+        setConnected(false);
+      }
+    };
+
+    syncSocketToVisibility();
+    document.addEventListener("visibilitychange", syncSocketToVisibility);
 
     const openNotifications = () => {
       router.push("/me?tab=notifications");
@@ -110,6 +121,7 @@ export default function NotificationBootstrap() {
     }
 
     return () => {
+      document.removeEventListener("visibilitychange", syncSocketToVisibility);
       unsubscribe();
     };
   }, [

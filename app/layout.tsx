@@ -1,8 +1,10 @@
 import type {Metadata, Viewport} from "next";
 import {Poppins} from "next/font/google";
 import AuthBootstrap from "@/components/auth/AuthBootstrap";
+import NotificationBootstrap from "@/components/auth/NotificationBootstrap";
 import FeedbackToaster from "@/components/ui/FeedbackToaster";
 import TDesignProvider from "@/components/ui/TDesignProvider";
+import {getAuthPrepaintScript} from "@/lib/authPrepaint";
 /* TDesign styles first; site globals load after so project utilities can override. */
 import "tdesign-react/es/style/index.css";
 import "./globals.css";
@@ -38,6 +40,10 @@ export default function RootLayout({
   return (
       <html lang="zh-CN" suppressHydrationWarning>
       <head>
+        {/* Restore nav login/avatar chrome before first paint (avoids refresh jitter). */}
+        <script
+          dangerouslySetInnerHTML={{ __html: getAuthPrepaintScript() }}
+        />
         <link
             rel="stylesheet"
             href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -50,6 +56,7 @@ export default function RootLayout({
       <body className={poppins.className}>
       <TDesignProvider>
         <AuthBootstrap/>
+        <NotificationBootstrap/>
         {children}
         <FeedbackToaster/>
       </TDesignProvider>

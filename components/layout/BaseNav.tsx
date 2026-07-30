@@ -3,7 +3,7 @@
 import type {NavItem} from "@/types/component";
 import Link from "next/link";
 import {useAuthStore} from "@/store/useAuthStore";
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useLayoutEffect, useRef, useState} from "react";
 import {DEFAULT_AVATAR_SRC, resolveAvatarSrc} from "@/lib/avatar";
 
 type BaseNavProps = {
@@ -97,7 +97,13 @@ function DesktopNavLink(
               isActive ? "opacity-100" : "opacity-0"
           }`}
       />
-        {useNextLink && <i className={`uil ${item.icon} pr-1 relative z-10`}/>}
+        {/* Fixed icon slot so CDN icon-font load does not reflow nav widths. */}
+        {useNextLink && (
+          <i
+            className={`uil ${item.icon} relative z-10 mr-1 inline-block w-[1em] shrink-0 text-center leading-none`}
+            aria-hidden
+          />
+        )}
         <span className="relative z-10 tracking-wide">{item.label}</span>
       </NavLinkWrapper>
   );
@@ -141,6 +147,128 @@ function BrandLink({
   );
 }
 
+/** Guest login/register links (shared mobile + desktop copy). */
+function NavGuestLinks({ compact }: { compact?: boolean }) {
+  const linkClass = compact
+    ? "text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
+    : "text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors";
+
+  return (
+    <div className="flex gap-2">
+      <Link href="/login" className={linkClass}>
+        {compact ? "登录" : <span>登录 </span>}
+      </Link>
+      <Link href="/login?type=true" className={linkClass}>
+        {compact ? "注册" : <span>注册</span>}
+      </Link>
+    </div>
+  );
+}
+
+/**
+ * Auth chrome for the sticky nav.
+ * - Before hydrate: emit both guest + avatar; head prepaint CSS picks the branch
+ *   so the first painted frame already matches localStorage (no skeleton flash).
+ * - After hydrate: React-owned single branch with interactive menu.
+ * Avatar box is always exactly size×size — no padding that expands the slot.
+ */
+function NavAuthSlot({
+  size,
+  compactGuest,
+  hasHydrated,
+  isLoggedIn,
+  avatarSrc,
+  avatarMenuOpen,
+  onToggleAvatarMenu,
+  onCloseMenus,
+  onLogout,
+  avatarRef,
+}: {
+  size: 28 | 32;
+  compactGuest?: boolean;
+  hasHydrated: boolean;
+  isLoggedIn: boolean;
+  avatarSrc: string;
+  avatarMenuOpen?: boolean;
+  onToggleAvatarMenu?: () => void;
+  onCloseMenus: () => void;
+  onLogout: () => void;
+  avatarRef?: React.RefObject<HTMLDivElement | null>;
+}) {
+  const box = size === 28 ? "h-7 w-7" : "h-8 w-8";
+  const isMobile = size === 28;
+
+  const menuClass = isMobile
+    ? `absolute right-0 top-full mt-2 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] transition-all duration-300 z-fixed overflow-hidden flex flex-col ${
+        avatarMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
+      }`
+    : "absolute right-0 top-full mt-0 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-fixed overflow-hidden flex flex-col";
+
+  const avatarInteractive = (
+    <div
+      ref={avatarRef}
+      className={`relative ${box} shrink-0 cursor-pointer ${isMobile ? "" : "group"}`}
+      onClick={isMobile ? onToggleAvatarMenu : undefined}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- user avatar URL may be external/identicon */}
+      <img
+        src={avatarSrc}
+        alt="Avatar"
+        width={size}
+        height={size}
+        decoding="async"
+        fetchPriority="high"
+        // Prepaint CSS var underlays the same face while the network img decodes.
+        className={`${box} rounded-full object-cover bg-[var(--ice-100)] nav-avatar-face`}
+      />
+      <div className={menuClass}>
+        <Link
+          href="/me"
+          onClick={onCloseMenus}
+          className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-first hover:bg-first/5 transition-colors"
+        >
+          <i className="uil uil-user"></i> 个人中心
+        </Link>
+        <div className="w-full h-[1px] bg-[var(--nav-splitter)] opacity-60"></div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onLogout();
+            onCloseMenus();
+          }}
+          className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-[hsl(0,100%,67%)] hover:bg-[hsl(0,100%,67%)]/10 transition-colors"
+        >
+          <i className="uil uil-sign-out-alt"></i> 退出登录
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!hasHydrated) {
+    return (
+      <div className="flex items-center justify-end">
+        {/* Prepaint: CSS toggles via html[data-auth]; face uses --nav-avatar-url. */}
+        <div
+          data-nav-auth="avatar"
+          className={`${box} shrink-0`}
+          aria-hidden="true"
+        >
+          <div className="nav-avatar-face" />
+        </div>
+        <div data-nav-auth="guest">
+          <NavGuestLinks compact={compactGuest} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-end">
+      {isLoggedIn ? avatarInteractive : <NavGuestLinks compact={compactGuest} />}
+    </div>
+  );
+}
+
 export default function BaseNav({
                                   navItems,
                                   isActive,
@@ -158,15 +286,21 @@ export default function BaseNav({
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileAvatarRef = useRef<HTMLDivElement>(null);
+  /** First placement skips CSS transition so refresh does not slide from 0. */
+  const indicatorReadyRef = useRef(false);
   const [indicatorStyle, setIndicatorStyle] = useState({
     left: 0,
     width: 0,
     opacity: 0,
   });
-  const avatar = useAuthStore((state) => state.user?.avatar_url);
-  const avatarSrc = resolveAvatarSrc(avatar, DEFAULT_AVATAR_SRC);
+  const [indicatorAnimated, setIndicatorAnimated] = useState(false);
+  const accessToken = useAuthStore((state) => state.access_token);
+  const user = useAuthStore((state) => state.user);
   const hasHydrated = useAuthStore((state) => state._hasHydrated);
   const logout = useAuthStore((state) => state.logout);
+  // Logged-in = token/user present — do NOT gate on avatar_url (empty url used to flash 登录).
+  const isLoggedIn = Boolean(accessToken || user);
+  const avatarSrc = resolveAvatarSrc(user?.avatar_url, DEFAULT_AVATAR_SRC);
 
   const handleMenuClose = () => {
     setMenuOpen(false);
@@ -178,48 +312,71 @@ export default function BaseNav({
     handleMenuClose();
   };
 
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const updateIndicator = useCallback(() => {
+    const list = navListRef.current;
+    if (!list) return;
 
-    const updateIndicator = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        if (!navListRef.current) return;
-        const activeIndex = navItems.findIndex((item) => isActive(item.href));
-        const targetIndex = activeIndex + 1;
+    const activeIndex = navItems.findIndex((item) => isActive(item.href));
+    // children[0] is the sliding indicator; nav items start at index 1.
+    const targetIndex = activeIndex + 1;
 
-        if (activeIndex !== -1 && navListRef.current.children[targetIndex]) {
-          const activeLi = navListRef.current.children[
-              targetIndex
-              ] as HTMLElement;
-          const next = {
-            left: activeLi.offsetLeft,
-            width: activeLi.offsetWidth,
-            opacity: 1,
-          };
-          // Skip setState when geometry is unchanged to avoid indicator micro-jitter.
-          setIndicatorStyle((prev) =>
-              prev.left === next.left &&
-              prev.width === next.width &&
-              prev.opacity === next.opacity
-                  ? prev
-                  : next,
-          );
-        } else {
-          setIndicatorStyle((prev) =>
-              prev.opacity === 0 ? prev : {...prev, opacity: 0},
-          );
-        }
-      }, 50);
-    };
+    if (activeIndex !== -1 && list.children[targetIndex]) {
+      const activeLi = list.children[targetIndex] as HTMLElement;
+      const next = {
+        left: activeLi.offsetLeft,
+        width: activeLi.offsetWidth,
+        opacity: 1,
+      };
+      setIndicatorStyle((prev) =>
+        prev.left === next.left &&
+        prev.width === next.width &&
+        prev.opacity === next.opacity
+          ? prev
+          : next,
+      );
+      return true;
+    }
 
-    updateIndicator();
-    window.addEventListener("resize", updateIndicator);
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      window.removeEventListener("resize", updateIndicator);
-    };
+    setIndicatorStyle((prev) =>
+      prev.opacity === 0 ? prev : { ...prev, opacity: 0 },
+    );
+    return false;
   }, [isActive, navItems]);
+
+  // Measure before paint so the underline does not animate in from (0,0) on refresh.
+  useLayoutEffect(() => {
+    const placed = updateIndicator();
+    if (placed && !indicatorReadyRef.current) {
+      indicatorReadyRef.current = true;
+      // Enable transitions only after the first correct geometry is painted.
+      requestAnimationFrame(() => setIndicatorAnimated(true));
+    }
+  }, [updateIndicator]);
+
+  useLayoutEffect(() => {
+    const list = navListRef.current;
+    if (!list) return;
+
+    const onResize = () => updateIndicator();
+    window.addEventListener("resize", onResize);
+
+    // Catch icon-font / layout reflows that do not fire window.resize.
+    const resizeObserver =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(onResize)
+        : null;
+    resizeObserver?.observe(list);
+    for (const child of Array.from(list.children)) {
+      if (child instanceof HTMLElement) {
+        resizeObserver?.observe(child);
+      }
+    }
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      resizeObserver?.disconnect();
+    };
+  }, [updateIndicator]);
 
   useEffect(() => {
     if (!menuOpen && !avatarMenuOpen) return;
@@ -261,69 +418,18 @@ export default function BaseNav({
             />
 
             <div className="flex gap-x-3 items-center">
-              <div className="flex items-center">
-                {!hasHydrated ? (
-                    <div
-                        className="h-7 w-20 rounded-full bg-[var(--ice-100)]/80 animate-pulse"
-                        aria-hidden="true"
-                    />
-                ) : avatar ? (
-                    <div
-                        ref={mobileAvatarRef}
-                        className="relative p-1 cursor-pointer"
-                        onClick={() => setAvatarMenuOpen(!avatarMenuOpen)}
-                    >
-                      <img
-                          src={avatarSrc}
-                          alt="Avatar"
-                          width={28}
-                          height={28}
-                          className="w-7 h-7 rounded-full object-cover"
-                      />
-                      <div
-                          className={`absolute right-0 top-full mt-2 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] transition-all duration-300 z-fixed overflow-hidden flex flex-col ${
-                              avatarMenuOpen
-                                  ? "opacity-100 visible"
-                                  : "opacity-0 invisible"
-                          }`}
-                      >
-                        <Link
-                            href="/me"
-                            onClick={handleMenuClose}
-                            className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-first hover:bg-first/5 transition-colors"
-                        >
-                          <i className="uil uil-user"></i> 个人中心
-                        </Link>
-                        <div className="w-full h-[1px] bg-[var(--nav-splitter)] opacity-60"></div>
-                        <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              logout();
-                              handleMenuClose();
-                            }}
-                            className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-[hsl(0,100%,67%)] hover:bg-[hsl(0,100%,67%)]/10 transition-colors"
-                        >
-                          <i className="uil uil-sign-out-alt"></i> 退出登录
-                        </button>
-                      </div>
-                    </div>
-                ) : (
-                    <div className="flex gap-2">
-                      <Link
-                          href="/login"
-                          className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
-                      >
-                        登录
-                      </Link>
-                      <Link
-                          href="/login?type=true"
-                          className="text-[var(--text-color)] hover:text-first text-sm font-medium transition-colors"
-                      >
-                        注册
-                      </Link>
-                    </div>
-                )}
-              </div>
+              <NavAuthSlot
+                size={28}
+                compactGuest
+                hasHydrated={hasHydrated}
+                isLoggedIn={isLoggedIn}
+                avatarSrc={avatarSrc}
+                avatarMenuOpen={avatarMenuOpen}
+                onToggleAvatarMenu={() => setAvatarMenuOpen(!avatarMenuOpen)}
+                onCloseMenus={handleMenuClose}
+                onLogout={logout}
+                avatarRef={mobileAvatarRef}
+              />
 
               <div className="w-[1px] h-5 bg-[var(--nav-splitter)] opacity-60"/>
 
@@ -385,7 +491,11 @@ export default function BaseNav({
             <div className="flex items-center ml-auto">
               <ul className="flex items-center gap-x-2 relative" ref={navListRef}>
                 <li
-                    className="absolute bottom-0 h-[3px] bg-first shadow-[0_-2px_10px_var(--first-color)] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-t-md pointer-events-none"
+                    className={`absolute bottom-0 h-[3px] bg-first shadow-[0_-2px_10px_var(--first-color)] rounded-t-md pointer-events-none ${
+                      indicatorAnimated
+                        ? "transition-[left,width,opacity] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        : ""
+                    }`}
                     style={{
                       left: `${indicatorStyle.left}px`,
                       width: `${indicatorStyle.width}px`,
@@ -409,60 +519,14 @@ export default function BaseNav({
 
               <div className="w-[1px] h-6 bg-[var(--nav-splitter)] mx-6 opacity-60"/>
 
-              <div className="flex items-center">
-                {!hasHydrated ? (
-                    <div
-                        className="h-8 w-24 rounded-full bg-[var(--ice-100)]/80 animate-pulse"
-                        aria-hidden="true"
-                    />
-                ) : avatar ? (
-                    <div className="relative group p-2 cursor-pointer">
-                      <img
-                          src={avatarSrc}
-                          alt="Avatar"
-                          width={32}
-                          height={32}
-                          className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <div
-                          className="absolute right-0 top-full mt-0 w-32 bg-body shadow-[0_4px_24px_rgba(0,0,0,0.15)] rounded-xl border border-[var(--nav-splitter)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-fixed overflow-hidden flex flex-col">
-                        <Link
-                            href="/me"
-                            onClick={handleMenuClose}
-                            className="flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-first hover:bg-first/5 transition-colors"
-                        >
-                          <i className="uil uil-user"></i> 个人中心
-                        </Link>
-                        <div className="w-full h-[1px] bg-[var(--nav-splitter)] opacity-60"></div>
-                        <button
-                            onClick={() => {
-                              logout();
-                              handleMenuClose();
-                            }}
-                            className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm text-[var(--title-color)] hover:text-[hsl(0,100%,67%)] hover:bg-[hsl(0,100%,67%)]/10 transition-colors"
-                        >
-                          <i className="uil uil-sign-out-alt"></i> 退出登录
-                        </button>
-                      </div>
-                    </div>
-                ) : (
-                    <div className="flex gap-2">
-                      <Link
-                          href="/login"
-                          className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
-                      >
-                        <span>登录 </span>
-                      </Link>
-
-                      <Link
-                          href="/login?type=true"
-                          className="text-[var(--text-color)] hover:text-first flex gap-x-3 text-(length:--small-font-size) font-medium transition-colors"
-                      >
-                        <span>注册</span>
-                      </Link>
-                    </div>
-                )}
-              </div>
+              <NavAuthSlot
+                size={32}
+                hasHydrated={hasHydrated}
+                isLoggedIn={isLoggedIn}
+                avatarSrc={avatarSrc}
+                onCloseMenus={handleMenuClose}
+                onLogout={logout}
+              />
             </div>
           </nav>
         </header>

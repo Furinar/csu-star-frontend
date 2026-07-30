@@ -1,8 +1,8 @@
 "use client";
 
 import { getMyProfile } from "@/api/me";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useEffect, useRef } from "react";
+import { applyPersistedAuthSync, useAuthStore } from "@/store/useAuthStore";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 export default function AuthBootstrap() {
   const accessToken = useAuthStore((state) => state.access_token);
@@ -11,7 +11,11 @@ export default function AuthBootstrap() {
   const setUser = useAuthStore((state) => state.setUser);
   const requestKeyRef = useRef<string | null>(null);
 
-  useEffect(() => {
+  // 1) Sync apply localStorage in layout effect (no await) so auth UI paints
+  //    before the browser flush — without diverging SSR/CSR first render.
+  // 2) Then let zustand persist rehydrate for middleware bookkeeping.
+  useLayoutEffect(() => {
+    applyPersistedAuthSync();
     void useAuthStore.persist.rehydrate();
   }, []);
 
@@ -33,9 +37,20 @@ export default function AuthBootstrap() {
     const syncProfile = async () => {
       try {
         const profile = await getMyProfile();
-        if (!cancelled) {
-          setUser(profile);
+        if (cancelled) return;
+        // Skip setState when profile is unchanged to avoid avatar img remount flash.
+        const current = useAuthStore.getState().user;
+        if (
+          current &&
+          current.id === profile.id &&
+          current.avatar_url === profile.avatar_url &&
+          current.nickname === profile.nickname &&
+          current.points === profile.points &&
+          current.email_verified === profile.email_verified
+        ) {
+          return;
         }
+        setUser(profile);
       } catch {
         if (!cancelled) {
           requestKeyRef.current = null;
