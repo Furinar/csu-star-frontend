@@ -13,8 +13,6 @@ export const FEATURE_ROUTE_NAV_ITEMS: readonly NavItem[] = [
   { label: "搜索", href: "/search", icon: "uil-search" },
   { label: "指北", href: "/compass", icon: "uil-compass" },
   { label: "排行", href: "/rank", icon: "uil-trophy" },
-  { label: "资源", href: "/resource", icon: "uil-file-alt" },
-  { label: "课程", href: "/course", icon: "uil-graduation-cap" },
   { label: "我的", href: "/me", icon: "uil-user-circle" },
   { label: "关于", href: "/about", icon: "uil-info-circle" },
 ];
