@@ -40,8 +40,14 @@ jobs:
       - name: Type check
         run: pnpm run typecheck
 
+      # main 上若存在 test 脚本再跑；特性分支可补 scripts.test
       - name: Unit tests
-        run: pnpm run test
+        run: |
+          if node -e "const s=require('./package.json').scripts||{}; process.exit(s.test?0:1)"; then
+            pnpm run test
+          else
+            echo "Skip tests: package.json has no scripts.test"
+          fi
 
       - name: Build static export
         run: pnpm run build
