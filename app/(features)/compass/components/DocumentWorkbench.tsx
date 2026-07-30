@@ -126,6 +126,12 @@ function TreeList({
               </div>
             );
           }
+          // 父节点本身可点进文档：自身 active 时必须 is-active，蓝条才能定位
+          const activeClass = active
+            ? " is-active has-active"
+            : nodeContainsId(n, activeId)
+              ? " has-active"
+              : "";
           return (
             <div
               className={`group is-branch${open ? " is-open" : " is-collapsed"}`}
@@ -134,7 +140,7 @@ function TreeList({
               <section
                 className={`VPSidebarItem level-0 collapsible${
                   open ? "" : " collapsed"
-                }${nodeContainsId(n, activeId) ? " has-active" : ""}`}
+                }${activeClass}`}
               >
                 <div className="item">
                   <div className="indicator" />
@@ -211,12 +217,17 @@ function TreeList({
             </div>
           );
         }
+        const activeClass = active
+          ? " is-active has-active"
+          : nodeContainsId(n, activeId)
+            ? " has-active"
+            : "";
         return (
           <div
             key={n.id}
             className={`VPSidebarItem level-1 collapsible${
               open ? "" : " collapsed"
-            }${nodeContainsId(n, activeId) ? " has-active" : ""}`}
+            }${activeClass}`}
           >
             <div className="item">
               <div className="indicator" />
@@ -322,9 +333,9 @@ export default function DocumentWorkbench({
       setCanWrite(data.can_write);
       setEditTitle(data.page.title);
       setEditBody(data.page.body);
-      // 仅在明显偏离顶部时复位，避免 sticky 返回栏跟着 scrollTo 抖一下
+      // 仅在明显偏离顶部时复位；强制 instant，避免 html{scroll-behavior:smooth} 带动 sticky 返回栏抖动
       if (typeof window !== "undefined" && window.scrollY > 8) {
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       }
       const [hist, cms] = await Promise.all([
         getCompassHistory(id),
@@ -525,7 +536,8 @@ export default function DocumentWorkbench({
   };
 
   const startEditing = () => {
-    if (!page) return;
+    // 切文进行中仍显示旧正文：禁止进入编辑，避免写错页
+    if (!page || loading) return;
     setEditTitle(page.title);
     setEditBody(page.body || "");
     setIsEditing(true);
@@ -559,6 +571,8 @@ export default function DocumentWorkbench({
   ];
 
   /** 右侧只放操作按钮，不再重复 space_key 文案 */
+  // 切文 loading 不禁用：否则 opacity 0.5↔1 闪一下像抖动；仅无 page 时禁用
+  const actionsDisabled = !page;
   const collabExtra = (
     <div className="cw-collab-actions">
       {canWrite ? (
@@ -573,7 +587,7 @@ export default function DocumentWorkbench({
             </button>
             <button
               type="button"
-              className="cw-nav-btn cw-nav-btn-primary"
+              className="cw-nav-btn cw-nav-btn-primary cw-nav-btn-slot"
               disabled={saving}
               onClick={() => void onSave()}
             >
@@ -583,9 +597,10 @@ export default function DocumentWorkbench({
         ) : (
           <button
             type="button"
-            className="cw-nav-btn cw-nav-btn-primary"
+            className="cw-nav-btn cw-nav-btn-primary cw-nav-btn-slot"
             onClick={startEditing}
-            disabled={loading || !page}
+            disabled={actionsDisabled}
+            aria-busy={loading || undefined}
           >
             编辑
           </button>
@@ -595,9 +610,10 @@ export default function DocumentWorkbench({
           <span className="cw-readonly">只读</span>
           <button
             type="button"
-            className="cw-nav-btn"
+            className="cw-nav-btn cw-nav-btn-slot"
             onClick={() => setShowEditReq(true)}
-            disabled={loading || !page}
+            disabled={actionsDisabled}
+            aria-busy={loading || undefined}
           >
             申请编辑
           </button>

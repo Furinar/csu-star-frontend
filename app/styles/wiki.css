@@ -1780,12 +1780,13 @@ html:has(.wiki-doc-shell) {
 /*
  * 编辑等操作：绝对贴右，与路径文案长度解耦。
  * 切文章时 location 变长短，按钮像素位置不变，不再「跟随抖动」。
+ * 不用 transform 垂直居中：sticky 子项上的 transform 易在滚动/合成时亚像素抖。
  */
 .wiki-doc-shell .wiki-back-bar-extra {
   position: absolute;
   right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -1793,6 +1794,8 @@ html:has(.wiki-doc-shell) {
   flex-shrink: 0;
   /* 固定槽位宽度，disabled/loading 换字也不晃 */
   min-width: 4.5rem;
+  /* 与路径区布局隔离，避免 crumb 重排牵连 */
+  contain: layout style;
 }
 
 @media (min-width: 960px) {
@@ -1831,7 +1834,18 @@ html:has(.wiki-doc-shell) {
   padding: 6px 12px;
   border-radius: 6px;
   cursor: pointer;
+  /* 固定盒高，避免字体/状态切换撑开 sticky 条 */
+  box-sizing: border-box;
+  height: 28px;
+  white-space: nowrap;
   transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+/* 主操作槽：编辑 / 保存 / 申请编辑 同宽，避免换字左右挪 */
+.wiki-doc-shell .cw-nav-btn-slot {
+  min-width: 4.5rem;
+  text-align: center;
+  justify-content: center;
 }
 
 .wiki-doc-shell .cw-nav-btn:hover:not(:disabled) {
@@ -1840,7 +1854,10 @@ html:has(.wiki-doc-shell) {
 }
 
 .wiki-doc-shell .cw-nav-btn:disabled {
-  opacity: 0.5;
+  /* 不用 opacity：切文时若误绑 loading 会整钮闪；仅弱化色 */
+  color: var(--vp-c-text-3);
+  border-color: var(--vp-c-divider);
+  background: var(--vp-c-bg-soft, var(--vp-c-bg));
   cursor: not-allowed;
 }
 
@@ -1854,6 +1871,14 @@ html:has(.wiki-doc-shell) {
   border-color: var(--vp-c-brand-2);
   background: var(--vp-c-brand-2);
   color: #fff;
+}
+
+.wiki-doc-shell .cw-nav-btn-primary:disabled {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* 有返回栏时：LocalNav sticky 再下移 */
