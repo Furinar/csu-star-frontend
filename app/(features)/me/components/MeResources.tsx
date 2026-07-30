@@ -14,16 +14,20 @@ import type { EntityId } from "@/types/entity";
 import type { PaginatedData, ResourceItem } from "@/types/me";
 import {
   formatDateTime,
-  formatNumber,
   getResourceTypeLabel,
 } from "./shared/helpers";
+import MeEntityCard, { ME_FILE_THUMB_WELL } from "./shared/MeEntityCard";
 import {
-  ME_LIST_STACK,
-  ME_META,
-  ME_METRIC_ROW,
-  ME_ROW,
-  ME_ROW_INTERACTIVE,
-  ME_TITLE,
+  MeDownloadStat,
+  MeFileTypeThumb,
+  MeLikeStat,
+  MeStat,
+  MeViewStat,
+} from "./shared/meCardIcons";
+import {
+  ME_CARD_GRID,
+  ME_CARD_META,
+  ME_CARD_TIME,
 } from "./shared/styles";
 import { SectionEmptyState } from "./SectionStates";
 
@@ -63,130 +67,143 @@ export default function MeResources({ resources }: MeResourcesProps) {
 
   return (
     <>
-      <div className={ME_LIST_STACK}>
-        {items.length > 0 ? (
-          items.map((item) => {
+      {items.length > 0 ? (
+        <div className={ME_CARD_GRID}>
+          {items.map((item) => {
             const courseName =
               item.course?.name || `课程 #${item.course_id}`;
             const isDeleted = item.status === "deleted";
-            const rowClass = isDeleted ? ME_ROW : ME_ROW_INTERACTIVE;
-            const cardContent = (
-              <div className={rowClass}>
-                <div className="mb-2 flex flex-col gap-2 sm:mb-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h4 className={ME_TITLE}>{item.title}</h4>
-                      {isDeleted ? (
-                        <Tag theme="danger" variant="light" size="small">
-                          已删除
-                        </Tag>
-                      ) : null}
-                    </div>
-                    <p className={`mt-1 ${ME_META}`}>
-                      上传于 {formatDateTime(item.created_at)}
-                    </p>
-                    <div className={`mt-1 ${ME_META}`}>
-                      关联课程：
-                      <span className="ml-1 font-medium text-slate-800">
-                        {courseName}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div className={ME_METRIC_ROW}>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-file-alt text-base text-emerald-500 sm:text-lg" />
-                    <span>{getResourceTypeLabel(item.resource_type)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-cloud-download text-base text-blue-500 sm:text-lg" />
-                    <span>下载 {formatNumber(item.downloads)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-eye text-base text-amber-500 sm:text-lg" />
-                    <span>浏览 {formatNumber(item.views)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-thumbs-up text-base text-rose-500 sm:text-lg" />
-                    <span>点赞 {formatNumber(item.likes)}</span>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-bolt text-base text-violet-500 sm:text-lg" />
-                    <span>热度 {item.hot_score ?? 0}</span>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2 border-t border-slate-100 pt-2.5 text-xs text-slate-500 sm:mt-3.5 sm:pt-3 sm:text-sm">
-                  <span>
-                    {isDeleted
-                      ? "资源已删除，仅保留记录"
-                      : "点击查看资源详情"}
-                  </span>
-                  <div className="flex items-center gap-2.5 sm:gap-3">
-                    <span
+            const typeLabel = getResourceTypeLabel(item.resource_type);
+
+            const card = (
+              <MeEntityCard
+                fullHeight
+                icon={<MeFileTypeThumb resourceType={item.resource_type} />}
+                tone={isDeleted ? "danger" : "resource"}
+                iconWellClassName={
+                  isDeleted
+                    ? "border-rose-100 bg-rose-50/70 opacity-70"
+                    : ME_FILE_THUMB_WELL
+                }
+                interactive={!isDeleted}
+                title={item.title}
+                tags={
+                  <Tag
+                    size="small"
+                    variant="light"
+                    theme={isDeleted ? "danger" : "success"}
+                  >
+                    {isDeleted ? "已删除" : typeLabel}
+                  </Tag>
+                }
+                action={
+                  !isDeleted ? (
+                    <div
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
-                        router.push(buildCoursePath(item.course_id));
                       }}
-                      className="cursor-pointer text-sm font-medium text-first hover:underline"
                     >
-                      查看关联课程
-                    </span>
-                    {!isDeleted ? (
-                      <div
+                      <ItemActionMenu
+                        items={[
+                          {
+                            key: "edit",
+                            label: "修改资源",
+                            onClick: async () => {
+                              const detail = await getResourceDetail(item.id);
+                              setEditingItem(detail);
+                            },
+                          },
+                          {
+                            key: "delete",
+                            label:
+                              deletingId === item.id
+                                ? "删除中..."
+                                : "删除资源",
+                            destructive: true,
+                            onClick: () => handleDelete(item),
+                          },
+                        ]}
+                      />
+                    </div>
+                  ) : undefined
+                }
+                meta={
+                  <div className={ME_CARD_META}>
+                    {isDeleted ? (
+                      <span className="min-w-0 truncate">{courseName}</span>
+                    ) : (
+                      <span
+                        role="link"
+                        tabIndex={0}
                         onClick={(event) => {
                           event.preventDefault();
                           event.stopPropagation();
+                          router.push(buildCoursePath(item.course_id));
                         }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            router.push(buildCoursePath(item.course_id));
+                          }
+                        }}
+                        className="min-w-0 truncate font-medium text-slate-600 transition-colors hover:text-first"
                       >
-                        <ItemActionMenu
-                          items={[
-                            {
-                              key: "edit",
-                              label: "修改资源",
-                              onClick: async () => {
-                                const detail = await getResourceDetail(
-                                  item.id,
-                                );
-                                setEditingItem(detail);
-                              },
-                            },
-                            {
-                              key: "delete",
-                              label:
-                                deletingId === item.id
-                                  ? "删除中..."
-                                  : "删除资源",
-                              destructive: true,
-                              onClick: () => handleDelete(item),
-                            },
-                          ]}
-                        />
-                      </div>
-                    ) : null}
+                        {courseName}
+                      </span>
+                    )}
                   </div>
-                </div>
-              </div>
+                }
+                stats={
+                  isDeleted ? (
+                    <>
+                      <MeStat muted>资源已删除，仅保留记录</MeStat>
+                      <time
+                        className={ME_CARD_TIME}
+                        dateTime={item.created_at}
+                      >
+                        {formatDateTime(item.created_at)}
+                      </time>
+                    </>
+                  ) : (
+                    <>
+                      <MeDownloadStat value={item.downloads} />
+                      <MeLikeStat value={item.likes} />
+                      <MeViewStat value={item.views} />
+                      <time
+                        className={ME_CARD_TIME}
+                        dateTime={item.created_at}
+                      >
+                        {formatDateTime(item.created_at)}
+                      </time>
+                    </>
+                  )
+                }
+              />
             );
+
             return isDeleted ? (
-              <div key={item.id}>{cardContent}</div>
+              <div key={item.id} className="min-h-0">
+                {card}
+              </div>
             ) : (
               <Link
                 key={item.id}
                 href={buildResourcePath(item.id)}
-                className="block"
+                className="block min-h-0"
               >
-                {cardContent}
+                {card}
               </Link>
             );
-          })
-        ) : (
-          <SectionEmptyState
-            title="暂无上传资源"
-            description="你上传的资源会显示在这里。"
-          />
-        )}
-      </div>
+          })}
+        </div>
+      ) : (
+        <SectionEmptyState
+          title="暂无上传资源"
+          description="你上传的资源会显示在这里。"
+        />
+      )}
       <ResourceEditModal
         resource={editingItem}
         open={editingItem !== null}

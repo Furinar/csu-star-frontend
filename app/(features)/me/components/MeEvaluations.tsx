@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   deleteCourseEvaluation,
@@ -9,20 +8,13 @@ import {
 } from "@/api/detail";
 import DetailComposerModal from "@/components/detail/DetailComposerModal";
 import EvaluationComposerForm from "@/components/detail/EvaluationComposerForm";
-import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
 import ItemActionMenu from "@/components/ui/ItemActionMenu";
-import { buildCoursePath, buildTeacherPath } from "@/lib/paths";
+import StarRating from "@/components/ui/StarRating";
+import { buildCoursePath } from "@/lib/paths";
 import { feedback } from "@/store/useFeedbackStore";
 import type { CourseEvaluationInput } from "@/types/detail";
 import type { CourseEvaluation, PaginatedData } from "@/types/me";
-import { formatDateTime, formatNumber } from "./shared/helpers";
-import {
-  ME_LIST_STACK,
-  ME_META,
-  ME_METRIC_ROW,
-  ME_ROW_INTERACTIVE,
-  ME_TITLE,
-} from "./shared/styles";
+import { formatDateTime } from "./shared/helpers";
 import { SectionEmptyState } from "./SectionStates";
 
 interface MeEvaluationsProps {
@@ -58,165 +50,149 @@ function mergeCourseEvaluation(
   };
 }
 
+function formatAvg(value: number | undefined | null) {
+  if (value == null || !Number.isFinite(Number(value))) return "--";
+  return Number(value).toFixed(1);
+}
+
+/**
+ * Xiaohongshu-style note card in a CSS columns waterfall.
+ * Comment is the cover content; height varies → natural masonry flow.
+ */
+function EvaluationWaterfallCard({
+  item,
+  onEdit,
+  onDelete,
+}: {
+  item: CourseEvaluation;
+  onEdit: () => void;
+  onDelete: () => Promise<void>;
+}) {
+  const courseName = item.course_name || `课程 #${item.course_id}`;
+  const teacherName = item.teacher_name?.trim() || null;
+  const avg = Number(item.avg_rating);
+  const avgText = formatAvg(item.avg_rating);
+  const comment = item.comment?.trim() ?? "";
+  const hasComment = Boolean(comment);
+
+  return (
+    <article className="mb-2.5 break-inside-avoid sm:mb-3">
+      <Link
+        href={buildCoursePath(item.course_id)}
+        className="block rounded-lg border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50/60 active:bg-slate-50"
+      >
+        <div className="p-3 sm:p-3.5">
+          {/* Note body — primary, variable height drives waterfall */}
+          {hasComment ? (
+            <p className="line-clamp-8 whitespace-pre-wrap text-[13px] leading-6 text-slate-800 sm:text-sm sm:leading-7">
+              {comment}
+            </p>
+          ) : (
+            <p className="text-[13px] leading-6 text-slate-400 sm:text-sm">
+              暂无文字评价
+            </p>
+          )}
+
+          {/* Same band under comment, course name on the right (not in footer) */}
+          <h4
+            className="mt-2.5 truncate text-right text-[13px] font-semibold text-slate-900 sm:mt-3 sm:text-sm"
+            title={courseName}
+          >
+            {courseName}
+          </h4>
+
+          {/* Footer: score + meta left, actions right */}
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+              <span className="inline-flex shrink-0 items-center gap-1">
+                <StarRating
+                  score={Number.isFinite(avg) ? avg : 0}
+                  size="10px"
+                  fillClassName="text-amber-400"
+                />
+                <span className="text-xs font-semibold tabular-nums text-amber-600">
+                  {avgText}
+                </span>
+              </span>
+              <span className="truncate text-[11px] text-slate-400">
+                {formatDateTime(item.created_at)}
+                {teacherName ? ` · ${teacherName}` : ""}
+                {item.is_anonymous ? " · 匿名" : ""}
+              </span>
+            </div>
+
+            <div
+              className="relative z-10 shrink-0"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              <ItemActionMenu
+                items={[
+                  {
+                    key: "edit",
+                    label: "修改评价",
+                    onClick: onEdit,
+                  },
+                  {
+                    key: "delete",
+                    label: "删除评价",
+                    destructive: true,
+                    onClick: onDelete,
+                  },
+                ]}
+              />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </article>
+  );
+}
+
 export default function MeEvaluations({
   courseEvaluations,
 }: MeEvaluationsProps) {
-  const router = useRouter();
   const [courseItems, setCourseItems] = useState(
     courseEvaluations.items ?? [],
   );
   const [editingCourseEvaluation, setEditingCourseEvaluation] =
     useState<CourseEvaluation | null>(null);
 
-  const filteredCourseEvaluations = courseItems;
-
   return (
-    <div className={ME_LIST_STACK}>
-      {filteredCourseEvaluations.length === 0 ? (
+    <>
+      {courseItems.length === 0 ? (
         <SectionEmptyState
           title="暂无评价记录"
           description="你发布的课程评价会汇总在这里。"
         />
       ) : (
-        filteredCourseEvaluations.map((item) => {
-          const linkedTeacherName =
-            item.teacher_name ||
-            (item.teacher_id ? `教师 #${item.teacher_id}` : null);
-          const courseName =
-            item.course_name || `课程 #${item.course_id}`;
-          const cardContent = (
-            <div className={ME_ROW_INTERACTIVE}>
-              <div className="mb-2 flex flex-col gap-2 sm:mb-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex w-full items-start justify-between gap-3">
-                    <h4 className={ME_TITLE}>{courseName}</h4>
-                    <EntityTypeBadge
-                      type="course"
-                      label="课程评价"
-                      className="shrink-0 scale-90 origin-top-right sm:scale-100"
-                    />
-                  </div>
-                  <p className={`mt-1.5 ${ME_META}`}>
-                    发布于 {formatDateTime(item.created_at)}
-                  </p>
-                  {linkedTeacherName ? (
-                    <div className={`mt-1 ${ME_META}`}>
-                      关联教师：
-                      <span
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (item.teacher_id) {
-                            router.push(buildTeacherPath(item.teacher_id));
-                          }
-                        }}
-                        className="ml-1 cursor-pointer font-medium text-slate-800 hover:text-first hover:underline"
-                      >
-                        {linkedTeacherName}
-                      </span>
-                    </div>
-                  ) : null}
-                </div>
-              </div>
-              {item.comment ? (
-                <div className="mb-2.5 rounded-md border border-slate-100 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-700 sm:mb-3 sm:px-3.5 sm:py-2.5 sm:text-sm sm:leading-6">
-                  {item.comment}
-                </div>
-              ) : null}
-              <div className={ME_METRIC_ROW}>
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <i className="uil uil-star text-base text-amber-500 sm:text-lg" />
-                  <span>综合 {item.avg_rating}</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <i className="uil uil-edit text-base text-violet-500 sm:text-lg" />
-                  <span>作业 {item.rating_homework ?? "-"}</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <i className="uil uil-book-reader text-base text-cyan-500 sm:text-lg" />
-                  <span>收获 {item.rating_gain ?? "-"}</span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <i className="uil uil-chart-down text-base text-orange-500 sm:text-lg" />
-                  <span>考试 {item.rating_exam_difficulty ?? "-"}</span>
-                </div>
-                {item.teacher_id ? (
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-presentation-line text-base text-sky-500 sm:text-lg" />
-                    <span>教学 {item.rating_quality ?? "-"}</span>
-                  </div>
-                ) : null}
-                {item.teacher_id ? (
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-file-check-alt text-base text-emerald-500 sm:text-lg" />
-                    <span>给分 {item.rating_grading ?? "-"}</span>
-                  </div>
-                ) : null}
-                {item.teacher_id ? (
-                  <div className="flex items-center gap-1 sm:gap-1.5">
-                    <i className="uil uil-user-check text-base text-rose-500 sm:text-lg" />
-                    <span>考勤 {item.rating_attendance ?? "-"}</span>
-                  </div>
-                ) : null}
-                <div className="flex items-center gap-1 sm:gap-1.5">
-                  <i className="uil uil-thumbs-up text-base text-rose-500 sm:text-lg" />
-                  <span>点赞 {formatNumber(item.likes)}</span>
-                </div>
-              </div>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-y-2 border-t border-slate-100 pt-2.5 text-xs text-slate-500 sm:mt-3.5 sm:gap-3 sm:pt-3 sm:text-sm">
-                <span>点击查看课程详情</span>
-                <div
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                  }}
-                >
-                  <ItemActionMenu
-                    items={[
-                      {
-                        key: "edit",
-                        label: "修改评价",
-                        onClick: async () => {
-                          setEditingCourseEvaluation(item);
-                        },
-                      },
-                      {
-                        key: "delete",
-                        label: "删除评价",
-                        destructive: true,
-                        onClick: async () => {
-                          try {
-                            await deleteCourseEvaluation(item.id);
-                            setCourseItems((prev) =>
-                              prev.filter((entry) => entry.id !== item.id),
-                            );
-                            feedback.success({ title: "评价已删除" });
-                          } catch (error) {
-                            console.error(error);
-                            feedback.error({
-                              title: "删除失败",
-                              description: "请稍后重试。",
-                            });
-                          }
-                        },
-                      },
-                    ]}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-
-          return (
-            <Link
+        // CSS multi-column masonry (XHS / Pinterest style)
+        <div className="columns-2 gap-2.5 sm:gap-3 lg:columns-3">
+          {courseItems.map((item) => (
+            <EvaluationWaterfallCard
               key={`course-${item.id}`}
-              href={buildCoursePath(item.course_id)}
-              className="block"
-            >
-              {cardContent}
-            </Link>
-          );
-        })
+              item={item}
+              onEdit={() => setEditingCourseEvaluation(item)}
+              onDelete={async () => {
+                try {
+                  await deleteCourseEvaluation(item.id);
+                  setCourseItems((prev) =>
+                    prev.filter((entry) => entry.id !== item.id),
+                  );
+                  feedback.success({ title: "评价已删除" });
+                } catch (error) {
+                  console.error(error);
+                  feedback.error({
+                    title: "删除失败",
+                    description: "请稍后重试。",
+                  });
+                }
+              }}
+            />
+          ))}
+        </div>
       )}
 
       <DetailComposerModal
@@ -287,6 +263,6 @@ export default function MeEvaluations({
           />
         ) : null}
       </DetailComposerModal>
-    </div>
+    </>
   );
 }

@@ -142,10 +142,6 @@ export default function MeNotifications({
 
   return (
     <div className="space-y-5 sm:space-y-6">
-      <p className="text-xs text-slate-500 sm:text-sm">
-        进入本页后未读通知会自动标记为已读。
-      </p>
-
       <NotificationSection
         title="公告"
         description="系统公告与平台提醒"

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { CheckTag, Tag } from "tdesign-react";
+import { useMemo, useState } from "react";
+import { CheckTag } from "tdesign-react";
 import EntityTypeBadge from "@/components/ui/EntityTypeBadge";
+import StarRating from "@/components/ui/StarRating";
 import type { EntityThemeKey } from "@/lib/entityTheme";
+import { getEntityTheme } from "@/lib/entityTheme";
 import {
   buildCoursePath,
   buildResourcePath,
@@ -15,10 +17,16 @@ import {
   formatDateTime,
   getResourceTypeLabel,
 } from "./shared/helpers";
+import MeEntityCard, { ME_FILE_THUMB_WELL } from "./shared/MeEntityCard";
 import {
-  ME_META,
-  ME_ROW_INTERACTIVE,
-  ME_TITLE,
+  MeEntityFaThumb,
+  MeFileTypeThumb,
+  getEntityFaWellClass,
+} from "./shared/meCardIcons";
+import {
+  ME_CARD_GRID,
+  ME_CARD_META,
+  ME_META_DOT,
 } from "./shared/styles";
 import { SectionEmptyState } from "./SectionStates";
 
@@ -114,7 +122,10 @@ export default function MeFavorites({ favorites }: MeFavoritesProps) {
   const [favoriteFilter, setFavoriteFilter] = useState<
     "all" | "resource" | "course" | "teacher"
   >("all");
-  const favoriteItems = favorites.items ?? [];
+  const favoriteItems = useMemo(
+    () => favorites.items ?? [],
+    [favorites.items],
+  );
 
   const filteredFavorites =
     favoriteFilter === "all"
@@ -122,6 +133,20 @@ export default function MeFavorites({ favorites }: MeFavoritesProps) {
       : favoriteItems.filter(
           (item) => getFavoriteType(item) === favoriteFilter,
         );
+
+  const filterCounts = useMemo(() => {
+    const counts = {
+      all: favoriteItems.length,
+      resource: 0,
+      course: 0,
+      teacher: 0,
+    };
+    for (const item of favoriteItems) {
+      const type = getFavoriteType(item);
+      counts[type] += 1;
+    }
+    return counts;
+  }, [favoriteItems]);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -136,60 +161,107 @@ export default function MeFavorites({ favorites }: MeFavoritesProps) {
             }}
           >
             {item.label}
+            {filterCounts[item.key] > 0 ? (
+              <span className="ml-1 tabular-nums opacity-70">
+                {filterCounts[item.key]}
+              </span>
+            ) : null}
           </CheckTag>
         ))}
       </div>
 
       {filteredFavorites.length > 0 ? (
-        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3">
+        <div className={ME_CARD_GRID}>
           {filteredFavorites.map((item) => {
             const href = getFavoriteHref(item);
-            const cardContent = (
-              <div className={ME_ROW_INTERACTIVE}>
-                <div className="mb-2 flex items-start justify-between gap-2.5 md:mb-2.5 md:gap-3">
-                  <div className="min-w-0">
-                    <h4 className={ME_TITLE}>{getFavoriteTitle(item)}</h4>
-                    <p className={`mt-1 ${ME_META}`}>
-                      收藏于 {formatDateTime(item.created_at)}
-                    </p>
+            const type = getFavoriteType(item);
+            const theme = getEntityTheme(type);
+            const hasScore =
+              item.avg_score != null &&
+              Number.isFinite(Number(item.avg_score));
+            const categoryLabel =
+              type === "resource" && item.resource_type
+                ? getResourceTypeLabel(item.resource_type)
+                : null;
+
+            const icon =
+              type === "resource" ? (
+                <MeFileTypeThumb resourceType={item.resource_type} />
+              ) : (
+                <MeEntityFaThumb type={type} />
+              );
+
+            // Single source of truth per field:
+            // - entity kind → badge only
+            // - resource category → meta only (not also in badge / aside)
+            // - score → one inline row (no aside clone)
+            const card = (
+              <MeEntityCard
+                fullHeight
+                icon={icon}
+                tone={type}
+                iconWellClassName={
+                  type === "resource"
+                    ? ME_FILE_THUMB_WELL
+                    : getEntityFaWellClass(type)
+                }
+                interactive={Boolean(href)}
+                title={getFavoriteTitle(item)}
+                tags={
+                  <EntityTypeBadge
+                    type={type}
+                    label={getFavoriteTypeLabel(item)}
+                  />
+                }
+                meta={
+                  <div className={ME_CARD_META}>
+                    <span className="shrink-0">
+                      {formatDateTime(item.created_at)}
+                    </span>
+                    {categoryLabel ? (
+                      <>
+                        <span className={ME_META_DOT}>·</span>
+                        <span className="min-w-0 truncate">
+                          {categoryLabel}
+                        </span>
+                      </>
+                    ) : null}
                   </div>
-                  <div className="shrink-0 scale-90 origin-top-right md:scale-100">
-                    <EntityTypeBadge
-                      type={getFavoriteType(item)}
-                      label={getFavoriteTypeLabel(item)}
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5 text-xs text-slate-600 md:gap-2 md:text-sm">
-                  {item.resource_type ? (
-                    <Tag size="small" variant="light" theme="default">
-                      类型 {getResourceTypeLabel(item.resource_type)}
-                    </Tag>
-                  ) : null}
-                  {item.avg_score != null ? (
-                    <Tag size="small" variant="light" theme="warning">
-                      评分 {item.avg_score}
-                    </Tag>
-                  ) : null}
-                </div>
-              </div>
+                }
+                stats={
+                  hasScore ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <StarRating
+                        score={Number(item.avg_score)}
+                        size="11px"
+                        fillClassName={theme.starFillClassName}
+                      />
+                      <span
+                        className={`text-sm font-semibold tabular-nums ${theme.badgeTextClassName}`}
+                      >
+                        {Number(item.avg_score).toFixed(1)}
+                      </span>
+                    </span>
+                  ) : undefined
+                }
+              />
             );
 
             if (!href) {
               return (
-                <div key={`${getFavoriteType(item)}-${item.id}`}>
-                  {cardContent}
+                <div key={`${type}-${item.id}`} className="min-h-0">
+                  {card}
                 </div>
               );
             }
 
             return (
               <Link
-                key={`${getFavoriteType(item)}-${item.id}`}
+                key={`${type}-${item.id}`}
                 href={href}
-                className="block"
+                className="block min-h-0"
               >
-                {cardContent}
+                {card}
               </Link>
             );
           })}

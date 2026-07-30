@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,6 +10,12 @@ export interface ItemActionMenuItem {
   destructive?: boolean;
   onClick: () => void | Promise<void>;
 }
+
+const MENU_GAP = 6;
+const VIEWPORT_PAD = 8;
+const ESTIMATED_ITEM_HEIGHT = 36;
+const MENU_CHROME = 10;
+const ESTIMATED_MENU_WIDTH = 128;
 
 export default function ItemActionMenu({
   items,
@@ -23,7 +29,11 @@ export default function ItemActionMenu({
   triggerClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [menuStyle, setMenuStyle] = useState<{ top: number; left?: number; right?: number }>({ top: 0 });
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({
+    top: 0,
+    left: 0,
+    visibility: "hidden",
+  });
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -33,37 +43,61 @@ export default function ItemActionMenu({
 
     const updateMenuPosition = () => {
       const triggerElement = triggerRef.current;
+      const menuEl = menuRef.current;
       if (!triggerElement) return;
 
       const rect = triggerElement.getBoundingClientRect();
-      const nextTop = rect.bottom + 8;
+      const menuHeight =
+        menuEl?.offsetHeight ||
+        items.length * ESTIMATED_ITEM_HEIGHT + MENU_CHROME;
+      const menuWidth = menuEl?.offsetWidth || ESTIMATED_MENU_WIDTH;
 
-      if (align === "right") {
-        setMenuStyle({
-          top: nextTop,
-          right: window.innerWidth - rect.right,
-        });
-        return;
-      }
+      const spaceBelow = window.innerHeight - rect.bottom - VIEWPORT_PAD;
+      const spaceAbove = rect.top - VIEWPORT_PAD;
+      const openUp =
+        spaceBelow < menuHeight + MENU_GAP && spaceAbove > spaceBelow;
+
+      let top = openUp
+        ? rect.top - menuHeight - MENU_GAP
+        : rect.bottom + MENU_GAP;
+      top = Math.max(
+        VIEWPORT_PAD,
+        Math.min(top, window.innerHeight - menuHeight - VIEWPORT_PAD),
+      );
+
+      // Horizontal: pin to trigger. Right-align = menu's right edge == trigger's right edge
+      // (so the panel sits under the "…" instead of drifting left).
+      let left =
+        align === "right" ? rect.right - menuWidth : rect.left;
+
+      const maxLeft = window.innerWidth - menuWidth - VIEWPORT_PAD;
+      left = Math.max(VIEWPORT_PAD, Math.min(left, maxLeft));
 
       setMenuStyle({
-        top: nextTop,
-        left: rect.left,
+        top,
+        left,
+        right: "auto",
+        visibility: "visible",
       });
     };
 
+    // First pass (may use estimates), then remeasure real size after layout.
     updateMenuPosition();
+    const raf1 = window.requestAnimationFrame(() => {
+      updateMenuPosition();
+      window.requestAnimationFrame(updateMenuPosition);
+    });
 
     const handleViewportChange = () => updateMenuPosition();
-
     window.addEventListener("resize", handleViewportChange);
     window.addEventListener("scroll", handleViewportChange, true);
 
     return () => {
+      window.cancelAnimationFrame(raf1);
       window.removeEventListener("resize", handleViewportChange);
       window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [align, open]);
+  }, [align, items.length, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -91,8 +125,8 @@ export default function ItemActionMenu({
         className={
           triggerClassName ??
           (trigger
-            ? "block rounded-full"
-            : "flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-600")
+            ? "block rounded-md"
+            : "flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-600")
         }
       >
         {trigger ?? <i className="uil uil-ellipsis-h text-lg" />}
@@ -101,7 +135,7 @@ export default function ItemActionMenu({
         ? createPortal(
             <div
               ref={menuRef}
-              className="fixed z-[120] min-w-[132px] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-[0_18px_48px_rgba(15,23,42,0.14)]"
+              className="fixed z-[120] min-w-[128px] rounded-lg border border-slate-200 bg-white p-1 shadow-[0_8px_24px_rgba(15,23,42,0.12)]"
               style={menuStyle}
             >
               {items.map((item) => (
@@ -112,7 +146,7 @@ export default function ItemActionMenu({
                     setOpen(false);
                     await item.onClick();
                   }}
-                  className={`flex w-full items-center rounded-xl px-3 py-3 text-left text-sm transition md:py-2 ${
+                  className={`flex w-full items-center rounded-md px-3 py-2 text-left text-sm transition ${
                     item.destructive
                       ? "text-rose-600 hover:bg-rose-50"
                       : "text-slate-700 hover:bg-slate-50"

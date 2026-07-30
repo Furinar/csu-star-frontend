@@ -29,6 +29,10 @@ export function InlineRetryState({
   return <InlineErrorBar message={message} onRetry={onRetry} retryText="重新加载" />;
 }
 
+/** Me 列表区本身无外框，空状态不再套一层 border 白盒 */
+const ME_SECTION_EMPTY_CLASS =
+  "border-0 bg-transparent shadow-none";
+
 export function SectionEmptyState({
   title,
   description,
@@ -41,6 +45,7 @@ export function SectionEmptyState({
       type="empty"
       title={title}
       description={description}
+      className={ME_SECTION_EMPTY_CLASS}
     />
   );
 }
@@ -57,6 +62,7 @@ export function GuestTabState({
       type="empty"
       title={title}
       description={description}
+      className={ME_SECTION_EMPTY_CLASS}
     />
   );
 }

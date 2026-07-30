@@ -21,8 +21,10 @@ export interface MeTabBarProps {
 type TabItem = {
   key: TabKey;
   label: string;
-  /** When set, render TDesign Badge (absolute) so count changes don't reflow the tab. */
+  /** When set, may render TDesign Badge (absolute) so count changes don't reflow the tab. */
   count?: number;
+  /** Always show badge (notifications). Other tabs only show badge while active. */
+  badgeAlways?: boolean;
   /** Emphasize unread-style counts (notifications). */
   tone?: "default" | "danger";
 };
@@ -55,6 +57,7 @@ export default function MeTabBar({
       key: "notifications",
       label: "通知与公告",
       count: unreadCount,
+      badgeAlways: true,
       tone: "danger",
     },
     {
@@ -107,14 +110,7 @@ export default function MeTabBar({
 
   useLayoutEffect(() => {
     updateIndicator();
-  }, [
-    updateIndicator,
-    // Badge counts can change tab width — remeasure underline.
-    unreadCount,
-    resourcesTotal,
-    favoritesTotal,
-    evaluationsTotal,
-  ]);
+  }, [updateIndicator]);
 
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -160,25 +156,28 @@ export default function MeTabBar({
           <span className="relative z-10 tracking-wide">{tab.label}</span>
         );
 
-        // Badge is position:absolute over the label — zero layout shift when count
-        // arrives from cache/network. showZero=false hides empty badges cleanly.
-        const content =
-          typeof tab.count === "number" ? (
-            <Badge
-              count={tab.count}
-              size="small"
-              maxCount={99}
-              showZero={false}
-              shape="round"
-              color={tab.tone === "danger" ? undefined : "#94a3b8"}
-              offset={[2, -2]}
-              className="me-tab-badge"
-            >
-              <span className="inline-block pr-2.5">{label}</span>
-            </Badge>
-          ) : (
-            label
-          );
+        // Keep Badge shell + reserved pr for every counted tab so active/hidden
+        // count never reflows tab width (avoids underline / strip jitter).
+        const hasBadgeSlot = typeof tab.count === "number";
+        const showCount =
+          hasBadgeSlot && (tab.badgeAlways || isActive) ? tab.count! : 0;
+
+        const content = hasBadgeSlot ? (
+          <Badge
+            count={showCount}
+            size="small"
+            maxCount={99}
+            showZero={false}
+            shape="round"
+            color={tab.tone === "danger" ? undefined : "#94a3b8"}
+            offset={[2, -2]}
+            className="me-tab-badge"
+          >
+            <span className="inline-block pr-2.5">{label}</span>
+          </Badge>
+        ) : (
+          label
+        );
 
         return (
           <button
